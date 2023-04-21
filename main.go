@@ -72,8 +72,10 @@ func main() {
 	fmt.Printf("Number of commits: %d\n", len(commits))
 
 	// Group the lines of the CSV file by reporting date.
-	lineCountByDateByVersion := make(map[string]map[string]int)
-
+	lineCountAndKPIByDateByVersion := make(map[string]map[string]struct {
+		Lines int
+		KPI   float64
+	})
 	for _, commit := range commits {
 		fileContents, err := getFileContentsForCommit(client, owner, name, path, *commit.SHA)
 		if err != nil {
@@ -97,24 +99,35 @@ func main() {
 		for _, record := range records[1:] { // Skip the header row.
 			dateStr := record[dateColumn]
 
-			if lineCountByDateByVersion[dateStr] == nil {
-				lineCountByDateByVersion[dateStr] = make(map[string]int)
+			if lineCountAndKPIByDateByVersion[dateStr] == nil {
+				lineCountAndKPIByDateByVersion[dateStr] = make(map[string]struct {
+					Lines int
+					KPI   float64
+				})
 			}
-			lineCountByDateByVersion[dateStr][*commit.SHA]++
+
+			newLineCount := lineCountAndKPIByDateByVersion[dateStr][*commit.SHA].Lines + 1
+			newKPI := lineCountAndKPIByDateByVersion[dateStr][*commit.SHA].KPI
+
+			lineCountAndKPIByDateByVersion[dateStr][*commit.SHA] = struct {
+				Lines int
+				KPI   float64
+			}{Lines: newLineCount + 1, KPI: newKPI}
 		}
 
 	}
 
 	// Print the line count for each reporting date.
-	for dateStr, lineCounts := range lineCountByDateByVersion {
-		// for commitSha, count := range line {
-		// 	fmt.Printf("%s %s: %d\n", dateStr, commitSha, count)
-		// }
+	for dateStr, lineCounts := range lineCountAndKPIByDateByVersion {
+
 		var countsStr string
+		var kpiStr string
 		for _, count := range lineCounts {
-			countsStr += fmt.Sprintf("%d ", count)
+			countsStr += fmt.Sprintf("%d ", count.Lines)
+			kpiStr += fmt.Sprintf("%.2f ", count.KPI)
 		}
-		fmt.Printf("%s: %s\n", dateStr, countsStr)
+		fmt.Printf("Line Count %s: %s\n", dateStr, countsStr)
+		fmt.Printf("       KPI %s: %s\n", dateStr, kpiStr)
 	}
 }
 
