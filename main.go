@@ -40,7 +40,7 @@ func main() {
 	path := "mart/organisation-mrr.csv"
 
 	// Set the start and end dates to display the history for.
-	startDateStr := "2022-03-20"
+	startDateStr := "2023-04-14"
 	endDate := time.Now()
 	startDate, err := time.Parse("2006-01-02", startDateStr)
 	if err != nil {
@@ -63,31 +63,49 @@ func main() {
 	// Print the number of commits.
 	fmt.Printf("Number of commits: %d\n", len(commits))
 
-	// Iterate through the commits and display the number of lines in the file for each commit between the start and end dates.
-	var numLines int
-	for _, commit := range commits {
-		if commit.Commit.Author.Date.After(endDate) || commit.Commit.Author.Date.Before(startDate) {
-			continue
-		}
+	// Group the lines of the CSV file by reporting date.
+	lineCountByDateByVersion := make(map[string]map[string]int)
 
-		// Get the file contents for the commit.
+	for _, commit := range commits {
 		fileContents, err := getFileContentsForCommit(client, owner, name, path, *commit.SHA)
 		if err != nil {
 			log.Printf("Error getting file contents for commit %s: %v", *commit.SHA, err)
 			continue
 		}
-
-		// Parse the CSV file and count the number of lines.
 		r := csv.NewReader(bytes.NewReader(fileContents))
-		lines, err := r.ReadAll()
+		records, err := r.ReadAll()
 		if err != nil {
 			log.Printf("Error parsing CSV file for commit %s: %v", *commit.SHA, err)
 			continue
 		}
-		numLines = len(lines)
+		var dateColumn int
+		for i, columnName := range records[0] {
+			if columnName == "reporting_date" {
+				dateColumn = i
+				break
+			}
+		}
+		for _, record := range records[1:] { // Skip the header row.
+			dateStr := record[dateColumn]
 
-		// Display the number of lines and the commit message for the commit.
-		fmt.Printf("%d lines - %s\n", numLines, *commit.Commit.Message)
+			if lineCountByDateByVersion[dateStr] == nil {
+				lineCountByDateByVersion[dateStr] = make(map[string]int)
+			}
+			lineCountByDateByVersion[dateStr][*commit.SHA]++
+		}
+
+	}
+
+	// Print the line count for each reporting date.
+	for dateStr, lineCounts := range lineCountByDateByVersion {
+		// for commitSha, count := range line {
+		// 	fmt.Printf("%s %s: %d\n", dateStr, commitSha, count)
+		// }
+		var countsStr string
+		for _, count := range lineCounts {
+			countsStr += fmt.Sprintf("%d ", count)
+		}
+		fmt.Printf("%s: %s\n", dateStr, countsStr)
 	}
 }
 
