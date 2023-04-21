@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/google/go-github/github"
@@ -21,30 +22,37 @@ func main() {
 	}
 
 	token := os.Getenv("GITHUB_TOKEN")
-
-	// Create a new GitHub client with authentication using the token.
-	ctx := context.Background()
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: token},
-	)
-	tc := oauth2.NewClient(ctx, ts)
-	client := github.NewClient(tc)
+	client := github.NewClient(nil)
+	if strings.HasPrefix(token, "github_pat") {
+		// Create a new GitHub client with authentication using the token.
+		ctx := context.Background()
+		ts := oauth2.StaticTokenSource(
+			&oauth2.Token{AccessToken: token},
+		)
+		tc := oauth2.NewClient(ctx, ts)
+		client = github.NewClient(tc)
+	}
 
 	// Create a new GitHub client without authentication.
 
 	// Set the repository owner and name.
-	owner := "data-drift"
-	name := "fake-dataset"
+	owner := os.Getenv("GITHUB_REPO_OWNER")
+	name := os.Getenv("GITHUB_REPO_NAME")
 
 	// Set the path to the CSV file in the repository.
-	path := "mart/organisation-mrr.csv"
+	path := os.Getenv("GITHUB_REPO_FILE_PATH")
 
 	// Set the start and end dates to display the history for.
-	startDateStr := "2023-04-14"
+	startDateStr := os.Getenv("START_DATE")
 	endDate := time.Now()
 	startDate, err := time.Parse("2006-01-02", startDateStr)
 	if err != nil {
 		log.Fatalf("Error parsing start date: %v", err)
+	}
+
+	dateColumnName := os.Getenv("DATE_COLUMN")
+	if dateColumnName == "" {
+		log.Fatalf("Error no date column name provided")
 	}
 
 	// Get the commit history for the repository.
@@ -79,8 +87,9 @@ func main() {
 			continue
 		}
 		var dateColumn int
+
 		for i, columnName := range records[0] {
-			if columnName == "reporting_date" {
+			if columnName == dateColumnName {
 				dateColumn = i
 				break
 			}
