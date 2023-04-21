@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -145,11 +146,32 @@ func main() {
 		}
 	}
 
+	// Create a slice to hold the date strings.
+	dates := make([]string, 0, len(lineCountAndKPIByDateByVersion))
+
+	// Add the date strings to the slice.
+	for dateStr := range lineCountAndKPIByDateByVersion {
+		dates = append(dates, dateStr)
+	}
+
+	// Sort the date strings in ascending order.
+	sort.Strings(dates)
+
+	// Create a map to hold the line counts by date by version, ordered by date.
+	orderedLineCountsByDateByVersion := make(map[string]map[string]struct {
+		Lines int
+		KPI   float64
+	})
+
+	// Copy the line counts by date by version to the new map, ordered by date.
+	for _, dateStr := range dates {
+		orderedLineCountsByDateByVersion[dateStr] = lineCountAndKPIByDateByVersion[dateStr]
+	}
 	// Generate a timestamp to include in the JSON file name.
 	timestamp := time.Now().Format("2006-01-02_15-04-05")
 
 	// Open a file to write the line counts by date by version in JSON format.
-	file, err := os.Create(fmt.Sprintf("dist/lineCountsByDateByVersion_%s.json", timestamp))
+	file, err := os.Create(fmt.Sprintf("dist/lineCountAndKPIByDateByVersion_%s.json", timestamp))
 	if err != nil {
 		log.Fatalf("Error creating file: %v", err)
 	}
@@ -157,7 +179,7 @@ func main() {
 
 	// Write the line counts and KPI values to the JSON file.
 	enc := json.NewEncoder(file)
-	if err := enc.Encode(lineCountAndKPIByDateByVersion); err != nil {
+	if err := enc.Encode(orderedLineCountsByDateByVersion); err != nil {
 		log.Fatalf("Error writing JSON to file: %v", err)
 	}
 	fmt.Println("Results written to lineCountsAndKPIs.json")
