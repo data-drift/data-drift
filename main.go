@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -54,6 +55,7 @@ func main() {
 	if dateColumnName == "" {
 		log.Fatalf("Error no date column name provided")
 	}
+	KPIColumnName := os.Getenv("KPI_COLUMN")
 
 	// Get the commit history for the repository.
 	// Get the commit history for the file.
@@ -89,11 +91,14 @@ func main() {
 			continue
 		}
 		var dateColumn int
+		var kpiColumn int
 
 		for i, columnName := range records[0] {
 			if columnName == dateColumnName {
 				dateColumn = i
-				break
+			}
+			if columnName == KPIColumnName {
+				kpiColumn = i
 			}
 		}
 		for _, record := range records[1:] { // Skip the header row.
@@ -106,8 +111,11 @@ func main() {
 				})
 			}
 
+			kpiStr := record[kpiColumn]
+			kpi, _ := strconv.ParseFloat(kpiStr, 64)
+
 			newLineCount := lineCountAndKPIByDateByVersion[dateStr][*commit.SHA].Lines + 1
-			newKPI := lineCountAndKPIByDateByVersion[dateStr][*commit.SHA].KPI
+			newKPI := lineCountAndKPIByDateByVersion[dateStr][*commit.SHA].KPI + kpi
 
 			lineCountAndKPIByDateByVersion[dateStr][*commit.SHA] = struct {
 				Lines int
