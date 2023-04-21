@@ -2,32 +2,35 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
 
 func main() {
 	url := "https://quickchart.io/chart/create"
-	jsonStr := []byte(`{
-		"backgroundColor": "#fff",
-		"width": 500,
-		"height": 300,
+	jsonBody := map[string]interface{}{
+		"backgroundColor":  "#fff",
+		"width":            500,
+		"height":           300,
 		"devicePixelRatio": 1.0,
-		"chart": {
-		  "type": "bar",
-		  "data": {
-			"labels": [2012, 2013, 2014, 2015, 2016],
-			"datasets": [
-			  {
-				"label": "Users",
-				"data": [750, [500, 750], [360, 500], [200, 360], 200]
-			  }
-			]
-		  }
-		}
-	  }`)
+		"chart": map[string]interface{}{
+			"type": "bar",
+			"data": map[string]interface{}{
+				"labels": []int{2012, 2013, 2014, 2015, 2016},
+				"datasets": []map[string]interface{}{
+					{
+						"label": "Users",
+						"data":  []interface{}{750, []int{500, 750}, []int{360, 500}, []int{200, 360}, 200},
+					},
+				},
+			},
+		},
+	}
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+	newData, _ := json.Marshal(jsonBody)
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(newData))
 	if err != nil {
 		panic(err)
 	}
