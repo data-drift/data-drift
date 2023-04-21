@@ -1,0 +1,19 @@
+*.o
+*.a
+*.so
+
+# Folders
+_obj
+_test
+
+# Go binary
+*.exe
+*.test
+
+# Output files
+*.out
+
+# Dependency directories
+vendor/
+
+.env
