@@ -48,7 +48,14 @@ func main() {
 	}
 
 	// Get the commit history for the repository.
-	commits, _, err := client.Repositories.ListCommits(context.Background(), owner, name, nil)
+	// Get the commit history for the file.
+	commits, _, err := client.Repositories.ListCommits(context.Background(), owner, name, &github.CommitsListOptions{
+		Path:        path,
+		SHA:         "",
+		Since:       startDate,
+		Until:       endDate,
+		ListOptions: github.ListOptions{PerPage: 100},
+	})
 	if err != nil {
 		log.Fatalf("Error getting commit history: %v", err)
 	}
