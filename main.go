@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -137,6 +138,29 @@ func main() {
 		fmt.Printf("Line Count %s: %s\n", dateStr, countsStr)
 		fmt.Printf("       KPI %s: %s\n", dateStr, kpiStr)
 	}
+
+	if _, err := os.Stat("dist"); os.IsNotExist(err) {
+		if err := os.Mkdir("dist", 0755); err != nil {
+			log.Fatalf("Error creating directory: %v", err)
+		}
+	}
+
+	// Generate a timestamp to include in the JSON file name.
+	timestamp := time.Now().Format("2006-01-02_15-04-05")
+
+	// Open a file to write the line counts by date by version in JSON format.
+	file, err := os.Create(fmt.Sprintf("dist/lineCountsByDateByVersion_%s.json", timestamp))
+	if err != nil {
+		log.Fatalf("Error creating file: %v", err)
+	}
+	defer file.Close()
+
+	// Write the line counts and KPI values to the JSON file.
+	enc := json.NewEncoder(file)
+	if err := enc.Encode(lineCountAndKPIByDateByVersion); err != nil {
+		log.Fatalf("Error writing JSON to file: %v", err)
+	}
+	fmt.Println("Results written to lineCountsAndKPIs.json")
 }
 
 func getFileContentsForCommit(client *github.Client, owner, name, path, sha string) ([]byte, error) {

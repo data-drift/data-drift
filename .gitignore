@@ -12,6 +12,7 @@ _test
 
 # Output files
 *.out
+dist
 
 # Dependency directories
 vendor/
