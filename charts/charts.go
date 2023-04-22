@@ -4,10 +4,36 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"math"
 	"net/http"
 )
 
 func main() {
+	res, _ := getKeyFromJSON("../dist/lineCountAndKPIByDateByVersion_2023-04-21_17-09-03.json", "2022-02-01")
+	var diff []interface{}
+	var prevKPI int
+	for _, v := range res {
+		roundedKPI := int(math.Round(v.KPI))
+		if prevKPI == 0 {
+			prevKPI = roundedKPI
+			diff = append(diff, roundedKPI)
+		} else {
+			d := roundedKPI - prevKPI
+			if d == 0 {
+
+			} else {
+				diff = append(diff, []int{prevKPI, roundedKPI})
+			}
+			prevKPI = roundedKPI
+		}
+	}
+	fmt.Println(diff)
+	createChart(diff)
+
+}
+
+func createChart(diff []interface{}) {
 	url := "https://quickchart.io/chart/create"
 	jsonBody := map[string]interface{}{
 		"backgroundColor":  "#fff",
@@ -21,7 +47,14 @@ func main() {
 				"datasets": []map[string]interface{}{
 					{
 						"label": "Users",
-						"data":  []interface{}{750, []int{500, 750}, []int{360, 500}, []int{200, 360}, 200},
+						"data":  diff,
+					},
+				},
+			},
+			"options": map[string]interface{}{
+				"scales": map[string]interface{}{
+					"yAxes": []map[string]interface{}{
+						{"suggestedMin": 35000},
 					},
 				},
 			},
@@ -48,4 +81,33 @@ func main() {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(resp.Body)
 	fmt.Println(buf.String())
+}
+
+func getKeyFromJSON(path string, key string) (map[string]struct {
+	Lines int
+	KPI   float64
+}, error) {
+	// Read the file at the given path
+	jsonFile, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	// Unmarshal the JSON data into a map[string]interface{}
+	var data map[string]map[string]struct {
+		Lines int
+		KPI   float64
+	}
+	err = json.Unmarshal(jsonFile, &data)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extract the value associated with the given key
+	value, ok := data[key]
+	if !ok {
+		return nil, fmt.Errorf("key not found: %s", key)
+	}
+
+	return value, nil
 }
