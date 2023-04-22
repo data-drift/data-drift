@@ -12,28 +12,40 @@ import (
 func main() {
 	res, _ := getKeyFromJSON("../dist/lineCountAndKPIByDateByVersion_2023-04-21_17-09-03.json", "2022-02-01")
 	var diff []interface{}
+	var labels []interface{}
+	var colors []interface{}
+	upcolor := "rgb(100, 181, 246)"
+	downcolor := "rgb(255, 107, 107)"
 	var prevKPI int
 	for _, v := range res {
 		roundedKPI := int(math.Round(v.KPI))
 		if prevKPI == 0 {
 			prevKPI = roundedKPI
+			labels = append(labels, "i")
 			diff = append(diff, roundedKPI)
+			colors = append(colors, upcolor)
 		} else {
 			d := roundedKPI - prevKPI
 			if d == 0 {
 
 			} else {
 				diff = append(diff, []int{prevKPI, roundedKPI})
+				labels = append(labels, "i")
+				if prevKPI < roundedKPI {
+					colors = append(colors, upcolor)
+				} else {
+					colors = append(colors, downcolor)
+				}
 			}
 			prevKPI = roundedKPI
 		}
 	}
 	fmt.Println(diff)
-	createChart(diff)
+	createChart(diff, labels, colors)
 
 }
 
-func createChart(diff []interface{}) {
+func createChart(diff []interface{}, labels []interface{}, colors []interface{}) {
 	url := "https://quickchart.io/chart/create"
 	jsonBody := map[string]interface{}{
 		"backgroundColor":  "#fff",
@@ -43,11 +55,13 @@ func createChart(diff []interface{}) {
 		"chart": map[string]interface{}{
 			"type": "bar",
 			"data": map[string]interface{}{
-				"labels": []int{2012, 2013, 2014, 2015, 2016},
+				"labels": labels,
+
 				"datasets": []map[string]interface{}{
 					{
-						"label": "Users",
-						"data":  diff,
+						"backgroundColor": colors,
+						"label":           "KPI",
+						"data":            diff,
 					},
 				},
 			},
