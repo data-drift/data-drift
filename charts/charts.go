@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"math"
 	"net/http"
+	"os"
 )
 
 func main() {
@@ -102,7 +102,7 @@ func getKeyFromJSON(path string, key string) (map[string]struct {
 	KPI   float64
 }, error) {
 	// Read the file at the given path
-	jsonFile, err := ioutil.ReadFile(path)
+	jsonFile, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
