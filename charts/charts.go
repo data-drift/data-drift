@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	res, _ := getKeyFromJSON("../dist/lineCountAndKPIByDateByVersion_2023-04-21_17-09-03.json", "2022-02-01")
+	res, _ := getKeyFromJSON("../dist/lineCountAndKPIByDateByVersion_2023-04-21_17-09-03.json", "2022-12-01")
 	var diff []interface{}
 	var labels []interface{}
 	var colors []interface{}
