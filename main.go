@@ -77,10 +77,13 @@ func main() {
 
 	// Group the lines of the CSV file by reporting date.
 	lineCountAndKPIByDateByVersion := make(map[string]map[string]struct {
-		Lines int
-		KPI   float64
+		Lines           int
+		KPI             float64
+		CommitTimestamp int64
 	})
 	for _, commit := range commits {
+		commitDate := commit.Commit.Author.Date
+		commitTimestamp := commitDate.Unix()
 		fileContents, err := getFileContentsForCommit(client, owner, name, path, *commit.SHA)
 		if err != nil {
 			log.Printf("Error getting file contents for commit %s: %v", *commit.SHA, err)
@@ -108,8 +111,9 @@ func main() {
 
 			if lineCountAndKPIByDateByVersion[dateStr] == nil {
 				lineCountAndKPIByDateByVersion[dateStr] = make(map[string]struct {
-					Lines int
-					KPI   float64
+					Lines           int
+					KPI             float64
+					CommitTimestamp int64
 				})
 			}
 
@@ -120,9 +124,10 @@ func main() {
 			newKPI := lineCountAndKPIByDateByVersion[dateStr][*commit.SHA].KPI + kpi
 
 			lineCountAndKPIByDateByVersion[dateStr][*commit.SHA] = struct {
-				Lines int
-				KPI   float64
-			}{Lines: newLineCount + 1, KPI: newKPI}
+				Lines           int
+				KPI             float64
+				CommitTimestamp int64
+			}{Lines: newLineCount, KPI: newKPI, CommitTimestamp: commitTimestamp}
 		}
 
 	}
@@ -159,8 +164,9 @@ func main() {
 
 	// Create a map to hold the line counts by date by version, ordered by date.
 	orderedLineCountsByDateByVersion := make(map[string]map[string]struct {
-		Lines int
-		KPI   float64
+		Lines           int
+		KPI             float64
+		CommitTimestamp int64
 	})
 
 	// Copy the line counts by date by version to the new map, ordered by date.
