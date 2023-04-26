@@ -81,7 +81,9 @@ func main() {
 		KPI             float64
 		CommitTimestamp int64
 	})
-	for _, commit := range commits {
+	for index, commit := range commits {
+		fmt.Printf("\r Commit %d/%d", index, len(commits))
+
 		commitDate := commit.Commit.Author.Date
 		commitTimestamp := commitDate.Unix()
 		fileContents, err := getFileContentsForCommit(client, owner, name, path, *commit.SHA)
