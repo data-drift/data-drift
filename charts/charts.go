@@ -7,21 +7,52 @@ import (
 	"math"
 	"net/http"
 	"os"
+	"sort"
+	"time"
 )
 
 func main() {
-	res, _ := getKeyFromJSON("../dist/lineCountAndKPIByDateByVersion_2023-04-21_17-09-03.json", "2022-12-01")
+	KPIDate := "2022-12-01"
+	res, _ := getKeyFromJSON("../dist/lineCountAndKPIByDateByVersion_2023-04-26_09-38-56.json", KPIDate)
+
+	// Extract the values from the map into a slice of struct objects
+	var dataSortableArray []struct {
+		Lines           int
+		KPI             float64
+		CommitTimestamp int64
+	}
+	for _, stats := range res {
+		dataSortableArray = append(dataSortableArray, struct {
+			Lines           int
+			KPI             float64
+			CommitTimestamp int64
+		}{
+			Lines:           stats.Lines,
+			KPI:             stats.KPI,
+			CommitTimestamp: stats.CommitTimestamp,
+		})
+	}
+
+	// Sort the slice by CommitTimestamp
+	sort.Slice(dataSortableArray, func(i, j int) bool {
+		return dataSortableArray[i].CommitTimestamp < dataSortableArray[j].CommitTimestamp
+	})
+
 	var diff []interface{}
 	var labels []interface{}
 	var colors []interface{}
 	upcolor := "rgb(100, 181, 246)"
 	downcolor := "rgb(255, 107, 107)"
 	var prevKPI int
-	for _, v := range res {
+
+	for _, v := range dataSortableArray {
 		roundedKPI := int(math.Round(v.KPI))
+		timestamp := int64(v.CommitTimestamp) // Unix timestamp for May 26, 2022 12:00:00 AM UTC
+		timeObj := time.Unix(timestamp, 0)    // Convert the Unix timestamp to a time.Time object
+		dateStr := timeObj.Format("2006-01-02")
 		if prevKPI == 0 {
 			prevKPI = roundedKPI
-			labels = append(labels, "i")
+			labels = append(labels, dateStr)
 			diff = append(diff, roundedKPI)
 			colors = append(colors, upcolor)
 		} else {
@@ -30,7 +61,7 @@ func main() {
 
 			} else {
 				diff = append(diff, []int{prevKPI, roundedKPI})
-				labels = append(labels, "i")
+				labels = append(labels, dateStr)
 				if prevKPI < roundedKPI {
 					colors = append(colors, upcolor)
 				} else {
@@ -41,11 +72,11 @@ func main() {
 		}
 	}
 	fmt.Println(diff)
-	createChart(diff, labels, colors)
+	createChart(diff, labels, colors, "KPI of "+KPIDate)
 
 }
 
-func createChart(diff []interface{}, labels []interface{}, colors []interface{}) {
+func createChart(diff []interface{}, labels []interface{}, colors []interface{}, KPIDate string) {
 	url := "https://quickchart.io/chart/create"
 	jsonBody := map[string]interface{}{
 		"backgroundColor":  "#fff",
@@ -60,7 +91,7 @@ func createChart(diff []interface{}, labels []interface{}, colors []interface{})
 				"datasets": []map[string]interface{}{
 					{
 						"backgroundColor": colors,
-						"label":           "KPI",
+						"label":           KPIDate,
 						"data":            diff,
 					},
 				},
@@ -98,8 +129,9 @@ func createChart(diff []interface{}, labels []interface{}, colors []interface{})
 }
 
 func getKeyFromJSON(path string, key string) (map[string]struct {
-	Lines int
-	KPI   float64
+	Lines           int
+	KPI             float64
+	CommitTimestamp int64
 }, error) {
 	// Read the file at the given path
 	jsonFile, err := os.ReadFile(path)
@@ -109,8 +141,9 @@ func getKeyFromJSON(path string, key string) (map[string]struct {
 
 	// Unmarshal the JSON data into a map[string]interface{}
 	var data map[string]map[string]struct {
-		Lines int
-		KPI   float64
+		Lines           int
+		KPI             float64
+		CommitTimestamp int64
 	}
 	err = json.Unmarshal(jsonFile, &data)
 	if err != nil {
