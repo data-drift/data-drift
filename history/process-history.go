@@ -13,15 +13,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/data-drift/kpi-git-history/common"
 	"github.com/google/go-github/github"
-	"github.com/joho/godotenv"
 	"golang.org/x/oauth2"
 )
 
-func ProcessHistory() string {
-	godotenv.Load()
+func ProcessHistory(syncConfig common.SyncConfig) (error, string) {
 
-	token := os.Getenv("GITHUB_TOKEN")
+	token := syncConfig.GithubToken
 	client := github.NewClient(nil)
 	if strings.HasPrefix(token, "github_pat") {
 		// Create a new GitHub client with authentication using the token.
@@ -36,25 +35,25 @@ func ProcessHistory() string {
 	// Create a new GitHub client without authentication.
 
 	// Set the repository owner and name.
-	owner := os.Getenv("GITHUB_REPO_OWNER")
-	name := os.Getenv("GITHUB_REPO_NAME")
+	owner := syncConfig.GithubRepoOwner
+	name := syncConfig.GithubRepoName
 
 	// Set the path to the CSV file in the repository.
-	path := os.Getenv("GITHUB_REPO_FILE_PATH")
+	path := syncConfig.GithubRepoFilePath
 
 	// Set the start and end dates to display the history for.
-	startDateStr := os.Getenv("START_DATE")
+	startDateStr := syncConfig.StartDate
 	endDate := time.Now()
 	startDate, err := time.Parse("2006-01-02", startDateStr)
 	if err != nil {
-		log.Fatalf("Error parsing start date: %v", err)
+		return fmt.Errorf("error parsing start date: %v", err), ""
 	}
 
-	dateColumnName := os.Getenv("DATE_COLUMN")
+	dateColumnName := syncConfig.DateColumn
 	if dateColumnName == "" {
-		log.Fatalf("Error no date column name provided")
+		return fmt.Errorf("error no date column name provided"), ""
 	}
-	KPIColumnName := os.Getenv("KPI_COLUMN")
+	KPIColumnName := syncConfig.KpiColumn
 
 	// Get the commit history for the repository.
 	// Get the commit history for the file.
@@ -66,7 +65,7 @@ func ProcessHistory() string {
 		ListOptions: github.ListOptions{PerPage: 100},
 	})
 	if err != nil {
-		log.Fatalf("Error getting commit history: %v", err)
+		return fmt.Errorf("error getting commit history: %v", err), ""
 	}
 
 	// Print the number of commits.
@@ -189,7 +188,7 @@ func ProcessHistory() string {
 		log.Fatalf("Error writing JSON to file: %v", err)
 	}
 	fmt.Println("Results written to lineCountsAndKPIs.json")
-	return filepath
+	return nil, filepath
 }
 
 func getFileContentsForCommit(client *github.Client, owner, name, path, sha string) ([]byte, error) {
