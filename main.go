@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/data-drift/kpi-git-history/charts"
+	"github.com/data-drift/kpi-git-history/common"
 	"github.com/data-drift/kpi-git-history/history"
 	"github.com/data-drift/kpi-git-history/reports"
 	"github.com/gin-gonic/gin"
@@ -25,22 +26,41 @@ func main() {
 	})
 
 	router.POST("/", func(c *gin.Context) {
-		performTask()
+		var syncConfig common.SyncConfig
+		err := c.ShouldBindJSON(&syncConfig)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid syncConfig JSON"})
+			return
+		}
+
+		err = performTask(syncConfig)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
 		c.JSON(http.StatusOK, gin.H{"status": "OK"})
 	})
 
 	router.Run(":" + port)
 }
 
-func performTask() {
-	filepath := history.ProcessHistory()
+func performTask(syncConfig common.SyncConfig) error {
+	err, filepath := history.ProcessHistory(syncConfig)
+	if err != nil {
+		return err
+	}
 	// Call functions from charts.go and reports.go
 	chartResults := charts.ProcessCharts(filepath)
 
 	for _, chartResult := range chartResults {
-		reports.CreateReport(chartResult)
+		err = reports.CreateReport(syncConfig, chartResult)
+		if err != nil {
+			return err
+		}
 	}
 	// ...
 	fmt.Println("Custom function completed. Chart result:", filepath)
 	fmt.Println("Custom function completed. Chart result:", chartResults)
+	return nil
 }

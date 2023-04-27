@@ -4,15 +4,14 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"time"
 
 	"github.com/data-drift/kpi-git-history/common"
 	"github.com/dstotijn/go-notion"
-	"github.com/joho/godotenv"
 	"github.com/sanity-io/litter"
 )
 
@@ -33,12 +32,15 @@ func (t *httpTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	return res, nil
 }
 
-func CreateReport(KPIInfo common.KPIInfo) {
-	godotenv.Load()
-
+func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIInfo) error {
+	fmt.Println("CreateReport called with", KPIInfo)
 	ctx := context.Background()
-	apiKey := os.Getenv("NOTION_API_KEY")
-	databaseId := os.Getenv("NOTION_DATABASE_ID")
+	apiKey := syncConfig.NotionAPIKey
+	databaseId := syncConfig.NotionDatabaseID
+
+	if apiKey == "" || databaseId == "" {
+		return fmt.Errorf("missing Notion API key or database ID")
+	}
 	buf := &bytes.Buffer{}
 	httpClient := &http.Client{
 		Timeout:   10 * time.Second,
@@ -70,21 +72,22 @@ func CreateReport(KPIInfo common.KPIInfo) {
 	}
 	page, err := client.CreatePage(ctx, params)
 	if err != nil {
-		log.Fatalf("Failed to create page: %v", err)
+		return fmt.Errorf("failed to create page: %v", err)
 	}
 
 	decoded := map[string]interface{}{}
 	if err := json.NewDecoder(buf).Decode(&decoded); err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("failed to decode result: %v", err)
 	}
 
 	// Pretty print JSON reponse.
 	enc := json.NewEncoder(os.Stdout)
 	enc.SetIndent("", "    ")
 	if err := enc.Encode(decoded); err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("failed to decode result: %v", err)
 	}
 
 	// Pretty print parsed `notion.Page` value.
 	litter.Dump(page.ID)
+	return nil
 }
