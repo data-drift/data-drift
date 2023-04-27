@@ -27,15 +27,26 @@ func ProcessCharts(historyFilepath string) []common.KPIInfo {
 		log.Fatal("Error loading .env file")
 	}
 	KPIDate := os.Getenv("KPI_KEY")
+	KPIName := "KPI of " + KPIDate
 	res, _ := getKeyFromJSON(historyFilepath, KPIDate)
 
+	kpi := OrderDataAndCreateChart(KPIName, res)
+
+	return []common.KPIInfo{kpi}
+}
+
+func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
+	Lines           int
+	KPI             float64
+	CommitTimestamp int64
+}) common.KPIInfo {
 	// Extract the values from the map into a slice of struct objects
 	var dataSortableArray []struct {
 		Lines           int
 		KPI             float64
 		CommitTimestamp int64
 	}
-	for _, stats := range res {
+	for _, stats := range unsortedResults {
 		dataSortableArray = append(dataSortableArray, struct {
 			Lines           int
 			KPI             float64
@@ -86,13 +97,13 @@ func ProcessCharts(historyFilepath string) []common.KPIInfo {
 		}
 	}
 	fmt.Println(diff)
-	KPIName := "KPI of " + KPIDate
-	chartUrl := createChart(diff, labels, colors, "KPI of "+KPIDate)
+
+	chartUrl := createChart(diff, labels, colors, KPIName)
 	kpi1 := common.KPIInfo{
 		KPIName:    KPIName,
 		GraphQLURL: chartUrl,
 	}
-	return []common.KPIInfo{kpi1}
+	return kpi1
 }
 
 func createChart(diff []interface{}, labels []interface{}, colors []interface{}, KPIDate string) string {
