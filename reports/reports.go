@@ -34,10 +34,8 @@ func (t *httpTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 func CreateReport(KPIInfo common.KPIInfo) {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	godotenv.Load()
+
 	ctx := context.Background()
 	apiKey := os.Getenv("NOTION_API_KEY")
 	databaseId := os.Getenv("NOTION_DATABASE_ID")

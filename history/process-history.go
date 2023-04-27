@@ -19,10 +19,7 @@ import (
 )
 
 func ProcessHistory() string {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	godotenv.Load()
 
 	token := os.Getenv("GITHUB_TOKEN")
 	client := github.NewClient(nil)

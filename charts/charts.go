@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
 	"math"
 	"net/http"
 	"os"
@@ -12,8 +11,6 @@ import (
 	"time"
 
 	"github.com/data-drift/kpi-git-history/common"
-
-	"github.com/joho/godotenv"
 )
 
 type ChartResponse struct {
@@ -22,10 +19,6 @@ type ChartResponse struct {
 }
 
 func ProcessCharts(historyFilepath string) []common.KPIInfo {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
 
 	data, err := getKeysFromJSON(historyFilepath)
 	if err != nil {
