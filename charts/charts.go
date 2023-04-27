@@ -26,13 +26,24 @@ func ProcessCharts(historyFilepath string) []common.KPIInfo {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
-	KPIDate := os.Getenv("KPI_KEY")
-	KPIName := "KPI of " + KPIDate
-	res, _ := getKeyFromJSON(historyFilepath, KPIDate)
 
-	kpi := OrderDataAndCreateChart(KPIName, res)
+	data, err := getKeysFromJSON(historyFilepath)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
 
-	return []common.KPIInfo{kpi}
+	var kpiInfos []common.KPIInfo
+
+	for key := range data {
+		fmt.Println("Key:", key)
+		// Access the value associated with the key: data[key]
+		// Additional logic for processing the value
+		// ...
+		kpi := OrderDataAndCreateChart("MRR "+key, data[key])
+		kpiInfos = append(kpiInfos, kpi)
+	}
+
+	return kpiInfos
 }
 
 func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
@@ -168,7 +179,7 @@ func createChart(diff []interface{}, labels []interface{}, colors []interface{},
 	return chartResponse.URL
 }
 
-func getKeyFromJSON(path string, key string) (map[string]struct {
+func getKeysFromJSON(path string) (map[string]map[string]struct {
 	Lines           int
 	KPI             float64
 	CommitTimestamp int64
@@ -179,7 +190,7 @@ func getKeyFromJSON(path string, key string) (map[string]struct {
 		return nil, err
 	}
 
-	// Unmarshal the JSON data into a map[string]interface{}
+	// Unmarshal the JSON data into the desired type
 	var data map[string]map[string]struct {
 		Lines           int
 		KPI             float64
@@ -190,11 +201,5 @@ func getKeyFromJSON(path string, key string) (map[string]struct {
 		return nil, err
 	}
 
-	// Extract the value associated with the given key
-	value, ok := data[key]
-	if !ok {
-		return nil, fmt.Errorf("key not found: %s", key)
-	}
-
-	return value, nil
+	return data, nil
 }
