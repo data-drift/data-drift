@@ -1,4 +1,4 @@
-package main
+package charts
 
 import (
 	"bytes"
@@ -14,14 +14,18 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func main() {
+type ChartResponse struct {
+	Success bool   `json:"success"`
+	URL     string `json:"url"`
+}
+
+func ProcessCharts(historyFilepath string) string {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
 	KPIDate := os.Getenv("KPI_KEY")
-	historyFilpath := os.Getenv("HISTORY_FILE_PATH")
-	res, _ := getKeyFromJSON(historyFilpath, KPIDate)
+	res, _ := getKeyFromJSON(historyFilepath, KPIDate)
 
 	// Extract the values from the map into a slice of struct objects
 	var dataSortableArray []struct {
@@ -80,11 +84,11 @@ func main() {
 		}
 	}
 	fmt.Println(diff)
-	createChart(diff, labels, colors, "KPI of "+KPIDate)
+	return createChart(diff, labels, colors, "KPI of "+KPIDate)
 
 }
 
-func createChart(diff []interface{}, labels []interface{}, colors []interface{}, KPIDate string) {
+func createChart(diff []interface{}, labels []interface{}, colors []interface{}, KPIDate string) string {
 	url := "https://quickchart.io/chart/create"
 	jsonBody := map[string]interface{}{
 		"backgroundColor":  "#fff",
@@ -134,6 +138,16 @@ func createChart(diff []interface{}, labels []interface{}, colors []interface{},
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(resp.Body)
 	fmt.Println(buf.String())
+
+	var chartResponse ChartResponse
+	jsonUnmarshalError := json.Unmarshal(buf.Bytes(), &chartResponse)
+	if jsonUnmarshalError != nil {
+		fmt.Println("Error parsing JSON:", err)
+		return "" // Return an empty string or handle the error as needed
+	}
+
+	// Return only the URL
+	return chartResponse.URL
 }
 
 func getKeyFromJSON(path string, key string) (map[string]struct {

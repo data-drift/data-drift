@@ -1,4 +1,4 @@
-package main
+package history
 
 import (
 	"bytes"
@@ -18,7 +18,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
-func main() {
+func ProcessHistory() string {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -179,7 +179,8 @@ func main() {
 	timestamp := time.Now().Format("2006-01-02_15-04-05")
 
 	// Open a file to write the line counts by date by version in JSON format.
-	file, err := os.Create(fmt.Sprintf("dist/lineCountAndKPIByDateByVersion_%s.json", timestamp))
+	filepath := fmt.Sprintf("dist/lineCountAndKPIByDateByVersion_%s.json", timestamp)
+	file, err := os.Create(filepath)
 	if err != nil {
 		log.Fatalf("Error creating file: %v", err)
 	}
@@ -191,6 +192,7 @@ func main() {
 		log.Fatalf("Error writing JSON to file: %v", err)
 	}
 	fmt.Println("Results written to lineCountsAndKPIs.json")
+	return filepath
 }
 
 func getFileContentsForCommit(client *github.Client, owner, name, path, sha string) ([]byte, error) {
