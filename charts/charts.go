@@ -20,7 +20,8 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 	KPIDate := os.Getenv("KPI_KEY")
-	res, _ := getKeyFromJSON("../dist/lineCountAndKPIByDateByVersion_2023-04-26_09-38-56.json", KPIDate)
+	historyFilpath := os.Getenv("HISTORY_FILE_PATH")
+	res, _ := getKeyFromJSON(historyFilpath, KPIDate)
 
 	// Extract the values from the map into a slice of struct objects
 	var dataSortableArray []struct {
