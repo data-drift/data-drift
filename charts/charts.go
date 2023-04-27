@@ -4,15 +4,22 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"math"
 	"net/http"
 	"os"
 	"sort"
 	"time"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	KPIDate := "2022-12-01"
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+	KPIDate := os.Getenv("KPI_KEY")
 	res, _ := getKeyFromJSON("../dist/lineCountAndKPIByDateByVersion_2023-04-26_09-38-56.json", KPIDate)
 
 	// Extract the values from the map into a slice of struct objects
