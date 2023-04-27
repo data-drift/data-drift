@@ -1,4 +1,4 @@
-package main
+package reports
 
 import (
 	"bytes"
@@ -10,6 +10,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/data-drift/kpi-git-history/common"
 	"github.com/dstotijn/go-notion"
 	"github.com/joho/godotenv"
 	"github.com/sanity-io/litter"
@@ -32,7 +33,7 @@ func (t *httpTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	return res, nil
 }
 
-func main() {
+func CreateReport(KPIInfo common.KPIInfo) {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -56,7 +57,7 @@ func main() {
 				Title: []notion.RichText{
 					{
 						Text: &notion.Text{
-							Content: "MRR 2023-02-01",
+							Content: KPIInfo.KPIName,
 						},
 					},
 				},
@@ -65,7 +66,7 @@ func main() {
 
 		Children: []notion.Block{
 			notion.EmbedBlock{
-				URL: "https://quickchart.io/chart/render/sf-8c4f6211-c8e9-4f5e-8ff8-85c68ed32d97",
+				URL: KPIInfo.GraphQLURL,
 			},
 		},
 	}
@@ -87,5 +88,5 @@ func main() {
 	}
 
 	// Pretty print parsed `notion.Page` value.
-	litter.Dump(page)
+	litter.Dump(page.ID)
 }

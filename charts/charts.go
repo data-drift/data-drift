@@ -11,6 +11,8 @@ import (
 	"sort"
 	"time"
 
+	"github.com/data-drift/kpi-git-history/common"
+
 	"github.com/joho/godotenv"
 )
 
@@ -19,12 +21,7 @@ type ChartResponse struct {
 	URL     string `json:"url"`
 }
 
-type KPIInfo struct {
-	KPIName    string `json:"kpiName"`
-	GraphQLURL string `json:"graphqlUrl"`
-}
-
-func ProcessCharts(historyFilepath string) []KPIInfo {
+func ProcessCharts(historyFilepath string) []common.KPIInfo {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -91,11 +88,11 @@ func ProcessCharts(historyFilepath string) []KPIInfo {
 	fmt.Println(diff)
 	KPIName := "KPI of " + KPIDate
 	chartUrl := createChart(diff, labels, colors, "KPI of "+KPIDate)
-	kpi1 := KPIInfo{
+	kpi1 := common.KPIInfo{
 		KPIName:    KPIName,
 		GraphQLURL: chartUrl,
 	}
-	return []KPIInfo{kpi1}
+	return []common.KPIInfo{kpi1}
 }
 
 func createChart(diff []interface{}, labels []interface{}, colors []interface{}, KPIDate string) string {
