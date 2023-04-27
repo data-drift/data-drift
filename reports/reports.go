@@ -39,6 +39,7 @@ func main() {
 	}
 	ctx := context.Background()
 	apiKey := os.Getenv("NOTION_API_KEY")
+	databaseId := os.Getenv("NOTION_DATABASE_ID")
 	buf := &bytes.Buffer{}
 	httpClient := &http.Client{
 		Timeout:   10 * time.Second,
@@ -48,7 +49,7 @@ func main() {
 
 	params := notion.CreatePageParams{
 		ParentType: notion.ParentTypeDatabase,
-		ParentID:   "f05cbcd54ebb47a9bb7c8c468761334a",
+		ParentID:   databaseId,
 
 		DatabasePageProperties: &notion.DatabasePageProperties{
 			"title": notion.DatabasePageProperty{
