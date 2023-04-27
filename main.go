@@ -3,15 +3,32 @@ package main
 
 import (
 	"fmt"
+	"net/http"
+	"os"
 
 	"github.com/data-drift/kpi-git-history/charts"
 	"github.com/data-drift/kpi-git-history/history"
 	"github.com/data-drift/kpi-git-history/reports"
+	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	// Call your custom function here
-	performTask()
+	godotenv.Load()
+	port := os.Getenv("PORT")
+
+	router := gin.New()
+	router.Use(gin.Logger())
+
+	router.GET("/", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "OK"})
+	})
+
+	router.POST("/", func(c *gin.Context) {
+		performTask()
+	})
+
+	router.Run(":" + port)
 }
 
 func performTask() {
