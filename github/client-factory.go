@@ -13,7 +13,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
-func CreateClientFromGithubApp() (*github.Client, error) {
+func CreateClientFromGithubApp(installationId int64) (*github.Client, error) {
 	privateKeyPath := os.Getenv("GITHUB_APP_PRIVATE_KEY_PATH")
 	privateKey := os.Getenv("GITHUB_APP_PRIVATE_KEY")
 
@@ -23,7 +23,7 @@ func CreateClientFromGithubApp() (*github.Client, error) {
 		return nil, err
 	}
 
-	itr, err := CreateGithubTransport(privateKeyPath, privateKey, githubAppId, 36944435)
+	itr, err := CreateGithubTransport(privateKeyPath, privateKey, githubAppId, installationId)
 	if err != nil {
 		return nil, err
 	}
