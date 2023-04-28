@@ -2,6 +2,9 @@ package github
 
 import (
 	"context"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 func CheckGithubAppConnection() (string, error) {
@@ -19,4 +22,14 @@ func CheckGithubAppConnection() (string, error) {
 		return "", err
 	}
 	return commit.GetSHA(), nil
+}
+
+func HealthCheck(c *gin.Context) {
+	sha, err := CheckGithubAppConnection()
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "ERROR", "error": err.Error()})
+	}
+	c.JSON(http.StatusOK, gin.H{"status": "OK", "commit": sha})
+
 }
