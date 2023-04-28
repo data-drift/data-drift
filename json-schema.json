@@ -10,7 +10,37 @@
     "notionDatabaseId": {
       "type": "string",
       "description": "The ID of the Notion database"
+    },
+    "metrics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "metricName": {
+            "type": "string",
+            "description": "The name or identifier of the metric"
+          },
+          "filepath": {
+            "type": "string",
+            "description": "The file path for the metric data"
+          },
+          "dateColumnName": {
+            "type": "string",
+            "description": "The name of the column containing date information"
+          },
+          "KPIColumnName": {
+            "type": "string",
+            "description": "The name of the column containing KPI information"
+          }
+        },
+        "required": [
+          "metricName",
+          "filepath",
+          "dateColumnName",
+          "KPIColumnName"
+        ]
+      }
     }
   },
-  "required": ["notionAPIToken", "notionDatabaseId"]
+  "required": ["notionAPIToken", "notionDatabaseId", "metrics"]
 }
