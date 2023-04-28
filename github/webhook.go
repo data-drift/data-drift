@@ -64,29 +64,29 @@ func HandleWebhook(c *gin.Context) {
 
 	fmt.Println(payload)
 
+	var ownerName, repoName string
+
 	if payload.Repository.Owner.Name != "" {
-
-		confidIsValid, err := verifyConfigFile(client, payload.Repository.Owner.Name, payload.Repository.Name, ctx)
-
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err})
-			return
-		}
-
-		c.JSON(http.StatusOK, gin.H{"message": "Webhook processed", "configIsValie": confidIsValid, "installationId": InstallationId})
+		ownerName = payload.Repository.Owner.Name
+		repoName = payload.Repository.Name
 	} else if payload.Installation.Account.Login != "" {
-		confidIsValid, err := verifyConfigFile(client, payload.Installation.Account.Login, payload.Repositories[0].Name, ctx)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err})
-			return
-		}
-		c.JSON(http.StatusOK, gin.H{"message": "Webhook processed", "configIsValie": confidIsValid, "installationId": InstallationId})
+		ownerName = payload.Installation.Account.Login
+		repoName = payload.Repositories[0].Name
 	} else {
 		fmt.Println("No repository or account found")
-
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No repository or account found"})
 		return
 	}
+
+	confidIsValid, err := verifyConfigFile(client, ownerName, repoName, ctx)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Webhook processed", "configIsValie": confidIsValid, "installationId": InstallationId})
+
 }
 
 func verifyConfigFile(client *github.Client, RepoOwner string, RepoName string, ctx context.Context) (bool, error) {
