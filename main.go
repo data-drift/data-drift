@@ -30,6 +30,8 @@ func main() {
 
 	router.POST("webhooks/github", github.HandleWebhook)
 
+	router.POST("validate-config", github.ValidateConfigHandler)
+
 	router.Run(":" + port)
 }
 

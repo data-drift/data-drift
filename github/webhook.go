@@ -10,6 +10,19 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 )
 
+type Config struct {
+	NotionAPIToken   string   `json:"notionAPIToken"`
+	NotionDatabaseID string   `json:"notionDatabaseId"`
+	Metrics          []Metric `json:"metrics"`
+}
+
+type Metric struct {
+	Filepath       string `json:"filepath"`
+	DateColumnName string `json:"dateColumnName"`
+	KPIColumnName  string `json:"KPIColumnName"`
+	MetricName     string `json:"metricName"`
+}
+
 type GithubWebhookPayload struct {
 	Repository struct {
 		Name  string `json:"name"`
@@ -105,4 +118,43 @@ func verifyConfigFile(client *github.Client, RepoOwner string, RepoName string, 
 	}
 	fmt.Println(result.Valid())
 	return true, nil
+}
+
+func ValidateConfigHandler(c *gin.Context) {
+	// Parse the JSON configuration from the request body
+	var config Config
+	err := c.ShouldBindJSON(&config)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON configuration"})
+		return
+	}
+
+	schemaLoader := gojsonschema.NewReferenceLoader("file://./json-schema.json")
+	schema, err := gojsonschema.NewSchema(schemaLoader)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"errors": "Failed to load JSON Schema"})
+
+		return
+	}
+
+	// Validate the configuration against the JSON Schema
+	configLoader := gojsonschema.NewGoLoader(config)
+	result, err := schema.Validate(configLoader)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"errors": err})
+		return
+	}
+
+	// Check validation results
+	if !result.Valid() {
+		validationErrors := make([]string, len(result.Errors()))
+		for i, desc := range result.Errors() {
+			validationErrors[i] = desc.String()
+		}
+		c.JSON(http.StatusBadRequest, gin.H{"errors": validationErrors})
+		return
+	}
+
+	// Configuration is valid
+	c.JSON(http.StatusOK, gin.H{"message": "Configuration is valid"})
 }
