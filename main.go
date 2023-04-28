@@ -47,7 +47,7 @@ func main() {
 		sha, err := github.CheckGithubAppConnection()
 
 		if err != nil {
-			c.JSON(http.StatusOK, gin.H{"status": "ERROR", "error": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"status": "ERROR", "error": err.Error()})
 		}
 		c.JSON(http.StatusOK, gin.H{"status": "OK", "commit": sha})
 
