@@ -10,27 +10,13 @@ import (
 	"os"
 	"sort"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/data-drift/kpi-git-history/common"
 	"github.com/google/go-github/github"
-	"golang.org/x/oauth2"
 )
 
-func ProcessHistory(syncConfig common.SyncConfig) (error, string) {
-
-	token := syncConfig.GithubToken
-	client := github.NewClient(nil)
-	if strings.HasPrefix(token, "github_pat") {
-		// Create a new GitHub client with authentication using the token.
-		ctx := context.Background()
-		ts := oauth2.StaticTokenSource(
-			&oauth2.Token{AccessToken: token},
-		)
-		tc := oauth2.NewClient(ctx, ts)
-		client = github.NewClient(tc)
-	}
+func ProcessHistory(client *github.Client, syncConfig common.SyncConfig) (error, string) {
 
 	// Create a new GitHub client without authentication.
 
