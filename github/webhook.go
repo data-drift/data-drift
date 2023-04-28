@@ -6,6 +6,10 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/data-drift/kpi-git-history/charts"
+	"github.com/data-drift/kpi-git-history/common"
+	"github.com/data-drift/kpi-git-history/history"
+	"github.com/data-drift/kpi-git-history/reports"
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-github/github"
 	"github.com/xeipuuv/gojsonschema"
@@ -86,8 +90,27 @@ func HandleWebhook(c *gin.Context) {
 		return
 	}
 
+	fmt.Println("config", config)
 	c.JSON(http.StatusOK, gin.H{"message": "Webhook processed", "configIsValie": config, "installationId": InstallationId})
+	fmt.Println("starting sync")
 
+	filepath, err := history.ProcessHistory(client, ownerName, repoName, config.Metrics[0].Filepath, "2022-01-01", config.Metrics[0].DateColumnName, config.Metrics[0].KPIColumnName)
+	if err != nil {
+		fmt.Println("err", err)
+
+		return
+	}
+	// Call functions from charts.go and reports.go
+	chartResults := charts.ProcessCharts(filepath)
+
+	for _, chartResult := range chartResults {
+		err = reports.CreateReport(common.SyncConfig{NotionAPIKey: config.NotionAPIToken, NotionDatabaseID: config.NotionDatabaseID}, chartResult)
+		if err != nil {
+			fmt.Println("err", err)
+
+			return
+		}
+	}
 }
 
 func verifyConfigFile(client *github.Client, RepoOwner string, RepoName string, ctx context.Context) (Config, error) {
