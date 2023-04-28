@@ -8,6 +8,7 @@ import (
 
 	"github.com/data-drift/kpi-git-history/charts"
 	"github.com/data-drift/kpi-git-history/common"
+	"github.com/data-drift/kpi-git-history/github"
 	"github.com/data-drift/kpi-git-history/history"
 	"github.com/data-drift/kpi-git-history/reports"
 	"github.com/gin-gonic/gin"
@@ -40,6 +41,16 @@ func main() {
 		}
 
 		c.JSON(http.StatusOK, gin.H{"status": "OK"})
+	})
+
+	router.GET("/ghhealth", func(c *gin.Context) {
+		sha, err := github.CheckGithubAppConnection()
+
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{"status": "ERROR", "error": err.Error()})
+		}
+		c.JSON(http.StatusOK, gin.H{"status": "OK", "commit": sha})
+
 	})
 
 	router.Run(":" + port)

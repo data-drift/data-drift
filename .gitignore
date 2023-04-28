@@ -2,6 +2,8 @@
 *.a
 *.so
 
+kpi-git-history
+
 # Folders
 _obj
 _test
