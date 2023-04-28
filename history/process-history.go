@@ -15,17 +15,17 @@ import (
 	"github.com/google/go-github/github"
 )
 
-func ProcessHistory(client *github.Client, repoOwner string, repoName string, filePath string, startDateStr string, dateColumnName string, KPIColumnName string) (error, string) {
+func ProcessHistory(client *github.Client, repoOwner string, repoName string, filePath string, startDateStr string, dateColumnName string, KPIColumnName string) (string, error) {
 
 	// Set the start and end dates to display the history for.
 	endDate := time.Now()
 	startDate, err := time.Parse("2006-01-02", startDateStr)
 	if err != nil {
-		return fmt.Errorf("error parsing start date: %v", err), ""
+		return "", fmt.Errorf("error parsing start date: %v", err)
 	}
 
 	if dateColumnName == "" {
-		return fmt.Errorf("error no date column name provided"), ""
+		return "", fmt.Errorf("error no date column name provided")
 	}
 
 	// Get the commit history for the repository.
@@ -38,7 +38,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, fi
 		ListOptions: github.ListOptions{PerPage: 100},
 	})
 	if err != nil {
-		return fmt.Errorf("error getting commit history: %v", err), ""
+		return "", fmt.Errorf("error getting commit history: %v", err)
 	}
 
 	// Print the number of commits.
@@ -161,7 +161,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, fi
 		log.Fatalf("Error writing JSON to file: %v", err)
 	}
 	fmt.Println("Results written to lineCountsAndKPIs.json")
-	return nil, filepath
+	return filepath, nil
 }
 
 func getFileContentsForCommit(client *github.Client, owner, name, path, sha string) ([]byte, error) {
