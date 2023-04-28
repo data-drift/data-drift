@@ -2,17 +2,26 @@ package github
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"os"
+	"strconv"
 
 	"github.com/bradleyfalzon/ghinstallation/v2"
 	"github.com/google/go-github/github"
 )
 
 func CheckGithubAppConnection() (string, error) {
-	privateKeyPath := "data-drift.2023-04-28.private-key.pem"
+	privateKeyPath := os.Getenv("GITHUB_APP_PRIVATE_KEY_PATH")
+	privateKey := os.Getenv("GITHUB_APP_PRIVATE_KEY")
 
-	itr, err := ghinstallation.NewKeyFromFile(http.DefaultTransport, 3252700, 36944435, privateKeyPath)
+	appIDStr := os.Getenv("GITHUB_APP_ID")
+	githubAppId, err := strconv.ParseInt(appIDStr, 10, 64)
+	if err != nil {
+		return "", err
+	}
 
+	itr, err := CreateGithubTransport(privateKeyPath, privateKey, githubAppId, 36944435)
 	if err != nil {
 		return "", err
 	}
@@ -28,4 +37,22 @@ func CheckGithubAppConnection() (string, error) {
 		return "", err
 	}
 	return commit.GetSHA(), nil
+}
+
+func CreateGithubTransport(privateKeyPath string, privateKey string, githubAppId int64, githubInstallationId int64) (*ghinstallation.Transport, error) {
+	if privateKeyPath != "" {
+		itr, err := ghinstallation.NewKeyFromFile(http.DefaultTransport, githubAppId, githubInstallationId, privateKeyPath)
+		if err != nil {
+			return nil, err
+		}
+		return itr, nil
+	} else if privateKey != "" {
+		itr, err := ghinstallation.New(http.DefaultTransport, githubAppId, githubInstallationId, []byte(privateKey))
+		if err != nil {
+			return nil, err
+		}
+		return itr, nil
+	} else {
+		return nil, fmt.Errorf("missing GitHub App private key information")
+	}
 }
