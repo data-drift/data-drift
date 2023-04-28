@@ -22,32 +22,36 @@ func main() {
 	router := gin.New()
 	router.Use(gin.Logger())
 
-	router.GET("/", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"status": "OK"})
-	})
+	router.GET("/", HealthCheck)
 
-	router.POST("/", func(c *gin.Context) {
-		var syncConfig common.SyncConfig
-		err := c.ShouldBindJSON(&syncConfig)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid syncConfig JSON"})
-			return
-		}
-
-		err = performTask(syncConfig)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		c.JSON(http.StatusOK, gin.H{"status": "OK"})
-	})
+	router.POST("/", ManualSync)
 
 	router.GET("/ghhealth", github.HealthCheck)
 
 	router.POST("webhooks/github", github.HandleWebhook)
 
 	router.Run(":" + port)
+}
+
+func HealthCheck(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"status": "OK"})
+}
+
+func ManualSync(c *gin.Context) {
+	var syncConfig common.SyncConfig
+	err := c.ShouldBindJSON(&syncConfig)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid syncConfig JSON"})
+		return
+	}
+
+	err = performTask(syncConfig)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "OK"})
 }
 
 func performTask(syncConfig common.SyncConfig) error {
