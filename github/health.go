@@ -9,7 +9,7 @@ import (
 
 func CheckGithubAppConnection() (string, error) {
 
-	client, err := CreateClientFromGithubApp()
+	client, err := CreateClientFromGithubApp(36944435)
 	if err != nil {
 		return "", err
 	}
