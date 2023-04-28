@@ -53,6 +53,8 @@ func main() {
 
 	})
 
+	router.POST("webhooks/github", github.HandleWebhook)
+
 	router.Run(":" + port)
 }
 
