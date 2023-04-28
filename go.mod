@@ -9,6 +9,7 @@ require (
 	github.com/bytedance/sonic v1.8.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/cloudflare/circl v1.1.0 // indirect
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
@@ -20,6 +21,7 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/google/go-github/v29 v29.0.2 // indirect
 	github.com/google/go-github/v52 v52.0.0 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
@@ -48,6 +50,7 @@ require (
 )
 
 require (
+	github.com/bradleyfalzon/ghinstallation v1.1.1
 	github.com/bradleyfalzon/ghinstallation/v2 v2.4.0
 	github.com/dstotijn/go-notion v0.11.0
 	github.com/form3tech-oss/jwt-go v3.2.5+incompatible
