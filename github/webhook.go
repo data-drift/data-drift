@@ -2,6 +2,7 @@ package github
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -78,18 +79,18 @@ func HandleWebhook(c *gin.Context) {
 		return
 	}
 
-	confidIsValid, err := verifyConfigFile(client, ownerName, repoName, ctx)
+	config, err := verifyConfigFile(client, ownerName, repoName, ctx)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Webhook processed", "configIsValie": confidIsValid, "installationId": InstallationId})
+	c.JSON(http.StatusOK, gin.H{"message": "Webhook processed", "configIsValie": config, "installationId": InstallationId})
 
 }
 
-func verifyConfigFile(client *github.Client, RepoOwner string, RepoName string, ctx context.Context) (bool, error) {
+func verifyConfigFile(client *github.Client, RepoOwner string, RepoName string, ctx context.Context) (Config, error) {
 
 	commit, _, _ := client.Repositories.GetCommit(ctx, RepoOwner, RepoName, "main")
 
@@ -101,7 +102,7 @@ func verifyConfigFile(client *github.Client, RepoOwner string, RepoName string, 
 
 	if err != nil {
 		fmt.Println(err)
-		return false, err
+		return Config{}, err
 	}
 	content, _ := file.GetContent()
 	schemaLoader := gojsonschema.NewReferenceLoader("file://./json-schema.json")
@@ -110,14 +111,19 @@ func verifyConfigFile(client *github.Client, RepoOwner string, RepoName string, 
 	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
 	if err != nil {
 		fmt.Println(err)
-		return false, err
+		return Config{}, err
 	}
 	if result.Errors() != nil {
 		fmt.Println("result.Errors()", result.Errors())
-		return false, fmt.Errorf("invalid config file")
+		return Config{}, fmt.Errorf("invalid config file")
 	}
 	fmt.Println(result.Valid())
-	return true, nil
+	var config Config
+	if err := json.Unmarshal([]byte(content), &config); err != nil {
+		fmt.Println(err)
+		return Config{}, err
+	}
+	return config, nil
 }
 
 func ValidateConfigHandler(c *gin.Context) {
