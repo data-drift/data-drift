@@ -18,3 +18,5 @@ dist
 vendor/
 
 .env
+
+*.pem
