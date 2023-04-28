@@ -43,15 +43,7 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"status": "OK"})
 	})
 
-	router.GET("/ghhealth", func(c *gin.Context) {
-		sha, err := github.CheckGithubAppConnection()
-
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"status": "ERROR", "error": err.Error()})
-		}
-		c.JSON(http.StatusOK, gin.H{"status": "OK", "commit": sha})
-
-	})
+	router.GET("/ghhealth", github.HealthCheck)
 
 	router.POST("webhooks/github", github.HandleWebhook)
 
