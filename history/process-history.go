@@ -12,39 +12,26 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/data-drift/kpi-git-history/common"
 	"github.com/google/go-github/github"
 )
 
-func ProcessHistory(client *github.Client, syncConfig common.SyncConfig) (error, string) {
-
-	// Create a new GitHub client without authentication.
-
-	// Set the repository owner and name.
-	owner := syncConfig.GithubRepoOwner
-	name := syncConfig.GithubRepoName
-
-	// Set the path to the CSV file in the repository.
-	path := syncConfig.GithubRepoFilePath
+func ProcessHistory(client *github.Client, repoOwner string, repoName string, filePath string, startDateStr string, dateColumnName string, KPIColumnName string) (error, string) {
 
 	// Set the start and end dates to display the history for.
-	startDateStr := syncConfig.StartDate
 	endDate := time.Now()
 	startDate, err := time.Parse("2006-01-02", startDateStr)
 	if err != nil {
 		return fmt.Errorf("error parsing start date: %v", err), ""
 	}
 
-	dateColumnName := syncConfig.DateColumn
 	if dateColumnName == "" {
 		return fmt.Errorf("error no date column name provided"), ""
 	}
-	KPIColumnName := syncConfig.KpiColumn
 
 	// Get the commit history for the repository.
 	// Get the commit history for the file.
-	commits, _, err := client.Repositories.ListCommits(context.Background(), owner, name, &github.CommitsListOptions{
-		Path:        path,
+	commits, _, err := client.Repositories.ListCommits(context.Background(), repoOwner, repoName, &github.CommitsListOptions{
+		Path:        filePath,
 		SHA:         "",
 		Since:       startDate,
 		Until:       endDate,
@@ -68,7 +55,7 @@ func ProcessHistory(client *github.Client, syncConfig common.SyncConfig) (error,
 
 		commitDate := commit.Commit.Author.Date
 		commitTimestamp := commitDate.Unix()
-		fileContents, err := getFileContentsForCommit(client, owner, name, path, *commit.SHA)
+		fileContents, err := getFileContentsForCommit(client, repoOwner, repoName, filePath, *commit.SHA)
 		if err != nil {
 			log.Printf("Error getting file contents for commit %s: %v", *commit.SHA, err)
 			continue

@@ -57,7 +57,8 @@ func main() {
 }
 
 func performTask(syncConfig common.SyncConfig) error {
-	err, filepath := history.ProcessHistory(syncConfig)
+	client := github.CreateClientFromGithubToken(syncConfig.GithubToken)
+	err, filepath := history.ProcessHistory(client, syncConfig.GithubRepoOwner, syncConfig.GithubRepoName, syncConfig.GithubRepoFilePath, syncConfig.StartDate, syncConfig.DateColumn, syncConfig.KpiColumn)
 	if err != nil {
 		return err
 	}
