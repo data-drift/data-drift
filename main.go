@@ -73,16 +73,23 @@ func ManualSync(c *gin.Context) {
 }
 
 func performTask(syncConfig common.SyncConfig) error {
-	client := github.CreateClientFromGithubToken(syncConfig.GithubToken)
-	filepath, err := history.ProcessHistory(client, syncConfig.GithubRepoOwner, syncConfig.GithubRepoName, syncConfig.GithubRepoFilePath, syncConfig.StartDate, syncConfig.DateColumn, syncConfig.KpiColumn)
-	if err != nil {
-		return err
+	filepath := os.Getenv("DEFAULT_FILE_PATH")
+	fmt.Println(filepath)
+
+	if filepath == "" {
+		client := github.CreateClientFromGithubToken(syncConfig.GithubToken)
+		newFilepath, err := history.ProcessHistory(client, syncConfig.GithubRepoOwner, syncConfig.GithubRepoName, syncConfig.GithubRepoFilePath, syncConfig.StartDate, syncConfig.DateColumn, syncConfig.KpiColumn)
+
+		if err != nil {
+			return err
+		}
+		filepath = newFilepath
 	}
 	// Call functions from charts.go and reports.go
 	chartResults := charts.ProcessCharts(filepath)
 
 	for _, chartResult := range chartResults {
-		err = reports.CreateReport(syncConfig, chartResult)
+		err := reports.CreateReport(syncConfig, chartResult)
 		if err != nil {
 			return err
 		}

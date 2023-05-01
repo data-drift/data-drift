@@ -73,6 +73,8 @@ func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
 	upcolor := "rgb(100, 181, 246)"
 	downcolor := "rgb(255, 107, 107)"
 	var prevKPI int
+	var firstRoundedKPI int
+	var lastRoundedKPI int
 
 	for _, v := range dataSortableArray {
 		roundedKPI := int(math.Round(v.KPI))
@@ -80,6 +82,7 @@ func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
 		timeObj := time.Unix(timestamp, 0)    // Convert the Unix timestamp to a time.Time object
 		dateStr := timeObj.Format("2006-01-02")
 		if prevKPI == 0 {
+			firstRoundedKPI = roundedKPI
 			prevKPI = roundedKPI
 			labels = append(labels, dateStr)
 			diff = append(diff, roundedKPI)
@@ -98,14 +101,17 @@ func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
 				}
 			}
 			prevKPI = roundedKPI
+			lastRoundedKPI = roundedKPI
 		}
 	}
 	fmt.Println(diff)
 
 	chartUrl := createChart(diff, labels, colors, KPIName)
 	kpi1 := common.KPIInfo{
-		KPIName:    KPIName,
-		GraphQLURL: chartUrl,
+		KPIName:         KPIName,
+		GraphQLURL:      chartUrl,
+		FirstRoundedKPI: firstRoundedKPI,
+		LastRoundedKPI:  lastRoundedKPI,
 	}
 	return kpi1
 }
