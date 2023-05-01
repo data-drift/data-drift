@@ -48,7 +48,20 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIInfo) error {
 				RichText: []notion.RichText{
 					{
 						Text: &notion.Text{
-							Content: "Why has the " + KPIInfo.KPIName + " changed from" + strconv.Itoa(KPIInfo.FirstRoundedKPI) + "to" + strconv.Itoa(KPIInfo.LastRoundedKPI),
+							Content: "Why has the ",
+						},
+					},
+					{
+						Text: &notion.Text{
+							Content: KPIInfo.KPIName,
+						},
+						Annotations: &notion.Annotations{
+							Code: true,
+						},
+					},
+					{
+						Text: &notion.Text{
+							Content: " changed from " + strconv.Itoa(KPIInfo.FirstRoundedKPI) + " to " + strconv.Itoa(KPIInfo.LastRoundedKPI) + " ?",
 						},
 					},
 				},
@@ -58,6 +71,65 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIInfo) error {
 					{
 						Text: &notion.Text{
 							Content: "Root Cause Analysis",
+						},
+					},
+				},
+			},
+			notion.Heading2Block{
+				RichText: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: "Overview",
+						},
+					},
+				},
+			},
+			notion.ParagraphBlock{
+				RichText: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: KPIInfo.KPIName,
+						},
+						Annotations: &notion.Annotations{
+							Code: true,
+						},
+					},
+					{
+						Text: &notion.Text{
+							Content: " initial value was: ",
+						},
+					},
+					{
+						Text: &notion.Text{
+							Content: strconv.Itoa(KPIInfo.FirstRoundedKPI),
+						},
+						Annotations: &notion.Annotations{
+							Bold: true,
+						},
+					},
+				},
+			},
+			notion.ParagraphBlock{
+				RichText: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: KPIInfo.KPIName,
+						},
+						Annotations: &notion.Annotations{
+							Code: true,
+						},
+					},
+					{
+						Text: &notion.Text{
+							Content: " current value is: ",
+						},
+					},
+					{
+						Text: &notion.Text{
+							Content: strconv.Itoa(KPIInfo.LastRoundedKPI),
+						},
+						Annotations: &notion.Annotations{
+							Bold: true,
 						},
 					},
 				},
@@ -124,6 +196,21 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIInfo) error {
 			},
 		},
 	}
+	var children []notion.Block
+	for _, event := range KPIInfo.Events {
+		paragraph := notion.ParagraphBlock{
+			RichText: []notion.RichText{
+				{
+					Text: &notion.Text{
+						Content: strconv.Itoa(event.Diff),
+					},
+				},
+			},
+		}
+		children = append(children, paragraph)
+	}
+	params.Children = children
+
 	err := notion_database.UpdateReport(syncConfig.NotionAPIKey, reportNotionPageId, params.Children)
 	if err != nil {
 		return fmt.Errorf("failed to create page: %v", err)
