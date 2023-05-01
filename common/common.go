@@ -1,8 +1,10 @@
 package common
 
 type KPIInfo struct {
-	KPIName    string `json:"kpiName"`
-	GraphQLURL string `json:"graphqlUrl"`
+	KPIName         string `json:"kpiName"`
+	GraphQLURL      string `json:"graphqlUrl"`
+	FirstRoundedKPI int    `json:"firstRoundedKPI"`
+	LastRoundedKPI  int    `json:"lastRoundedKPI"`
 }
 
 type SyncConfig struct {
