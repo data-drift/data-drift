@@ -24,7 +24,8 @@ func FindOrCreateReportPageId(apiKey string, databaseId string, reportName strin
 	}
 	if existingReportId == "" {
 		fmt.Println("No existing report found, creating new one")
-		return "New report id", nil
+		newReportId, err := CreateEmptyReport(apiKey, databaseId, reportName)
+		return newReportId, err
 	}
 	return existingReportId, nil
 }
@@ -66,6 +67,44 @@ func QueryDatabaseWithReportId(apiKey string, databaseId string, reportId string
 		fmt.Println("Warning: too many report with same id, returning first one")
 	}
 	return existingReport.Results[0].ID, nil
+}
+
+func CreateEmptyReport(apiKey string, databaseId string, reportId string) (string, error) {
+	buf := &bytes.Buffer{}
+	ctx := context.Background()
+
+	httpClient := &http.Client{
+		Timeout:   10 * time.Second,
+		Transport: &httpTransport{w: buf},
+	}
+	client := notion.NewClient(apiKey, notion.WithHTTPClient(httpClient))
+	params := notion.CreatePageParams{
+		ParentType: notion.ParentTypeDatabase,
+		ParentID:   databaseId,
+
+		DatabasePageProperties: &notion.DatabasePageProperties{
+			"title": notion.DatabasePageProperty{
+				Title: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: reportId,
+						},
+					},
+				},
+			},
+			DATADRIFT_PROPERTY: notion.DatabasePageProperty{
+				RichText: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: reportId,
+						},
+					},
+				},
+			},
+		},
+	}
+	newReport, err := client.CreatePage(ctx, params)
+	return newReport.ID, err
 }
 
 func (t *httpTransport) RoundTrip(req *http.Request) (*http.Response, error) {
