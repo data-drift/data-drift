@@ -162,6 +162,7 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 }
 
 func UpdateReport(apiKey string, reportNotionPageId string, children []notion.Block) error {
+	fmt.Println("Updating report", reportNotionPageId)
 	buf := &bytes.Buffer{}
 	ctx := context.Background()
 
@@ -170,6 +171,26 @@ func UpdateReport(apiKey string, reportNotionPageId string, children []notion.Bl
 		Transport: &httpTransport{w: buf},
 	}
 	client := notion.NewClient(apiKey, notion.WithHTTPClient(httpClient))
-	_, err := client.AppendBlockChildren(ctx, reportNotionPageId, children)
+
+	existingReport, err := client.FindBlockChildrenByID(ctx, reportNotionPageId, &notion.PaginationQuery{PageSize: 100})
+	if err != nil {
+		return err
+	}
+	fmt.Println("Deleting children blocks:", len(existingReport.Results))
+
+	blocks := existingReport.Results
+
+	// Iterate over each block in existingReport.Results
+	for _, block := range blocks {
+		fmt.Println("Deleting block", block.ID())
+		_, err := client.DeleteBlock(ctx, block.ID())
+		if err != nil {
+			fmt.Println("[DATADRIFT_ERROR]: deleting block", block.ID(), err)
+		}
+		time.Sleep(100 * time.Millisecond)
+
+	}
+
+	_, err = client.AppendBlockChildren(ctx, reportNotionPageId, children)
 	return err
 }
