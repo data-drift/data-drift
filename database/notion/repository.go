@@ -59,14 +59,17 @@ func QueryDatabaseWithReportId(apiKey string, databaseId string, reportId string
 	if err != nil {
 		return "", err
 	}
-	fmt.Println("Number of existing report", len(existingReport.Results))
-	if len(existingReport.Results) == 0 {
+	switch len(existingReport.Results) {
+	case 0:
+		fmt.Println("No result, should create one")
 		return "", nil
-	}
-	if len(existingReport.Results) > 1 {
+	case 1:
+		fmt.Println("Result found")
+		return existingReport.Results[0].ID, nil
+	default:
 		fmt.Println("Warning: too many report with same id, returning first one")
+		return existingReport.Results[0].ID, nil
 	}
-	return existingReport.Results[0].ID, nil
 }
 
 func CreateEmptyReport(apiKey string, databaseId string, reportId string) (string, error) {
