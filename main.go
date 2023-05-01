@@ -2,12 +2,14 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net/http"
 	"os"
 
 	"github.com/data-drift/kpi-git-history/charts"
 	"github.com/data-drift/kpi-git-history/common"
+	"github.com/data-drift/kpi-git-history/debug"
 	"github.com/data-drift/kpi-git-history/github"
 	"github.com/data-drift/kpi-git-history/history"
 	"github.com/data-drift/kpi-git-history/reports"
@@ -15,8 +17,22 @@ import (
 	"github.com/joho/godotenv"
 )
 
+var debugEnabled bool
+
+func init() {
+	// Parse command line flags
+	flag.BoolVar(&debugEnabled, "debug", false, "Enable debug mode")
+	flag.Parse()
+}
+
 func main() {
 	godotenv.Load()
+
+	if debugEnabled {
+		debug.DebugFunction()
+		return
+	}
+
 	port := os.Getenv("PORT")
 
 	router := gin.New()
