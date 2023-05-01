@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/data-drift/kpi-git-history/common"
@@ -65,8 +66,92 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIInfo) error {
 		},
 
 		Children: []notion.Block{
+			notion.Heading1Block{
+				RichText: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: "Problem",
+						},
+					},
+				},
+			},
+			notion.ParagraphBlock{
+				RichText: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: "Why has the " + KPIInfo.KPIName + " changed from" + strconv.Itoa(KPIInfo.FirstRoundedKPI) + "to" + strconv.Itoa(KPIInfo.LastRoundedKPI),
+						},
+					},
+				},
+			},
+			notion.Heading1Block{
+				RichText: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: "Root Cause Analysis",
+						},
+					},
+				},
+			},
+			notion.Heading2Block{
+				RichText: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: "Timeline",
+						},
+					},
+				},
+			},
 			notion.EmbedBlock{
 				URL: KPIInfo.GraphQLURL,
+			},
+			notion.Heading2Block{
+				RichText: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: "Changelog",
+						},
+					},
+				},
+			},
+			notion.ParagraphBlock{
+				RichText: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: "🗓 Date ",
+						},
+						Annotations: &notion.Annotations{
+							Underline: true,
+						},
+					},
+				},
+			},
+			notion.BulletedListItemBlock{
+				RichText: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: "Impact",
+						},
+					},
+				},
+			},
+			notion.BulletedListItemBlock{
+				RichText: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: "Explanations:",
+						},
+					},
+				},
+				Children: []notion.Block{notion.BulletedListItemBlock{
+					RichText: []notion.RichText{
+						{
+							Text: &notion.Text{
+								Content: "Details:",
+							},
+						},
+					}},
+				},
 			},
 		},
 	}
