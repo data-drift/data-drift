@@ -96,7 +96,7 @@ func HandleWebhook(c *gin.Context) {
 
 	filepath, err := history.ProcessHistory(client, ownerName, repoName, config.Metrics[0].Filepath, "2022-01-01", config.Metrics[0].DateColumnName, config.Metrics[0].KPIColumnName)
 	if err != nil {
-		fmt.Println("err", err)
+		fmt.Println("[DATADRIFT_ERROR]", err)
 
 		return
 	}
@@ -106,7 +106,7 @@ func HandleWebhook(c *gin.Context) {
 	for _, chartResult := range chartResults {
 		err = reports.CreateReport(common.SyncConfig{NotionAPIKey: config.NotionAPIToken, NotionDatabaseID: config.NotionDatabaseID}, chartResult)
 		if err != nil {
-			fmt.Println("err", err)
+			fmt.Println("[DATADRIFT_ERROR]", err)
 
 			return
 		}
@@ -124,7 +124,7 @@ func verifyConfigFile(client *github.Client, RepoOwner string, RepoName string, 
 	})
 
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("[DATADRIFT_ERROR]", err)
 		return Config{}, err
 	}
 	content, _ := file.GetContent()
@@ -133,7 +133,7 @@ func verifyConfigFile(client *github.Client, RepoOwner string, RepoName string, 
 
 	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("[DATADRIFT_ERROR]", err)
 		return Config{}, err
 	}
 	if result.Errors() != nil {
@@ -143,7 +143,7 @@ func verifyConfigFile(client *github.Client, RepoOwner string, RepoName string, 
 	fmt.Println(result.Valid())
 	var config Config
 	if err := json.Unmarshal([]byte(content), &config); err != nil {
-		fmt.Println(err)
+		fmt.Println("[DATADRIFT_ERROR]", err)
 		return Config{}, err
 	}
 	return config, nil
