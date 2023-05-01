@@ -61,13 +61,13 @@ func QueryDatabaseWithReportId(apiKey string, databaseId string, reportId string
 	}
 	switch len(existingReport.Results) {
 	case 0:
-		fmt.Println("No result, should create one")
+		fmt.Println("No result, should create one, report ID: " + reportId)
 		return "", nil
 	case 1:
-		fmt.Println("Result found")
+		fmt.Println("Result found, report ID: " + reportId)
 		return existingReport.Results[0].ID, nil
 	default:
-		fmt.Println("Warning: too many report with same id, returning first one")
+		fmt.Println("Warning: too many report with same id, returning first one, report ID: " + reportId)
 		return existingReport.Results[0].ID, nil
 	}
 }
@@ -135,7 +135,6 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 	hasDatadriftProperty := false
 
 	for _, property := range database.Properties {
-		fmt.Println("Property:", property.Name)
 		if property.Name == DATADRIFT_PROPERTY {
 			hasDatadriftProperty = true
 		}
