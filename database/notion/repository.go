@@ -161,3 +161,16 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 	}
 	return err
 }
+
+func UpdateReport(apiKey string, reportNotionPageId string, children []notion.Block) error {
+	buf := &bytes.Buffer{}
+	ctx := context.Background()
+
+	httpClient := &http.Client{
+		Timeout:   10 * time.Second,
+		Transport: &httpTransport{w: buf},
+	}
+	client := notion.NewClient(apiKey, notion.WithHTTPClient(httpClient))
+	_, err := client.AppendBlockChildren(ctx, reportNotionPageId, children)
+	return err
+}

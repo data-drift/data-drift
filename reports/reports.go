@@ -1,19 +1,14 @@
 package reports
 
 import (
-	"bytes"
-	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"strconv"
-	"time"
 
 	"github.com/data-drift/kpi-git-history/common"
+	notion_database "github.com/data-drift/kpi-git-history/database/notion"
 	"github.com/dstotijn/go-notion"
-	"github.com/sanity-io/litter"
 )
 
 type httpTransport struct {
@@ -34,37 +29,11 @@ func (t *httpTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIInfo) error {
-	fmt.Println("CreateReport called with", KPIInfo)
-	ctx := context.Background()
-	apiKey := syncConfig.NotionAPIKey
-	databaseId := syncConfig.NotionDatabaseID
 
-	if apiKey == "" || databaseId == "" {
-		return fmt.Errorf("missing Notion API key or database ID")
-	}
-	buf := &bytes.Buffer{}
-	httpClient := &http.Client{
-		Timeout:   10 * time.Second,
-		Transport: &httpTransport{w: buf},
-	}
-	client := notion.NewClient(apiKey, notion.WithHTTPClient(httpClient))
+	reportNotionPageId, _ := notion_database.FindOrCreateReportPageId(syncConfig.NotionAPIKey, syncConfig.NotionDatabaseID, KPIInfo.KPIName)
+	fmt.Println(reportNotionPageId)
 
 	params := notion.CreatePageParams{
-		ParentType: notion.ParentTypeDatabase,
-		ParentID:   databaseId,
-
-		DatabasePageProperties: &notion.DatabasePageProperties{
-			"title": notion.DatabasePageProperty{
-				Title: []notion.RichText{
-					{
-						Text: &notion.Text{
-							Content: KPIInfo.KPIName,
-						},
-					},
-				},
-			},
-		},
-
 		Children: []notion.Block{
 			notion.Heading1Block{
 				RichText: []notion.RichText{
@@ -155,24 +124,10 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIInfo) error {
 			},
 		},
 	}
-	page, err := client.CreatePage(ctx, params)
+	err := notion_database.UpdateReport(syncConfig.NotionAPIKey, reportNotionPageId, params.Children)
 	if err != nil {
 		return fmt.Errorf("failed to create page: %v", err)
 	}
 
-	decoded := map[string]interface{}{}
-	if err := json.NewDecoder(buf).Decode(&decoded); err != nil {
-		return fmt.Errorf("failed to decode result: %v", err)
-	}
-
-	// Pretty print JSON reponse.
-	enc := json.NewEncoder(os.Stdout)
-	enc.SetIndent("", "    ")
-	if err := enc.Encode(decoded); err != nil {
-		return fmt.Errorf("failed to decode result: %v", err)
-	}
-
-	// Pretty print parsed `notion.Page` value.
-	litter.Dump(page.ID)
 	return nil
 }
