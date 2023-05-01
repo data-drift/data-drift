@@ -24,15 +24,26 @@ func DebugFunction() {
 	notionAPIKey := os.Getenv("NOTION_API_KEY")
 	notionDatabaseID := os.Getenv("NOTION_DATABASE_ID")
 
-	client := github.CreateClientFromGithubToken(githubToken)
-	filepath, err := history.ProcessHistory(client, githubRepoOwner, githubRepoName, githubRepoFilePath, startDate, dateColumn, kpiColumn)
+	filepath := os.Getenv("DEFAULT_FILE_PATH")
+	fmt.Println(filepath)
+
+	if filepath == "" {
+		client := github.CreateClientFromGithubToken(githubToken)
+		newFilepath, err := history.ProcessHistory(client, githubRepoOwner, githubRepoName, githubRepoFilePath, startDate, dateColumn, kpiColumn)
+
+		if err != nil {
+			println(err)
+		}
+		filepath = newFilepath
+	}
+
 	chartResults := charts.ProcessCharts(filepath)
 
 	for _, chartResult := range chartResults {
-		err = reports.CreateReport(common.SyncConfig{NotionAPIKey: notionAPIKey, NotionDatabaseID: notionDatabaseID}, chartResult)
+		err := reports.CreateReport(common.SyncConfig{NotionAPIKey: notionAPIKey, NotionDatabaseID: notionDatabaseID}, chartResult)
 		if err != nil {
 			println(err)
 		}
 	}
-	println(filepath, err)
+	println(filepath)
 }
