@@ -75,6 +75,7 @@ func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
 	var prevKPI int
 	var firstRoundedKPI int
 	var lastRoundedKPI int
+	var events []common.EventObject
 
 	for _, v := range dataSortableArray {
 		roundedKPI := int(math.Round(v.KPI))
@@ -87,6 +88,12 @@ func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
 			labels = append(labels, dateStr)
 			diff = append(diff, roundedKPI)
 			colors = append(colors, upcolor)
+			event := common.EventObject{
+				CommitTimestamp: timestamp,
+				Diff:            0,
+				EventType:       common.EventTypeCreate,
+			}
+			events = append(events, event)
 		} else {
 			d := roundedKPI - prevKPI
 			if d == 0 {
@@ -99,6 +106,12 @@ func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
 				} else {
 					colors = append(colors, downcolor)
 				}
+				event := common.EventObject{
+					CommitTimestamp: timestamp,
+					Diff:            d,
+					EventType:       common.EventTypeUpdate,
+				}
+				events = append(events, event)
 			}
 			prevKPI = roundedKPI
 			lastRoundedKPI = roundedKPI
@@ -112,6 +125,7 @@ func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
 		GraphQLURL:      chartUrl,
 		FirstRoundedKPI: firstRoundedKPI,
 		LastRoundedKPI:  lastRoundedKPI,
+		Events:          events,
 	}
 	return kpi1
 }
