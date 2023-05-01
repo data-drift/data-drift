@@ -11,18 +11,61 @@ import (
 	"github.com/dstotijn/go-notion"
 )
 
-const DATADRIFT_PROPERTY = "datadrift-id4"
+const DATADRIFT_PROPERTY = "datadrift-id"
 
 func FindOrCreateReportPageId(apiKey string, databaseId string, reportName string) (string, error) {
 	err := AssertDatabaseHasDatadriftProperties(databaseId, apiKey)
 	if err != nil {
 		return "", err
 	}
-	return databaseId, nil
+	existingReportId, err := QueryDatabaseWithReportId(apiKey, databaseId, reportName)
+	if err != nil {
+		return "", err
+	}
+	if existingReportId == "" {
+		fmt.Println("No existing report found, creating new one")
+		return "New report id", nil
+	}
+	return existingReportId, nil
 }
 
 type httpTransport struct {
 	w io.Writer
+}
+
+func QueryDatabaseWithReportId(apiKey string, databaseId string, reportId string) (string, error) {
+	buf := &bytes.Buffer{}
+	ctx := context.Background()
+
+	httpClient := &http.Client{
+		Timeout:   10 * time.Second,
+		Transport: &httpTransport{w: buf},
+	}
+	client := notion.NewClient(apiKey, notion.WithHTTPClient(httpClient))
+
+	queryParams := &notion.DatabaseQuery{
+		Filter: &notion.DatabaseQueryFilter{
+			Property: "datadrift-id",
+			DatabaseQueryPropertyFilter: notion.DatabaseQueryPropertyFilter{
+				RichText: &notion.TextPropertyFilter{
+					Equals: reportId,
+				},
+			},
+		},
+	}
+
+	existingReport, err := client.QueryDatabase(ctx, databaseId, queryParams)
+	if err != nil {
+		return "", err
+	}
+	fmt.Println("Number of existing report", len(existingReport.Results))
+	if len(existingReport.Results) == 0 {
+		return "", nil
+	}
+	if len(existingReport.Results) > 1 {
+		fmt.Println("Warning: too many report with same id, returning first one")
+	}
+	return existingReport.Results[0].ID, nil
 }
 
 func (t *httpTransport) RoundTrip(req *http.Request) (*http.Response, error) {
