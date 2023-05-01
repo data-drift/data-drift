@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/data-drift/kpi-git-history/common"
 	notion_database "github.com/data-drift/kpi-git-history/database/notion"
@@ -155,45 +156,6 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIInfo) error {
 					},
 				},
 			},
-			notion.ParagraphBlock{
-				RichText: []notion.RichText{
-					{
-						Text: &notion.Text{
-							Content: "🗓 Date ",
-						},
-						Annotations: &notion.Annotations{
-							Underline: true,
-						},
-					},
-				},
-			},
-			notion.BulletedListItemBlock{
-				RichText: []notion.RichText{
-					{
-						Text: &notion.Text{
-							Content: "Impact",
-						},
-					},
-				},
-			},
-			notion.BulletedListItemBlock{
-				RichText: []notion.RichText{
-					{
-						Text: &notion.Text{
-							Content: "Explanations:",
-						},
-					},
-				},
-				Children: []notion.Block{notion.BulletedListItemBlock{
-					RichText: []notion.RichText{
-						{
-							Text: &notion.Text{
-								Content: "Details:",
-							},
-						},
-					}},
-				},
-			},
 		},
 	}
 	var children []notion.Block
@@ -202,14 +164,49 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIInfo) error {
 			RichText: []notion.RichText{
 				{
 					Text: &notion.Text{
-						Content: strconv.Itoa(event.Diff),
+						Content: "🗓 Date " + time.Unix(event.CommitTimestamp, 0).Format("2006-01-02"),
+					},
+					Annotations: &notion.Annotations{
+						Underline: true,
 					},
 				},
 			},
 		}
-		children = append(children, paragraph)
+		bulletListFirstItem := notion.BulletedListItemBlock{
+			RichText: []notion.RichText{
+				{
+					Text: &notion.Text{
+						Content: "Impact: ",
+					},
+				},
+				{
+					Text: &notion.Text{
+						Content: strconv.Itoa(event.Diff),
+					},
+					Annotations: &notion.Annotations{
+						Bold: true,
+						Color: func() notion.Color {
+							if event.Diff < 0 {
+								return notion.ColorRed
+							}
+							return notion.ColorBlue
+						}(),
+					},
+				},
+			},
+		}
+		bulletListSecondItem := notion.BulletedListItemBlock{
+			RichText: []notion.RichText{
+				{
+					Text: &notion.Text{
+						Content: "Explanations: ",
+					},
+				},
+			},
+		}
+		children = append(children, paragraph, bulletListFirstItem, bulletListSecondItem)
 	}
-	params.Children = children
+	params.Children = append(params.Children, children...)
 
 	err := notion_database.UpdateReport(syncConfig.NotionAPIKey, reportNotionPageId, params.Children)
 	if err != nil {
