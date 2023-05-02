@@ -121,6 +121,7 @@ func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
 					CommitTimestamp: timestamp,
 					Diff:            d,
 					EventType:       common.EventTypeUpdate,
+					CommitUrl:       v.CommitUrl,
 				}
 				events = append(events, event)
 			}
