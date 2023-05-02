@@ -15,19 +15,6 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 )
 
-type Config struct {
-	NotionAPIToken   string   `json:"notionAPIToken"`
-	NotionDatabaseID string   `json:"notionDatabaseId"`
-	Metrics          []Metric `json:"metrics"`
-}
-
-type Metric struct {
-	Filepath       string `json:"filepath"`
-	DateColumnName string `json:"dateColumnName"`
-	KPIColumnName  string `json:"KPIColumnName"`
-	MetricName     string `json:"metricName"`
-}
-
 type GithubWebhookPayload struct {
 	Repository struct {
 		Name  string `json:"name"`
@@ -98,29 +85,31 @@ func HandleWebhook(c *gin.Context) {
 
 }
 
-func processWebhookInTheBackground(config Config, c *gin.Context, InstallationId int, client *github.Client, ownerName string, repoName string) bool {
+func processWebhookInTheBackground(config common.Config, c *gin.Context, InstallationId int, client *github.Client, ownerName string, repoName string) bool {
 
 	fmt.Println("starting sync")
 
-	filepath, err := history.ProcessHistory(client, ownerName, repoName, config.Metrics[0].Filepath, "2022-01-01", config.Metrics[0].DateColumnName, config.Metrics[0].KPIColumnName)
-	if err != nil {
-		fmt.Println("[DATADRIFT_ERROR]", err)
+	for _, metric := range config.Metrics {
 
-		return true
-	}
-
-	chartResults := charts.ProcessCharts(filepath)
-
-	for _, chartResult := range chartResults {
-		err = reports.CreateReport(common.SyncConfig{NotionAPIKey: config.NotionAPIToken, NotionDatabaseID: config.NotionDatabaseID}, chartResult)
+		filepath, err := history.ProcessHistory(client, ownerName, repoName, metric.Filepath, "2022-01-01", metric.DateColumnName, metric.KPIColumnName, metric.MetricName)
 		if err != nil {
 			fmt.Println("[DATADRIFT_ERROR]", err)
+
+		}
+
+		chartResults := charts.ProcessCharts(filepath, metric)
+
+		for _, chartResult := range chartResults {
+			err = reports.CreateReport(common.SyncConfig{NotionAPIKey: config.NotionAPIToken, NotionDatabaseID: config.NotionDatabaseID}, chartResult)
+			if err != nil {
+				fmt.Println("[DATADRIFT_ERROR]", err)
+			}
 		}
 	}
 	return false
 }
 
-func verifyConfigFile(client *github.Client, RepoOwner string, RepoName string, ctx context.Context) (Config, error) {
+func verifyConfigFile(client *github.Client, RepoOwner string, RepoName string, ctx context.Context) (common.Config, error) {
 
 	commit, _, _ := client.Repositories.GetCommit(ctx, RepoOwner, RepoName, "main")
 
@@ -132,7 +121,7 @@ func verifyConfigFile(client *github.Client, RepoOwner string, RepoName string, 
 
 	if err != nil {
 		fmt.Println("[DATADRIFT_ERROR]", err)
-		return Config{}, err
+		return common.Config{}, err
 	}
 	content, _ := file.GetContent()
 	schemaLoader := gojsonschema.NewReferenceLoader("file://./json-schema.json")
@@ -141,24 +130,24 @@ func verifyConfigFile(client *github.Client, RepoOwner string, RepoName string, 
 	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
 	if err != nil {
 		fmt.Println("[DATADRIFT_ERROR]", err)
-		return Config{}, err
+		return common.Config{}, err
 	}
 	if result.Errors() != nil {
 		fmt.Println("result.Errors()", result.Errors())
-		return Config{}, fmt.Errorf("invalid config file")
+		return common.Config{}, fmt.Errorf("invalid config file")
 	}
 	fmt.Println(result.Valid())
-	var config Config
+	var config common.Config
 	if err := json.Unmarshal([]byte(content), &config); err != nil {
 		fmt.Println("[DATADRIFT_ERROR]", err)
-		return Config{}, err
+		return common.Config{}, err
 	}
 	return config, nil
 }
 
 func ValidateConfigHandler(c *gin.Context) {
 	// Parse the JSON configuration from the request body
-	var config Config
+	var config common.Config
 	err := c.ShouldBindJSON(&config)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON configuration"})

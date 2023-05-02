@@ -32,3 +32,16 @@ const (
 	EventTypeCreate EventType = "create"
 	EventTypeUpdate EventType = "update"
 )
+
+type Config struct {
+	NotionAPIToken   string   `json:"notionAPIToken"`
+	NotionDatabaseID string   `json:"notionDatabaseId"`
+	Metrics          []Metric `json:"metrics"`
+}
+
+type Metric struct {
+	Filepath       string `json:"filepath"`
+	DateColumnName string `json:"dateColumnName"`
+	KPIColumnName  string `json:"KPIColumnName"`
+	MetricName     string `json:"metricName"`
+}

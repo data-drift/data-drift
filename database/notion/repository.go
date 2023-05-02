@@ -170,28 +170,28 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 			return err
 		}
 		fmt.Println("Updated database", updatedDB, " with property", DATADRIFT_PROPERTY)
-	}
-	fmt.Println("Clean empty item in database")
-	queryParams := &notion.DatabaseQuery{
-		Filter: &notion.DatabaseQueryFilter{
-			Property: DATADRIFT_PROPERTY,
-			DatabaseQueryPropertyFilter: notion.DatabaseQueryPropertyFilter{
-				RichText: &notion.TextPropertyFilter{
-					Equals: " ",
+		fmt.Println("Clean empty item in database")
+		queryParams := &notion.DatabaseQuery{
+			Filter: &notion.DatabaseQueryFilter{
+				Property: DATADRIFT_PROPERTY,
+				DatabaseQueryPropertyFilter: notion.DatabaseQueryPropertyFilter{
+					RichText: &notion.TextPropertyFilter{
+						Equals: " ",
+					},
 				},
 			},
-		},
-	}
-	emptyDatabaseItems, err := client.QueryDatabase(ctx, databaseID, queryParams)
-	if err != nil {
-		return err
-	}
-	archive := true
-	for _, item := range emptyDatabaseItems.Results {
-		fmt.Println("Archiving item", item.ID)
-		client.UpdatePage(ctx, item.ID, notion.UpdatePageParams{
-			Archived: &archive,
-		})
+		}
+		emptyDatabaseItems, err := client.QueryDatabase(ctx, databaseID, queryParams)
+		if err != nil {
+			return err
+		}
+		archive := true
+		for _, item := range emptyDatabaseItems.Results {
+			fmt.Println("Archiving item", item.ID)
+			client.UpdatePage(ctx, item.ID, notion.UpdatePageParams{
+				Archived: &archive,
+			})
+		}
 	}
 
 	return err

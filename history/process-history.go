@@ -15,7 +15,7 @@ import (
 	"github.com/google/go-github/github"
 )
 
-func ProcessHistory(client *github.Client, repoOwner string, repoName string, filePath string, startDateStr string, dateColumnName string, KPIColumnName string) (string, error) {
+func ProcessHistory(client *github.Client, repoOwner string, repoName string, filePath string, startDateStr string, dateColumnName string, KPIColumnName string, metricName string) (string, error) {
 
 	// Set the start and end dates to display the history for.
 	endDate := time.Now()
@@ -148,7 +148,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, fi
 	timestamp := time.Now().Format("2006-01-02_15-04-05")
 
 	// Open a file to write the line counts by date by version in JSON format.
-	filepath := fmt.Sprintf("dist/lineCountAndKPIByDateByVersion_%s.json", timestamp)
+	filepath := fmt.Sprintf("dist/"+metricName+"lineCountAndKPIByDateByVersion_%s.json", timestamp)
 	file, err := os.Create(filepath)
 	if err != nil {
 		log.Fatalf("Error creating file: %v", err)
