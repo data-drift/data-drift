@@ -91,7 +91,7 @@ func processWebhookInTheBackground(config common.Config, c *gin.Context, Install
 
 	for _, metric := range config.Metrics {
 
-		filepath, err := history.ProcessHistory(client, ownerName, repoName, metric.Filepath, "2022-01-01", metric.DateColumnName, metric.KPIColumnName)
+		filepath, err := history.ProcessHistory(client, ownerName, repoName, metric.Filepath, "2022-01-01", metric.DateColumnName, metric.KPIColumnName, metric.MetricName)
 		if err != nil {
 			fmt.Println("[DATADRIFT_ERROR]", err)
 
