@@ -167,7 +167,7 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIInfo) error {
 				},
 				{
 					Text: &notion.Text{
-						Content: strconv.Itoa(event.Diff),
+						Content: displayDiff(event.Diff),
 					},
 					Annotations: &notion.Annotations{
 						Bold: true,
@@ -200,4 +200,11 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIInfo) error {
 	}
 
 	return nil
+}
+
+func displayDiff(diff int) string {
+	if diff >= 0 {
+		return "+" + strconv.Itoa(diff)
+	}
+	return strconv.Itoa(diff)
 }
