@@ -26,46 +26,6 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIInfo) error {
 				RichText: []notion.RichText{
 					{
 						Text: &notion.Text{
-							Content: "Problem",
-						},
-					},
-				},
-			},
-			notion.ParagraphBlock{
-				RichText: []notion.RichText{
-					{
-						Text: &notion.Text{
-							Content: "Why has the ",
-						},
-					},
-					{
-						Text: &notion.Text{
-							Content: KPIInfo.KPIName,
-						},
-						Annotations: &notion.Annotations{
-							Code: true,
-						},
-					},
-					{
-						Text: &notion.Text{
-							Content: " changed from " + strconv.Itoa(KPIInfo.FirstRoundedKPI) + " to " + strconv.Itoa(KPIInfo.LastRoundedKPI) + " ?",
-						},
-					},
-				},
-			},
-			notion.Heading1Block{
-				RichText: []notion.RichText{
-					{
-						Text: &notion.Text{
-							Content: "Root Cause Analysis",
-						},
-					},
-				},
-			},
-			notion.Heading2Block{
-				RichText: []notion.RichText{
-					{
-						Text: &notion.Text{
 							Content: "Overview",
 						},
 					},
@@ -121,7 +81,25 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIInfo) error {
 					},
 				},
 			},
-			notion.Heading2Block{
+			notion.ParagraphBlock{
+				RichText: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: "Total drift since initial value: ",
+						},
+					},
+					{
+						Text: &notion.Text{
+							Content: displayDiff(KPIInfo.LastRoundedKPI - KPIInfo.FirstRoundedKPI),
+						},
+						Annotations: &notion.Annotations{
+							Bold:  true,
+							Color: displayDiffColor(KPIInfo.LastRoundedKPI - KPIInfo.FirstRoundedKPI),
+						},
+					},
+				},
+			},
+			notion.Heading1Block{
 				RichText: []notion.RichText{
 					{
 						Text: &notion.Text{
@@ -133,7 +111,7 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIInfo) error {
 			notion.EmbedBlock{
 				URL: KPIInfo.GraphQLURL,
 			},
-			notion.Heading2Block{
+			notion.Heading1Block{
 				RichText: []notion.RichText{
 					{
 						Text: &notion.Text{
@@ -170,13 +148,8 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIInfo) error {
 						Content: displayDiff(event.Diff),
 					},
 					Annotations: &notion.Annotations{
-						Bold: true,
-						Color: func() notion.Color {
-							if event.Diff < 0 {
-								return notion.ColorOrange
-							}
-							return notion.ColorBlue
-						}(),
+						Bold:  true,
+						Color: displayDiffColor(event.Diff),
 					},
 				},
 			},
@@ -207,4 +180,11 @@ func displayDiff(diff int) string {
 		return "+" + strconv.Itoa(diff)
 	}
 	return strconv.Itoa(diff)
+}
+
+func displayDiffColor(diff int) notion.Color {
+	if diff < 0 {
+		return notion.ColorOrange
+	}
+	return notion.ColorBlue
 }
