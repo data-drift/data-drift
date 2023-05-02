@@ -177,7 +177,7 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIInfo) error {
 				{
 					Text: &notion.Text{
 						Content: "commit",
-						// Link:    &notion.Link{URL: event.CommitUrl},
+						Link:    &notion.Link{URL: event.CommitUrl},
 					},
 				},
 			},
