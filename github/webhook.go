@@ -115,8 +115,6 @@ func processWebhookInTheBackground(config Config, c *gin.Context, InstallationId
 		err = reports.CreateReport(common.SyncConfig{NotionAPIKey: config.NotionAPIToken, NotionDatabaseID: config.NotionDatabaseID}, chartResult)
 		if err != nil {
 			fmt.Println("[DATADRIFT_ERROR]", err)
-
-			return true
 		}
 	}
 	return false
