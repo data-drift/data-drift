@@ -136,7 +136,7 @@ func createChart(diff []interface{}, labels []interface{}, colors []interface{},
 		"backgroundColor":  "#fff",
 		"width":            500,
 		"height":           300,
-		"devicePixelRatio": 1.0,
+		"devicePixelRatio": 2,
 		"chart": map[string]interface{}{
 			"type": "bar",
 			"data": map[string]interface{}{
