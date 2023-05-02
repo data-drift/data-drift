@@ -121,11 +121,11 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIInfo) error {
 		paragraph := notion.ParagraphBlock{
 			RichText: []notion.RichText{
 				{
-					Text: &notion.Text{
-						Content: "🗓 Date " + time.Unix(event.CommitTimestamp, 0).Format("2006-01-02"),
-					},
-					Annotations: &notion.Annotations{
-						Underline: true,
+					Mention: &notion.Mention{
+						Type: notion.MentionTypeDate,
+						Date: &notion.Date{
+							Start: notion.NewDateTime(time.Unix(event.CommitTimestamp, 0), true),
+						},
 					},
 				},
 			},
