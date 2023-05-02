@@ -71,6 +71,7 @@ func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
 	var diff []interface{}
 	var labels []interface{}
 	var colors []interface{}
+	initialcolor := "rgb(151 154 155)"
 	upcolor := "rgb(82 156 202)"
 	downcolor := "rgb(255 163 68)"
 	var prevKPI int
@@ -91,7 +92,7 @@ func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
 			minOfChart = roundedMin
 			labels = append(labels, dateStr)
 			diff = append(diff, roundedKPI)
-			colors = append(colors, upcolor)
+			colors = append(colors, initialcolor)
 			event := common.EventObject{
 				CommitTimestamp: timestamp,
 				Diff:            0,
