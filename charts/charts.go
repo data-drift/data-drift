@@ -133,10 +133,12 @@ func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
 func createChart(diff []interface{}, labels []interface{}, colors []interface{}, KPIDate string) string {
 	url := "https://quickchart.io/chart/create"
 	jsonBody := map[string]interface{}{
-		"backgroundColor":  "#fff",
-		"width":            500,
-		"height":           300,
+		"version":          "2",
+		"backgroundColor":  "transparent",
+		"width":            250,
+		"height":           150,
 		"devicePixelRatio": 2,
+		"format":           "svg",
 		"chart": map[string]interface{}{
 			"type": "bar",
 			"data": map[string]interface{}{
@@ -155,6 +157,9 @@ func createChart(diff []interface{}, labels []interface{}, colors []interface{},
 					"yAxes": []map[string]interface{}{
 						{"suggestedMin": 35000},
 					},
+				},
+				"legend": map[string]interface{}{
+					"display": false,
 				},
 			},
 		},
