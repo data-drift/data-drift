@@ -228,5 +228,8 @@ func UpdateReport(apiKey string, reportNotionPageId string, children []notion.Bl
 	}
 
 	_, err = client.AppendBlockChildren(ctx, reportNotionPageId, children)
+	if err != nil {
+		fmt.Println("[DATADRIFT_ERROR]: err during append", err)
+	}
 	return err
 }

@@ -11,12 +11,6 @@ import (
 )
 
 func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIInfo) error {
-	err := notion_database.AssertDatabaseHasDatadriftProperties(syncConfig.NotionDatabaseID, syncConfig.NotionAPIKey)
-
-	if err != nil {
-		return err
-	}
-
 	reportNotionPageId, _ := notion_database.FindOrCreateReportPageId(syncConfig.NotionAPIKey, syncConfig.NotionDatabaseID, KPIInfo.KPIName)
 	fmt.Println(reportNotionPageId)
 
@@ -158,7 +152,8 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIInfo) error {
 			RichText: []notion.RichText{
 				{
 					Text: &notion.Text{
-						Content: "Explanations: ",
+						Content: "commit",
+						Link:    &notion.Link{URL: event.CommitUrl},
 					},
 				},
 			},
@@ -167,7 +162,7 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIInfo) error {
 	}
 	params.Children = append(params.Children, children...)
 
-	err = notion_database.UpdateReport(syncConfig.NotionAPIKey, reportNotionPageId, params.Children)
+	err := notion_database.UpdateReport(syncConfig.NotionAPIKey, reportNotionPageId, params.Children)
 	if err != nil {
 		return fmt.Errorf("failed to create page: %v", err)
 	}

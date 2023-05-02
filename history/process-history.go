@@ -49,6 +49,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, fi
 		Lines           int
 		KPI             float64
 		CommitTimestamp int64
+		CommitUrl       string
 	})
 	for index, commit := range commits {
 		fmt.Printf("\r Commit %d/%d", index, len(commits))
@@ -85,6 +86,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, fi
 					Lines           int
 					KPI             float64
 					CommitTimestamp int64
+					CommitUrl       string
 				})
 			}
 
@@ -98,7 +100,8 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, fi
 				Lines           int
 				KPI             float64
 				CommitTimestamp int64
-			}{Lines: newLineCount, KPI: newKPI, CommitTimestamp: commitTimestamp}
+				CommitUrl       string
+			}{Lines: newLineCount, KPI: newKPI, CommitTimestamp: commitTimestamp, CommitUrl: *commit.HTMLURL}
 		}
 
 	}
@@ -138,6 +141,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, fi
 		Lines           int
 		KPI             float64
 		CommitTimestamp int64
+		CommitUrl       string
 	})
 
 	// Copy the line counts by date by version to the new map, ordered by date.
