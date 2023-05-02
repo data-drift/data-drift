@@ -133,11 +133,19 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 	database, err := client.FindDatabaseByID(ctx, databaseID)
 
 	hasDatadriftProperty := false
+	shouldDeleteTags := false
+	shouldDeleteStatus := false
 
 	for _, property := range database.Properties {
 		fmt.Println("Property:", property.Name)
 		if property.Name == DATADRIFT_PROPERTY {
 			hasDatadriftProperty = true
+		}
+		if property.Name == "Tags" {
+			shouldDeleteTags = true
+		}
+		if property.Name == "Status" {
+			shouldDeleteStatus = true
 		}
 
 	}
@@ -149,9 +157,15 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 					Type:     "rich_text",
 					RichText: &notion.EmptyMetadata{},
 				},
-				"Tags":   nil,
-				"Status": nil,
 			},
+		}
+
+		if shouldDeleteTags {
+			params.Properties["Tags"] = nil
+		}
+
+		if shouldDeleteStatus {
+			params.Properties["Status"] = nil
 		}
 
 		fmt.Println("Creating property", params)
