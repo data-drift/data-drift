@@ -8,6 +8,7 @@ import (
 
 	"github.com/data-drift/kpi-git-history/charts"
 	"github.com/data-drift/kpi-git-history/common"
+	notion_database "github.com/data-drift/kpi-git-history/database/notion"
 	"github.com/data-drift/kpi-git-history/history"
 	"github.com/data-drift/kpi-git-history/reports"
 	"github.com/gin-gonic/gin"
@@ -89,11 +90,17 @@ func processWebhookInTheBackground(config common.Config, c *gin.Context, Install
 
 	fmt.Println("starting sync")
 
+	err := notion_database.AssertDatabaseHasDatadriftProperties(config.NotionDatabaseID, config.NotionAPIToken)
+
+	if err != nil {
+		fmt.Println("[DATADRIFT_ERROR] db notion", err)
+	}
+
 	for _, metric := range config.Metrics {
 
 		filepath, err := history.ProcessHistory(client, ownerName, repoName, metric.Filepath, "2022-01-01", metric.DateColumnName, metric.KPIColumnName, metric.MetricName)
 		if err != nil {
-			fmt.Println("[DATADRIFT_ERROR]", err)
+			fmt.Println("[DATADRIFT_ERROR] process history", err)
 
 		}
 
@@ -102,7 +109,7 @@ func processWebhookInTheBackground(config common.Config, c *gin.Context, Install
 		for _, chartResult := range chartResults {
 			err = reports.CreateReport(common.SyncConfig{NotionAPIKey: config.NotionAPIToken, NotionDatabaseID: config.NotionDatabaseID}, chartResult)
 			if err != nil {
-				fmt.Println("[DATADRIFT_ERROR]", err)
+				fmt.Println("[DATADRIFT_ERROR] create report", err)
 			}
 		}
 	}
