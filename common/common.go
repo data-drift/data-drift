@@ -22,6 +22,7 @@ type SyncConfig struct {
 
 type EventObject struct {
 	CommitTimestamp int64     `json:"commitTimestamp"`
+	CommitUrl       string    `json:"commitUrl"`
 	Diff            int       `json:"diff"`
 	EventType       EventType `json:"eventType"`
 }
