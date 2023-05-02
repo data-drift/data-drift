@@ -92,15 +92,23 @@ func HandleWebhook(c *gin.Context) {
 
 	fmt.Println("config", config)
 	c.JSON(http.StatusOK, gin.H{"message": "Webhook processed", "configIsValie": config, "installationId": InstallationId})
+
+	// Call functions from charts.go and reports.go
+	go processWebhookInTheBackground(config, c, InstallationId, client, ownerName, repoName)
+
+}
+
+func processWebhookInTheBackground(config Config, c *gin.Context, InstallationId int, client *github.Client, ownerName string, repoName string) bool {
+
 	fmt.Println("starting sync")
 
 	filepath, err := history.ProcessHistory(client, ownerName, repoName, config.Metrics[0].Filepath, "2022-01-01", config.Metrics[0].DateColumnName, config.Metrics[0].KPIColumnName)
 	if err != nil {
 		fmt.Println("[DATADRIFT_ERROR]", err)
 
-		return
+		return true
 	}
-	// Call functions from charts.go and reports.go
+
 	chartResults := charts.ProcessCharts(filepath)
 
 	for _, chartResult := range chartResults {
@@ -108,9 +116,10 @@ func HandleWebhook(c *gin.Context) {
 		if err != nil {
 			fmt.Println("[DATADRIFT_ERROR]", err)
 
-			return
+			return true
 		}
 	}
+	return false
 }
 
 func verifyConfigFile(client *github.Client, RepoOwner string, RepoName string, ctx context.Context) (Config, error) {
