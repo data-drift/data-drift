@@ -44,22 +44,26 @@ func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
 	Lines           int
 	KPI             float64
 	CommitTimestamp int64
+	CommitUrl       string
 }) common.KPIInfo {
 	// Extract the values from the map into a slice of struct objects
 	var dataSortableArray []struct {
 		Lines           int
 		KPI             float64
 		CommitTimestamp int64
+		CommitUrl       string
 	}
 	for _, stats := range unsortedResults {
 		dataSortableArray = append(dataSortableArray, struct {
 			Lines           int
 			KPI             float64
 			CommitTimestamp int64
+			CommitUrl       string
 		}{
 			Lines:           stats.Lines,
 			KPI:             stats.KPI,
 			CommitTimestamp: stats.CommitTimestamp,
+			CommitUrl:       stats.CommitUrl,
 		})
 	}
 
@@ -97,6 +101,7 @@ func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
 				CommitTimestamp: timestamp,
 				Diff:            0,
 				EventType:       common.EventTypeCreate,
+				CommitUrl:       v.CommitUrl,
 			}
 			events = append(events, event)
 		} else {
@@ -116,6 +121,7 @@ func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
 					CommitTimestamp: timestamp,
 					Diff:            d,
 					EventType:       common.EventTypeUpdate,
+					CommitUrl:       v.CommitUrl,
 				}
 				events = append(events, event)
 			}
@@ -234,6 +240,7 @@ func getKeysFromJSON(path string) (map[string]map[string]struct {
 	Lines           int
 	KPI             float64
 	CommitTimestamp int64
+	CommitUrl       string
 }, error) {
 	// Read the file at the given path
 	jsonFile, err := os.ReadFile(path)
@@ -246,6 +253,7 @@ func getKeysFromJSON(path string) (map[string]map[string]struct {
 		Lines           int
 		KPI             float64
 		CommitTimestamp int64
+		CommitUrl       string
 	}
 	err = json.Unmarshal(jsonFile, &data)
 	if err != nil {
