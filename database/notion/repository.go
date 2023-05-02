@@ -14,10 +14,6 @@ import (
 const DATADRIFT_PROPERTY = "datadrift-id"
 
 func FindOrCreateReportPageId(apiKey string, databaseId string, reportName string) (string, error) {
-	err := AssertDatabaseHasDatadriftProperties(databaseId, apiKey)
-	if err != nil {
-		return "", err
-	}
 	existingReportId, err := QueryDatabaseWithReportId(apiKey, databaseId, reportName)
 	if err != nil {
 		return "", err
@@ -133,10 +129,19 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 	database, err := client.FindDatabaseByID(ctx, databaseID)
 
 	hasDatadriftProperty := false
+	shouldDeleteTags := false
+	shouldDeleteStatus := false
 
 	for _, property := range database.Properties {
+		fmt.Println("Property:", property.Name)
 		if property.Name == DATADRIFT_PROPERTY {
 			hasDatadriftProperty = true
+		}
+		if property.Name == "Tags" {
+			shouldDeleteTags = true
+		}
+		if property.Name == "Status" {
+			shouldDeleteStatus = true
 		}
 
 	}
@@ -151,6 +156,14 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 			},
 		}
 
+		if shouldDeleteTags {
+			params.Properties["Tags"] = nil
+		}
+
+		if shouldDeleteStatus {
+			params.Properties["Status"] = nil
+		}
+
 		fmt.Println("Creating property", params)
 		updatedDB, err := client.UpdateDatabase(ctx, databaseID, params)
 		if err != nil {
@@ -158,6 +171,29 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 		}
 		fmt.Println("Updated database", updatedDB, " with property", DATADRIFT_PROPERTY)
 	}
+	fmt.Println("Clean empty item in database")
+	queryParams := &notion.DatabaseQuery{
+		Filter: &notion.DatabaseQueryFilter{
+			Property: DATADRIFT_PROPERTY,
+			DatabaseQueryPropertyFilter: notion.DatabaseQueryPropertyFilter{
+				RichText: &notion.TextPropertyFilter{
+					Equals: " ",
+				},
+			},
+		},
+	}
+	emptyDatabaseItems, err := client.QueryDatabase(ctx, databaseID, queryParams)
+	if err != nil {
+		return err
+	}
+	archive := true
+	for _, item := range emptyDatabaseItems.Results {
+		fmt.Println("Archiving item", item.ID)
+		client.UpdatePage(ctx, item.ID, notion.UpdatePageParams{
+			Archived: &archive,
+		})
+	}
+
 	return err
 }
 
