@@ -187,7 +187,7 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIInfo) error {
 						Bold: true,
 						Color: func() notion.Color {
 							if event.Diff < 0 {
-								return notion.ColorRed
+								return notion.ColorOrange
 							}
 							return notion.ColorBlue
 						}(),
