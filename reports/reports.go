@@ -121,6 +121,12 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIInfo) error {
 		driftEventDate := notion.ParagraphBlock{
 			RichText: []notion.RichText{
 				{
+					Text: &notion.Text{
+						Content: "🗓 Event ",
+					},
+				},
+
+				{
 					Mention: &notion.Mention{
 						Type: notion.MentionTypeDate,
 						Date: &notion.Date{
@@ -171,7 +177,7 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIInfo) error {
 				{
 					Text: &notion.Text{
 						Content: "commit",
-						Link:    &notion.Link{URL: event.CommitUrl},
+						// Link:    &notion.Link{URL: event.CommitUrl},
 					},
 				},
 			},
