@@ -86,7 +86,7 @@ func performTask(syncConfig common.SyncConfig) error {
 		filepath = newFilepath
 	}
 	// Call functions from charts.go and reports.go
-	chartResults := charts.ProcessCharts(filepath)
+	chartResults := charts.ProcessCharts(filepath, common.Metric{MetricName: "Default metric name"})
 
 	for _, chartResult := range chartResults {
 		err := reports.CreateReport(syncConfig, chartResult)

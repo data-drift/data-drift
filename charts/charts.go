@@ -19,7 +19,7 @@ type ChartResponse struct {
 	URL     string `json:"url"`
 }
 
-func ProcessCharts(historyFilepath string) []common.KPIInfo {
+func ProcessCharts(historyFilepath string, metric common.Metric) []common.KPIInfo {
 
 	data, err := getKeysFromJSON(historyFilepath)
 	if err != nil {
@@ -33,7 +33,7 @@ func ProcessCharts(historyFilepath string) []common.KPIInfo {
 		// Access the value associated with the key: data[key]
 		// Additional logic for processing the value
 		// ...
-		kpi := OrderDataAndCreateChart("MRR "+key, data[key])
+		kpi := OrderDataAndCreateChart(metric.MetricName+" "+key, data[key])
 		kpiInfos = append(kpiInfos, kpi)
 	}
 

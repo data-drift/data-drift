@@ -96,7 +96,7 @@ func processWebhookInTheBackground(config common.Config, c *gin.Context, Install
 		return true
 	}
 
-	chartResults := charts.ProcessCharts(filepath)
+	chartResults := charts.ProcessCharts(filepath, config.Metrics[0])
 
 	for _, chartResult := range chartResults {
 		err = reports.CreateReport(common.SyncConfig{NotionAPIKey: config.NotionAPIToken, NotionDatabaseID: config.NotionDatabaseID}, chartResult)
