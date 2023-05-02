@@ -70,8 +70,8 @@ func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
 	var diff []interface{}
 	var labels []interface{}
 	var colors []interface{}
-	upcolor := "rgb(100, 181, 246)"
-	downcolor := "rgb(255, 107, 107)"
+	upcolor := "rgb(82 156 202)"
+	downcolor := "rgb(255 163 68)"
 	var prevKPI int
 	var firstRoundedKPI int
 	var lastRoundedKPI int
