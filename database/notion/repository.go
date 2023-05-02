@@ -14,10 +14,6 @@ import (
 const DATADRIFT_PROPERTY = "datadrift-id"
 
 func FindOrCreateReportPageId(apiKey string, databaseId string, reportName string) (string, error) {
-	err := AssertDatabaseHasDatadriftProperties(databaseId, apiKey)
-	if err != nil {
-		return "", err
-	}
 	existingReportId, err := QueryDatabaseWithReportId(apiKey, databaseId, reportName)
 	if err != nil {
 		return "", err
