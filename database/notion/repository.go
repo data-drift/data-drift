@@ -135,6 +135,7 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 	hasDatadriftProperty := false
 
 	for _, property := range database.Properties {
+		fmt.Println("Property:", property.Name)
 		if property.Name == DATADRIFT_PROPERTY {
 			hasDatadriftProperty = true
 		}
@@ -148,6 +149,8 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 					Type:     "rich_text",
 					RichText: &notion.EmptyMetadata{},
 				},
+				"Tags":   nil,
+				"Status": nil,
 			},
 		}
 
