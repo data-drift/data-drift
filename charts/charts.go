@@ -76,15 +76,18 @@ func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
 	var firstRoundedKPI int
 	var lastRoundedKPI int
 	var events []common.EventObject
+	minOfChart := 0
 
 	for _, v := range dataSortableArray {
 		roundedKPI := int(math.Round(v.KPI))
+		roundedMin := int(math.Round(v.KPI * 0.98))
 		timestamp := int64(v.CommitTimestamp) // Unix timestamp for May 26, 2022 12:00:00 AM UTC
 		timeObj := time.Unix(timestamp, 0)    // Convert the Unix timestamp to a time.Time object
 		dateStr := timeObj.Format("2006-01-02")
 		if prevKPI == 0 {
 			firstRoundedKPI = roundedKPI
 			prevKPI = roundedKPI
+			minOfChart = roundedMin
 			labels = append(labels, dateStr)
 			diff = append(diff, roundedKPI)
 			colors = append(colors, upcolor)
@@ -105,6 +108,7 @@ func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
 					colors = append(colors, upcolor)
 				} else {
 					colors = append(colors, downcolor)
+					minOfChart = roundedMin
 				}
 				event := common.EventObject{
 					CommitTimestamp: timestamp,
@@ -119,7 +123,7 @@ func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
 	}
 	fmt.Println(diff)
 
-	chartUrl := createChart(diff, labels, colors, KPIName)
+	chartUrl := createChart(diff, labels, colors, KPIName, minOfChart)
 	kpi1 := common.KPIInfo{
 		KPIName:         KPIName,
 		GraphQLURL:      chartUrl,
@@ -130,14 +134,14 @@ func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
 	return kpi1
 }
 
-func createChart(diff []interface{}, labels []interface{}, colors []interface{}, KPIDate string) string {
+func createChart(diff []interface{}, labels []interface{}, colors []interface{}, KPIDate string, minOfChart int) string {
 	url := "https://quickchart.io/chart/create"
 	jsonBody := map[string]interface{}{
-		"version":          "2",
+		"version":          "4",
 		"backgroundColor":  "transparent",
 		"width":            250,
 		"height":           150,
-		"devicePixelRatio": 2,
+		"devicePixelRatio": 2.0,
 		"format":           "svg",
 		"chart": map[string]interface{}{
 			"type": "bar",
@@ -154,12 +158,26 @@ func createChart(diff []interface{}, labels []interface{}, colors []interface{},
 			},
 			"options": map[string]interface{}{
 				"scales": map[string]interface{}{
-					"yAxes": []map[string]interface{}{
-						{"suggestedMin": 35000},
+					"y": map[string]interface{}{
+						"min": minOfChart,
+						"ticks": map[string]interface{}{
+							"font": map[string]interface{}{
+								"size": 8,
+							},
+						},
+					},
+					"x": map[string]interface{}{
+						"ticks": map[string]interface{}{
+							"font": map[string]interface{}{
+								"size": 8,
+							},
+						},
 					},
 				},
-				"legend": map[string]interface{}{
-					"display": false,
+				"plugins": map[string]interface{}{
+					"legend": map[string]interface{}{
+						"display": false,
+					},
 				},
 			},
 		},
