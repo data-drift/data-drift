@@ -29,7 +29,7 @@ func DebugFunction() {
 
 	if filepath == "" {
 		client := github.CreateClientFromGithubToken(githubToken)
-		newFilepath, err := history.ProcessHistory(client, githubRepoOwner, githubRepoName, githubRepoFilePath, startDate, dateColumn, kpiColumn)
+		newFilepath, err := history.ProcessHistory(client, githubRepoOwner, githubRepoName, githubRepoFilePath, startDate, dateColumn, kpiColumn, "default metric name")
 
 		if err != nil {
 			println(err)
@@ -37,9 +37,14 @@ func DebugFunction() {
 		filepath = newFilepath
 	}
 
-	chartResults := charts.ProcessCharts(filepath)
+	chartResults := charts.ProcessCharts(filepath, common.Metric{MetricName: "Default metric name"})
 
-	for _, chartResult := range chartResults {
+	// if (len(chartResults)) != 0 {
+	// 	println("Stop exectution here")
+	// 	return
+	// }
+
+	for _, chartResult := range chartResults[:1] {
 		err := reports.CreateReport(common.SyncConfig{NotionAPIKey: notionAPIKey, NotionDatabaseID: notionDatabaseID}, chartResult)
 		if err != nil {
 			println(err)
