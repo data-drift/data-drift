@@ -15,19 +15,6 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 )
 
-type Config struct {
-	NotionAPIToken   string   `json:"notionAPIToken"`
-	NotionDatabaseID string   `json:"notionDatabaseId"`
-	Metrics          []Metric `json:"metrics"`
-}
-
-type Metric struct {
-	Filepath       string `json:"filepath"`
-	DateColumnName string `json:"dateColumnName"`
-	KPIColumnName  string `json:"KPIColumnName"`
-	MetricName     string `json:"metricName"`
-}
-
 type GithubWebhookPayload struct {
 	Repository struct {
 		Name  string `json:"name"`
@@ -98,7 +85,7 @@ func HandleWebhook(c *gin.Context) {
 
 }
 
-func processWebhookInTheBackground(config Config, c *gin.Context, InstallationId int, client *github.Client, ownerName string, repoName string) bool {
+func processWebhookInTheBackground(config common.Config, c *gin.Context, InstallationId int, client *github.Client, ownerName string, repoName string) bool {
 
 	fmt.Println("starting sync")
 
@@ -120,7 +107,7 @@ func processWebhookInTheBackground(config Config, c *gin.Context, InstallationId
 	return false
 }
 
-func verifyConfigFile(client *github.Client, RepoOwner string, RepoName string, ctx context.Context) (Config, error) {
+func verifyConfigFile(client *github.Client, RepoOwner string, RepoName string, ctx context.Context) (common.Config, error) {
 
 	commit, _, _ := client.Repositories.GetCommit(ctx, RepoOwner, RepoName, "main")
 
@@ -132,7 +119,7 @@ func verifyConfigFile(client *github.Client, RepoOwner string, RepoName string, 
 
 	if err != nil {
 		fmt.Println("[DATADRIFT_ERROR]", err)
-		return Config{}, err
+		return common.Config{}, err
 	}
 	content, _ := file.GetContent()
 	schemaLoader := gojsonschema.NewReferenceLoader("file://./json-schema.json")
@@ -141,24 +128,24 @@ func verifyConfigFile(client *github.Client, RepoOwner string, RepoName string, 
 	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
 	if err != nil {
 		fmt.Println("[DATADRIFT_ERROR]", err)
-		return Config{}, err
+		return common.Config{}, err
 	}
 	if result.Errors() != nil {
 		fmt.Println("result.Errors()", result.Errors())
-		return Config{}, fmt.Errorf("invalid config file")
+		return common.Config{}, fmt.Errorf("invalid config file")
 	}
 	fmt.Println(result.Valid())
-	var config Config
+	var config common.Config
 	if err := json.Unmarshal([]byte(content), &config); err != nil {
 		fmt.Println("[DATADRIFT_ERROR]", err)
-		return Config{}, err
+		return common.Config{}, err
 	}
 	return config, nil
 }
 
 func ValidateConfigHandler(c *gin.Context) {
 	// Parse the JSON configuration from the request body
-	var config Config
+	var config common.Config
 	err := c.ShouldBindJSON(&config)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON configuration"})
