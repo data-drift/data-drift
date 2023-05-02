@@ -54,7 +54,6 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, fi
 	for index, commit := range commits {
 		fmt.Printf("\r Commit %d/%d", index, len(commits))
 
-		fmt.Println("commit link", *commit.HTMLURL)
 		commitDate := commit.Commit.Author.Date
 		commitTimestamp := commitDate.Unix()
 		fileContents, err := getFileContentsForCommit(client, repoOwner, repoName, filePath, *commit.SHA)

@@ -152,7 +152,8 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIInfo) error {
 			RichText: []notion.RichText{
 				{
 					Text: &notion.Text{
-						Content: "Explanations: ",
+						Content: "commit",
+						Link:    &notion.Link{URL: event.CommitUrl},
 					},
 				},
 			},
