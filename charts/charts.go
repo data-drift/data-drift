@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/data-drift/kpi-git-history/common"
@@ -211,8 +212,16 @@ func createChart(diff []interface{}, labels []interface{}, colors []interface{},
 		return "" // Return an empty string or handle the error as needed
 	}
 
+	interactiveUrl := convertToChartMakerURL(chartResponse.URL)
+	fmt.Println("Interactive URL:", interactiveUrl)
+
 	// Return only the URL
-	return chartResponse.URL
+	return interactiveUrl
+}
+
+func convertToChartMakerURL(url string) string {
+	chartMakerURL := strings.Replace(url, "chart/render", "chart-maker/view", 1)
+	return chartMakerURL
 }
 
 func getKeysFromJSON(path string) (map[string]map[string]struct {
