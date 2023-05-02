@@ -163,14 +163,16 @@ func createChart(diff []interface{}, labels []interface{}, colors []interface{},
 						"min": minOfChart,
 						"ticks": map[string]interface{}{
 							"font": map[string]interface{}{
-								"size": 8,
+								"size":   8,
+								"family": "Sans-Serif Workhorse",
 							},
 						},
 					},
 					"x": map[string]interface{}{
 						"ticks": map[string]interface{}{
 							"font": map[string]interface{}{
-								"size": 8,
+								"size":   8,
+								"family": "Sans-Serif Workhorse",
 							},
 						},
 					},
