@@ -177,6 +177,9 @@ func createChart(diff []interface{}, labels []interface{}, colors []interface{},
 						},
 					},
 				},
+				"legend": map[string]interface{}{
+					"display": false,
+				},
 				"plugins": map[string]interface{}{
 					"legend": map[string]interface{}{
 						"display": false,
