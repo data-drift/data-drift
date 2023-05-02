@@ -89,19 +89,21 @@ func processWebhookInTheBackground(config common.Config, c *gin.Context, Install
 
 	fmt.Println("starting sync")
 
-	filepath, err := history.ProcessHistory(client, ownerName, repoName, config.Metrics[0].Filepath, "2022-01-01", config.Metrics[0].DateColumnName, config.Metrics[0].KPIColumnName)
-	if err != nil {
-		fmt.Println("[DATADRIFT_ERROR]", err)
+	for _, metric := range config.Metrics {
 
-		return true
-	}
-
-	chartResults := charts.ProcessCharts(filepath, config.Metrics[0])
-
-	for _, chartResult := range chartResults {
-		err = reports.CreateReport(common.SyncConfig{NotionAPIKey: config.NotionAPIToken, NotionDatabaseID: config.NotionDatabaseID}, chartResult)
+		filepath, err := history.ProcessHistory(client, ownerName, repoName, metric.Filepath, "2022-01-01", metric.DateColumnName, metric.KPIColumnName)
 		if err != nil {
 			fmt.Println("[DATADRIFT_ERROR]", err)
+
+		}
+
+		chartResults := charts.ProcessCharts(filepath, metric)
+
+		for _, chartResult := range chartResults {
+			err = reports.CreateReport(common.SyncConfig{NotionAPIKey: config.NotionAPIToken, NotionDatabaseID: config.NotionDatabaseID}, chartResult)
+			if err != nil {
+				fmt.Println("[DATADRIFT_ERROR]", err)
+			}
 		}
 	}
 	return false
