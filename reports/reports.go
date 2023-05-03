@@ -118,8 +118,14 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIInfo) error {
 	}
 	var children []notion.Block
 	for _, event := range KPIInfo.Events {
-		paragraph := notion.ParagraphBlock{
+		driftEventDate := notion.ParagraphBlock{
 			RichText: []notion.RichText{
+				{
+					Text: &notion.Text{
+						Content: "🗓 Event ",
+					},
+				},
+
 				{
 					Mention: &notion.Mention{
 						Type: notion.MentionTypeDate,
@@ -130,7 +136,25 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIInfo) error {
 				},
 			},
 		}
-		bulletListFirstItem := notion.BulletedListItemBlock{
+		bulletListFirstItemCreateEvent := notion.BulletedListItemBlock{
+			RichText: []notion.RichText{
+				{
+					Text: &notion.Text{
+						Content: "Initial value: ",
+					},
+				},
+				{
+					Text: &notion.Text{
+						Content: strconv.Itoa(KPIInfo.FirstRoundedKPI),
+					},
+					Annotations: &notion.Annotations{
+						Bold:  true,
+						Color: notion.ColorGray,
+					},
+				},
+			},
+		}
+		bulletListFirstItemUpdateEvent := notion.BulletedListItemBlock{
 			RichText: []notion.RichText{
 				{
 					Text: &notion.Text{
@@ -148,7 +172,7 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIInfo) error {
 				},
 			},
 		}
-		bulletListSecondItem := notion.BulletedListItemBlock{
+		bulletListSecondItemUpdateEvent := notion.BulletedListItemBlock{
 			RichText: []notion.RichText{
 				{
 					Text: &notion.Text{
@@ -158,7 +182,11 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIInfo) error {
 				},
 			},
 		}
-		children = append(children, paragraph, bulletListFirstItem, bulletListSecondItem)
+		if event.EventType == "create" {
+			children = append(children, driftEventDate, bulletListFirstItemCreateEvent)
+		} else {
+			children = append(children, driftEventDate, bulletListFirstItemUpdateEvent, bulletListSecondItemUpdateEvent)
+		}
 	}
 	params.Children = append(params.Children, children...)
 
