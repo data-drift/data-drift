@@ -39,7 +39,7 @@ func HandleWebhook(c *gin.Context) {
 	var payload GithubWebhookPayload
 
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusNotAcceptable, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -74,7 +74,7 @@ func HandleWebhook(c *gin.Context) {
 	config, err := verifyConfigFile(client, ownerName, repoName, ctx)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
