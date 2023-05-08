@@ -17,6 +17,7 @@ import (
 )
 
 type CommitSha string
+type PeriodId string
 
 func ProcessHistory(client *github.Client, repoOwner string, repoName string, metric common.Metric) (string, error) {
 
@@ -49,7 +50,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 	fmt.Printf("Number of commits: %d\n", len(commits))
 
 	// Group the lines of the CSV file by reporting date.
-	lineCountAndKPIByDateByVersion := make(map[string]map[CommitSha]struct {
+	lineCountAndKPIByDateByVersion := make(map[PeriodId]map[CommitSha]struct {
 		Lines           int
 		KPI             float64
 		CommitTimestamp int64
@@ -85,7 +86,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 			}
 		}
 		for _, record := range records[1:] { // Skip the header row.
-			dateStr := record[dateColumn]
+			dateStr := PeriodId(record[dateColumn])
 
 			if lineCountAndKPIByDateByVersion[dateStr] == nil {
 				lineCountAndKPIByDateByVersion[dateStr] = make(map[CommitSha]struct {
@@ -136,7 +137,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 
 	// Add the date strings to the slice.
 	for dateStr := range lineCountAndKPIByDateByVersion {
-		dates = append(dates, dateStr)
+		dates = append(dates, string(dateStr))
 	}
 
 	// Sort the date strings in ascending order.
@@ -152,7 +153,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 
 	// Copy the line counts by date by version to the new map, ordered by date.
 	for _, dateStr := range dates {
-		orderedLineCountsByDateByVersion[dateStr] = lineCountAndKPIByDateByVersion[dateStr]
+		orderedLineCountsByDateByVersion[dateStr] = lineCountAndKPIByDateByVersion[PeriodId(dateStr)]
 	}
 	// Generate a timestamp to include in the JSON file name.
 	timestamp := time.Now().Format("2006-01-02_15-04-05")
