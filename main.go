@@ -78,7 +78,18 @@ func performTask(syncConfig common.SyncConfig) error {
 
 	if filepath == "" {
 		client := github.CreateClientFromGithubToken(syncConfig.GithubToken)
-		newFilepath, err := history.ProcessHistory(client, syncConfig.GithubRepoOwner, syncConfig.GithubRepoName, syncConfig.GithubRepoFilePath, syncConfig.StartDate, syncConfig.DateColumn, syncConfig.KpiColumn, "Default metric name")
+		newFilepath, err := history.ProcessHistory(client,
+			syncConfig.GithubRepoOwner,
+			syncConfig.GithubRepoName,
+			common.Metric{
+				MetricName:     "Default metric name",
+				KPIColumnName:  syncConfig.KpiColumn,
+				DateColumnName: syncConfig.DateColumn,
+				Filepath:       syncConfig.GithubRepoFilePath,
+				TimeGrains:     []common.TimeGrain{common.Day},
+				Dimensions:     []string{},
+			},
+		)
 
 		if err != nil {
 			return err
