@@ -19,6 +19,15 @@ import (
 type CommitSha string
 type PeriodId string
 
+type PeriodCommitData struct {
+	Lines           int
+	KPI             float64
+	CommitTimestamp int64
+	CommitUrl       string
+}
+
+type PeriodData map[PeriodId]map[CommitSha]PeriodCommitData
+
 func ProcessHistory(client *github.Client, repoOwner string, repoName string, metric common.Metric) (string, error) {
 
 	filePath := metric.Filepath
@@ -50,12 +59,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 	fmt.Printf("Number of commits: %d\n", len(commits))
 
 	// Group the lines of the CSV file by reporting date.
-	lineCountAndKPIByDateByVersion := make(map[PeriodId]map[CommitSha]struct {
-		Lines           int
-		KPI             float64
-		CommitTimestamp int64
-		CommitUrl       string
-	})
+	lineCountAndKPIByDateByVersion := make(PeriodData)
 	for index, commit := range commits {
 		fmt.Printf("\r Commit %d/%d", index, len(commits))
 
@@ -86,15 +90,13 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 			}
 		}
 		for _, record := range records[1:] { // Skip the header row.
+			for _, timegrain := range metric.TimeGrains {
+				fmt.Println(timegrain)
+			}
 			dateStr := PeriodId(record[dateColumn])
 
 			if lineCountAndKPIByDateByVersion[dateStr] == nil {
-				lineCountAndKPIByDateByVersion[dateStr] = make(map[CommitSha]struct {
-					Lines           int
-					KPI             float64
-					CommitTimestamp int64
-					CommitUrl       string
-				})
+				lineCountAndKPIByDateByVersion[dateStr] = make(map[CommitSha]PeriodCommitData)
 			}
 
 			kpiStr := record[kpiColumn]
@@ -144,12 +146,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 	sort.Strings(dates)
 
 	// Create a map to hold the line counts by date by version, ordered by date.
-	orderedLineCountsByDateByVersion := make(map[string]map[CommitSha]struct {
-		Lines           int
-		KPI             float64
-		CommitTimestamp int64
-		CommitUrl       string
-	})
+	orderedLineCountsByDateByVersion := make(map[string]map[CommitSha]PeriodCommitData)
 
 	// Copy the line counts by date by version to the new map, ordered by date.
 	for _, dateStr := range dates {
