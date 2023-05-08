@@ -19,11 +19,12 @@ import (
 func ProcessHistory(client *github.Client,
 	repoOwner string,
 	repoName string,
-	filePath string,
-	dateColumnName string,
-	KPIColumnName string,
-	metricName string,
 	metric common.Metric) (string, error) {
+
+	filePath := metric.Filepath
+	dateColumnName := metric.DateColumnName
+	KPIColumnName := metric.KPIColumnName
+	metricName := metric.MetricName
 
 	fmt.Println(metric)
 	// Set the start and end dates to display the history for.

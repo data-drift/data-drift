@@ -41,7 +41,7 @@ func DebugFunction() {
 	if filepath == "" {
 
 		client := github.CreateClientFromGithubToken(githubToken)
-		newFilepath, err := history.ProcessHistory(client, githubRepoOwner, githubRepoName, githubRepoFilePath, dateColumn, kpiColumn, "default metric name", common.Metric{
+		newFilepath, err := history.ProcessHistory(client, githubRepoOwner, githubRepoName, common.Metric{
 			MetricName:     "Default metric name",
 			KPIColumnName:  kpiColumn,
 			DateColumnName: dateColumn,

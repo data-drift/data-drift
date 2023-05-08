@@ -81,10 +81,6 @@ func performTask(syncConfig common.SyncConfig) error {
 		newFilepath, err := history.ProcessHistory(client,
 			syncConfig.GithubRepoOwner,
 			syncConfig.GithubRepoName,
-			syncConfig.GithubRepoFilePath,
-			syncConfig.DateColumn,
-			syncConfig.KpiColumn,
-			"Default metric name",
 			common.Metric{
 				MetricName:     "Default metric name",
 				KPIColumnName:  syncConfig.KpiColumn,
