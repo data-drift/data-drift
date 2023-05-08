@@ -13,6 +13,8 @@ import (
 
 const DATADRIFT_PROPERTY = "datadrift-id"
 
+var DefaultPropertiesToDelete = []string{"Tags", "Status", "Étiquette", "Étiquettes"}
+
 func FindOrCreateReportPageId(apiKey string, databaseId string, reportName string) (string, error) {
 	existingReportId, err := QueryDatabaseWithReportId(apiKey, databaseId, reportName)
 	if err != nil {
@@ -137,14 +139,12 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 		if property.Name == DATADRIFT_PROPERTY {
 			hasDatadriftProperty = true
 		}
-		if property.Name == "Tags" {
-			propertiesToDelete = append(propertiesToDelete, "Tags")
-		}
-		if property.Name == "Status" {
-			propertiesToDelete = append(propertiesToDelete, "Status")
-		}
-		if property.Name == "Étiquette" {
-			propertiesToDelete = append(propertiesToDelete, "Étiquette")
+
+		for _, propertyToDelete := range DefaultPropertiesToDelete {
+			propertyExists := property.Name == propertyToDelete
+			if propertyExists {
+				propertiesToDelete = append(propertiesToDelete, propertyToDelete)
+			}
 		}
 
 	}
