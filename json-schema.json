@@ -31,6 +31,25 @@
           "KPIColumnName": {
             "type": "string",
             "description": "The name of the column containing KPI information"
+          },
+          "dateColumn": {
+            "type": "string",
+            "description": "The name of the column containing the date (YYYY-MM-DD)"
+          },
+          "timeGrain": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["day", "week", "month", "year"]
+            },
+            "description": "The timegrain for the metric data (day, week, or month)"
+          },
+          "dimensions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The dimensions used for the metric data"
           }
         },
         "required": [
