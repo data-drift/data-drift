@@ -90,7 +90,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 			}
 		}
 		for _, record := range records[1:] { // Skip the header row.
-			for _, timegrain := range metric.TimeGrains {
+			for _, timegrain := range GetDefaultTimeGrains(metric.TimeGrains) {
 				var periodKey PeriodId
 				periodTime, _ := time.Parse("2006-01-02", record[dateColumn])
 
@@ -200,4 +200,11 @@ func getFileContentsForCommit(client *github.Client, owner, name, path, sha stri
 	}
 
 	return []byte(content), nil
+}
+
+func GetDefaultTimeGrains(timeGrains []common.TimeGrain) []common.TimeGrain {
+	if len(timeGrains) == 0 {
+		return []common.TimeGrain{common.Month}
+	}
+	return timeGrains
 }
