@@ -16,6 +16,8 @@ import (
 	"github.com/google/go-github/github"
 )
 
+type CommitSha string
+
 func ProcessHistory(client *github.Client, repoOwner string, repoName string, metric common.Metric) (string, error) {
 
 	filePath := metric.Filepath
@@ -47,7 +49,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 	fmt.Printf("Number of commits: %d\n", len(commits))
 
 	// Group the lines of the CSV file by reporting date.
-	lineCountAndKPIByDateByVersion := make(map[string]map[string]struct {
+	lineCountAndKPIByDateByVersion := make(map[string]map[CommitSha]struct {
 		Lines           int
 		KPI             float64
 		CommitTimestamp int64
@@ -55,6 +57,8 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 	})
 	for index, commit := range commits {
 		fmt.Printf("\r Commit %d/%d", index, len(commits))
+
+		commitSha := CommitSha(*commit.SHA)
 
 		commitDate := commit.Commit.Author.Date
 		commitTimestamp := commitDate.Unix()
@@ -84,7 +88,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 			dateStr := record[dateColumn]
 
 			if lineCountAndKPIByDateByVersion[dateStr] == nil {
-				lineCountAndKPIByDateByVersion[dateStr] = make(map[string]struct {
+				lineCountAndKPIByDateByVersion[dateStr] = make(map[CommitSha]struct {
 					Lines           int
 					KPI             float64
 					CommitTimestamp int64
@@ -95,10 +99,10 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 			kpiStr := record[kpiColumn]
 			kpi, _ := strconv.ParseFloat(kpiStr, 64)
 
-			newLineCount := lineCountAndKPIByDateByVersion[dateStr][*commit.SHA].Lines + 1
-			newKPI := lineCountAndKPIByDateByVersion[dateStr][*commit.SHA].KPI + kpi
+			newLineCount := lineCountAndKPIByDateByVersion[dateStr][commitSha].Lines + 1
+			newKPI := lineCountAndKPIByDateByVersion[dateStr][commitSha].KPI + kpi
 
-			lineCountAndKPIByDateByVersion[dateStr][*commit.SHA] = struct {
+			lineCountAndKPIByDateByVersion[dateStr][commitSha] = struct {
 				Lines           int
 				KPI             float64
 				CommitTimestamp int64
@@ -139,7 +143,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 	sort.Strings(dates)
 
 	// Create a map to hold the line counts by date by version, ordered by date.
-	orderedLineCountsByDateByVersion := make(map[string]map[string]struct {
+	orderedLineCountsByDateByVersion := make(map[string]map[CommitSha]struct {
 		Lines           int
 		KPI             float64
 		CommitTimestamp int64
