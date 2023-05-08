@@ -46,7 +46,7 @@ func DebugFunction() {
 			KPIColumnName:  kpiColumn,
 			DateColumnName: dateColumn,
 			Filepath:       githubRepoFilePath,
-			TimeGrains:     []common.TimeGrain{common.Day},
+			TimeGrains:     []common.TimeGrain{common.Month},
 			Dimensions:     []string{},
 		})
 

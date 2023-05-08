@@ -91,7 +91,23 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 		}
 		for _, record := range records[1:] { // Skip the header row.
 			for _, timegrain := range metric.TimeGrains {
-				fmt.Println(timegrain)
+				var periodKey PeriodId
+				periodTime, _ := time.Parse("2006-01-02", record[dateColumn])
+
+				switch timegrain {
+				case common.Day:
+					periodKey = PeriodId(periodTime.Format("2006-01-02"))
+				case common.Week:
+					_, week := periodTime.ISOWeek()
+					periodKey = PeriodId(fmt.Sprintf("%d-%d", periodTime.Year(), week))
+				case common.Month:
+					periodKey = PeriodId(periodTime.Format("2006-01"))
+				case common.Year:
+					periodKey = PeriodId(periodTime.Format("2006-01"))
+				default:
+					log.Fatalf("Invalid time grain: %s", timegrain)
+				}
+				fmt.Println(periodKey)
 			}
 			dateStr := PeriodId(record[dateColumn])
 
