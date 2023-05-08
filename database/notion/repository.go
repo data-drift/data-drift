@@ -129,8 +129,8 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 	database, err := client.FindDatabaseByID(ctx, databaseID)
 
 	hasDatadriftProperty := false
-	shouldDeleteTags := false
-	shouldDeleteStatus := false
+
+	propertiesToDelete := []string{}
 
 	for _, property := range database.Properties {
 		fmt.Println("Property:", property.Name)
@@ -138,10 +138,11 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 			hasDatadriftProperty = true
 		}
 		if property.Name == "Tags" {
-			shouldDeleteTags = true
+			propertiesToDelete = append(propertiesToDelete, "Tags")
 		}
 		if property.Name == "Status" {
-			shouldDeleteStatus = true
+			propertiesToDelete = append(propertiesToDelete, "Status")
+
 		}
 
 	}
@@ -156,12 +157,8 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 			},
 		}
 
-		if shouldDeleteTags {
-			params.Properties["Tags"] = nil
-		}
-
-		if shouldDeleteStatus {
-			params.Properties["Status"] = nil
+		for _, propertyToDelete := range propertiesToDelete {
+			params.Properties[propertyToDelete] = nil
 		}
 
 		fmt.Println("Creating property", params)
