@@ -12,10 +12,11 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/data-drift/kpi-git-history/common"
 	"github.com/google/go-github/github"
 )
 
-func ProcessHistory(client *github.Client, repoOwner string, repoName string, filePath string, startDateStr string, dateColumnName string, KPIColumnName string, metricName string) (string, error) {
+func ProcessHistory(client *github.Client, repoOwner string, repoName string, filePath string, startDateStr string, dateColumnName string, KPIColumnName string, metricName string, metric common.Metric) (string, error) {
 
 	// Set the start and end dates to display the history for.
 	endDate := time.Now()
