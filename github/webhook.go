@@ -45,19 +45,15 @@ func HandleWebhook(c *gin.Context) {
 		return
 	}
 
-	fmt.Println("ref", payload.Installation.ID)
+	fmt.Println("Installation ID: ", payload.Installation.ID)
 
 	InstallationId := payload.Installation.ID
 	client, err := CreateClientFromGithubApp(int64(InstallationId))
 	if err != nil {
-		fmt.Println("wahou1")
-
 		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 		return
 	}
 	ctx := context.Background()
-
-	fmt.Println(payload)
 
 	var ownerName, repoName string
 
@@ -73,7 +69,9 @@ func HandleWebhook(c *gin.Context) {
 		return
 	}
 
-	config, err := verifyConfigFile(client, ownerName, repoName, ctx)
+	config, err := VerifyConfigFile(client, ownerName, repoName, ctx)
+
+	fmt.Println("config", config)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -118,7 +116,7 @@ func processWebhookInTheBackground(config common.Config, c *gin.Context, Install
 	return false
 }
 
-func verifyConfigFile(client *github.Client, RepoOwner string, RepoName string, ctx context.Context) (common.Config, error) {
+func VerifyConfigFile(client *github.Client, RepoOwner string, RepoName string, ctx context.Context) (common.Config, error) {
 
 	commit, _, _ := client.Repositories.GetCommit(ctx, RepoOwner, RepoName, "main")
 
