@@ -16,6 +16,8 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 )
 
+const configFilePath = "datadrift-config.json"
+
 type GithubWebhookPayload struct {
 	Repository struct {
 		Name  string `json:"name"`
@@ -119,8 +121,6 @@ func processWebhookInTheBackground(config common.Config, c *gin.Context, Install
 func verifyConfigFile(client *github.Client, RepoOwner string, RepoName string, ctx context.Context) (common.Config, error) {
 
 	commit, _, _ := client.Repositories.GetCommit(ctx, RepoOwner, RepoName, "main")
-
-	configFilePath := "datadrift-config.json"
 
 	file, _, _, err := client.Repositories.GetContents(ctx, RepoOwner, RepoName, configFilePath, &github.RepositoryContentGetOptions{
 		Ref: *commit.SHA,
