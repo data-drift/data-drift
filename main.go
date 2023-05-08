@@ -82,7 +82,6 @@ func performTask(syncConfig common.SyncConfig) error {
 			syncConfig.GithubRepoOwner,
 			syncConfig.GithubRepoName,
 			syncConfig.GithubRepoFilePath,
-			syncConfig.StartDate,
 			syncConfig.DateColumn,
 			syncConfig.KpiColumn,
 			"Default metric name",

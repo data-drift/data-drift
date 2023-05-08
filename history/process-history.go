@@ -16,14 +16,18 @@ import (
 	"github.com/google/go-github/github"
 )
 
-func ProcessHistory(client *github.Client, repoOwner string, repoName string, filePath string, startDateStr string, dateColumnName string, KPIColumnName string, metricName string, metric common.Metric) (string, error) {
+func ProcessHistory(client *github.Client,
+	repoOwner string,
+	repoName string,
+	filePath string,
+	dateColumnName string,
+	KPIColumnName string,
+	metricName string,
+	metric common.Metric) (string, error) {
 
+	fmt.Println(metric)
 	// Set the start and end dates to display the history for.
 	endDate := time.Now()
-	startDate, err := time.Parse("2006-01-02", startDateStr)
-	if err != nil {
-		return "", fmt.Errorf("error parsing start date: %v", err)
-	}
 
 	if dateColumnName == "" {
 		return "", fmt.Errorf("error no date column name provided")
@@ -34,7 +38,6 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, fi
 	commits, _, err := client.Repositories.ListCommits(context.Background(), repoOwner, repoName, &github.CommitsListOptions{
 		Path:        filePath,
 		SHA:         "",
-		Since:       startDate,
 		Until:       endDate,
 		ListOptions: github.ListOptions{PerPage: 100},
 	})
