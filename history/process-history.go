@@ -103,30 +103,28 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 				case common.Month:
 					periodKey = PeriodId(periodTime.Format("2006-01"))
 				case common.Year:
-					periodKey = PeriodId(periodTime.Format("2006-01"))
+					periodKey = PeriodId(periodTime.Format("2006"))
 				default:
 					log.Fatalf("Invalid time grain: %s", timegrain)
 				}
-				fmt.Println(periodKey)
+
+				if lineCountAndKPIByDateByVersion[periodKey] == nil {
+					lineCountAndKPIByDateByVersion[periodKey] = make(map[CommitSha]PeriodCommitData)
+				}
+
+				kpiStr := record[kpiColumn]
+				kpi, _ := strconv.ParseFloat(kpiStr, 64)
+
+				newLineCount := lineCountAndKPIByDateByVersion[periodKey][commitSha].Lines + 1
+				newKPI := lineCountAndKPIByDateByVersion[periodKey][commitSha].KPI + kpi
+
+				lineCountAndKPIByDateByVersion[periodKey][commitSha] = struct {
+					Lines           int
+					KPI             float64
+					CommitTimestamp int64
+					CommitUrl       string
+				}{Lines: newLineCount, KPI: newKPI, CommitTimestamp: commitTimestamp, CommitUrl: *commit.HTMLURL}
 			}
-			dateStr := PeriodId(record[dateColumn])
-
-			if lineCountAndKPIByDateByVersion[dateStr] == nil {
-				lineCountAndKPIByDateByVersion[dateStr] = make(map[CommitSha]PeriodCommitData)
-			}
-
-			kpiStr := record[kpiColumn]
-			kpi, _ := strconv.ParseFloat(kpiStr, 64)
-
-			newLineCount := lineCountAndKPIByDateByVersion[dateStr][commitSha].Lines + 1
-			newKPI := lineCountAndKPIByDateByVersion[dateStr][commitSha].KPI + kpi
-
-			lineCountAndKPIByDateByVersion[dateStr][commitSha] = struct {
-				Lines           int
-				KPI             float64
-				CommitTimestamp int64
-				CommitUrl       string
-			}{Lines: newLineCount, KPI: newKPI, CommitTimestamp: commitTimestamp, CommitUrl: *commit.HTMLURL}
 		}
 
 	}

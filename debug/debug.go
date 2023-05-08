@@ -33,7 +33,6 @@ func DebugFunction() {
 	ctx := context.Background()
 
 	config, _ := github.VerifyConfigFile(client, githubRepoOwner, githubRepoName, ctx)
-	fmt.Println("config", config.Metrics[0].TimeGrains)
 	if config.Metrics[0].TimeGrains[0] != common.Day {
 		return
 	}
@@ -46,7 +45,7 @@ func DebugFunction() {
 			KPIColumnName:  kpiColumn,
 			DateColumnName: dateColumn,
 			Filepath:       githubRepoFilePath,
-			TimeGrains:     []common.TimeGrain{common.Month},
+			TimeGrains:     []common.TimeGrain{common.Month, common.Year},
 			Dimensions:     []string{},
 		})
 
