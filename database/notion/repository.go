@@ -13,6 +13,8 @@ import (
 
 const DATADRIFT_PROPERTY = "datadrift-id"
 
+var DefaultPropertiesToDelete = []string{"Tags", "Status", "Étiquette", "Étiquettes"}
+
 func FindOrCreateReportPageId(apiKey string, databaseId string, reportName string) (string, error) {
 	existingReportId, err := QueryDatabaseWithReportId(apiKey, databaseId, reportName)
 	if err != nil {
@@ -129,19 +131,20 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 	database, err := client.FindDatabaseByID(ctx, databaseID)
 
 	hasDatadriftProperty := false
-	shouldDeleteTags := false
-	shouldDeleteStatus := false
+
+	propertiesToDelete := []string{}
 
 	for _, property := range database.Properties {
 		fmt.Println("Property:", property.Name)
 		if property.Name == DATADRIFT_PROPERTY {
 			hasDatadriftProperty = true
 		}
-		if property.Name == "Tags" {
-			shouldDeleteTags = true
-		}
-		if property.Name == "Status" {
-			shouldDeleteStatus = true
+
+		for _, propertyToDelete := range DefaultPropertiesToDelete {
+			propertyExists := property.Name == propertyToDelete
+			if propertyExists {
+				propertiesToDelete = append(propertiesToDelete, propertyToDelete)
+			}
 		}
 
 	}
@@ -156,12 +159,8 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 			},
 		}
 
-		if shouldDeleteTags {
-			params.Properties["Tags"] = nil
-		}
-
-		if shouldDeleteStatus {
-			params.Properties["Status"] = nil
+		for _, propertyToDelete := range propertiesToDelete {
+			params.Properties[propertyToDelete] = nil
 		}
 
 		fmt.Println("Creating property", params)
