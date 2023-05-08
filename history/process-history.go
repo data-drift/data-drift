@@ -16,10 +16,7 @@ import (
 	"github.com/google/go-github/github"
 )
 
-func ProcessHistory(client *github.Client,
-	repoOwner string,
-	repoName string,
-	metric common.Metric) (string, error) {
+func ProcessHistory(client *github.Client, repoOwner string, repoName string, metric common.Metric) (string, error) {
 
 	filePath := metric.Filepath
 	dateColumnName := metric.DateColumnName
