@@ -12,17 +12,32 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/data-drift/kpi-git-history/common"
 	"github.com/google/go-github/github"
 )
 
-func ProcessHistory(client *github.Client, repoOwner string, repoName string, filePath string, startDateStr string, dateColumnName string, KPIColumnName string, metricName string) (string, error) {
+type CommitSha string
+type PeriodId string
 
+type PeriodCommitData struct {
+	Lines           int
+	KPI             float64
+	CommitTimestamp int64
+	CommitUrl       string
+}
+
+type PeriodData map[PeriodId]map[CommitSha]PeriodCommitData
+
+func ProcessHistory(client *github.Client, repoOwner string, repoName string, metric common.Metric) (string, error) {
+
+	filePath := metric.Filepath
+	dateColumnName := metric.DateColumnName
+	KPIColumnName := metric.KPIColumnName
+	metricName := metric.MetricName
+
+	fmt.Println(metric)
 	// Set the start and end dates to display the history for.
 	endDate := time.Now()
-	startDate, err := time.Parse("2006-01-02", startDateStr)
-	if err != nil {
-		return "", fmt.Errorf("error parsing start date: %v", err)
-	}
 
 	if dateColumnName == "" {
 		return "", fmt.Errorf("error no date column name provided")
@@ -33,7 +48,6 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, fi
 	commits, _, err := client.Repositories.ListCommits(context.Background(), repoOwner, repoName, &github.CommitsListOptions{
 		Path:        filePath,
 		SHA:         "",
-		Since:       startDate,
 		Until:       endDate,
 		ListOptions: github.ListOptions{PerPage: 100},
 	})
@@ -45,14 +59,11 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, fi
 	fmt.Printf("Number of commits: %d\n", len(commits))
 
 	// Group the lines of the CSV file by reporting date.
-	lineCountAndKPIByDateByVersion := make(map[string]map[string]struct {
-		Lines           int
-		KPI             float64
-		CommitTimestamp int64
-		CommitUrl       string
-	})
+	lineCountAndKPIByDateByVersion := make(PeriodData)
 	for index, commit := range commits {
 		fmt.Printf("\r Commit %d/%d", index, len(commits))
+
+		commitSha := CommitSha(*commit.SHA)
 
 		commitDate := commit.Commit.Author.Date
 		commitTimestamp := commitDate.Unix()
@@ -79,29 +90,41 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, fi
 			}
 		}
 		for _, record := range records[1:] { // Skip the header row.
-			dateStr := record[dateColumn]
+			for _, timegrain := range GetDefaultTimeGrains(metric.TimeGrains) {
+				var periodKey PeriodId
+				periodTime, _ := time.Parse("2006-01-02", record[dateColumn])
 
-			if lineCountAndKPIByDateByVersion[dateStr] == nil {
-				lineCountAndKPIByDateByVersion[dateStr] = make(map[string]struct {
+				switch timegrain {
+				case common.Day:
+					periodKey = PeriodId(periodTime.Format("2006-01-02"))
+				case common.Week:
+					_, week := periodTime.ISOWeek()
+					periodKey = PeriodId(fmt.Sprintf("%d-%d", periodTime.Year(), week))
+				case common.Month:
+					periodKey = PeriodId(periodTime.Format("2006-01"))
+				case common.Year:
+					periodKey = PeriodId(periodTime.Format("2006"))
+				default:
+					log.Fatalf("Invalid time grain: %s", timegrain)
+				}
+
+				if lineCountAndKPIByDateByVersion[periodKey] == nil {
+					lineCountAndKPIByDateByVersion[periodKey] = make(map[CommitSha]PeriodCommitData)
+				}
+
+				kpiStr := record[kpiColumn]
+				kpi, _ := strconv.ParseFloat(kpiStr, 64)
+
+				newLineCount := lineCountAndKPIByDateByVersion[periodKey][commitSha].Lines + 1
+				newKPI := lineCountAndKPIByDateByVersion[periodKey][commitSha].KPI + kpi
+
+				lineCountAndKPIByDateByVersion[periodKey][commitSha] = struct {
 					Lines           int
 					KPI             float64
 					CommitTimestamp int64
 					CommitUrl       string
-				})
+				}{Lines: newLineCount, KPI: newKPI, CommitTimestamp: commitTimestamp, CommitUrl: *commit.HTMLURL}
 			}
-
-			kpiStr := record[kpiColumn]
-			kpi, _ := strconv.ParseFloat(kpiStr, 64)
-
-			newLineCount := lineCountAndKPIByDateByVersion[dateStr][*commit.SHA].Lines + 1
-			newKPI := lineCountAndKPIByDateByVersion[dateStr][*commit.SHA].KPI + kpi
-
-			lineCountAndKPIByDateByVersion[dateStr][*commit.SHA] = struct {
-				Lines           int
-				KPI             float64
-				CommitTimestamp int64
-				CommitUrl       string
-			}{Lines: newLineCount, KPI: newKPI, CommitTimestamp: commitTimestamp, CommitUrl: *commit.HTMLURL}
 		}
 
 	}
@@ -130,23 +153,18 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, fi
 
 	// Add the date strings to the slice.
 	for dateStr := range lineCountAndKPIByDateByVersion {
-		dates = append(dates, dateStr)
+		dates = append(dates, string(dateStr))
 	}
 
 	// Sort the date strings in ascending order.
 	sort.Strings(dates)
 
 	// Create a map to hold the line counts by date by version, ordered by date.
-	orderedLineCountsByDateByVersion := make(map[string]map[string]struct {
-		Lines           int
-		KPI             float64
-		CommitTimestamp int64
-		CommitUrl       string
-	})
+	orderedLineCountsByDateByVersion := make(map[string]map[CommitSha]PeriodCommitData)
 
 	// Copy the line counts by date by version to the new map, ordered by date.
 	for _, dateStr := range dates {
-		orderedLineCountsByDateByVersion[dateStr] = lineCountAndKPIByDateByVersion[dateStr]
+		orderedLineCountsByDateByVersion[dateStr] = lineCountAndKPIByDateByVersion[PeriodId(dateStr)]
 	}
 	// Generate a timestamp to include in the JSON file name.
 	timestamp := time.Now().Format("2006-01-02_15-04-05")
@@ -182,4 +200,11 @@ func getFileContentsForCommit(client *github.Client, owner, name, path, sha stri
 	}
 
 	return []byte(content), nil
+}
+
+func GetDefaultTimeGrains(timeGrains []common.TimeGrain) []common.TimeGrain {
+	if len(timeGrains) == 0 {
+		return []common.TimeGrain{common.Month}
+	}
+	return timeGrains
 }

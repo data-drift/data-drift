@@ -1,8 +1,10 @@
 package debug
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/data-drift/kpi-git-history/charts"
 	"github.com/data-drift/kpi-git-history/common"
@@ -18,18 +20,34 @@ func DebugFunction() {
 	githubRepoOwner := os.Getenv("GITHUB_REPO_OWNER")
 	githubRepoName := os.Getenv("GITHUB_REPO_NAME")
 	githubRepoFilePath := os.Getenv("GITHUB_REPO_FILE_PATH")
+	githubApplicationIdStr := os.Getenv("GITHUB_APPLICATION_INSTALLATION_ID")
 	dateColumn := os.Getenv("DATE_COLUMN")
-	startDate := os.Getenv("START_DATE")
 	kpiColumn := os.Getenv("KPI_COLUMN")
 	notionAPIKey := os.Getenv("NOTION_API_KEY")
 	notionDatabaseID := os.Getenv("NOTION_DATABASE_ID")
 
 	filepath := os.Getenv("DEFAULT_FILE_PATH")
-	fmt.Println(filepath)
+	githubApplicationId, _ := strconv.ParseInt(githubApplicationIdStr, 10, 64)
+
+	client, _ := github.CreateClientFromGithubApp(int64(githubApplicationId))
+	ctx := context.Background()
+
+	config, _ := github.VerifyConfigFile(client, githubRepoOwner, githubRepoName, ctx)
+	if config.Metrics[0].TimeGrains[0] != common.Day {
+		return
+	}
 
 	if filepath == "" {
+
 		client := github.CreateClientFromGithubToken(githubToken)
-		newFilepath, err := history.ProcessHistory(client, githubRepoOwner, githubRepoName, githubRepoFilePath, startDate, dateColumn, kpiColumn, "default metric name")
+		newFilepath, err := history.ProcessHistory(client, githubRepoOwner, githubRepoName, common.Metric{
+			MetricName:     "Default metric name",
+			KPIColumnName:  kpiColumn,
+			DateColumnName: dateColumn,
+			Filepath:       githubRepoFilePath,
+			TimeGrains:     []common.TimeGrain{common.Month, common.Year},
+			Dimensions:     []string{},
+		})
 
 		if err != nil {
 			println(err)

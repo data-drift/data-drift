@@ -36,13 +36,13 @@
             "type": "string",
             "description": "The name of the column containing the date (YYYY-MM-DD)"
           },
-          "timeGrain": {
+          "timeGrains": {
             "type": "array",
             "items": {
               "type": "string",
               "enum": ["day", "week", "month", "year"]
             },
-            "description": "The timegrain for the metric data (day, week, or month)"
+            "description": "The timegrain for the metric data (day, week, month or year)"
           },
           "dimensions": {
             "type": "array",
