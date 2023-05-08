@@ -142,7 +142,9 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 		}
 		if property.Name == "Status" {
 			propertiesToDelete = append(propertiesToDelete, "Status")
-
+		}
+		if property.Name == "Étiquette" {
+			propertiesToDelete = append(propertiesToDelete, "Étiquette")
 		}
 
 	}
