@@ -40,9 +40,20 @@ type Config struct {
 	Metrics          []Metric `json:"metrics"`
 }
 
+type TimeGrain string
+
+const (
+	Day   TimeGrain = "day"
+	Week  TimeGrain = "week"
+	Month TimeGrain = "month"
+	Year  TimeGrain = "year"
+)
+
 type Metric struct {
-	Filepath       string `json:"filepath"`
-	DateColumnName string `json:"dateColumnName"`
-	KPIColumnName  string `json:"KPIColumnName"`
-	MetricName     string `json:"metricName"`
+	Filepath       string      `json:"filepath"`
+	DateColumnName string      `json:"dateColumnName"`
+	KPIColumnName  string      `json:"KPIColumnName"`
+	MetricName     string      `json:"metricName"`
+	TimeGrains     []TimeGrain `json:"timeGrains"`
+	Dimensions     []string    `json:"dimensions"`
 }
