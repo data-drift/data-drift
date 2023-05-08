@@ -99,7 +99,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 					periodKey = PeriodId(periodTime.Format("2006-01-02"))
 				case common.Week:
 					_, week := periodTime.ISOWeek()
-					periodKey = PeriodId(fmt.Sprintf("%d-%d", periodTime.Year(), week))
+					periodKey = PeriodId(fmt.Sprintf("%d-W%d", periodTime.Year(), week))
 				case common.Month:
 					periodKey = PeriodId(periodTime.Format("2006-01"))
 				case common.Year:
