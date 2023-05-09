@@ -11,7 +11,7 @@ import (
 	"github.com/dstotijn/go-notion"
 )
 
-const DATADRIFT_PROPERTY = "datadrift-id"
+const PROPERTY_DATADRIFT_ID = "datadrift-id"
 
 var DefaultPropertiesToDelete = []string{"Tags", "Status", "Étiquette", "Étiquettes"}
 
@@ -93,7 +93,7 @@ func CreateEmptyReport(apiKey string, databaseId string, reportId string) (strin
 					},
 				},
 			},
-			DATADRIFT_PROPERTY: notion.DatabasePageProperty{
+			PROPERTY_DATADRIFT_ID: notion.DatabasePageProperty{
 				RichText: []notion.RichText{
 					{
 						Text: &notion.Text{
@@ -136,7 +136,7 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 
 	for _, property := range database.Properties {
 		fmt.Println("Property:", property.Name)
-		if property.Name == DATADRIFT_PROPERTY {
+		if property.Name == PROPERTY_DATADRIFT_ID {
 			hasDatadriftProperty = true
 		}
 
@@ -152,7 +152,7 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 	if !hasDatadriftProperty {
 		params := notion.UpdateDatabaseParams{
 			Properties: map[string]*notion.DatabaseProperty{
-				DATADRIFT_PROPERTY: {
+				PROPERTY_DATADRIFT_ID: {
 					Type:     "rich_text",
 					RichText: &notion.EmptyMetadata{},
 				},
@@ -168,11 +168,11 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 		if err != nil {
 			return err
 		}
-		fmt.Println("Updated database", updatedDB, " with property", DATADRIFT_PROPERTY)
+		fmt.Println("Updated database", updatedDB, " with property", PROPERTY_DATADRIFT_ID)
 		fmt.Println("Clean empty item in database")
 		queryParams := &notion.DatabaseQuery{
 			Filter: &notion.DatabaseQueryFilter{
-				Property: DATADRIFT_PROPERTY,
+				Property: PROPERTY_DATADRIFT_ID,
 				DatabaseQueryPropertyFilter: notion.DatabaseQueryPropertyFilter{
 					RichText: &notion.TextPropertyFilter{
 						Equals: " ",
