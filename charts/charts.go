@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"math"
 	"net/http"
 	"os"
 	"sort"
@@ -12,6 +11,7 @@ import (
 	"time"
 
 	"github.com/data-drift/kpi-git-history/common"
+	"github.com/shopspring/decimal"
 )
 
 type ChartResponse struct {
@@ -19,49 +19,50 @@ type ChartResponse struct {
 	URL     string `json:"url"`
 }
 
-func ProcessCharts(historyFilepath string, metric common.Metric) []common.KPIInfo {
+func ProcessCharts(historyFilepath string, metric common.Metric) []common.KPIReport {
 
 	data, err := getKeysFromJSON(historyFilepath)
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
 
-	var kpiInfos []common.KPIInfo
+	var kpiInfos []common.KPIReport
 
 	for key := range data {
 		fmt.Println("Key:", key)
 		// Access the value associated with the key: data[key]
 		// Additional logic for processing the value
 		// ...
-		kpi := OrderDataAndCreateChart(metric.MetricName+" "+key, data[key])
+		kpi := OrderDataAndCreateChart(metric.MetricName+" "+key, key, data[key])
 		kpiInfos = append(kpiInfos, kpi)
 	}
 
 	return kpiInfos
 }
 
-func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
+func OrderDataAndCreateChart(KPIName string, periodId string, unsortedResults map[string]struct {
 	Lines           int
-	KPI             float64
+	KPI             string
 	CommitTimestamp int64
 	CommitUrl       string
-}) common.KPIInfo {
+}) common.KPIReport {
 	// Extract the values from the map into a slice of struct objects
 	var dataSortableArray []struct {
 		Lines           int
-		KPI             float64
+		KPI             decimal.Decimal
 		CommitTimestamp int64
 		CommitUrl       string
 	}
 	for _, stats := range unsortedResults {
+		KPI, _ := decimal.NewFromString(stats.KPI)
 		dataSortableArray = append(dataSortableArray, struct {
 			Lines           int
-			KPI             float64
+			KPI             decimal.Decimal
 			CommitTimestamp int64
 			CommitUrl       string
 		}{
 			Lines:           stats.Lines,
-			KPI:             stats.KPI,
+			KPI:             KPI,
 			CommitTimestamp: stats.CommitTimestamp,
 			CommitUrl:       stats.CommitUrl,
 		})
@@ -78,21 +79,21 @@ func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
 	initialcolor := "rgb(151 154 155)"
 	upcolor := "rgb(82 156 202)"
 	downcolor := "rgb(255 163 68)"
-	var prevKPI int
-	var firstRoundedKPI int
-	var lastRoundedKPI int
+	var prevKPI decimal.Decimal
+	initialValue := dataSortableArray[0].KPI
+	latestValue := dataSortableArray[len(dataSortableArray)-1].KPI
 	var events []common.EventObject
 	minOfChart := 0
 
 	for _, v := range dataSortableArray {
-		roundedKPI := int(math.Round(v.KPI))
-		roundedMin := int(math.Round(v.KPI * 0.98))
+		roundedKPI := v.KPI
+		// TODO
+		roundedMin := 32000
 		timestamp := int64(v.CommitTimestamp) // Unix timestamp for May 26, 2022 12:00:00 AM UTC
 		timeObj := time.Unix(timestamp, 0)    // Convert the Unix timestamp to a time.Time object
 		dateStr := timeObj.Format("2006-01-02")
-		if prevKPI == 0 {
-			firstRoundedKPI = roundedKPI
-			prevKPI = roundedKPI
+		if prevKPI.IsZero() {
+			prevKPI = v.KPI
 			minOfChart = roundedMin
 			labels = append(labels, dateStr)
 			diff = append(diff, roundedKPI)
@@ -105,39 +106,41 @@ func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
 			}
 			events = append(events, event)
 		} else {
-			d := roundedKPI - prevKPI
-			if d == 0 {
+			d := roundedKPI.Sub(prevKPI)
+			if d.IsZero() {
 
 			} else {
-				diff = append(diff, []int{prevKPI, roundedKPI})
+				// Maybe diff does not work with float
+				diff = append(diff, []decimal.Decimal{prevKPI, roundedKPI})
 				labels = append(labels, dateStr)
-				if prevKPI < roundedKPI {
+				if prevKPI.LessThan(roundedKPI) {
 					colors = append(colors, upcolor)
 				} else {
 					colors = append(colors, downcolor)
 					minOfChart = roundedMin
 				}
+				diff, _ := d.Float64()
 				event := common.EventObject{
 					CommitTimestamp: timestamp,
-					Diff:            d,
+					Diff:            diff,
 					EventType:       common.EventTypeUpdate,
 					CommitUrl:       v.CommitUrl,
 				}
 				events = append(events, event)
 			}
 			prevKPI = roundedKPI
-			lastRoundedKPI = roundedKPI
 		}
 	}
 	fmt.Println(diff)
 
 	chartUrl := createChart(diff, labels, colors, KPIName, minOfChart)
-	kpi1 := common.KPIInfo{
-		KPIName:         KPIName,
-		GraphQLURL:      chartUrl,
-		FirstRoundedKPI: firstRoundedKPI,
-		LastRoundedKPI:  lastRoundedKPI,
-		Events:          events,
+	kpi1 := common.KPIReport{
+		KPIName:      KPIName,
+		PeriodId:     periodId,
+		GraphQLURL:   chartUrl,
+		InitialValue: initialValue,
+		LatestValue:  latestValue,
+		Events:       events,
 	}
 	return kpi1
 }
@@ -238,7 +241,7 @@ func convertToChartMakerURL(url string) string {
 
 func getKeysFromJSON(path string) (map[string]map[string]struct {
 	Lines           int
-	KPI             float64
+	KPI             string
 	CommitTimestamp int64
 	CommitUrl       string
 }, error) {
@@ -251,7 +254,7 @@ func getKeysFromJSON(path string) (map[string]map[string]struct {
 	// Unmarshal the JSON data into the desired type
 	var data map[string]map[string]struct {
 		Lines           int
-		KPI             float64
+		KPI             string
 		CommitTimestamp int64
 		CommitUrl       string
 	}

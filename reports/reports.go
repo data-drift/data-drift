@@ -2,16 +2,17 @@ package reports
 
 import (
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/data-drift/kpi-git-history/common"
 	notion_database "github.com/data-drift/kpi-git-history/database/notion"
 	"github.com/dstotijn/go-notion"
+	"github.com/shopspring/decimal"
 )
 
-func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIInfo) error {
-	reportNotionPageId, _ := notion_database.FindOrCreateReportPageId(syncConfig.NotionAPIKey, syncConfig.NotionDatabaseID, KPIInfo.KPIName)
+func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error {
+	timeGrain, _ := GetTimeGrain(KPIInfo.PeriodId)
+	reportNotionPageId, _ := notion_database.FindOrCreateReportPageId(syncConfig.NotionAPIKey, syncConfig.NotionDatabaseID, KPIInfo.KPIName, KPIInfo.PeriodId, timeGrain)
 	fmt.Println(reportNotionPageId)
 
 	params := notion.CreatePageParams{
@@ -42,7 +43,7 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIInfo) error {
 					},
 					{
 						Text: &notion.Text{
-							Content: strconv.Itoa(KPIInfo.FirstRoundedKPI),
+							Content: KPIInfo.InitialValue.String(),
 						},
 						Annotations: &notion.Annotations{
 							Bold: true,
@@ -67,7 +68,7 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIInfo) error {
 					},
 					{
 						Text: &notion.Text{
-							Content: strconv.Itoa(KPIInfo.LastRoundedKPI),
+							Content: KPIInfo.LatestValue.String(),
 						},
 						Annotations: &notion.Annotations{
 							Bold: true,
@@ -84,11 +85,11 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIInfo) error {
 					},
 					{
 						Text: &notion.Text{
-							Content: displayDiff(KPIInfo.LastRoundedKPI - KPIInfo.FirstRoundedKPI),
+							Content: displayDiff(KPIInfo.LatestValue.Sub(KPIInfo.InitialValue)),
 						},
 						Annotations: &notion.Annotations{
 							Bold:  true,
-							Color: displayDiffColor(KPIInfo.LastRoundedKPI - KPIInfo.FirstRoundedKPI),
+							Color: displayDiffColor(KPIInfo.LatestValue.Sub(KPIInfo.InitialValue)),
 						},
 					},
 				},
@@ -145,7 +146,7 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIInfo) error {
 				},
 				{
 					Text: &notion.Text{
-						Content: strconv.Itoa(KPIInfo.FirstRoundedKPI),
+						Content: KPIInfo.InitialValue.String(),
 					},
 					Annotations: &notion.Annotations{
 						Bold:  true,
@@ -163,11 +164,11 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIInfo) error {
 				},
 				{
 					Text: &notion.Text{
-						Content: displayDiff(event.Diff),
+						Content: displayDiff(decimal.NewFromFloat(event.Diff)),
 					},
 					Annotations: &notion.Annotations{
 						Bold:  true,
-						Color: displayDiffColor(event.Diff),
+						Color: displayDiffColor(decimal.NewFromFloat(event.Diff)),
 					},
 				},
 			},
@@ -198,16 +199,38 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIInfo) error {
 	return nil
 }
 
-func displayDiff(diff int) string {
-	if diff >= 0 {
-		return "+" + strconv.Itoa(diff)
+func displayDiff(diff decimal.Decimal) string {
+	if diff.IsPositive() {
+
+		return "+" + diff.String()
 	}
-	return strconv.Itoa(diff)
+	return diff.String()
 }
 
-func displayDiffColor(diff int) notion.Color {
-	if diff < 0 {
+func displayDiffColor(diff decimal.Decimal) notion.Color {
+
+	if diff.IsNegative() {
 		return notion.ColorOrange
 	}
 	return notion.ColorBlue
+}
+
+func GetTimeGrain(periodKey string) (common.TimeGrain, error) {
+	_, err := time.Parse("2006-01-02", periodKey)
+	if err == nil {
+		return common.Day, nil
+	}
+	_, err = time.Parse("2006-W01", periodKey)
+	if err == nil {
+		return common.Week, nil
+	}
+	_, err = time.Parse("2006-01", periodKey)
+	if err == nil {
+		return common.Month, nil
+	}
+	_, err = time.Parse("2006", periodKey)
+	if err == nil {
+		return common.Year, nil
+	}
+	return "", fmt.Errorf("invalid period key: %s", periodKey)
 }

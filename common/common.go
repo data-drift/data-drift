@@ -1,11 +1,14 @@
 package common
 
-type KPIInfo struct {
-	KPIName         string        `json:"kpiName"`
-	GraphQLURL      string        `json:"graphqlUrl"`
-	FirstRoundedKPI int           `json:"firstRoundedKPI"`
-	LastRoundedKPI  int           `json:"lastRoundedKPI"`
-	Events          []EventObject `json:"events"`
+import "github.com/shopspring/decimal"
+
+type KPIReport struct {
+	KPIName      string          `json:"kpiName"`
+	PeriodId     string          `json:"periodId"`
+	GraphQLURL   string          `json:"graphqlUrl"`
+	InitialValue decimal.Decimal `json:"firstRoundedKPI"`
+	LatestValue  decimal.Decimal `json:"lastRoundedKPI"`
+	Events       []EventObject   `json:"events"`
 }
 
 type SyncConfig struct {
@@ -23,7 +26,7 @@ type SyncConfig struct {
 type EventObject struct {
 	CommitTimestamp int64     `json:"commitTimestamp"`
 	CommitUrl       string    `json:"commitUrl"`
-	Diff            int       `json:"diff"`
+	Diff            float64   `json:"diff"`
 	EventType       EventType `json:"eventType"`
 }
 
