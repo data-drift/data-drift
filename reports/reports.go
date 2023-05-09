@@ -11,7 +11,8 @@ import (
 )
 
 func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error {
-	reportNotionPageId, _ := notion_database.FindOrCreateReportPageId(syncConfig.NotionAPIKey, syncConfig.NotionDatabaseID, KPIInfo.KPIName)
+	timeGrain, _ := GetTimeGrain(KPIInfo.PeriodId)
+	reportNotionPageId, _ := notion_database.FindOrCreateReportPageId(syncConfig.NotionAPIKey, syncConfig.NotionDatabaseID, KPIInfo.KPIName, KPIInfo.PeriodId, timeGrain)
 	fmt.Println(reportNotionPageId)
 
 	params := notion.CreatePageParams{
@@ -219,15 +220,15 @@ func GetTimeGrain(periodKey string) (common.TimeGrain, error) {
 	if err == nil {
 		return common.Day, nil
 	}
-	_, err = time.Parse("2006-W01", fmt.Sprintf("%s-01", periodKey))
+	_, err = time.Parse("2006-W01", periodKey)
 	if err == nil {
 		return common.Week, nil
 	}
-	_, err = time.Parse("2006-01", fmt.Sprintf("%s-01", periodKey))
+	_, err = time.Parse("2006-01", periodKey)
 	if err == nil {
 		return common.Month, nil
 	}
-	_, err = time.Parse("2006", fmt.Sprintf("%s-01-01", periodKey))
+	_, err = time.Parse("2006", periodKey)
 	if err == nil {
 		return common.Year, nil
 	}

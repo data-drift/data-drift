@@ -18,14 +18,14 @@ const PROPERTY_DATADRIFT_PERIOD = "datadrift-period"
 
 var DefaultPropertiesToDelete = []string{"Tags", "Status", "Étiquette", "Étiquettes"}
 
-func FindOrCreateReportPageId(apiKey string, databaseId string, reportName string) (string, error) {
+func FindOrCreateReportPageId(apiKey string, databaseId string, reportName string, period string, timeGrain common.TimeGrain) (string, error) {
 	existingReportId, err := QueryDatabaseWithReportId(apiKey, databaseId, reportName)
 	if err != nil {
 		return "", err
 	}
 	if existingReportId == "" {
 		fmt.Println("No existing report found, creating new one")
-		newReportId, err := CreateEmptyReport(apiKey, databaseId, reportName)
+		newReportId, err := CreateEmptyReport(apiKey, databaseId, reportName, period, timeGrain)
 		return newReportId, err
 	}
 	return existingReportId, nil
@@ -73,7 +73,7 @@ func QueryDatabaseWithReportId(apiKey string, databaseId string, reportId string
 	}
 }
 
-func CreateEmptyReport(apiKey string, databaseId string, reportId string) (string, error) {
+func CreateEmptyReport(apiKey string, databaseId string, reportId string, period string, timeGrain common.TimeGrain) (string, error) {
 	buf := &bytes.Buffer{}
 	ctx := context.Background()
 
@@ -103,6 +103,20 @@ func CreateEmptyReport(apiKey string, databaseId string, reportId string) (strin
 							Content: reportId,
 						},
 					},
+				},
+			},
+			PROPERTY_DATADRIFT_PERIOD: notion.DatabasePageProperty{
+				RichText: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: period,
+						},
+					},
+				},
+			},
+			PROPERTY_DATADRIFT_TIMEGRAIN: notion.DatabasePageProperty{
+				Select: &notion.SelectOptions{
+					Name: string(timeGrain),
 				},
 			},
 		},
