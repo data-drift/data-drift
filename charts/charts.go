@@ -78,21 +78,20 @@ func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
 	initialcolor := "rgb(151 154 155)"
 	upcolor := "rgb(82 156 202)"
 	downcolor := "rgb(255 163 68)"
-	var prevKPI int
-	var firstRoundedKPI int
-	var lastRoundedKPI int
+	var prevKPI float64
+	initialValue := dataSortableArray[0].KPI
+	latestValue := dataSortableArray[len(dataSortableArray)-1].KPI
 	var events []common.EventObject
 	minOfChart := 0
 
 	for _, v := range dataSortableArray {
-		roundedKPI := int(math.Round(v.KPI))
+		roundedKPI := v.KPI
 		roundedMin := int(math.Round(v.KPI * 0.98))
 		timestamp := int64(v.CommitTimestamp) // Unix timestamp for May 26, 2022 12:00:00 AM UTC
 		timeObj := time.Unix(timestamp, 0)    // Convert the Unix timestamp to a time.Time object
 		dateStr := timeObj.Format("2006-01-02")
 		if prevKPI == 0 {
-			firstRoundedKPI = roundedKPI
-			prevKPI = roundedKPI
+			prevKPI = v.KPI
 			minOfChart = roundedMin
 			labels = append(labels, dateStr)
 			diff = append(diff, roundedKPI)
@@ -109,7 +108,8 @@ func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
 			if d == 0 {
 
 			} else {
-				diff = append(diff, []int{prevKPI, roundedKPI})
+				// Maybe diff does not work with float
+				diff = append(diff, []int{int(prevKPI), int(roundedKPI)})
 				labels = append(labels, dateStr)
 				if prevKPI < roundedKPI {
 					colors = append(colors, upcolor)
@@ -126,18 +126,17 @@ func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
 				events = append(events, event)
 			}
 			prevKPI = roundedKPI
-			lastRoundedKPI = roundedKPI
 		}
 	}
 	fmt.Println(diff)
 
 	chartUrl := createChart(diff, labels, colors, KPIName, minOfChart)
 	kpi1 := common.KPIReport{
-		KPIName:         KPIName,
-		GraphQLURL:      chartUrl,
-		FirstRoundedKPI: firstRoundedKPI,
-		LastRoundedKPI:  lastRoundedKPI,
-		Events:          events,
+		KPIName:      KPIName,
+		GraphQLURL:   chartUrl,
+		InitialValue: initialValue,
+		LatestValue:  latestValue,
+		Events:       events,
 	}
 	return kpi1
 }

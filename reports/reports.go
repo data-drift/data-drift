@@ -42,7 +42,7 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error 
 					},
 					{
 						Text: &notion.Text{
-							Content: strconv.Itoa(KPIInfo.FirstRoundedKPI),
+							Content: strconv.FormatFloat(KPIInfo.InitialValue, 'f', 2, 64),
 						},
 						Annotations: &notion.Annotations{
 							Bold: true,
@@ -67,7 +67,7 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error 
 					},
 					{
 						Text: &notion.Text{
-							Content: strconv.Itoa(KPIInfo.LastRoundedKPI),
+							Content: strconv.FormatFloat(KPIInfo.LatestValue, 'f', 2, 64),
 						},
 						Annotations: &notion.Annotations{
 							Bold: true,
@@ -84,11 +84,11 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error 
 					},
 					{
 						Text: &notion.Text{
-							Content: displayDiff(KPIInfo.LastRoundedKPI - KPIInfo.FirstRoundedKPI),
+							Content: displayDiff(KPIInfo.LatestValue - KPIInfo.InitialValue),
 						},
 						Annotations: &notion.Annotations{
 							Bold:  true,
-							Color: displayDiffColor(KPIInfo.LastRoundedKPI - KPIInfo.FirstRoundedKPI),
+							Color: displayDiffColor(KPIInfo.LatestValue - KPIInfo.InitialValue),
 						},
 					},
 				},
@@ -145,7 +145,7 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error 
 				},
 				{
 					Text: &notion.Text{
-						Content: strconv.Itoa(KPIInfo.FirstRoundedKPI),
+						Content: strconv.FormatFloat(KPIInfo.InitialValue, 'f', 2, 64),
 					},
 					Annotations: &notion.Annotations{
 						Bold:  true,
@@ -198,14 +198,15 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error 
 	return nil
 }
 
-func displayDiff(diff int) string {
+func displayDiff(diff float64) string {
 	if diff >= 0 {
-		return "+" + strconv.Itoa(diff)
+
+		return "+" + strconv.FormatFloat(diff, 'f', 2, 64)
 	}
-	return strconv.Itoa(diff)
+	return strconv.FormatFloat(diff, 'f', 2, 64)
 }
 
-func displayDiffColor(diff int) notion.Color {
+func displayDiffColor(diff float64) notion.Color {
 	if diff < 0 {
 		return notion.ColorOrange
 	}

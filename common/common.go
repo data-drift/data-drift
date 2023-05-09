@@ -1,11 +1,11 @@
 package common
 
 type KPIReport struct {
-	KPIName         string        `json:"kpiName"`
-	GraphQLURL      string        `json:"graphqlUrl"`
-	FirstRoundedKPI int           `json:"firstRoundedKPI"`
-	LastRoundedKPI  int           `json:"lastRoundedKPI"`
-	Events          []EventObject `json:"events"`
+	KPIName      string        `json:"kpiName"`
+	GraphQLURL   string        `json:"graphqlUrl"`
+	InitialValue float64       `json:"firstRoundedKPI"`
+	LatestValue  float64       `json:"lastRoundedKPI"`
+	Events       []EventObject `json:"events"`
 }
 
 type SyncConfig struct {
@@ -23,7 +23,7 @@ type SyncConfig struct {
 type EventObject struct {
 	CommitTimestamp int64     `json:"commitTimestamp"`
 	CommitUrl       string    `json:"commitUrl"`
-	Diff            int       `json:"diff"`
+	Diff            float64   `json:"diff"`
 	EventType       EventType `json:"eventType"`
 }
 
