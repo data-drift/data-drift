@@ -8,21 +8,24 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/data-drift/kpi-git-history/common"
 	"github.com/dstotijn/go-notion"
 )
 
-const DATADRIFT_PROPERTY = "datadrift-id"
+const PROPERTY_DATADRIFT_ID = "datadrift-id"
+const PROPERTY_DATADRIFT_TIMEGRAIN = "datadrift-timegrain"
+const PROPERTY_DATADRIFT_PERIOD = "datadrift-period"
 
 var DefaultPropertiesToDelete = []string{"Tags", "Status", "Étiquette", "Étiquettes"}
 
-func FindOrCreateReportPageId(apiKey string, databaseId string, reportName string) (string, error) {
+func FindOrCreateReportPageId(apiKey string, databaseId string, reportName string, period string, timeGrain common.TimeGrain) (string, error) {
 	existingReportId, err := QueryDatabaseWithReportId(apiKey, databaseId, reportName)
 	if err != nil {
 		return "", err
 	}
 	if existingReportId == "" {
 		fmt.Println("No existing report found, creating new one")
-		newReportId, err := CreateEmptyReport(apiKey, databaseId, reportName)
+		newReportId, err := CreateEmptyReport(apiKey, databaseId, reportName, period, timeGrain)
 		return newReportId, err
 	}
 	return existingReportId, nil
@@ -70,7 +73,7 @@ func QueryDatabaseWithReportId(apiKey string, databaseId string, reportId string
 	}
 }
 
-func CreateEmptyReport(apiKey string, databaseId string, reportId string) (string, error) {
+func CreateEmptyReport(apiKey string, databaseId string, reportId string, period string, timeGrain common.TimeGrain) (string, error) {
 	buf := &bytes.Buffer{}
 	ctx := context.Background()
 
@@ -93,13 +96,27 @@ func CreateEmptyReport(apiKey string, databaseId string, reportId string) (strin
 					},
 				},
 			},
-			DATADRIFT_PROPERTY: notion.DatabasePageProperty{
+			PROPERTY_DATADRIFT_ID: notion.DatabasePageProperty{
 				RichText: []notion.RichText{
 					{
 						Text: &notion.Text{
 							Content: reportId,
 						},
 					},
+				},
+			},
+			PROPERTY_DATADRIFT_PERIOD: notion.DatabasePageProperty{
+				RichText: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: period,
+						},
+					},
+				},
+			},
+			PROPERTY_DATADRIFT_TIMEGRAIN: notion.DatabasePageProperty{
+				Select: &notion.SelectOptions{
+					Name: string(timeGrain),
 				},
 			},
 		},
@@ -130,14 +147,22 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 	client := notion.NewClient(apiKey, notion.WithHTTPClient(httpClient))
 	database, err := client.FindDatabaseByID(ctx, databaseID)
 
-	hasDatadriftProperty := false
+	shouldCreateDatadriftPropertyId := true
+	shouldCreateDatadriftPropertyPeriod := true
+	shouldCreateDatadriftPropertyTimeGrain := true
 
 	propertiesToDelete := []string{}
 
 	for _, property := range database.Properties {
 		fmt.Println("Property:", property.Name)
-		if property.Name == DATADRIFT_PROPERTY {
-			hasDatadriftProperty = true
+		if property.Name == PROPERTY_DATADRIFT_ID {
+			shouldCreateDatadriftPropertyId = false
+		}
+		if property.Name == PROPERTY_DATADRIFT_PERIOD {
+			shouldCreateDatadriftPropertyPeriod = false
+		}
+		if property.Name == PROPERTY_DATADRIFT_TIMEGRAIN {
+			shouldCreateDatadriftPropertyTimeGrain = false
 		}
 
 		for _, propertyToDelete := range DefaultPropertiesToDelete {
@@ -148,13 +173,29 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 		}
 
 	}
-	fmt.Println("hasDatadriftProperty:", hasDatadriftProperty)
-	if !hasDatadriftProperty {
+	fmt.Println("hasDatadriftProperty:", shouldCreateDatadriftPropertyId)
+	shouldCreateProperties := shouldCreateDatadriftPropertyId || shouldCreateDatadriftPropertyPeriod || shouldCreateDatadriftPropertyTimeGrain
+	if shouldCreateProperties {
 		params := notion.UpdateDatabaseParams{
 			Properties: map[string]*notion.DatabaseProperty{
-				DATADRIFT_PROPERTY: {
-					Type:     "rich_text",
+				PROPERTY_DATADRIFT_ID: {
+					Type:     notion.DBPropTypeRichText,
 					RichText: &notion.EmptyMetadata{},
+				},
+				PROPERTY_DATADRIFT_PERIOD: {
+					Type:     notion.DBPropTypeRichText,
+					RichText: &notion.EmptyMetadata{},
+				},
+				PROPERTY_DATADRIFT_TIMEGRAIN: {
+					Type: notion.DBPropTypeSelect,
+					Select: &notion.SelectMetadata{
+						Options: []notion.SelectOptions{
+							{Name: string(common.Day)},
+							{Name: string(common.Month)},
+							{Name: string(common.Week)},
+							{Name: string(common.Year)},
+						},
+					},
 				},
 			},
 		}
@@ -164,15 +205,14 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 		}
 
 		fmt.Println("Creating property", params)
-		updatedDB, err := client.UpdateDatabase(ctx, databaseID, params)
+		_, err := client.UpdateDatabase(ctx, databaseID, params)
 		if err != nil {
 			return err
 		}
-		fmt.Println("Updated database", updatedDB, " with property", DATADRIFT_PROPERTY)
 		fmt.Println("Clean empty item in database")
 		queryParams := &notion.DatabaseQuery{
 			Filter: &notion.DatabaseQueryFilter{
-				Property: DATADRIFT_PROPERTY,
+				Property: PROPERTY_DATADRIFT_ID,
 				DatabaseQueryPropertyFilter: notion.DatabaseQueryPropertyFilter{
 					RichText: &notion.TextPropertyFilter{
 						Equals: " ",

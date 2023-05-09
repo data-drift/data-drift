@@ -45,6 +45,7 @@ require (
 	github.com/dstotijn/go-notion v0.11.0
 	github.com/gin-gonic/gin v1.9.0
 	github.com/google/go-querystring v1.1.0 // indirect
+	github.com/shopspring/decimal v1.3.1
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/oauth2 v0.7.0
 )
