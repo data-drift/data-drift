@@ -19,14 +19,14 @@ type ChartResponse struct {
 	URL     string `json:"url"`
 }
 
-func ProcessCharts(historyFilepath string, metric common.Metric) []common.KPIInfo {
+func ProcessCharts(historyFilepath string, metric common.Metric) []common.KPIReport {
 
 	data, err := getKeysFromJSON(historyFilepath)
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
 
-	var kpiInfos []common.KPIInfo
+	var kpiInfos []common.KPIReport
 
 	for key := range data {
 		fmt.Println("Key:", key)
@@ -45,7 +45,7 @@ func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
 	KPI             float64
 	CommitTimestamp int64
 	CommitUrl       string
-}) common.KPIInfo {
+}) common.KPIReport {
 	// Extract the values from the map into a slice of struct objects
 	var dataSortableArray []struct {
 		Lines           int
@@ -132,7 +132,7 @@ func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
 	fmt.Println(diff)
 
 	chartUrl := createChart(diff, labels, colors, KPIName, minOfChart)
-	kpi1 := common.KPIInfo{
+	kpi1 := common.KPIReport{
 		KPIName:         KPIName,
 		GraphQLURL:      chartUrl,
 		FirstRoundedKPI: firstRoundedKPI,

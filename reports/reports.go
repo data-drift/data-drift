@@ -10,7 +10,7 @@ import (
 	"github.com/dstotijn/go-notion"
 )
 
-func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIInfo) error {
+func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error {
 	reportNotionPageId, _ := notion_database.FindOrCreateReportPageId(syncConfig.NotionAPIKey, syncConfig.NotionDatabaseID, KPIInfo.KPIName)
 	fmt.Println(reportNotionPageId)
 

@@ -1,6 +1,6 @@
 package common
 
-type KPIInfo struct {
+type KPIReport struct {
 	KPIName         string        `json:"kpiName"`
 	GraphQLURL      string        `json:"graphqlUrl"`
 	FirstRoundedKPI int           `json:"firstRoundedKPI"`
