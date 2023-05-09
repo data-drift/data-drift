@@ -4,15 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"math"
 	"net/http"
 	"os"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/data-drift/kpi-git-history/common"
+	"github.com/shopspring/decimal"
 )
 
 type ChartResponse struct {
@@ -50,15 +49,15 @@ func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
 	// Extract the values from the map into a slice of struct objects
 	var dataSortableArray []struct {
 		Lines           int
-		KPI             float64
+		KPI             decimal.Decimal
 		CommitTimestamp int64
 		CommitUrl       string
 	}
 	for _, stats := range unsortedResults {
-		KPI, _ := strconv.ParseFloat(stats.KPI, 64)
+		KPI, _ := decimal.NewFromString(stats.KPI)
 		dataSortableArray = append(dataSortableArray, struct {
 			Lines           int
-			KPI             float64
+			KPI             decimal.Decimal
 			CommitTimestamp int64
 			CommitUrl       string
 		}{
@@ -80,19 +79,20 @@ func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
 	initialcolor := "rgb(151 154 155)"
 	upcolor := "rgb(82 156 202)"
 	downcolor := "rgb(255 163 68)"
-	var prevKPI float64
-	initialValue := dataSortableArray[0].KPI
-	latestValue := dataSortableArray[len(dataSortableArray)-1].KPI
+	var prevKPI decimal.Decimal
+	initialValue, _ := dataSortableArray[0].KPI.Float64()
+	latestValue, _ := dataSortableArray[len(dataSortableArray)-1].KPI.Float64()
 	var events []common.EventObject
 	minOfChart := 0
 
 	for _, v := range dataSortableArray {
 		roundedKPI := v.KPI
-		roundedMin := int(math.Round(v.KPI * 0.98))
+		// TODO
+		roundedMin := 32000
 		timestamp := int64(v.CommitTimestamp) // Unix timestamp for May 26, 2022 12:00:00 AM UTC
 		timeObj := time.Unix(timestamp, 0)    // Convert the Unix timestamp to a time.Time object
 		dateStr := timeObj.Format("2006-01-02")
-		if prevKPI == 0 {
+		if prevKPI.IsZero() {
 			prevKPI = v.KPI
 			minOfChart = roundedMin
 			labels = append(labels, dateStr)
@@ -106,22 +106,23 @@ func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
 			}
 			events = append(events, event)
 		} else {
-			d := roundedKPI - prevKPI
-			if d == 0 {
+			d := roundedKPI.Sub(prevKPI)
+			if d.IsZero() {
 
 			} else {
 				// Maybe diff does not work with float
-				diff = append(diff, []int{int(prevKPI), int(roundedKPI)})
+				diff = append(diff, []decimal.Decimal{prevKPI, roundedKPI})
 				labels = append(labels, dateStr)
-				if prevKPI < roundedKPI {
+				if prevKPI.LessThan(roundedKPI) {
 					colors = append(colors, upcolor)
 				} else {
 					colors = append(colors, downcolor)
 					minOfChart = roundedMin
 				}
+				diff, _ := d.Float64()
 				event := common.EventObject{
 					CommitTimestamp: timestamp,
-					Diff:            d,
+					Diff:            diff,
 					EventType:       common.EventTypeUpdate,
 					CommitUrl:       v.CommitUrl,
 				}
