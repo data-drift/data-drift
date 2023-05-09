@@ -8,6 +8,7 @@ import (
 	"github.com/data-drift/kpi-git-history/common"
 	notion_database "github.com/data-drift/kpi-git-history/database/notion"
 	"github.com/dstotijn/go-notion"
+	"github.com/shopspring/decimal"
 )
 
 func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error {
@@ -42,7 +43,7 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error 
 					},
 					{
 						Text: &notion.Text{
-							Content: strconv.FormatFloat(KPIInfo.InitialValue, 'f', 2, 64),
+							Content: strconv.FormatFloat(KPIInfo.InitialValue, 'f', -1, 64),
 						},
 						Annotations: &notion.Annotations{
 							Bold: true,
@@ -67,7 +68,7 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error 
 					},
 					{
 						Text: &notion.Text{
-							Content: strconv.FormatFloat(KPIInfo.LatestValue, 'f', 2, 64),
+							Content: strconv.FormatFloat(KPIInfo.LatestValue, 'f', -1, 64),
 						},
 						Annotations: &notion.Annotations{
 							Bold: true,
@@ -145,7 +146,7 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error 
 				},
 				{
 					Text: &notion.Text{
-						Content: strconv.FormatFloat(KPIInfo.InitialValue, 'f', 2, 64),
+						Content: strconv.FormatFloat(KPIInfo.InitialValue, 'f', -1, 64),
 					},
 					Annotations: &notion.Annotations{
 						Bold:  true,
@@ -198,16 +199,19 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error 
 	return nil
 }
 
-func displayDiff(diff float64) string {
-	if diff >= 0 {
+func displayDiff(diff64 float64) string {
+	diff := decimal.NewFromFloat(diff64)
+	if diff.IsPositive() {
 
-		return "+" + strconv.FormatFloat(diff, 'f', 2, 64)
+		return "+" + diff.String()
 	}
-	return strconv.FormatFloat(diff, 'f', 2, 64)
+	return diff.String()
 }
 
-func displayDiffColor(diff float64) notion.Color {
-	if diff < 0 {
+func displayDiffColor(diff64 float64) notion.Color {
+	diff := decimal.NewFromFloat(diff64)
+
+	if diff.IsNegative() {
 		return notion.ColorOrange
 	}
 	return notion.ColorBlue
