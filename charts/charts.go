@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -42,7 +43,7 @@ func ProcessCharts(historyFilepath string, metric common.Metric) []common.KPIRep
 
 func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
 	Lines           int
-	KPI             float64
+	KPI             string
 	CommitTimestamp int64
 	CommitUrl       string
 }) common.KPIReport {
@@ -54,6 +55,7 @@ func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
 		CommitUrl       string
 	}
 	for _, stats := range unsortedResults {
+		KPI, _ := strconv.ParseFloat(stats.KPI, 64)
 		dataSortableArray = append(dataSortableArray, struct {
 			Lines           int
 			KPI             float64
@@ -61,7 +63,7 @@ func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
 			CommitUrl       string
 		}{
 			Lines:           stats.Lines,
-			KPI:             stats.KPI,
+			KPI:             KPI,
 			CommitTimestamp: stats.CommitTimestamp,
 			CommitUrl:       stats.CommitUrl,
 		})
@@ -237,7 +239,7 @@ func convertToChartMakerURL(url string) string {
 
 func getKeysFromJSON(path string) (map[string]map[string]struct {
 	Lines           int
-	KPI             float64
+	KPI             string
 	CommitTimestamp int64
 	CommitUrl       string
 }, error) {
@@ -250,7 +252,7 @@ func getKeysFromJSON(path string) (map[string]map[string]struct {
 	// Unmarshal the JSON data into the desired type
 	var data map[string]map[string]struct {
 		Lines           int
-		KPI             float64
+		KPI             string
 		CommitTimestamp int64
 		CommitUrl       string
 	}

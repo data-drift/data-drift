@@ -9,11 +9,11 @@ import (
 	"log"
 	"os"
 	"sort"
-	"strconv"
 	"time"
 
 	"github.com/data-drift/kpi-git-history/common"
 	"github.com/google/go-github/github"
+	"github.com/shopspring/decimal"
 )
 
 type CommitSha string
@@ -21,7 +21,7 @@ type PeriodId string
 
 type PeriodCommitData struct {
 	Lines           int
-	KPI             float64
+	KPI             decimal.Decimal
 	CommitTimestamp int64
 	CommitUrl       string
 }
@@ -113,14 +113,14 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 				}
 
 				kpiStr := record[kpiColumn]
-				kpi, _ := strconv.ParseFloat(kpiStr, 64)
+				kpi, _ := decimal.NewFromString(kpiStr)
 
 				newLineCount := lineCountAndKPIByDateByVersion[periodKey][commitSha].Lines + 1
-				newKPI := lineCountAndKPIByDateByVersion[periodKey][commitSha].KPI + kpi
+				newKPI := kpi.Add(lineCountAndKPIByDateByVersion[periodKey][commitSha].KPI)
 
 				lineCountAndKPIByDateByVersion[periodKey][commitSha] = struct {
 					Lines           int
-					KPI             float64
+					KPI             decimal.Decimal
 					CommitTimestamp int64
 					CommitUrl       string
 				}{Lines: newLineCount, KPI: newKPI, CommitTimestamp: commitTimestamp, CommitUrl: *commit.HTMLURL}
