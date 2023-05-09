@@ -133,22 +133,22 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 	client := notion.NewClient(apiKey, notion.WithHTTPClient(httpClient))
 	database, err := client.FindDatabaseByID(ctx, databaseID)
 
-	hasDatadriftPropertyId := false
-	hasDatadriftPropertyPeriod := false
-	hasDatadriftPropertyTimeGrain := false
+	shouldCreateDatadriftPropertyId := true
+	shouldCreateDatadriftPropertyPeriod := true
+	shouldCreateDatadriftPropertyTimeGrain := true
 
 	propertiesToDelete := []string{}
 
 	for _, property := range database.Properties {
 		fmt.Println("Property:", property.Name)
 		if property.Name == PROPERTY_DATADRIFT_ID {
-			hasDatadriftPropertyId = true
+			shouldCreateDatadriftPropertyId = false
 		}
 		if property.Name == PROPERTY_DATADRIFT_PERIOD {
-			hasDatadriftPropertyPeriod = true
+			shouldCreateDatadriftPropertyPeriod = false
 		}
 		if property.Name == PROPERTY_DATADRIFT_TIMEGRAIN {
-			hasDatadriftPropertyTimeGrain = true
+			shouldCreateDatadriftPropertyTimeGrain = false
 		}
 
 		for _, propertyToDelete := range DefaultPropertiesToDelete {
@@ -159,8 +159,8 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 		}
 
 	}
-	fmt.Println("hasDatadriftProperty:", hasDatadriftPropertyId)
-	shouldCreateProperties := !hasDatadriftPropertyId || !hasDatadriftPropertyPeriod || !hasDatadriftPropertyTimeGrain
+	fmt.Println("hasDatadriftProperty:", shouldCreateDatadriftPropertyId)
+	shouldCreateProperties := shouldCreateDatadriftPropertyId || shouldCreateDatadriftPropertyPeriod || shouldCreateDatadriftPropertyTimeGrain
 	if shouldCreateProperties {
 		params := notion.UpdateDatabaseParams{
 			Properties: map[string]*notion.DatabaseProperty{
