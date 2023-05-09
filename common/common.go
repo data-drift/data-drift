@@ -4,6 +4,7 @@ import "github.com/shopspring/decimal"
 
 type KPIReport struct {
 	KPIName      string          `json:"kpiName"`
+	PeriodId     string          `json:"periodId"`
 	GraphQLURL   string          `json:"graphqlUrl"`
 	InitialValue decimal.Decimal `json:"firstRoundedKPI"`
 	LatestValue  decimal.Decimal `json:"lastRoundedKPI"`

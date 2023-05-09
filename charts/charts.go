@@ -33,14 +33,14 @@ func ProcessCharts(historyFilepath string, metric common.Metric) []common.KPIRep
 		// Access the value associated with the key: data[key]
 		// Additional logic for processing the value
 		// ...
-		kpi := OrderDataAndCreateChart(metric.MetricName+" "+key, data[key])
+		kpi := OrderDataAndCreateChart(metric.MetricName+" "+key, key, data[key])
 		kpiInfos = append(kpiInfos, kpi)
 	}
 
 	return kpiInfos
 }
 
-func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
+func OrderDataAndCreateChart(KPIName string, periodId string, unsortedResults map[string]struct {
 	Lines           int
 	KPI             string
 	CommitTimestamp int64
@@ -136,6 +136,7 @@ func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
 	chartUrl := createChart(diff, labels, colors, KPIName, minOfChart)
 	kpi1 := common.KPIReport{
 		KPIName:      KPIName,
+		PeriodId:     periodId,
 		GraphQLURL:   chartUrl,
 		InitialValue: initialValue,
 		LatestValue:  latestValue,
