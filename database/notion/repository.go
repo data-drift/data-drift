@@ -8,10 +8,13 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/data-drift/kpi-git-history/common"
 	"github.com/dstotijn/go-notion"
 )
 
 const PROPERTY_DATADRIFT_ID = "datadrift-id"
+const PROPERTY_DATADRIFT_TIMEGRAIN = "datadrift-timegrain"
+const PROPERTY_DATADRIFT_PERIOD = "datadrift-period"
 
 var DefaultPropertiesToDelete = []string{"Tags", "Status", "Étiquette", "Étiquettes"}
 
@@ -153,8 +156,23 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 		params := notion.UpdateDatabaseParams{
 			Properties: map[string]*notion.DatabaseProperty{
 				PROPERTY_DATADRIFT_ID: {
-					Type:     "rich_text",
+					Type:     notion.DBPropTypeRichText,
 					RichText: &notion.EmptyMetadata{},
+				},
+				PROPERTY_DATADRIFT_PERIOD: {
+					Type:     notion.DBPropTypeRichText,
+					RichText: &notion.EmptyMetadata{},
+				},
+				PROPERTY_DATADRIFT_TIMEGRAIN: {
+					Type: notion.DBPropTypeSelect,
+					Select: &notion.SelectMetadata{
+						Options: []notion.SelectOptions{
+							{Name: string(common.Day)},
+							{Name: string(common.Month)},
+							{Name: string(common.Week)},
+							{Name: string(common.Year)},
+						},
+					},
 				},
 			},
 		}
@@ -164,11 +182,10 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 		}
 
 		fmt.Println("Creating property", params)
-		updatedDB, err := client.UpdateDatabase(ctx, databaseID, params)
+		_, err := client.UpdateDatabase(ctx, databaseID, params)
 		if err != nil {
 			return err
 		}
-		fmt.Println("Updated database", updatedDB, " with property", PROPERTY_DATADRIFT_ID)
 		fmt.Println("Clean empty item in database")
 		queryParams := &notion.DatabaseQuery{
 			Filter: &notion.DatabaseQueryFilter{
