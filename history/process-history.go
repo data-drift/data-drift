@@ -136,7 +136,6 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 		var kpiStr string
 		for _, count := range lineCounts {
 			countsStr += fmt.Sprintf("%d ", count.Lines)
-			kpiStr += fmt.Sprintf("%.2f ", count.KPI)
 		}
 		fmt.Printf("Line Count %s: %s\n", dateStr, countsStr)
 		fmt.Printf("       KPI %s: %s\n", dateStr, kpiStr)
