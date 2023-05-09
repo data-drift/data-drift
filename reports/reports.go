@@ -211,3 +211,23 @@ func displayDiffColor(diff int) notion.Color {
 	}
 	return notion.ColorBlue
 }
+
+func GetTimeGrain(periodKey string) (common.TimeGrain, error) {
+	_, err := time.Parse("2006-01-02", periodKey)
+	if err == nil {
+		return common.Day, nil
+	}
+	_, err = time.Parse("2006-W01", fmt.Sprintf("%s-01", periodKey))
+	if err == nil {
+		return common.Week, nil
+	}
+	_, err = time.Parse("2006-01", fmt.Sprintf("%s-01", periodKey))
+	if err == nil {
+		return common.Month, nil
+	}
+	_, err = time.Parse("2006", fmt.Sprintf("%s-01-01", periodKey))
+	if err == nil {
+		return common.Year, nil
+	}
+	return "", fmt.Errorf("invalid period key: %s", periodKey)
+}
