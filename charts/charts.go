@@ -80,8 +80,8 @@ func OrderDataAndCreateChart(KPIName string, unsortedResults map[string]struct {
 	upcolor := "rgb(82 156 202)"
 	downcolor := "rgb(255 163 68)"
 	var prevKPI decimal.Decimal
-	initialValue, _ := dataSortableArray[0].KPI.Float64()
-	latestValue, _ := dataSortableArray[len(dataSortableArray)-1].KPI.Float64()
+	initialValue := dataSortableArray[0].KPI
+	latestValue := dataSortableArray[len(dataSortableArray)-1].KPI
 	var events []common.EventObject
 	minOfChart := 0
 

@@ -2,7 +2,6 @@ package reports
 
 import (
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/data-drift/kpi-git-history/common"
@@ -43,7 +42,7 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error 
 					},
 					{
 						Text: &notion.Text{
-							Content: strconv.FormatFloat(KPIInfo.InitialValue, 'f', -1, 64),
+							Content: KPIInfo.InitialValue.String(),
 						},
 						Annotations: &notion.Annotations{
 							Bold: true,
@@ -68,7 +67,7 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error 
 					},
 					{
 						Text: &notion.Text{
-							Content: strconv.FormatFloat(KPIInfo.LatestValue, 'f', -1, 64),
+							Content: KPIInfo.LatestValue.String(),
 						},
 						Annotations: &notion.Annotations{
 							Bold: true,
@@ -85,11 +84,11 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error 
 					},
 					{
 						Text: &notion.Text{
-							Content: displayDiff(KPIInfo.LatestValue - KPIInfo.InitialValue),
+							Content: displayDiff(KPIInfo.LatestValue.Sub(KPIInfo.InitialValue)),
 						},
 						Annotations: &notion.Annotations{
 							Bold:  true,
-							Color: displayDiffColor(KPIInfo.LatestValue - KPIInfo.InitialValue),
+							Color: displayDiffColor(KPIInfo.LatestValue.Sub(KPIInfo.InitialValue)),
 						},
 					},
 				},
@@ -146,7 +145,7 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error 
 				},
 				{
 					Text: &notion.Text{
-						Content: strconv.FormatFloat(KPIInfo.InitialValue, 'f', -1, 64),
+						Content: KPIInfo.InitialValue.String(),
 					},
 					Annotations: &notion.Annotations{
 						Bold:  true,
@@ -164,11 +163,11 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error 
 				},
 				{
 					Text: &notion.Text{
-						Content: displayDiff(event.Diff),
+						Content: displayDiff(decimal.NewFromFloat(event.Diff)),
 					},
 					Annotations: &notion.Annotations{
 						Bold:  true,
-						Color: displayDiffColor(event.Diff),
+						Color: displayDiffColor(decimal.NewFromFloat(event.Diff)),
 					},
 				},
 			},
@@ -199,8 +198,7 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error 
 	return nil
 }
 
-func displayDiff(diff64 float64) string {
-	diff := decimal.NewFromFloat(diff64)
+func displayDiff(diff decimal.Decimal) string {
 	if diff.IsPositive() {
 
 		return "+" + diff.String()
@@ -208,8 +206,7 @@ func displayDiff(diff64 float64) string {
 	return diff.String()
 }
 
-func displayDiffColor(diff64 float64) notion.Color {
-	diff := decimal.NewFromFloat(diff64)
+func displayDiffColor(diff decimal.Decimal) notion.Color {
 
 	if diff.IsNegative() {
 		return notion.ColorOrange
