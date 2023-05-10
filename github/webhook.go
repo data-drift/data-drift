@@ -8,7 +8,7 @@ import (
 
 	"github.com/data-drift/kpi-git-history/charts"
 	"github.com/data-drift/kpi-git-history/common"
-	notion_database "github.com/data-drift/kpi-git-history/database/notion"
+	"github.com/data-drift/kpi-git-history/database/notion_database"
 	"github.com/data-drift/kpi-git-history/history"
 	"github.com/data-drift/kpi-git-history/reports"
 	"github.com/gin-gonic/gin"
