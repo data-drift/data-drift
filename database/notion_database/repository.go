@@ -15,6 +15,7 @@ import (
 const PROPERTY_DATADRIFT_ID = "datadrift-id"
 const PROPERTY_DATADRIFT_TIMEGRAIN = "datadrift-timegrain"
 const PROPERTY_DATADRIFT_PERIOD = "datadrift-period"
+const PROPERTY_DATADRIFT_DRIFT_VALUE = "datadrift-drift-value"
 
 var DefaultPropertiesToDelete = []string{"Tags", "Status", "Étiquette", "Étiquettes"}
 
@@ -150,6 +151,7 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 	shouldCreateDatadriftPropertyId := true
 	shouldCreateDatadriftPropertyPeriod := true
 	shouldCreateDatadriftPropertyTimeGrain := true
+	shouldCreateDatadriftPropertyDriftValue := true
 
 	propertiesToDelete := []string{}
 
@@ -164,6 +166,9 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 		if property.Name == PROPERTY_DATADRIFT_TIMEGRAIN {
 			shouldCreateDatadriftPropertyTimeGrain = false
 		}
+		if property.Name == PROPERTY_DATADRIFT_DRIFT_VALUE {
+			shouldCreateDatadriftPropertyDriftValue = false
+		}
 
 		for _, propertyToDelete := range DefaultPropertiesToDelete {
 			propertyExists := property.Name == propertyToDelete
@@ -174,7 +179,7 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 
 	}
 	fmt.Println("hasDatadriftProperty:", shouldCreateDatadriftPropertyId)
-	shouldCreateProperties := shouldCreateDatadriftPropertyId || shouldCreateDatadriftPropertyPeriod || shouldCreateDatadriftPropertyTimeGrain
+	shouldCreateProperties := shouldCreateDatadriftPropertyId || shouldCreateDatadriftPropertyPeriod || shouldCreateDatadriftPropertyTimeGrain || shouldCreateDatadriftPropertyDriftValue
 	if shouldCreateProperties {
 		params := notion.UpdateDatabaseParams{
 			Properties: map[string]*notion.DatabaseProperty{},
@@ -209,6 +214,15 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 						{Name: string(common.Quarter), Color: notion.ColorPink},
 						{Name: string(common.Year), Color: notion.ColorPurple},
 					},
+				},
+			}
+		}
+
+		if shouldCreateDatadriftPropertyDriftValue {
+			params.Properties[PROPERTY_DATADRIFT_DRIFT_VALUE] = &notion.DatabaseProperty{
+				Type: notion.DBPropTypeNumber,
+				Number: &notion.NumberMetadata{
+					Format: notion.NumberFormatNumberWithCommas,
 				},
 			}
 		}
