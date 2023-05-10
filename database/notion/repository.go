@@ -177,31 +177,39 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 	shouldCreateProperties := shouldCreateDatadriftPropertyId || shouldCreateDatadriftPropertyPeriod || shouldCreateDatadriftPropertyTimeGrain
 	if shouldCreateProperties {
 		params := notion.UpdateDatabaseParams{
-			Properties: map[string]*notion.DatabaseProperty{
-				PROPERTY_DATADRIFT_ID: {
-					Type:     notion.DBPropTypeRichText,
-					RichText: &notion.EmptyMetadata{},
-				},
-				PROPERTY_DATADRIFT_PERIOD: {
-					Type:     notion.DBPropTypeRichText,
-					RichText: &notion.EmptyMetadata{},
-				},
-				PROPERTY_DATADRIFT_TIMEGRAIN: {
-					Type: notion.DBPropTypeSelect,
-					Select: &notion.SelectMetadata{
-						Options: []notion.SelectOptions{
-							{Name: string(common.Day)},
-							{Name: string(common.Month)},
-							{Name: string(common.Week)},
-							{Name: string(common.Year)},
-						},
-					},
-				},
-			},
+			Properties: map[string]*notion.DatabaseProperty{},
 		}
 
 		for _, propertyToDelete := range propertiesToDelete {
 			params.Properties[propertyToDelete] = nil
+		}
+
+		if shouldCreateDatadriftPropertyId {
+			params.Properties[PROPERTY_DATADRIFT_ID] = &notion.DatabaseProperty{
+				Type:     notion.DBPropTypeRichText,
+				RichText: &notion.EmptyMetadata{},
+			}
+		}
+
+		if shouldCreateDatadriftPropertyPeriod {
+			params.Properties[PROPERTY_DATADRIFT_PERIOD] = &notion.DatabaseProperty{
+				Type:     notion.DBPropTypeRichText,
+				RichText: &notion.EmptyMetadata{},
+			}
+		}
+
+		if shouldCreateDatadriftPropertyTimeGrain {
+			params.Properties[PROPERTY_DATADRIFT_TIMEGRAIN] = &notion.DatabaseProperty{
+				Type: notion.DBPropTypeSelect,
+				Select: &notion.SelectMetadata{
+					Options: []notion.SelectOptions{
+						{Name: string(common.Day)},
+						{Name: string(common.Month)},
+						{Name: string(common.Week)},
+						{Name: string(common.Year)},
+					},
+				},
+			}
 		}
 
 		fmt.Println("Creating property", params)
