@@ -9,26 +9,19 @@ import (
 	"github.com/data-drift/kpi-git-history/reports"
 )
 
-// DataSortable represents sortable data with a commit timestamp
-
-// FilterAndSortByCommitTimestamp filters data before a specified date and sorts it by commit timestamp
 func FilterAndSortByCommitTimestamp(dataSortableArray []CommitData, driftDay time.Time) []CommitData {
-	// Filter the dataSortableArray to include only elements after the driftDay
 	filteredArray := make([]CommitData, 0, len(dataSortableArray))
 	for i := range dataSortableArray {
 		timestamp := time.Unix(dataSortableArray[i].CommitTimestamp, 0)
 		if timestamp.After(driftDay) {
-			// Add element to filtered array if it is after the driftDay
 			filteredArray = append(filteredArray, dataSortableArray[i])
 		}
 	}
 
-	// Sort the filteredArray by commit timestamp
 	sort.Slice(filteredArray, func(i, j int) bool {
 		return filteredArray[i].CommitTimestamp < filteredArray[j].CommitTimestamp
 	})
 
-	// If lastBeforeDate does not exist, use the sorted filteredArray as the final array
 	return filteredArray
 }
 
