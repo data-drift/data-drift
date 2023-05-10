@@ -46,10 +46,11 @@ type Config struct {
 type TimeGrain string
 
 const (
-	Day   TimeGrain = "day"
-	Week  TimeGrain = "week"
-	Month TimeGrain = "month"
-	Year  TimeGrain = "year"
+	Day     TimeGrain = "day"
+	Week    TimeGrain = "week"
+	Month   TimeGrain = "month"
+	Quarter TimeGrain = "quarter"
+	Year    TimeGrain = "year"
 )
 
 type Metric struct {
