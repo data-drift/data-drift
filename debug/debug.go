@@ -8,6 +8,7 @@ import (
 
 	"github.com/data-drift/kpi-git-history/charts"
 	"github.com/data-drift/kpi-git-history/common"
+	"github.com/data-drift/kpi-git-history/database/notion_database"
 	"github.com/data-drift/kpi-git-history/github"
 	"github.com/data-drift/kpi-git-history/history"
 	"github.com/data-drift/kpi-git-history/reports"
@@ -29,6 +30,8 @@ func DebugFunction() {
 	filepath := os.Getenv("DEFAULT_FILE_PATH")
 	githubApplicationId, _ := strconv.ParseInt(githubApplicationIdStr, 10, 64)
 
+	_ = notion_database.AssertDatabaseHasDatadriftProperties(notionDatabaseID, notionAPIKey)
+
 	client, _ := github.CreateClientFromGithubApp(int64(githubApplicationId))
 	ctx := context.Background()
 
@@ -45,7 +48,7 @@ func DebugFunction() {
 			KPIColumnName:  kpiColumn,
 			DateColumnName: dateColumn,
 			Filepath:       githubRepoFilePath,
-			TimeGrains:     []common.TimeGrain{common.Month, common.Year},
+			TimeGrains:     []common.TimeGrain{common.Quarter, common.Year},
 			Dimensions:     []string{},
 		})
 
@@ -62,7 +65,7 @@ func DebugFunction() {
 	// 	return
 	// }
 
-	for _, chartResult := range chartResults[:1] {
+	for _, chartResult := range chartResults {
 		err := reports.CreateReport(common.SyncConfig{NotionAPIKey: notionAPIKey, NotionDatabaseID: notionDatabaseID}, chartResult)
 		if err != nil {
 			println(err)

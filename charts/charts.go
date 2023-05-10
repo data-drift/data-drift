@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"sort"
 	"strings"
 	"time"
 
@@ -17,6 +16,13 @@ import (
 type ChartResponse struct {
 	Success bool   `json:"success"`
 	URL     string `json:"url"`
+}
+
+type CommitData struct {
+	Lines           int
+	KPI             decimal.Decimal
+	CommitTimestamp int64
+	CommitUrl       string
 }
 
 func ProcessCharts(historyFilepath string, metric common.Metric) []common.KPIReport {
@@ -47,20 +53,11 @@ func OrderDataAndCreateChart(KPIName string, periodId string, unsortedResults ma
 	CommitUrl       string
 }) common.KPIReport {
 	// Extract the values from the map into a slice of struct objects
-	var dataSortableArray []struct {
-		Lines           int
-		KPI             decimal.Decimal
-		CommitTimestamp int64
-		CommitUrl       string
-	}
+	var dataSortableArray []CommitData
+
 	for _, stats := range unsortedResults {
 		KPI, _ := decimal.NewFromString(stats.KPI)
-		dataSortableArray = append(dataSortableArray, struct {
-			Lines           int
-			KPI             decimal.Decimal
-			CommitTimestamp int64
-			CommitUrl       string
-		}{
+		dataSortableArray = append(dataSortableArray, CommitData{
 			Lines:           stats.Lines,
 			KPI:             KPI,
 			CommitTimestamp: stats.CommitTimestamp,
@@ -68,10 +65,11 @@ func OrderDataAndCreateChart(KPIName string, periodId string, unsortedResults ma
 		})
 	}
 
-	// Sort the slice by CommitTimestamp
-	sort.Slice(dataSortableArray, func(i, j int) bool {
-		return dataSortableArray[i].CommitTimestamp < dataSortableArray[j].CommitTimestamp
-	})
+	sortedAndFilteredArray := FilterAndSortByCommitTimestamp(dataSortableArray, getFirstDateOfPeriod(periodId))
+
+	if len(sortedAndFilteredArray) == 0 {
+		return common.KPIReport{}
+	}
 
 	var diff []interface{}
 	var labels []interface{}
@@ -80,12 +78,12 @@ func OrderDataAndCreateChart(KPIName string, periodId string, unsortedResults ma
 	upcolor := "rgb(82 156 202)"
 	downcolor := "rgb(255 163 68)"
 	var prevKPI decimal.Decimal
-	initialValue := dataSortableArray[0].KPI
-	latestValue := dataSortableArray[len(dataSortableArray)-1].KPI
+	initialValue := sortedAndFilteredArray[0].KPI
+	latestValue := sortedAndFilteredArray[len(sortedAndFilteredArray)-1].KPI
 	var events []common.EventObject
 	minOfChart := 0
 
-	for _, v := range dataSortableArray {
+	for _, v := range sortedAndFilteredArray {
 		roundedKPI := v.KPI
 		// TODO
 		roundedMin := 32000
