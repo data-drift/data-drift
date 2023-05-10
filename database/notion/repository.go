@@ -203,10 +203,11 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 				Type: notion.DBPropTypeSelect,
 				Select: &notion.SelectMetadata{
 					Options: []notion.SelectOptions{
-						{Name: string(common.Day)},
-						{Name: string(common.Month)},
-						{Name: string(common.Week)},
-						{Name: string(common.Year)},
+						{Name: string(common.Day), Color: notion.ColorYellow},
+						{Name: string(common.Month), Color: notion.ColorOrange},
+						{Name: string(common.Week), Color: notion.ColorRed},
+						{Name: string(common.Quarter), Color: notion.ColorPink},
+						{Name: string(common.Year), Color: notion.ColorPurple},
 					},
 				},
 			}
