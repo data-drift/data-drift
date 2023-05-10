@@ -40,7 +40,7 @@
             "type": "array",
             "items": {
               "type": "string",
-              "enum": ["day", "week", "month", "year"]
+              "enum": ["day", "week", "month", "quarter", "year"]
             },
             "description": "The timegrain for the metric data (day, week, month or year)"
           },
