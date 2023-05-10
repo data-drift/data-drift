@@ -2,6 +2,8 @@ package reports
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/data-drift/kpi-git-history/common"
@@ -228,9 +230,37 @@ func GetTimeGrain(periodKey string) (common.TimeGrain, error) {
 	if err == nil {
 		return common.Month, nil
 	}
+	_, err = ParseQuarterDate(periodKey)
+	if err == nil {
+		return common.Quarter, nil
+	}
 	_, err = time.Parse("2006", periodKey)
 	if err == nil {
 		return common.Year, nil
 	}
 	return "", fmt.Errorf("invalid period key: %s", periodKey)
+}
+
+func ParseQuarterDate(s string) (time.Time, error) {
+	parts := strings.Split(s, "-")
+	if len(parts) != 2 {
+		return time.Time{}, fmt.Errorf("invalid quarter date format: %s", s)
+	}
+	year, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return time.Time{}, fmt.Errorf("invalid year format in quarter date: %s", s)
+	}
+	quarter := parts[1]
+	switch quarter {
+	case "Q1":
+		return time.Date(year, time.March, 31, 0, 0, 0, 0, time.UTC), nil
+	case "Q2":
+		return time.Date(year, time.June, 30, 0, 0, 0, 0, time.UTC), nil
+	case "Q3":
+		return time.Date(year, time.September, 30, 0, 0, 0, 0, time.UTC), nil
+	case "Q4":
+		return time.Date(year, time.December, 31, 0, 0, 0, 0, time.UTC), nil
+	default:
+		return time.Time{}, fmt.Errorf("invalid quarter format in quarter date: %s", s)
+	}
 }
