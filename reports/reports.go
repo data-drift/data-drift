@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/data-drift/kpi-git-history/common"
-	notion_database "github.com/data-drift/kpi-git-history/database/notion"
+	"github.com/data-drift/kpi-git-history/database/notion_database"
 	"github.com/dstotijn/go-notion"
 	"github.com/shopspring/decimal"
 )
