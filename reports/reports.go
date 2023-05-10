@@ -17,7 +17,14 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error 
 	reportNotionPageId, _ := notion_database.FindOrCreateReportPageId(syncConfig.NotionAPIKey, syncConfig.NotionDatabaseID, KPIInfo.KPIName, KPIInfo.PeriodId, timeGrain)
 	fmt.Println(reportNotionPageId)
 
+	diffFloat64, _ := KPIInfo.LatestValue.Sub(KPIInfo.InitialValue).Float64()
+
 	params := notion.CreatePageParams{
+		DatabasePageProperties: &notion.DatabasePageProperties{
+			notion_database.PROPERTY_DATADRIFT_DRIFT_VALUE: notion.DatabasePageProperty{
+				Number: &diffFloat64,
+			},
+		},
 		Children: []notion.Block{
 			notion.Heading1Block{
 				RichText: []notion.RichText{
@@ -193,7 +200,7 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error 
 	}
 	params.Children = append(params.Children, children...)
 
-	err := notion_database.UpdateReport(syncConfig.NotionAPIKey, reportNotionPageId, params.Children)
+	err := notion_database.UpdateReport(syncConfig.NotionAPIKey, reportNotionPageId, params.Children, params.DatabasePageProperties)
 	if err != nil {
 		return fmt.Errorf("failed to create page: %v", err)
 	}
