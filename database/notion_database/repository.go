@@ -259,7 +259,7 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 	return err
 }
 
-func UpdateReport(apiKey string, reportNotionPageId string, children []notion.Block) error {
+func UpdateReport(apiKey string, reportNotionPageId string, children []notion.Block, pageProperties *notion.DatabasePageProperties) error {
 	fmt.Println("Updating report", reportNotionPageId)
 	buf := &bytes.Buffer{}
 	ctx := context.Background()
@@ -270,6 +270,10 @@ func UpdateReport(apiKey string, reportNotionPageId string, children []notion.Bl
 	}
 	client := notion.NewClient(apiKey, notion.WithHTTPClient(httpClient))
 
+	_, updateErr := client.UpdatePage(ctx, reportNotionPageId, notion.UpdatePageParams{DatabasePageProperties: *pageProperties})
+	if updateErr != nil {
+		fmt.Println("[DATADRIFT_ERROR]: err during update", updateErr.Error())
+	}
 	existingReport, err := client.FindBlockChildrenByID(ctx, reportNotionPageId, &notion.PaginationQuery{PageSize: 100})
 	if err != nil {
 		return err
