@@ -65,7 +65,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 
 		commitSha := CommitSha(*commit.SHA)
 
-		commitDate := commit.Commit.Author.Date
+		commitDate := commit.Commit.Committer.Date
 		commitTimestamp := commitDate.Unix()
 		fileContents, err := getFileContentsForCommit(client, repoOwner, repoName, filePath, *commit.SHA)
 		if err != nil {
