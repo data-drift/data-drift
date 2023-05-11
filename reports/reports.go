@@ -229,7 +229,7 @@ func GetTimeGrain(periodKey string) (common.TimeGrain, error) {
 	if err == nil {
 		return common.Day, nil
 	}
-	_, err = time.Parse("2006-W01", periodKey)
+	_, err = ParseYearWeek(periodKey)
 	if err == nil {
 		return common.Week, nil
 	}
@@ -246,6 +246,26 @@ func GetTimeGrain(periodKey string) (common.TimeGrain, error) {
 		return common.Year, nil
 	}
 	return "", fmt.Errorf("invalid period key: %s", periodKey)
+}
+
+func ParseYearWeek(yearWeek string) (time.Time, error) {
+	if len(yearWeek) != 8 {
+		return time.Time{}, fmt.Errorf("invalid year week format: %s", yearWeek)
+	}
+	year, err := strconv.Atoi(yearWeek[0:4])
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	week, err := strconv.Atoi(yearWeek[6:])
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	// Get the first day of the week (Monday)
+	firstDay := time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC).AddDate(0, 0, 7*(week-1)+1)
+
+	return firstDay, nil
 }
 
 func ParseQuarterDate(s string) (time.Time, error) {
