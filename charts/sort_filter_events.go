@@ -32,8 +32,8 @@ func getFirstDateOfPeriod(periodKey string) time.Time {
 	case common.Day:
 		lastDay, _ = time.Parse("2006-01-02", periodKey)
 	case common.Week:
-		periodTime, _ := time.Parse("2006-W01", periodKey)
-		lastDay = periodTime.AddDate(0, 0, (7 - int(periodTime.Weekday()))).Add(time.Duration(23)*time.Hour + time.Duration(59)*time.Minute + time.Duration(59)*time.Second)
+		periodTime, _ := reports.ParseYearWeek(periodKey)
+		lastDay = periodTime.AddDate(0, 0, 6).Add(time.Duration(23)*time.Hour + time.Duration(59)*time.Minute + time.Duration(59)*time.Second)
 	case common.Month:
 		periodTime, _ := time.Parse("2006-01", periodKey)
 
