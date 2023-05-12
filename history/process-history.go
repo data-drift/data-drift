@@ -19,16 +19,23 @@ import (
 type CommitSha string
 type PeriodId string
 
+type CommitMessage struct {
+	MessageAuthor string
+	MessageBody   string
+}
 type PeriodCommitData struct {
 	Lines           int
 	KPI             decimal.Decimal
 	CommitTimestamp int64
 	CommitUrl       string
+	CommitMessages  []CommitMessage
 }
 
 type PeriodData map[PeriodId]map[CommitSha]PeriodCommitData
 
 func ProcessHistory(client *github.Client, repoOwner string, repoName string, metric common.Metric) (string, error) {
+
+	ctx := context.Background()
 
 	filePath := metric.Filepath
 	dateColumnName := metric.DateColumnName
@@ -61,11 +68,17 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 	// Group the lines of the CSV file by reporting date.
 	lineCountAndKPIByDateByVersion := make(PeriodData)
 	for index, commit := range commits {
+		var commitMessages []CommitMessage
 		fmt.Printf("\r Commit %d/%d", index, len(commits))
 
 		commitSha := CommitSha(*commit.SHA)
 
 		commitDate := commit.Commit.Committer.Date
+		commitComments := GetCommitComments(client, ctx, repoOwner, repoName, *commit.SHA)
+
+		for _, comment := range commitComments {
+			commitMessages = append(commitMessages, CommitMessage{MessageBody: *comment.Body, MessageAuthor: *comment.User.Login})
+		}
 		commitTimestamp := commitDate.Unix()
 		fileContents, err := getFileContentsForCommit(client, repoOwner, repoName, filePath, *commit.SHA)
 		if err != nil {
@@ -120,12 +133,12 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 				newLineCount := lineCountAndKPIByDateByVersion[periodKey][commitSha].Lines + 1
 				newKPI := kpi.Add(lineCountAndKPIByDateByVersion[periodKey][commitSha].KPI)
 
-				lineCountAndKPIByDateByVersion[periodKey][commitSha] = struct {
-					Lines           int
-					KPI             decimal.Decimal
-					CommitTimestamp int64
-					CommitUrl       string
-				}{Lines: newLineCount, KPI: newKPI, CommitTimestamp: commitTimestamp, CommitUrl: *commit.HTMLURL}
+				lineCountAndKPIByDateByVersion[periodKey][commitSha] = PeriodCommitData{
+					Lines:           newLineCount,
+					KPI:             newKPI,
+					CommitTimestamp: commitTimestamp,
+					CommitUrl:       *commit.HTMLURL,
+					CommitMessages:  commitMessages}
 			}
 		}
 

@@ -1,7 +1,6 @@
 package debug
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"strconv"
@@ -17,7 +16,7 @@ import (
 func DebugFunction() {
 	// Perform debugging operations
 	fmt.Println("Manual Sync ...")
-	githubToken := os.Getenv("GITHUB_TOKEN")
+	// githubToken := os.Getenv("GITHUB_TOKEN")
 	githubRepoOwner := os.Getenv("GITHUB_REPO_OWNER")
 	githubRepoName := os.Getenv("GITHUB_REPO_NAME")
 	githubRepoFilePath := os.Getenv("GITHUB_REPO_FILE_PATH")
@@ -33,32 +32,8 @@ func DebugFunction() {
 	_ = notion_database.AssertDatabaseHasDatadriftProperties(notionDatabaseID, notionAPIKey)
 
 	client, _ := github.CreateClientFromGithubApp(int64(githubApplicationId))
-	ctx := context.Background()
-
-	commitSha := "9b2ee8dddcd953cabb7faed4f435245fe9a57007"
-
-	pullRequests, _, err := client.PullRequests.ListPullRequestsWithCommit(ctx, githubRepoOwner, githubRepoName, commitSha, nil)
-	fmt.Println("Comments", pullRequests)
-
-	if err != nil {
-		println(err.Error())
-		return
-	}
-
-	config, err := github.VerifyConfigFile(client, githubRepoOwner, githubRepoName, ctx)
-	fmt.Println(config)
-	if err != nil {
-		fmt.Println(err.Error())
-		return
-	}
-
-	if config.NotionAPIToken != "" {
-		return
-	}
 
 	if filepath == "" {
-
-		client := github.CreateClientFromGithubToken(githubToken)
 		newFilepath, err := history.ProcessHistory(client, githubRepoOwner, githubRepoName, common.Metric{
 			MetricName:     "Default metric name",
 			KPIColumnName:  kpiColumn,
