@@ -9,17 +9,21 @@ import (
 	"github.com/data-drift/kpi-git-history/reports"
 )
 
-func FilterAndSortByCommitTimestamp(dataSortableArray []CommitData, driftDay time.Time) []CommitData {
-	filteredArray := make([]CommitData, 0, len(dataSortableArray))
+type ObjectWithDate interface {
+	Timestamp() int64
+}
+
+func FilterAndSortByCommitTimestamp[T ObjectWithDate](dataSortableArray []T, driftDay time.Time) []T {
+	filteredArray := make([]T, 0, len(dataSortableArray))
 	for i := range dataSortableArray {
-		timestamp := time.Unix(dataSortableArray[i].CommitTimestamp, 0)
+		timestamp := time.Unix(dataSortableArray[i].Timestamp(), 0)
 		if timestamp.After(driftDay) {
 			filteredArray = append(filteredArray, dataSortableArray[i])
 		}
 	}
 
 	sort.Slice(filteredArray, func(i, j int) bool {
-		return filteredArray[i].CommitTimestamp < filteredArray[j].CommitTimestamp
+		return filteredArray[i].Timestamp() < filteredArray[j].Timestamp()
 	})
 
 	return filteredArray
