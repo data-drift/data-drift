@@ -1,7 +1,6 @@
 package debug
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"strconv"
@@ -17,7 +16,7 @@ import (
 func DebugFunction() {
 	// Perform debugging operations
 	fmt.Println("Manual Sync ...")
-	githubToken := os.Getenv("GITHUB_TOKEN")
+	// githubToken := os.Getenv("GITHUB_TOKEN")
 	githubRepoOwner := os.Getenv("GITHUB_REPO_OWNER")
 	githubRepoName := os.Getenv("GITHUB_REPO_NAME")
 	githubRepoFilePath := os.Getenv("GITHUB_REPO_FILE_PATH")
@@ -33,16 +32,8 @@ func DebugFunction() {
 	_ = notion_database.AssertDatabaseHasDatadriftProperties(notionDatabaseID, notionAPIKey)
 
 	client, _ := github.CreateClientFromGithubApp(int64(githubApplicationId))
-	ctx := context.Background()
-
-	config, _ := github.VerifyConfigFile(client, githubRepoOwner, githubRepoName, ctx)
-	if config.Metrics[0].TimeGrains[0] != common.Day {
-		return
-	}
 
 	if filepath == "" {
-
-		client := github.CreateClientFromGithubToken(githubToken)
 		newFilepath, err := history.ProcessHistory(client, githubRepoOwner, githubRepoName, common.Metric{
 			MetricName:     "Default metric name",
 			KPIColumnName:  kpiColumn,

@@ -16,7 +16,7 @@ func CheckGithubAppConnection() (string, error) {
 	ctx := context.Background()
 
 	// Get the last commit of the repository
-	commit, _, err := client.Repositories.GetCommit(ctx, "Samox", "copy-libeo-data-history", "main")
+	commit, _, err := client.Repositories.GetCommit(ctx, "Samox", "copy-libeo-data-history", "main", nil)
 
 	if err != nil {
 		return "", err
