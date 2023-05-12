@@ -12,7 +12,7 @@ import (
 	"github.com/data-drift/kpi-git-history/history"
 	"github.com/data-drift/kpi-git-history/reports"
 	"github.com/gin-gonic/gin"
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v42/github"
 	"github.com/xeipuuv/gojsonschema"
 )
 
@@ -118,7 +118,7 @@ func processWebhookInTheBackground(config common.Config, c *gin.Context, Install
 
 func VerifyConfigFile(client *github.Client, RepoOwner string, RepoName string, ctx context.Context) (common.Config, error) {
 
-	commit, _, _ := client.Repositories.GetCommit(ctx, RepoOwner, RepoName, "main")
+	commit, _, _ := client.Repositories.GetCommit(ctx, RepoOwner, RepoName, "main", nil)
 
 	file, _, _, err := client.Repositories.GetContents(ctx, RepoOwner, RepoName, configFilePath, &github.RepositoryContentGetOptions{
 		Ref: *commit.SHA,
