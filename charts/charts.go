@@ -18,17 +18,6 @@ type ChartResponse struct {
 	URL     string `json:"url"`
 }
 
-type CommitData struct {
-	Lines           int
-	KPI             decimal.Decimal
-	CommitTimestamp int64
-	CommitUrl       string
-}
-
-func (c CommitData) Timestamp() int64 {
-	return c.CommitTimestamp
-}
-
 func ProcessCharts(historyFilepath string, metric common.Metric) []common.KPIReport {
 
 	data, err := getKeysFromJSON(historyFilepath)
@@ -55,17 +44,19 @@ func OrderDataAndCreateChart(KPIName string, periodId string, unsortedResults ma
 	KPI             string
 	CommitTimestamp int64
 	CommitUrl       string
+	CommitComments  []common.CommitComments
 }) common.KPIReport {
 	// Extract the values from the map into a slice of struct objects
-	var dataSortableArray []CommitData
+	var dataSortableArray []common.CommitData
 
 	for _, stats := range unsortedResults {
 		KPI, _ := decimal.NewFromString(stats.KPI)
-		dataSortableArray = append(dataSortableArray, CommitData{
+		dataSortableArray = append(dataSortableArray, common.CommitData{
 			Lines:           stats.Lines,
 			KPI:             KPI,
 			CommitTimestamp: stats.CommitTimestamp,
 			CommitUrl:       stats.CommitUrl,
+			CommitComments:  stats.CommitComments,
 		})
 	}
 
@@ -105,6 +96,7 @@ func OrderDataAndCreateChart(KPIName string, periodId string, unsortedResults ma
 				Diff:            0,
 				EventType:       common.EventTypeCreate,
 				CommitUrl:       v.CommitUrl,
+				CommitComments:  v.CommitComments,
 			}
 			events = append(events, event)
 		} else {
@@ -127,6 +119,7 @@ func OrderDataAndCreateChart(KPIName string, periodId string, unsortedResults ma
 					Diff:            diff,
 					EventType:       common.EventTypeUpdate,
 					CommitUrl:       v.CommitUrl,
+					CommitComments:  v.CommitComments,
 				}
 				events = append(events, event)
 			}
@@ -246,6 +239,7 @@ func getKeysFromJSON(path string) (map[string]map[string]struct {
 	KPI             string
 	CommitTimestamp int64
 	CommitUrl       string
+	CommitComments  []common.CommitComments
 }, error) {
 	// Read the file at the given path
 	jsonFile, err := os.ReadFile(path)
@@ -259,6 +253,7 @@ func getKeysFromJSON(path string) (map[string]map[string]struct {
 		KPI             string
 		CommitTimestamp int64
 		CommitUrl       string
+		CommitComments  []common.CommitComments
 	}
 	err = json.Unmarshal(jsonFile, &data)
 	if err != nil {
