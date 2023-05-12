@@ -25,6 +25,10 @@ type CommitData struct {
 	CommitUrl       string
 }
 
+func (c CommitData) Timestamp() int64 {
+	return c.CommitTimestamp
+}
+
 func ProcessCharts(historyFilepath string, metric common.Metric) []common.KPIReport {
 
 	data, err := getKeysFromJSON(historyFilepath)
