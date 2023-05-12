@@ -3,7 +3,7 @@ module github.com/data-drift/kpi-git-history
 go 1.20
 
 require (
-	github.com/google/go-github v17.0.0+incompatible
+	github.com/google/go-github/v42 v42.0.0
 	github.com/joho/godotenv v1.5.1
 )
 

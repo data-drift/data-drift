@@ -35,8 +35,24 @@ func DebugFunction() {
 	client, _ := github.CreateClientFromGithubApp(int64(githubApplicationId))
 	ctx := context.Background()
 
-	config, _ := github.VerifyConfigFile(client, githubRepoOwner, githubRepoName, ctx)
-	if config.Metrics[0].TimeGrains[0] != common.Day {
+	commitSha := "9b2ee8dddcd953cabb7faed4f435245fe9a57007"
+
+	pullRequests, _, err := client.PullRequests.ListPullRequestsWithCommit(ctx, githubRepoOwner, githubRepoName, commitSha, nil)
+	fmt.Println("Comments", pullRequests)
+
+	if err != nil {
+		println(err.Error())
+		return
+	}
+
+	config, err := github.VerifyConfigFile(client, githubRepoOwner, githubRepoName, ctx)
+	fmt.Println(config)
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+
+	if config.NotionAPIToken != "" {
 		return
 	}
 
