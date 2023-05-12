@@ -19,19 +19,7 @@ import (
 type CommitSha string
 type PeriodId string
 
-type CommitMessage struct {
-	MessageAuthor string
-	MessageBody   string
-}
-type PeriodCommitData struct {
-	Lines           int
-	KPI             decimal.Decimal
-	CommitTimestamp int64
-	CommitUrl       string
-	CommitMessages  []CommitMessage
-}
-
-type PeriodData map[PeriodId]map[CommitSha]PeriodCommitData
+type PeriodData map[PeriodId]map[CommitSha]common.CommitData
 
 func ProcessHistory(client *github.Client, repoOwner string, repoName string, metric common.Metric) (string, error) {
 
@@ -67,8 +55,8 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 
 	// Group the lines of the CSV file by reporting date.
 	lineCountAndKPIByDateByVersion := make(PeriodData)
-	for index, commit := range commits {
-		var commitMessages []CommitMessage
+	for index, commit := range commits[:10] {
+		var commitMessages []common.CommitComments
 		fmt.Printf("\r Commit %d/%d", index, len(commits))
 
 		commitSha := CommitSha(*commit.SHA)
@@ -77,7 +65,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 		commitComments := GetCommitComments(client, ctx, repoOwner, repoName, *commit.SHA)
 
 		for _, comment := range commitComments {
-			commitMessages = append(commitMessages, CommitMessage{MessageBody: *comment.Body, MessageAuthor: *comment.User.Login})
+			commitMessages = append(commitMessages, common.CommitComments{CommentBody: *comment.Body, CommentAuthor: *comment.User.Login})
 		}
 		commitTimestamp := commitDate.Unix()
 		fileContents, err := getFileContentsForCommit(client, repoOwner, repoName, filePath, *commit.SHA)
@@ -124,7 +112,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 				}
 
 				if lineCountAndKPIByDateByVersion[periodKey] == nil {
-					lineCountAndKPIByDateByVersion[periodKey] = make(map[CommitSha]PeriodCommitData)
+					lineCountAndKPIByDateByVersion[periodKey] = make(map[CommitSha]common.CommitData)
 				}
 
 				kpiStr := record[kpiColumn]
@@ -133,12 +121,12 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 				newLineCount := lineCountAndKPIByDateByVersion[periodKey][commitSha].Lines + 1
 				newKPI := kpi.Add(lineCountAndKPIByDateByVersion[periodKey][commitSha].KPI)
 
-				lineCountAndKPIByDateByVersion[periodKey][commitSha] = PeriodCommitData{
+				lineCountAndKPIByDateByVersion[periodKey][commitSha] = common.CommitData{
 					Lines:           newLineCount,
 					KPI:             newKPI,
 					CommitTimestamp: commitTimestamp,
 					CommitUrl:       *commit.HTMLURL,
-					CommitMessages:  commitMessages}
+					CommitComments:  commitMessages}
 			}
 		}
 
@@ -174,7 +162,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 	sort.Strings(dates)
 
 	// Create a map to hold the line counts by date by version, ordered by date.
-	orderedLineCountsByDateByVersion := make(map[string]map[CommitSha]PeriodCommitData)
+	orderedLineCountsByDateByVersion := make(map[string]map[CommitSha]common.CommitData)
 
 	// Copy the line counts by date by version to the new map, ordered by date.
 	for _, dateStr := range dates {

@@ -24,18 +24,36 @@ type SyncConfig struct {
 }
 
 type EventObject struct {
-	CommitTimestamp int64     `json:"commitTimestamp"`
-	CommitUrl       string    `json:"commitUrl"`
-	Diff            float64   `json:"diff"`
-	EventType       EventType `json:"eventType"`
+	CommitTimestamp int64            `json:"commitTimestamp"`
+	CommitUrl       string           `json:"commitUrl"`
+	Diff            float64          `json:"diff"`
+	EventType       EventType        `json:"eventType"`
+	CommitComments  []CommitComments `json:"commitComments"`
 }
 
 type EventType string
+
+type CommitComments struct {
+	CommentAuthor string
+	CommentBody   string
+}
 
 const (
 	EventTypeCreate EventType = "create"
 	EventTypeUpdate EventType = "update"
 )
+
+type CommitData struct {
+	Lines           int
+	KPI             decimal.Decimal
+	CommitTimestamp int64
+	CommitUrl       string
+	CommitComments  []CommitComments
+}
+
+func (c CommitData) Timestamp() int64 {
+	return c.CommitTimestamp
+}
 
 type Config struct {
 	NotionAPIToken   string   `json:"notionAPIToken"`
