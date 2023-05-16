@@ -1,5 +1,5 @@
 # Datadrift is an open-source metric-focused data quality tool
-- Historize your key metrics with kpi-git-history to get started quickly
+- Historize your key metrics with data-git to get started quickly
 - Monitor unexpected raw data updates impacting an historical metric  
 - Investigate simply what data has changed and how the metric has been impacted  
 - Report automatically why the metric has drifted via a shared Notion page with data consumers 
