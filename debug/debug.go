@@ -32,7 +32,9 @@ func DebugFunction() {
 	_ = notion_database.AssertDatabaseHasDatadriftProperties(notionDatabaseID, notionAPIKey)
 
 	client, _ := github.CreateClientFromGithubApp(int64(githubApplicationId))
-
+	if client == nil {
+		panic("Client not configured")
+	}
 	if filepath == "" {
 		newFilepath, err := history.ProcessHistory(client, githubRepoOwner, githubRepoName, common.Metric{
 			MetricName:     "Default metric name",
