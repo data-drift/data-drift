@@ -313,6 +313,10 @@ func ParseQuarterDate(s string) (time.Time, error) {
 }
 
 func displayCommitComments(event common.EventObject) string {
+	if len(event.CommitComments) == 0 {
+		return "No explanation available"
+	}
+
 	result := ""
 
 	for _, comment := range event.CommitComments {
