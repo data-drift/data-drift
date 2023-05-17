@@ -55,7 +55,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 
 	// Group the lines of the CSV file by reporting date.
 	lineCountAndKPIByDateByVersion := make(PeriodData)
-	for index, commit := range commits[:10] {
+	for index, commit := range commits {
 		var commitMessages []common.CommitComments
 		fmt.Printf("\r Commit %d/%d", index, len(commits))
 
