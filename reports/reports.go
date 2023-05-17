@@ -192,10 +192,30 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error 
 				},
 			},
 		}
+		toggleUpdateEvent := notion.ToggleBlock{
+			RichText: []notion.RichText{
+				{
+					Text: &notion.Text{
+						Content: "Explanation",
+					},
+				},
+			},
+			Children: []notion.Block{
+				notion.ParagraphBlock{
+					RichText: []notion.RichText{
+						{
+							Text: &notion.Text{
+								Content: displayCommitComments(event),
+							},
+						},
+					},
+				},
+			},
+		}
 		if event.EventType == "create" {
 			children = append(children, driftEventDate, bulletListFirstItemCreateEvent)
 		} else {
-			children = append(children, driftEventDate, bulletListFirstItemUpdateEvent, bulletListSecondItemUpdateEvent)
+			children = append(children, driftEventDate, bulletListFirstItemUpdateEvent, bulletListSecondItemUpdateEvent, toggleUpdateEvent)
 		}
 	}
 	params.Children = append(params.Children, children...)
@@ -290,4 +310,15 @@ func ParseQuarterDate(s string) (time.Time, error) {
 	default:
 		return time.Time{}, fmt.Errorf("invalid quarter format in quarter date: %s", s)
 	}
+}
+
+func displayCommitComments(event common.EventObject) string {
+	result := ""
+
+	for _, comment := range event.CommitComments {
+		result += "Author: " + comment.CommentAuthor + "\n"
+		result += "Comment: " + comment.CommentBody + "\n"
+		result += "\n"
+	}
+	return result
 }
