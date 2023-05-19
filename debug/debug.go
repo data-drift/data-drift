@@ -31,25 +31,34 @@ func DebugFunction() {
 
 	_ = notion_database.AssertDatabaseHasDatadriftProperties(notionDatabaseID, notionAPIKey)
 
-	client, _ := github.CreateClientFromGithubApp(int64(githubApplicationId))
-	if client == nil {
-		panic("Client not configured")
+	metricConfig := common.MetricConfig{
+		MetricName:     "Default metric name",
+		KPIColumnName:  kpiColumn,
+		DateColumnName: dateColumn,
+		Filepath:       githubRepoFilePath,
+		TimeGrains:     []common.TimeGrain{common.Quarter, common.Year, common.Month},
+		Dimensions:     []string{"country"},
 	}
 	if filepath == "" {
-		newFilepath, err := history.ProcessHistory(client, githubRepoOwner, githubRepoName, common.MetricConfig{
-			MetricName:     "Default metric name",
-			KPIColumnName:  kpiColumn,
-			DateColumnName: dateColumn,
-			Filepath:       githubRepoFilePath,
-			TimeGrains:     []common.TimeGrain{common.Quarter, common.Year, common.Month},
-			Dimensions:     []string{"country"},
-		})
+		client, _ := github.CreateClientFromGithubApp(int64(githubApplicationId))
+		if client == nil {
+			panic("Client not configured")
+		}
+		newFilepath, err := history.ProcessHistory(client, githubRepoOwner, githubRepoName, metricConfig)
 
 		if err != nil {
 			println(err)
 		}
 		filepath = newFilepath
 	}
+
+	metrics, marshelingError := reducers.GetKeysFromJSON(filepath)
+	if marshelingError != nil {
+		println(marshelingError.Error())
+		panic("Error marsheling")
+	}
+
+	reducers.ProcessMetricMetadata(metricConfig, metrics)
 
 	chartResults := reducers.ProcessMetricHistory(filepath, common.MetricConfig{MetricName: "Default metric name"})
 
