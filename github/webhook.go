@@ -93,14 +93,14 @@ func processWebhookInTheBackground(config common.Config, c *gin.Context, Install
 	err := notion_database.AssertDatabaseHasDatadriftProperties(config.NotionDatabaseID, config.NotionAPIToken)
 
 	if err != nil {
-		fmt.Println("[DATADRIFT_ERROR] db notion", err)
+		fmt.Println("[DATADRIFT_ERROR] db notion", err.Error())
 	}
 
 	for _, metric := range config.Metrics {
 
 		filepath, err := history.ProcessHistory(client, ownerName, repoName, metric)
 		if err != nil {
-			fmt.Println("[DATADRIFT_ERROR] process history", err)
+			fmt.Println("[DATADRIFT_ERROR] process history", err.Error())
 
 		}
 
@@ -109,7 +109,7 @@ func processWebhookInTheBackground(config common.Config, c *gin.Context, Install
 		for _, chartResult := range chartResults {
 			err = reports.CreateReport(common.SyncConfig{NotionAPIKey: config.NotionAPIToken, NotionDatabaseID: config.NotionDatabaseID}, chartResult)
 			if err != nil {
-				fmt.Println("[DATADRIFT_ERROR] create report", err)
+				fmt.Println("[DATADRIFT_ERROR] create report", err.Error())
 			}
 		}
 	}
@@ -125,7 +125,7 @@ func VerifyConfigFile(client *github.Client, RepoOwner string, RepoName string, 
 	})
 
 	if err != nil {
-		fmt.Println("[DATADRIFT_ERROR]", err)
+		fmt.Println("[DATADRIFT_ERROR]", err.Error())
 		return common.Config{}, err
 	}
 	content, _ := file.GetContent()
@@ -134,7 +134,7 @@ func VerifyConfigFile(client *github.Client, RepoOwner string, RepoName string, 
 
 	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
 	if err != nil {
-		fmt.Println("[DATADRIFT_ERROR]", err)
+		fmt.Println("[DATADRIFT_ERROR]", err.Error())
 		return common.Config{}, err
 	}
 	if result.Errors() != nil {
@@ -144,7 +144,7 @@ func VerifyConfigFile(client *github.Client, RepoOwner string, RepoName string, 
 	fmt.Println(result.Valid())
 	var config common.Config
 	if err := json.Unmarshal([]byte(content), &config); err != nil {
-		fmt.Println("[DATADRIFT_ERROR]", err)
+		fmt.Println("[DATADRIFT_ERROR]", err.Error())
 		return common.Config{}, err
 	}
 	return config, nil

@@ -22,7 +22,7 @@ func ProcessCharts(historyFilepath string, metric common.MetricConfig) []common.
 
 	data, err := getKeysFromJSON(historyFilepath)
 	if err != nil {
-		fmt.Println("Error:", err)
+		fmt.Println("Error:", err.Error())
 	}
 
 	var kpiInfos []common.KPIReport
@@ -213,7 +213,7 @@ func createChart(diff []interface{}, labels []interface{}, colors []interface{},
 	var chartResponse ChartResponse
 	jsonUnmarshalError := json.Unmarshal(buf.Bytes(), &chartResponse)
 	if jsonUnmarshalError != nil {
-		fmt.Println("Error parsing JSON:", err)
+		fmt.Println("Error parsing JSON:", err.Error())
 		return "" // Return an empty string or handle the error as needed
 	}
 

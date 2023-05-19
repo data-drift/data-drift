@@ -102,7 +102,7 @@ func performTask(syncConfig common.SyncConfig) error {
 	for _, chartResult := range chartResults {
 		err := reports.CreateReport(syncConfig, chartResult)
 		if err != nil {
-			fmt.Println("[DATADRIFT_ERROR]", err)
+			fmt.Println("[DATADRIFT_ERROR]", err.Error())
 		}
 	}
 	fmt.Println("Custom function completed. Chart result:", filepath)

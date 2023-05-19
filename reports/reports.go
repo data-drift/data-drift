@@ -14,7 +14,7 @@ import (
 
 func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error {
 	timeGrain, _ := GetTimeGrain(KPIInfo.PeriodId)
-	reportNotionPageId, _ := notion_database.FindOrCreateReportPageId(syncConfig.NotionAPIKey, syncConfig.NotionDatabaseID, KPIInfo.KPIName, KPIInfo.PeriodId, timeGrain)
+
 	fmt.Println(reportNotionPageId)
 
 	diffFloat64, _ := KPIInfo.LatestValue.Sub(KPIInfo.InitialValue).Float64()
@@ -222,7 +222,7 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error 
 
 	err := notion_database.UpdateReport(syncConfig.NotionAPIKey, reportNotionPageId, params.Children, params.DatabasePageProperties)
 	if err != nil {
-		return fmt.Errorf("failed to create page: %v", err)
+		return fmt.Errorf("failed to create page: %v", err.Error())
 	}
 
 	return nil
