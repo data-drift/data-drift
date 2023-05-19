@@ -105,7 +105,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 					log.Fatalf("Invalid time grain: %s", timegrain)
 				}
 
-				periodAndDimensionKey := common.PeriodAndDimensionKey(string(periodKey) + "no dimension")
+				periodAndDimensionKey := common.PeriodAndDimensionKey(string(periodKey))
 
 				if lineCountAndKPIByDateByVersion[periodAndDimensionKey].History == nil {
 					lineCountAndKPIByDateByVersion[periodAndDimensionKey] = common.Metric{
@@ -126,7 +126,8 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 					KPI:             newKPI,
 					CommitTimestamp: commitTimestamp,
 					CommitUrl:       *commit.HTMLURL,
-					CommitComments:  commitMessages}
+					CommitComments:  commitMessages,
+				}
 			}
 		}
 
