@@ -106,12 +106,16 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 				}
 
 				periodAndDimensionKey := common.PeriodAndDimensionKey(string(periodKey))
+				dimension := common.Dimension("none")
+				dimensionValue := common.DimensionValue("none")
 
 				if lineCountAndKPIByDateByVersion[periodAndDimensionKey].History == nil {
 					lineCountAndKPIByDateByVersion[periodAndDimensionKey] = common.Metric{
-						TimeGrain: timegrain,
-						Period:    periodKey,
-						History:   make(map[common.CommitSha]common.CommitData),
+						TimeGrain:      timegrain,
+						Period:         periodKey,
+						Dimension:      dimension,
+						DimensionValue: dimensionValue,
+						History:        make(map[common.CommitSha]common.CommitData),
 					}
 				}
 
