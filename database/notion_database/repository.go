@@ -16,6 +16,7 @@ const PROPERTY_DATADRIFT_ID = "datadrift-id"
 const PROPERTY_DATADRIFT_TIMEGRAIN = "datadrift-timegrain"
 const PROPERTY_DATADRIFT_PERIOD = "datadrift-period"
 const PROPERTY_DATADRIFT_DRIFT_VALUE = "datadrift-drift-value"
+const PROPERTY_DATADRIFT_DIMENSION = "datadrift-dimension"
 
 var DefaultPropertiesToDelete = []string{"Tags", "Status", "Étiquette", "Étiquettes"}
 
@@ -120,6 +121,15 @@ func CreateEmptyReport(apiKey string, databaseId string, reportId string, period
 					Name: string(timeGrain),
 				},
 			},
+			PROPERTY_DATADRIFT_DIMENSION: notion.DatabasePageProperty{
+				RichText: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: "coucou",
+						},
+					},
+				},
+			},
 		},
 	}
 	newReport, err := client.CreatePage(ctx, params)
@@ -152,6 +162,7 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 	shouldCreateDatadriftPropertyPeriod := true
 	shouldCreateDatadriftPropertyTimeGrain := true
 	shouldCreateDatadriftPropertyDriftValue := true
+	shouldCreateDatadriftPropertyDimension := true
 
 	propertiesToDelete := []string{}
 
@@ -169,6 +180,9 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 		if property.Name == PROPERTY_DATADRIFT_DRIFT_VALUE {
 			shouldCreateDatadriftPropertyDriftValue = false
 		}
+		if property.Name == PROPERTY_DATADRIFT_DIMENSION {
+			shouldCreateDatadriftPropertyDimension = false
+		}
 
 		for _, propertyToDelete := range DefaultPropertiesToDelete {
 			propertyExists := property.Name == propertyToDelete
@@ -179,7 +193,7 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 
 	}
 	fmt.Println("hasDatadriftProperty:", shouldCreateDatadriftPropertyId)
-	shouldCreateProperties := shouldCreateDatadriftPropertyId || shouldCreateDatadriftPropertyPeriod || shouldCreateDatadriftPropertyTimeGrain || shouldCreateDatadriftPropertyDriftValue
+	shouldCreateProperties := shouldCreateDatadriftPropertyId || shouldCreateDatadriftPropertyPeriod || shouldCreateDatadriftPropertyTimeGrain || shouldCreateDatadriftPropertyDriftValue || shouldCreateDatadriftPropertyDimension
 	if shouldCreateProperties {
 		params := notion.UpdateDatabaseParams{
 			Properties: map[string]*notion.DatabaseProperty{},
@@ -198,6 +212,13 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 
 		if shouldCreateDatadriftPropertyPeriod {
 			params.Properties[PROPERTY_DATADRIFT_PERIOD] = &notion.DatabaseProperty{
+				Type:     notion.DBPropTypeRichText,
+				RichText: &notion.EmptyMetadata{},
+			}
+		}
+
+		if shouldCreateDatadriftPropertyDimension {
+			params.Properties[PROPERTY_DATADRIFT_DIMENSION] = &notion.DatabaseProperty{
 				Type:     notion.DBPropTypeRichText,
 				RichText: &notion.EmptyMetadata{},
 			}
