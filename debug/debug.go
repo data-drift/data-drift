@@ -51,7 +51,7 @@ func DebugFunction() {
 		filepath = newFilepath
 	}
 
-	chartResults := reducers.ProcessCharts(filepath, common.MetricConfig{MetricName: "Default metric name"})
+	chartResults := reducers.ProcessMetricHistory(filepath, common.MetricConfig{MetricName: "Default metric name"})
 
 	// if (len(chartResults)) != 0 {
 	// 	println("Stop exectution here")

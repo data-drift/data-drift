@@ -97,7 +97,7 @@ func performTask(syncConfig common.SyncConfig) error {
 		filepath = newFilepath
 	}
 	// Call functions from charts.go and reports.go
-	chartResults := reducers.ProcessCharts(filepath, common.MetricConfig{MetricName: "Default metric name"})
+	chartResults := reducers.ProcessMetricHistory(filepath, common.MetricConfig{MetricName: "Default metric name"})
 
 	for _, chartResult := range chartResults {
 		err := reports.CreateReport(syncConfig, chartResult)
