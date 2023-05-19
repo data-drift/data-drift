@@ -23,7 +23,7 @@ type Metric struct {
 }
 type Metrics map[PeriodId]Metric
 
-func ProcessHistory(client *github.Client, repoOwner string, repoName string, metric common.Metric) (string, error) {
+func ProcessHistory(client *github.Client, repoOwner string, repoName string, metric common.MetricConfig) (string, error) {
 
 	ctx := context.Background()
 

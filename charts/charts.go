@@ -18,7 +18,7 @@ type ChartResponse struct {
 	URL     string `json:"url"`
 }
 
-func ProcessCharts(historyFilepath string, metric common.Metric) []common.KPIReport {
+func ProcessCharts(historyFilepath string, metric common.MetricConfig) []common.KPIReport {
 
 	data, err := getKeysFromJSON(historyFilepath)
 	if err != nil {

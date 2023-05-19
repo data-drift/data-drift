@@ -81,7 +81,7 @@ func performTask(syncConfig common.SyncConfig) error {
 		newFilepath, err := history.ProcessHistory(client,
 			syncConfig.GithubRepoOwner,
 			syncConfig.GithubRepoName,
-			common.Metric{
+			common.MetricConfig{
 				MetricName:     "Default metric name",
 				KPIColumnName:  syncConfig.KpiColumn,
 				DateColumnName: syncConfig.DateColumn,
@@ -97,7 +97,7 @@ func performTask(syncConfig common.SyncConfig) error {
 		filepath = newFilepath
 	}
 	// Call functions from charts.go and reports.go
-	chartResults := charts.ProcessCharts(filepath, common.Metric{MetricName: "Default metric name"})
+	chartResults := charts.ProcessCharts(filepath, common.MetricConfig{MetricName: "Default metric name"})
 
 	for _, chartResult := range chartResults {
 		err := reports.CreateReport(syncConfig, chartResult)

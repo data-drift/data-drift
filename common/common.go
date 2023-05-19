@@ -56,9 +56,9 @@ func (c CommitData) Timestamp() int64 {
 }
 
 type Config struct {
-	NotionAPIToken   string   `json:"notionAPIToken"`
-	NotionDatabaseID string   `json:"notionDatabaseId"`
-	Metrics          []Metric `json:"metrics"`
+	NotionAPIToken   string         `json:"notionAPIToken"`
+	NotionDatabaseID string         `json:"notionDatabaseId"`
+	Metrics          []MetricConfig `json:"metrics"`
 }
 
 type TimeGrain string
@@ -71,7 +71,7 @@ const (
 	Year    TimeGrain = "year"
 )
 
-type Metric struct {
+type MetricConfig struct {
 	Filepath       string      `json:"filepath"`
 	DateColumnName string      `json:"dateColumnName"`
 	KPIColumnName  string      `json:"KPIColumnName"`
