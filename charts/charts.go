@@ -33,14 +33,14 @@ func ProcessCharts(historyFilepath string, metric common.MetricConfig) []common.
 		// Access the value associated with the key: data[key]
 		// Additional logic for processing the value
 		// ...
-		kpi := OrderDataAndCreateChart(metric.MetricName+" "+key, data[periodIdAndDimensionKey].Period, data[periodIdAndDimensionKey].History)
+		kpi := OrderDataAndCreateChart(metric.MetricName+" "+key, data[periodIdAndDimensionKey].Period, data[periodIdAndDimensionKey].History, data[periodIdAndDimensionKey].DimensionValue)
 		kpiInfos = append(kpiInfos, kpi)
 	}
 
 	return kpiInfos
 }
 
-func OrderDataAndCreateChart(KPIName string, periodId common.PeriodKey, unsortedResults common.MetricHistory) common.KPIReport {
+func OrderDataAndCreateChart(KPIName string, periodId common.PeriodKey, unsortedResults common.MetricHistory, dimensionValue common.DimensionValue) common.KPIReport {
 	// Extract the values from the map into a slice of struct objects
 	var dataSortableArray []common.CommitData
 
@@ -125,12 +125,13 @@ func OrderDataAndCreateChart(KPIName string, periodId common.PeriodKey, unsorted
 
 	chartUrl := createChart(diff, labels, colors, KPIName, minOfChart)
 	kpi1 := common.KPIReport{
-		KPIName:      KPIName,
-		PeriodId:     periodId,
-		GraphQLURL:   chartUrl,
-		InitialValue: initialValue,
-		LatestValue:  latestValue,
-		Events:       events,
+		KPIName:        KPIName,
+		PeriodId:       periodId,
+		DimensionValue: dimensionValue,
+		GraphQLURL:     chartUrl,
+		InitialValue:   initialValue,
+		LatestValue:    latestValue,
+		Events:         events,
 	}
 	return kpi1
 }

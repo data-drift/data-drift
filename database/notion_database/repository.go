@@ -16,17 +16,18 @@ const PROPERTY_DATADRIFT_ID = "datadrift-id"
 const PROPERTY_DATADRIFT_TIMEGRAIN = "datadrift-timegrain"
 const PROPERTY_DATADRIFT_PERIOD = "datadrift-period"
 const PROPERTY_DATADRIFT_DRIFT_VALUE = "datadrift-drift-value"
+const PROPERTY_DATADRIFT_DIMENSION = "datadrift-dimension"
 
 var DefaultPropertiesToDelete = []string{"Tags", "Status", "Étiquette", "Étiquettes"}
 
-func FindOrCreateReportPageId(apiKey string, databaseId string, reportName string, period string, timeGrain common.TimeGrain) (string, error) {
+func FindOrCreateReportPageId(apiKey string, databaseId string, reportName string, period string, timeGrain common.TimeGrain, dimensionValue common.DimensionValue) (string, error) {
 	existingReportId, err := QueryDatabaseWithReportId(apiKey, databaseId, reportName)
 	if err != nil {
 		return "", err
 	}
 	if existingReportId == "" {
 		fmt.Println("No existing report found, creating new one")
-		newReportId, err := CreateEmptyReport(apiKey, databaseId, reportName, period, timeGrain)
+		newReportId, err := CreateEmptyReport(apiKey, databaseId, reportName, period, timeGrain, dimensionValue)
 		return newReportId, err
 	}
 	return existingReportId, nil
@@ -74,7 +75,7 @@ func QueryDatabaseWithReportId(apiKey string, databaseId string, reportId string
 	}
 }
 
-func CreateEmptyReport(apiKey string, databaseId string, reportId string, period string, timeGrain common.TimeGrain) (string, error) {
+func CreateEmptyReport(apiKey string, databaseId string, reportId string, period string, timeGrain common.TimeGrain, dimensionValue common.DimensionValue) (string, error) {
 	buf := &bytes.Buffer{}
 	ctx := context.Background()
 
@@ -120,6 +121,15 @@ func CreateEmptyReport(apiKey string, databaseId string, reportId string, period
 					Name: string(timeGrain),
 				},
 			},
+			PROPERTY_DATADRIFT_DIMENSION: notion.DatabasePageProperty{
+				RichText: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: string(dimensionValue),
+						},
+					},
+				},
+			},
 		},
 	}
 	newReport, err := client.CreatePage(ctx, params)
@@ -152,6 +162,7 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 	shouldCreateDatadriftPropertyPeriod := true
 	shouldCreateDatadriftPropertyTimeGrain := true
 	shouldCreateDatadriftPropertyDriftValue := true
+	shouldCreateDatadriftPropertyDimension := true
 
 	propertiesToDelete := []string{}
 
@@ -169,6 +180,9 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 		if property.Name == PROPERTY_DATADRIFT_DRIFT_VALUE {
 			shouldCreateDatadriftPropertyDriftValue = false
 		}
+		if property.Name == PROPERTY_DATADRIFT_DIMENSION {
+			shouldCreateDatadriftPropertyDimension = false
+		}
 
 		for _, propertyToDelete := range DefaultPropertiesToDelete {
 			propertyExists := property.Name == propertyToDelete
@@ -179,7 +193,7 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 
 	}
 	fmt.Println("hasDatadriftProperty:", shouldCreateDatadriftPropertyId)
-	shouldCreateProperties := shouldCreateDatadriftPropertyId || shouldCreateDatadriftPropertyPeriod || shouldCreateDatadriftPropertyTimeGrain || shouldCreateDatadriftPropertyDriftValue
+	shouldCreateProperties := shouldCreateDatadriftPropertyId || shouldCreateDatadriftPropertyPeriod || shouldCreateDatadriftPropertyTimeGrain || shouldCreateDatadriftPropertyDriftValue || shouldCreateDatadriftPropertyDimension
 	if shouldCreateProperties {
 		params := notion.UpdateDatabaseParams{
 			Properties: map[string]*notion.DatabaseProperty{},
@@ -198,6 +212,13 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 
 		if shouldCreateDatadriftPropertyPeriod {
 			params.Properties[PROPERTY_DATADRIFT_PERIOD] = &notion.DatabaseProperty{
+				Type:     notion.DBPropTypeRichText,
+				RichText: &notion.EmptyMetadata{},
+			}
+		}
+
+		if shouldCreateDatadriftPropertyDimension {
+			params.Properties[PROPERTY_DATADRIFT_DIMENSION] = &notion.DatabaseProperty{
 				Type:     notion.DBPropTypeRichText,
 				RichText: &notion.EmptyMetadata{},
 			}
