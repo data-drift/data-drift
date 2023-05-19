@@ -17,7 +17,7 @@ type MetricMetadata struct {
 	PeriodKey       common.PeriodKey
 	InitialValue    decimal.Decimal
 	FirstDate       time.Time
-	RelativeHistory []RelativeHistoricalEvent
+	RelativeHistory map[time.Duration]RelativeHistoricalEvent
 }
 
 func ProcessMetricMetadata(metricConfig common.MetricConfig, metrics common.Metrics) map[common.TimeGrain]MetricMetadata {
@@ -46,14 +46,28 @@ func getMetadataOfMetric(metric common.Metric) MetricMetadata {
 
 	sortedAndFilteredArray := FilterAndSortByCommitTimestamp(dataSortableArray, firstDateOfPeriod)
 
-	relativeHistory := []RelativeHistoricalEvent{}
+	relativeHistory := make(map[time.Duration]RelativeHistoricalEvent)
+	initialValue := sortedAndFilteredArray[0].KPI
+	for _, commitData := range sortedAndFilteredArray {
+		durationFromFirstComputation := getDuration(commitData.CommitTimestamp, firstDateOfPeriod)
+		relativeHistoricalEvent := RelativeHistoricalEvent{
+			RelativeValue:         commitData.KPI.Div(initialValue).Mul(decimal.NewFromInt(100)),
+			DaysFromHistorization: decimal.NewFromFloat(durationFromFirstComputation.Hours() / 24),
+		}
+		relativeHistory[durationFromFirstComputation] = relativeHistoricalEvent
+	}
 
 	var metricMetadata MetricMetadata = MetricMetadata{
 		TimeGrain:       metric.TimeGrain,
 		PeriodKey:       metric.Period,
-		InitialValue:    sortedAndFilteredArray[0].KPI,
+		InitialValue:    initialValue,
 		FirstDate:       firstDateOfPeriod,
 		RelativeHistory: relativeHistory,
 	}
 	return metricMetadata
+}
+
+func getDuration(commitTimestamp int64, firstDateOfPeriod time.Time) time.Duration {
+	commitTime := time.Unix(commitTimestamp, 0)
+	return commitTime.Sub(firstDateOfPeriod)
 }

@@ -61,7 +61,7 @@ func DebugFunction() {
 	}
 
 	metadata := reducers.ProcessMetricMetadata(metricConfig, metrics)
-	writeMetadataToFile(metadata, "metadata.json")
+	writeMetadataToFile(metadata, "dist/metadata.json")
 	if len(metrics) > 0 {
 		panic("Stop debug")
 	}
