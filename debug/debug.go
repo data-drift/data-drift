@@ -5,11 +5,11 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/data-drift/kpi-git-history/charts"
 	"github.com/data-drift/kpi-git-history/common"
 	"github.com/data-drift/kpi-git-history/database/notion_database"
 	"github.com/data-drift/kpi-git-history/github"
 	"github.com/data-drift/kpi-git-history/history"
+	"github.com/data-drift/kpi-git-history/reducers"
 	"github.com/data-drift/kpi-git-history/reports"
 )
 
@@ -41,7 +41,7 @@ func DebugFunction() {
 			KPIColumnName:  kpiColumn,
 			DateColumnName: dateColumn,
 			Filepath:       githubRepoFilePath,
-			TimeGrains:     []common.TimeGrain{common.Quarter, common.Year},
+			TimeGrains:     []common.TimeGrain{common.Quarter, common.Year, common.Month},
 			Dimensions:     []string{"country"},
 		})
 
@@ -51,7 +51,7 @@ func DebugFunction() {
 		filepath = newFilepath
 	}
 
-	chartResults := charts.ProcessCharts(filepath, common.MetricConfig{MetricName: "Default metric name"})
+	chartResults := reducers.ProcessCharts(filepath, common.MetricConfig{MetricName: "Default metric name"})
 
 	// if (len(chartResults)) != 0 {
 	// 	println("Stop exectution here")
