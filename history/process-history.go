@@ -18,10 +18,10 @@ import (
 
 type CommitSha string
 type PeriodId string
-
-type PeriodData map[PeriodId]struct {
+type Metric struct {
 	History map[CommitSha]common.CommitData
 }
+type Metrics map[PeriodId]Metric
 
 func ProcessHistory(client *github.Client, repoOwner string, repoName string, metric common.Metric) (string, error) {
 
@@ -56,7 +56,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 	fmt.Printf("Number of commits: %d\n", len(commits))
 
 	// Group the lines of the CSV file by reporting date.
-	lineCountAndKPIByDateByVersion := make(PeriodData)
+	lineCountAndKPIByDateByVersion := make(Metrics)
 	for index, commit := range commits {
 		var commitMessages []common.CommitComments
 		fmt.Printf("\r Commit %d/%d", index, len(commits))
