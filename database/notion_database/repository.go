@@ -260,6 +260,11 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 }
 
 func UpdateReport(apiKey string, reportNotionPageId string, children []notion.Block, pageProperties *notion.DatabasePageProperties) error {
+	if reportNotionPageId == "" {
+		fmt.Println("No report page id provided")
+		return nil
+	}
+
 	fmt.Println("Updating report", reportNotionPageId)
 	buf := &bytes.Buffer{}
 	ctx := context.Background()
@@ -272,10 +277,11 @@ func UpdateReport(apiKey string, reportNotionPageId string, children []notion.Bl
 
 	_, updateErr := client.UpdatePage(ctx, reportNotionPageId, notion.UpdatePageParams{DatabasePageProperties: *pageProperties})
 	if updateErr != nil {
-		fmt.Println("[DATADRIFT_ERROR]: err during update", updateErr.Error())
+		fmt.Println("[DATADRIFT_ERROR]: err during update", reportNotionPageId, updateErr.Error())
 	}
 	existingReport, err := client.FindBlockChildrenByID(ctx, reportNotionPageId, &notion.PaginationQuery{PageSize: 100})
 	if err != nil {
+		fmt.Println("[DATADRIFT_ERROR]: err during find block", reportNotionPageId, err.Error())
 		return err
 	}
 	fmt.Println("Deleting children blocks:", len(existingReport.Results))
@@ -287,7 +293,7 @@ func UpdateReport(apiKey string, reportNotionPageId string, children []notion.Bl
 		fmt.Println("Deleting block", block.ID())
 		_, err := client.DeleteBlock(ctx, block.ID())
 		if err != nil {
-			fmt.Println("[DATADRIFT_ERROR]: deleting block", block.ID(), err)
+			fmt.Println("[DATADRIFT_ERROR]: deleting block", block.ID(), err.Error())
 		}
 		time.Sleep(100 * time.Millisecond)
 
@@ -295,7 +301,7 @@ func UpdateReport(apiKey string, reportNotionPageId string, children []notion.Bl
 
 	_, err = client.AppendBlockChildren(ctx, reportNotionPageId, children)
 	if err != nil {
-		fmt.Println("[DATADRIFT_ERROR]: err during append", err)
+		fmt.Println("[DATADRIFT_ERROR]: err during append", err.Error())
 	}
 	return err
 }

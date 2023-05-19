@@ -11,7 +11,7 @@ func TestParseYearWeek(t *testing.T) {
 
 	firstDay, err := ParseYearWeek(yearWeek)
 	if err != nil {
-		t.Errorf("Error parsing year week: %v", err)
+		t.Errorf("Error parsing year week: %v", err.Error())
 	}
 
 	if !firstDay.Equal(expectedFirstDay) {

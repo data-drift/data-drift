@@ -14,7 +14,12 @@ import (
 
 func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error {
 	timeGrain, _ := GetTimeGrain(KPIInfo.PeriodId)
-	reportNotionPageId, _ := notion_database.FindOrCreateReportPageId(syncConfig.NotionAPIKey, syncConfig.NotionDatabaseID, KPIInfo.KPIName, KPIInfo.PeriodId, timeGrain)
+	reportNotionPageId, findOrCreateError := notion_database.FindOrCreateReportPageId(syncConfig.NotionAPIKey, syncConfig.NotionDatabaseID, KPIInfo.KPIName, string(KPIInfo.PeriodId), timeGrain)
+	if findOrCreateError != nil {
+
+		return fmt.Errorf("failed to create reportNotionPageId: %v", findOrCreateError.Error())
+	}
+
 	fmt.Println(reportNotionPageId)
 
 	diffFloat64, _ := KPIInfo.LatestValue.Sub(KPIInfo.InitialValue).Float64()
@@ -222,7 +227,7 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error 
 
 	err := notion_database.UpdateReport(syncConfig.NotionAPIKey, reportNotionPageId, params.Children, params.DatabasePageProperties)
 	if err != nil {
-		return fmt.Errorf("failed to create page: %v", err)
+		return fmt.Errorf("failed to create page: %v", err.Error())
 	}
 
 	return nil
@@ -245,7 +250,8 @@ func displayDiffColor(diff decimal.Decimal) notion.Color {
 	return notion.ColorBlue
 }
 
-func GetTimeGrain(periodKey string) (common.TimeGrain, error) {
+func GetTimeGrain(periodKeyParam common.PeriodKey) (common.TimeGrain, error) {
+	periodKey := string(periodKeyParam)
 	_, err := time.Parse("2006-01-02", periodKey)
 	if err == nil {
 		return common.Day, nil
@@ -324,6 +330,10 @@ func displayCommitComments(event common.EventObject) string {
 		result += "Author: " + comment.CommentAuthor + "\n"
 		result += "Comment: " + comment.CommentBody + "\n"
 		result += "\n"
+	}
+
+	if len(result) > 2000 {
+		result = result[:2000]
 	}
 	return result
 }
