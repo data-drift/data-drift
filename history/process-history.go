@@ -114,9 +114,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 				}
 
 				if lineCountAndKPIByDateByVersion[periodKey].History == nil {
-					lineCountAndKPIByDateByVersion[periodKey] = struct {
-						History map[CommitSha]common.CommitData
-					}{History: make(map[CommitSha]common.CommitData)}
+					lineCountAndKPIByDateByVersion[periodKey] = Metric{History: make(map[CommitSha]common.CommitData)}
 				}
 
 				kpiStr := record[kpiColumn]
@@ -166,11 +164,11 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 	sort.Strings(dates)
 
 	// Create a map to hold the line counts by date by version, ordered by date.
-	orderedLineCountsByDateByVersion := make(map[string]map[CommitSha]common.CommitData)
+	orderedLineCountsByDateByVersion := Metrics{}
 
 	// Copy the line counts by date by version to the new map, ordered by date.
 	for _, dateStr := range dates {
-		orderedLineCountsByDateByVersion[dateStr] = lineCountAndKPIByDateByVersion[PeriodId(dateStr)].History
+		orderedLineCountsByDateByVersion[PeriodId(dateStr)] = lineCountAndKPIByDateByVersion[PeriodId(dateStr)]
 	}
 	// Generate a timestamp to include in the JSON file name.
 	timestamp := time.Now().Format("2006-01-02_15-04-05")

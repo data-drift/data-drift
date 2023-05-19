@@ -32,7 +32,7 @@ func ProcessCharts(historyFilepath string, metric common.Metric) []common.KPIRep
 		// Access the value associated with the key: data[key]
 		// Additional logic for processing the value
 		// ...
-		kpi := OrderDataAndCreateChart(metric.MetricName+" "+key, key, data[key])
+		kpi := OrderDataAndCreateChart(metric.MetricName+" "+key, key, data[key].History)
 		kpiInfos = append(kpiInfos, kpi)
 	}
 
@@ -234,12 +234,14 @@ func convertToChartMakerURL(url string) string {
 	return chartMakerURL
 }
 
-func getKeysFromJSON(path string) (map[string]map[string]struct {
-	Lines           int
-	KPI             string
-	CommitTimestamp int64
-	CommitUrl       string
-	CommitComments  []common.CommitComments
+func getKeysFromJSON(path string) (map[string]struct {
+	History map[string]struct {
+		Lines           int
+		KPI             string
+		CommitTimestamp int64
+		CommitUrl       string
+		CommitComments  []common.CommitComments
+	}
 }, error) {
 	// Read the file at the given path
 	jsonFile, err := os.ReadFile(path)
@@ -248,12 +250,14 @@ func getKeysFromJSON(path string) (map[string]map[string]struct {
 	}
 
 	// Unmarshal the JSON data into the desired type
-	var data map[string]map[string]struct {
-		Lines           int
-		KPI             string
-		CommitTimestamp int64
-		CommitUrl       string
-		CommitComments  []common.CommitComments
+	var data map[string]struct {
+		History map[string]struct {
+			Lines           int
+			KPI             string
+			CommitTimestamp int64
+			CommitUrl       string
+			CommitComments  []common.CommitComments
+		}
 	}
 	err = json.Unmarshal(jsonFile, &data)
 	if err != nil {
