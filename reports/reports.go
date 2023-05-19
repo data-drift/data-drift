@@ -331,5 +331,9 @@ func displayCommitComments(event common.EventObject) string {
 		result += "Comment: " + comment.CommentBody + "\n"
 		result += "\n"
 	}
+
+	if len(result) > 2000 {
+		result = result[:2000]
+	}
 	return result
 }
