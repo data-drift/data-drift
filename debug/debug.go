@@ -42,7 +42,7 @@ func DebugFunction() {
 			DateColumnName: dateColumn,
 			Filepath:       githubRepoFilePath,
 			TimeGrains:     []common.TimeGrain{common.Quarter, common.Year},
-			Dimensions:     []string{},
+			Dimensions:     []string{"country"},
 		})
 
 		if err != nil {

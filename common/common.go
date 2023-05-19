@@ -58,11 +58,15 @@ func (c CommitData) Timestamp() int64 {
 type CommitSha string
 type PeriodKey string
 type PeriodAndDimensionKey string
+type Dimension string
+type DimensionValue string
 type MetricHistory map[CommitSha]CommitData
 type Metric struct {
-	TimeGrain TimeGrain
-	Period    PeriodKey
-	History   MetricHistory
+	TimeGrain      TimeGrain
+	Period         PeriodKey
+	Dimension      Dimension
+	DimensionValue DimensionValue
+	History        MetricHistory
 }
 type Metrics map[PeriodAndDimensionKey]Metric
 
