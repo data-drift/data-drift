@@ -1,7 +1,9 @@
 package debug
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strconv"
 
@@ -58,8 +60,11 @@ func DebugFunction() {
 		panic("Error marsheling")
 	}
 
-	reducers.ProcessMetricMetadata(metricConfig, metrics)
-
+	metadata := reducers.ProcessMetricMetadata(metricConfig, metrics)
+	writeMetadataToFile(metadata, "metadata.json")
+	if len(metrics) > 0 {
+		panic("Stop debug")
+	}
 	chartResults := reducers.ProcessMetricHistory(filepath, common.MetricConfig{MetricName: "Default metric name"})
 
 	// if (len(chartResults)) != 0 {
@@ -74,4 +79,20 @@ func DebugFunction() {
 		}
 	}
 	println(filepath)
+}
+
+func writeMetadataToFile(metadata map[common.TimeGrain]reducers.MetricMetadata, filename string) error {
+	// Convert metadata to JSON-encoded byte array
+	metadataBytes, err := json.Marshal(metadata)
+	if err != nil {
+		return err
+	}
+
+	// Write byte array to file
+	err = ioutil.WriteFile(filename, metadataBytes, 0644)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
