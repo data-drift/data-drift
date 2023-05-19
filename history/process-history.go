@@ -16,13 +16,6 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-type CommitSha string
-type PeriodId string
-type Metric struct {
-	History map[CommitSha]common.CommitData
-}
-type Metrics map[PeriodId]Metric
-
 func ProcessHistory(client *github.Client, repoOwner string, repoName string, metric common.MetricConfig) (string, error) {
 
 	ctx := context.Background()
@@ -56,12 +49,12 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 	fmt.Printf("Number of commits: %d\n", len(commits))
 
 	// Group the lines of the CSV file by reporting date.
-	lineCountAndKPIByDateByVersion := make(Metrics)
+	lineCountAndKPIByDateByVersion := make(common.Metrics)
 	for index, commit := range commits {
 		var commitMessages []common.CommitComments
 		fmt.Printf("\r Commit %d/%d", index, len(commits))
 
-		commitSha := CommitSha(*commit.SHA)
+		commitSha := common.CommitSha(*commit.SHA)
 
 		commitDate := commit.Commit.Committer.Date
 		commitComments := GetCommitComments(client, ctx, repoOwner, repoName, *commit.SHA)
@@ -94,27 +87,27 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 		}
 		for _, record := range records[1:] { // Skip the header row.
 			for _, timegrain := range GetDefaultTimeGrains(metric.TimeGrains) {
-				var periodKey PeriodId
+				var periodKey common.PeriodId
 				periodTime, _ := time.Parse("2006-01-02", record[dateColumn])
 
 				switch timegrain {
 				case common.Day:
-					periodKey = PeriodId(periodTime.Format("2006-01-02"))
+					periodKey = common.PeriodId(periodTime.Format("2006-01-02"))
 				case common.Week:
 					_, week := periodTime.ISOWeek()
-					periodKey = PeriodId(fmt.Sprintf("%d-W%d", periodTime.Year(), week))
+					periodKey = common.PeriodId(fmt.Sprintf("%d-W%d", periodTime.Year(), week))
 				case common.Month:
-					periodKey = PeriodId(periodTime.Format("2006-01"))
+					periodKey = common.PeriodId(periodTime.Format("2006-01"))
 				case common.Quarter:
-					periodKey = PeriodId(fmt.Sprintf("%d-Q%d", periodTime.Year(), (periodTime.Month()-1)/3+1))
+					periodKey = common.PeriodId(fmt.Sprintf("%d-Q%d", periodTime.Year(), (periodTime.Month()-1)/3+1))
 				case common.Year:
-					periodKey = PeriodId(periodTime.Format("2006"))
+					periodKey = common.PeriodId(periodTime.Format("2006"))
 				default:
 					log.Fatalf("Invalid time grain: %s", timegrain)
 				}
 
 				if lineCountAndKPIByDateByVersion[periodKey].History == nil {
-					lineCountAndKPIByDateByVersion[periodKey] = Metric{History: make(map[CommitSha]common.CommitData)}
+					lineCountAndKPIByDateByVersion[periodKey] = common.Metric{History: make(map[common.CommitSha]common.CommitData)}
 				}
 
 				kpiStr := record[kpiColumn]
@@ -164,11 +157,11 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 	sort.Strings(dates)
 
 	// Create a map to hold the line counts by date by version, ordered by date.
-	orderedLineCountsByDateByVersion := Metrics{}
+	orderedLineCountsByDateByVersion := common.Metrics{}
 
 	// Copy the line counts by date by version to the new map, ordered by date.
 	for _, dateStr := range dates {
-		orderedLineCountsByDateByVersion[PeriodId(dateStr)] = lineCountAndKPIByDateByVersion[PeriodId(dateStr)]
+		orderedLineCountsByDateByVersion[common.PeriodId(dateStr)] = lineCountAndKPIByDateByVersion[common.PeriodId(dateStr)]
 	}
 	// Generate a timestamp to include in the JSON file name.
 	timestamp := time.Now().Format("2006-01-02_15-04-05")
