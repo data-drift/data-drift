@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"sort"
 	"time"
 
 	"github.com/data-drift/kpi-git-history/common"
@@ -42,7 +41,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 		ListOptions: github.ListOptions{PerPage: 100},
 	})
 	if err != nil {
-		return "", fmt.Errorf("error getting commit history: %v", err)
+		return "", fmt.Errorf("error getting commit history: %v", err.Error())
 	}
 
 	// Print the number of commits.
@@ -65,13 +64,13 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 		commitTimestamp := commitDate.Unix()
 		fileContents, err := getFileContentsForCommit(client, repoOwner, repoName, filePath, *commit.SHA)
 		if err != nil {
-			log.Printf("Error getting file contents for commit %s: %v", *commit.SHA, err)
+			log.Printf("Error getting file contents for commit %s: %v", *commit.SHA, err.Error())
 			continue
 		}
 		r := csv.NewReader(bytes.NewReader(fileContents))
 		records, err := r.ReadAll()
 		if err != nil {
-			log.Printf("Error parsing CSV file for commit %s: %v", *commit.SHA, err)
+			log.Printf("Error parsing CSV file for commit %s: %v", *commit.SHA, err.Error())
 			continue
 		}
 		var dateColumn int
@@ -106,8 +105,10 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 					log.Fatalf("Invalid time grain: %s", timegrain)
 				}
 
-				if lineCountAndKPIByDateByVersion[periodKey].History == nil {
-					lineCountAndKPIByDateByVersion[periodKey] = common.Metric{
+				periodAndDimensionKey := common.PeriodAndDimensionKey(string(periodKey) + "no dimension")
+
+				if lineCountAndKPIByDateByVersion[periodAndDimensionKey].History == nil {
+					lineCountAndKPIByDateByVersion[periodAndDimensionKey] = common.Metric{
 						TimeGrain: timegrain,
 						Period:    periodKey,
 						History:   make(map[common.CommitSha]common.CommitData),
@@ -117,10 +118,10 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 				kpiStr := record[kpiColumn]
 				kpi, _ := decimal.NewFromString(kpiStr)
 
-				newLineCount := lineCountAndKPIByDateByVersion[periodKey].History[commitSha].Lines + 1
-				newKPI := kpi.Add(lineCountAndKPIByDateByVersion[periodKey].History[commitSha].KPI)
+				newLineCount := lineCountAndKPIByDateByVersion[periodAndDimensionKey].History[commitSha].Lines + 1
+				newKPI := kpi.Add(lineCountAndKPIByDateByVersion[periodAndDimensionKey].History[commitSha].KPI)
 
-				lineCountAndKPIByDateByVersion[periodKey].History[commitSha] = common.CommitData{
+				lineCountAndKPIByDateByVersion[periodAndDimensionKey].History[commitSha] = common.CommitData{
 					Lines:           newLineCount,
 					KPI:             newKPI,
 					CommitTimestamp: commitTimestamp,
@@ -145,28 +146,10 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 
 	if _, err := os.Stat("dist"); os.IsNotExist(err) {
 		if err := os.Mkdir("dist", 0755); err != nil {
-			log.Fatalf("Error creating directory: %v", err)
+			log.Fatalf("Error creating directory: %v", err.Error())
 		}
 	}
 
-	// Create a slice to hold the date strings.
-	dates := make([]string, 0, len(lineCountAndKPIByDateByVersion))
-
-	// Add the date strings to the slice.
-	for dateStr := range lineCountAndKPIByDateByVersion {
-		dates = append(dates, string(dateStr))
-	}
-
-	// Sort the date strings in ascending order.
-	sort.Strings(dates)
-
-	// Create a map to hold the line counts by date by version, ordered by date.
-	orderedLineCountsByDateByVersion := common.Metrics{}
-
-	// Copy the line counts by date by version to the new map, ordered by date.
-	for _, dateStr := range dates {
-		orderedLineCountsByDateByVersion[common.PeriodKey(dateStr)] = lineCountAndKPIByDateByVersion[common.PeriodKey(dateStr)]
-	}
 	// Generate a timestamp to include in the JSON file name.
 	timestamp := time.Now().Format("2006-01-02_15-04-05")
 
@@ -174,14 +157,14 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 	filepath := fmt.Sprintf("dist/"+metricName+"lineCountAndKPIByDateByVersion_%s.json", timestamp)
 	file, err := os.Create(filepath)
 	if err != nil {
-		log.Fatalf("Error creating file: %v", err)
+		log.Fatalf("Error creating file: %v", err.Error())
 	}
 	defer file.Close()
 
 	// Write the line counts and KPI values to the JSON file.
 	enc := json.NewEncoder(file)
-	if err := enc.Encode(orderedLineCountsByDateByVersion); err != nil {
-		log.Fatalf("Error writing JSON to file: %v", err)
+	if err := enc.Encode(lineCountAndKPIByDateByVersion); err != nil {
+		log.Fatalf("Error writing JSON to file: %v", err.Error())
 	}
 	fmt.Println("Results written to lineCountsAndKPIs.json")
 	return filepath, nil

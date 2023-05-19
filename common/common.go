@@ -4,7 +4,7 @@ import "github.com/shopspring/decimal"
 
 type KPIReport struct {
 	KPIName      string          `json:"kpiName"`
-	PeriodId     string          `json:"periodId"`
+	PeriodId     PeriodKey       `json:"periodId"`
 	GraphQLURL   string          `json:"graphqlUrl"`
 	InitialValue decimal.Decimal `json:"firstRoundedKPI"`
 	LatestValue  decimal.Decimal `json:"lastRoundedKPI"`
@@ -57,13 +57,14 @@ func (c CommitData) Timestamp() int64 {
 
 type CommitSha string
 type PeriodKey string
+type PeriodAndDimensionKey string
 type MetricHistory map[CommitSha]CommitData
 type Metric struct {
 	TimeGrain TimeGrain
 	Period    PeriodKey
 	History   MetricHistory
 }
-type Metrics map[PeriodKey]Metric
+type Metrics map[PeriodAndDimensionKey]Metric
 
 type Config struct {
 	NotionAPIToken   string         `json:"notionAPIToken"`

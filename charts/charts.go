@@ -27,20 +27,20 @@ func ProcessCharts(historyFilepath string, metric common.MetricConfig) []common.
 
 	var kpiInfos []common.KPIReport
 
-	for periodId := range data {
-		key := string(periodId)
+	for periodIdAndDimensionKey := range data {
+		key := string(periodIdAndDimensionKey)
 		fmt.Println("Key:", key)
 		// Access the value associated with the key: data[key]
 		// Additional logic for processing the value
 		// ...
-		kpi := OrderDataAndCreateChart(metric.MetricName+" "+key, key, data[periodId].History)
+		kpi := OrderDataAndCreateChart(metric.MetricName+" "+key, data[periodIdAndDimensionKey].Period, data[periodIdAndDimensionKey].History)
 		kpiInfos = append(kpiInfos, kpi)
 	}
 
 	return kpiInfos
 }
 
-func OrderDataAndCreateChart(KPIName string, periodId string, unsortedResults common.MetricHistory) common.KPIReport {
+func OrderDataAndCreateChart(KPIName string, periodId common.PeriodKey, unsortedResults common.MetricHistory) common.KPIReport {
 	// Extract the values from the map into a slice of struct objects
 	var dataSortableArray []common.CommitData
 
