@@ -3,12 +3,13 @@ package common
 import "github.com/shopspring/decimal"
 
 type KPIReport struct {
-	KPIName      string          `json:"kpiName"`
-	PeriodId     PeriodKey       `json:"periodId"`
-	GraphQLURL   string          `json:"graphqlUrl"`
-	InitialValue decimal.Decimal `json:"firstRoundedKPI"`
-	LatestValue  decimal.Decimal `json:"lastRoundedKPI"`
-	Events       []EventObject   `json:"events"`
+	KPIName        string          `json:"kpiName"`
+	PeriodId       PeriodKey       `json:"periodId"`
+	DimensionValue DimensionValue  `json:"dimensionValue"`
+	GraphQLURL     string          `json:"graphqlUrl"`
+	InitialValue   decimal.Decimal `json:"firstRoundedKPI"`
+	LatestValue    decimal.Decimal `json:"lastRoundedKPI"`
+	Events         []EventObject   `json:"events"`
 }
 
 type SyncConfig struct {
