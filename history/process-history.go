@@ -87,27 +87,31 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 		}
 		for _, record := range records[1:] { // Skip the header row.
 			for _, timegrain := range GetDefaultTimeGrains(metric.TimeGrains) {
-				var periodKey common.PeriodId
+				var periodKey common.PeriodKey
 				periodTime, _ := time.Parse("2006-01-02", record[dateColumn])
 
 				switch timegrain {
 				case common.Day:
-					periodKey = common.PeriodId(periodTime.Format("2006-01-02"))
+					periodKey = common.PeriodKey(periodTime.Format("2006-01-02"))
 				case common.Week:
 					_, week := periodTime.ISOWeek()
-					periodKey = common.PeriodId(fmt.Sprintf("%d-W%d", periodTime.Year(), week))
+					periodKey = common.PeriodKey(fmt.Sprintf("%d-W%d", periodTime.Year(), week))
 				case common.Month:
-					periodKey = common.PeriodId(periodTime.Format("2006-01"))
+					periodKey = common.PeriodKey(periodTime.Format("2006-01"))
 				case common.Quarter:
-					periodKey = common.PeriodId(fmt.Sprintf("%d-Q%d", periodTime.Year(), (periodTime.Month()-1)/3+1))
+					periodKey = common.PeriodKey(fmt.Sprintf("%d-Q%d", periodTime.Year(), (periodTime.Month()-1)/3+1))
 				case common.Year:
-					periodKey = common.PeriodId(periodTime.Format("2006"))
+					periodKey = common.PeriodKey(periodTime.Format("2006"))
 				default:
 					log.Fatalf("Invalid time grain: %s", timegrain)
 				}
 
 				if lineCountAndKPIByDateByVersion[periodKey].History == nil {
-					lineCountAndKPIByDateByVersion[periodKey] = common.Metric{History: make(map[common.CommitSha]common.CommitData)}
+					lineCountAndKPIByDateByVersion[periodKey] = common.Metric{
+						TimeGrain: timegrain,
+						Period:    periodKey,
+						History:   make(map[common.CommitSha]common.CommitData),
+					}
 				}
 
 				kpiStr := record[kpiColumn]
@@ -161,7 +165,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 
 	// Copy the line counts by date by version to the new map, ordered by date.
 	for _, dateStr := range dates {
-		orderedLineCountsByDateByVersion[common.PeriodId(dateStr)] = lineCountAndKPIByDateByVersion[common.PeriodId(dateStr)]
+		orderedLineCountsByDateByVersion[common.PeriodKey(dateStr)] = lineCountAndKPIByDateByVersion[common.PeriodKey(dateStr)]
 	}
 	// Generate a timestamp to include in the JSON file name.
 	timestamp := time.Now().Format("2006-01-02_15-04-05")

@@ -56,12 +56,14 @@ func (c CommitData) Timestamp() int64 {
 }
 
 type CommitSha string
-type PeriodId string
+type PeriodKey string
 type MetricHistory map[CommitSha]CommitData
 type Metric struct {
-	History MetricHistory
+	TimeGrain TimeGrain
+	Period    PeriodKey
+	History   MetricHistory
 }
-type Metrics map[PeriodId]Metric
+type Metrics map[PeriodKey]Metric
 
 type Config struct {
 	NotionAPIToken   string         `json:"notionAPIToken"`
