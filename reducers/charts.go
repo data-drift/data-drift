@@ -27,13 +27,12 @@ func ProcessMetricHistory(historyFilepath string, metric common.MetricConfig) []
 
 	var kpiInfos []common.KPIReport
 
-	for periodIdAndDimensionKey := range data {
+	for periodIdAndDimensionKey, datum := range data {
 		key := string(periodIdAndDimensionKey)
-		fmt.Println("Key:", key)
 		// Access the value associated with the key: data[key]
 		// Additional logic for processing the value
 		// ...
-		kpi := OrderDataAndCreateChart(metric.MetricName+" "+key, data[periodIdAndDimensionKey].Period, data[periodIdAndDimensionKey].History, data[periodIdAndDimensionKey].DimensionValue)
+		kpi := OrderDataAndCreateChart(metric.MetricName+" "+key, datum.Period, datum.History, datum.DimensionValue)
 		kpiInfos = append(kpiInfos, kpi)
 	}
 
