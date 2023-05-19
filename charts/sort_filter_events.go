@@ -29,8 +29,9 @@ func FilterAndSortByCommitTimestamp[T ObjectWithDate](dataSortableArray []T, dri
 	return filteredArray
 }
 
-func getFirstDateOfPeriod(periodKey string) time.Time {
-	timegrain, _ := reports.GetTimeGrain(periodKey)
+func getFirstDateOfPeriod(periodKeyParam common.PeriodKey) time.Time {
+	timegrain, _ := reports.GetTimeGrain(periodKeyParam)
+	periodKey := string(periodKeyParam)
 	var lastDay time.Time
 	switch timegrain {
 	case common.Day:

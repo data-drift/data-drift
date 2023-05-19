@@ -18,39 +18,34 @@ type ChartResponse struct {
 	URL     string `json:"url"`
 }
 
-func ProcessCharts(historyFilepath string, metric common.Metric) []common.KPIReport {
+func ProcessCharts(historyFilepath string, metric common.MetricConfig) []common.KPIReport {
 
 	data, err := getKeysFromJSON(historyFilepath)
 	if err != nil {
-		fmt.Println("Error:", err)
+		fmt.Println("Error:", err.Error())
 	}
 
 	var kpiInfos []common.KPIReport
 
-	for key := range data {
+	for periodIdAndDimensionKey := range data {
+		key := string(periodIdAndDimensionKey)
 		fmt.Println("Key:", key)
 		// Access the value associated with the key: data[key]
 		// Additional logic for processing the value
 		// ...
-		kpi := OrderDataAndCreateChart(metric.MetricName+" "+key, key, data[key])
+		kpi := OrderDataAndCreateChart(metric.MetricName+" "+key, data[periodIdAndDimensionKey].Period, data[periodIdAndDimensionKey].History)
 		kpiInfos = append(kpiInfos, kpi)
 	}
 
 	return kpiInfos
 }
 
-func OrderDataAndCreateChart(KPIName string, periodId string, unsortedResults map[string]struct {
-	Lines           int
-	KPI             string
-	CommitTimestamp int64
-	CommitUrl       string
-	CommitComments  []common.CommitComments
-}) common.KPIReport {
+func OrderDataAndCreateChart(KPIName string, periodId common.PeriodKey, unsortedResults common.MetricHistory) common.KPIReport {
 	// Extract the values from the map into a slice of struct objects
 	var dataSortableArray []common.CommitData
 
 	for _, stats := range unsortedResults {
-		KPI, _ := decimal.NewFromString(stats.KPI)
+		KPI := stats.KPI
 		dataSortableArray = append(dataSortableArray, common.CommitData{
 			Lines:           stats.Lines,
 			KPI:             KPI,
@@ -218,7 +213,7 @@ func createChart(diff []interface{}, labels []interface{}, colors []interface{},
 	var chartResponse ChartResponse
 	jsonUnmarshalError := json.Unmarshal(buf.Bytes(), &chartResponse)
 	if jsonUnmarshalError != nil {
-		fmt.Println("Error parsing JSON:", err)
+		fmt.Println("Error parsing JSON:", err.Error())
 		return "" // Return an empty string or handle the error as needed
 	}
 
@@ -234,13 +229,7 @@ func convertToChartMakerURL(url string) string {
 	return chartMakerURL
 }
 
-func getKeysFromJSON(path string) (map[string]map[string]struct {
-	Lines           int
-	KPI             string
-	CommitTimestamp int64
-	CommitUrl       string
-	CommitComments  []common.CommitComments
-}, error) {
+func getKeysFromJSON(path string) (common.Metrics, error) {
 	// Read the file at the given path
 	jsonFile, err := os.ReadFile(path)
 	if err != nil {
@@ -248,13 +237,7 @@ func getKeysFromJSON(path string) (map[string]map[string]struct {
 	}
 
 	// Unmarshal the JSON data into the desired type
-	var data map[string]map[string]struct {
-		Lines           int
-		KPI             string
-		CommitTimestamp int64
-		CommitUrl       string
-		CommitComments  []common.CommitComments
-	}
+	var data common.Metrics
 	err = json.Unmarshal(jsonFile, &data)
 	if err != nil {
 		return nil, err

@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"sort"
 	"time"
 
 	"github.com/data-drift/kpi-git-history/common"
@@ -16,12 +15,7 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-type CommitSha string
-type PeriodId string
-
-type PeriodData map[PeriodId]map[CommitSha]common.CommitData
-
-func ProcessHistory(client *github.Client, repoOwner string, repoName string, metric common.Metric) (string, error) {
+func ProcessHistory(client *github.Client, repoOwner string, repoName string, metric common.MetricConfig) (string, error) {
 
 	ctx := context.Background()
 
@@ -47,19 +41,19 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 		ListOptions: github.ListOptions{PerPage: 100},
 	})
 	if err != nil {
-		return "", fmt.Errorf("error getting commit history: %v", err)
+		return "", fmt.Errorf("error getting commit history: %v", err.Error())
 	}
 
 	// Print the number of commits.
 	fmt.Printf("Number of commits: %d\n", len(commits))
 
 	// Group the lines of the CSV file by reporting date.
-	lineCountAndKPIByDateByVersion := make(PeriodData)
+	lineCountAndKPIByDateByVersion := make(common.Metrics)
 	for index, commit := range commits {
 		var commitMessages []common.CommitComments
 		fmt.Printf("\r Commit %d/%d", index, len(commits))
 
-		commitSha := CommitSha(*commit.SHA)
+		commitSha := common.CommitSha(*commit.SHA)
 
 		commitDate := commit.Commit.Committer.Date
 		commitComments := GetCommitComments(client, ctx, repoOwner, repoName, *commit.SHA)
@@ -70,17 +64,21 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 		commitTimestamp := commitDate.Unix()
 		fileContents, err := getFileContentsForCommit(client, repoOwner, repoName, filePath, *commit.SHA)
 		if err != nil {
-			log.Printf("Error getting file contents for commit %s: %v", *commit.SHA, err)
+			log.Printf("Error getting file contents for commit %s: %v", *commit.SHA, err.Error())
 			continue
 		}
 		r := csv.NewReader(bytes.NewReader(fileContents))
 		records, err := r.ReadAll()
 		if err != nil {
-			log.Printf("Error parsing CSV file for commit %s: %v", *commit.SHA, err)
+			log.Printf("Error parsing CSV file for commit %s: %v", *commit.SHA, err.Error())
 			continue
 		}
 		var dateColumn int
 		var kpiColumn int
+		var dimensionColumns []struct {
+			dimensionName   string
+			dimensionColumn int
+		}
 
 		for i, columnName := range records[0] {
 			if columnName == dateColumnName {
@@ -89,44 +87,52 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 			if columnName == KPIColumnName {
 				kpiColumn = i
 			}
+			for _, metricDimension := range metric.Dimensions {
+				if columnName == metricDimension {
+					dimensionColumns = append(dimensionColumns, struct {
+						dimensionName   string
+						dimensionColumn int
+					}{
+						dimensionName:   metricDimension,
+						dimensionColumn: i,
+					})
+				}
+			}
 		}
 		for _, record := range records[1:] { // Skip the header row.
 			for _, timegrain := range GetDefaultTimeGrains(metric.TimeGrains) {
-				var periodKey PeriodId
+				var periodKey common.PeriodKey
 				periodTime, _ := time.Parse("2006-01-02", record[dateColumn])
 
 				switch timegrain {
 				case common.Day:
-					periodKey = PeriodId(periodTime.Format("2006-01-02"))
+					periodKey = common.PeriodKey(periodTime.Format("2006-01-02"))
 				case common.Week:
 					_, week := periodTime.ISOWeek()
-					periodKey = PeriodId(fmt.Sprintf("%d-W%d", periodTime.Year(), week))
+					periodKey = common.PeriodKey(fmt.Sprintf("%d-W%d", periodTime.Year(), week))
 				case common.Month:
-					periodKey = PeriodId(periodTime.Format("2006-01"))
+					periodKey = common.PeriodKey(periodTime.Format("2006-01"))
 				case common.Quarter:
-					periodKey = PeriodId(fmt.Sprintf("%d-Q%d", periodTime.Year(), (periodTime.Month()-1)/3+1))
+					periodKey = common.PeriodKey(fmt.Sprintf("%d-Q%d", periodTime.Year(), (periodTime.Month()-1)/3+1))
 				case common.Year:
-					periodKey = PeriodId(periodTime.Format("2006"))
+					periodKey = common.PeriodKey(periodTime.Format("2006"))
 				default:
 					log.Fatalf("Invalid time grain: %s", timegrain)
 				}
 
-				if lineCountAndKPIByDateByVersion[periodKey] == nil {
-					lineCountAndKPIByDateByVersion[periodKey] = make(map[CommitSha]common.CommitData)
+				periodAndDimensionKey := common.PeriodAndDimensionKey(string(periodKey))
+				dimension := common.Dimension("none")
+				dimensionValue := common.DimensionValue("none")
+
+				updateMetric(lineCountAndKPIByDateByVersion, periodAndDimensionKey, timegrain, periodKey, dimension, dimensionValue, record, kpiColumn, commitSha, commitTimestamp, commit, commitMessages)
+
+				for _, metricDimension := range dimensionColumns {
+					dimension = common.Dimension(metricDimension.dimensionName)
+					dimensionValue = common.DimensionValue(record[metricDimension.dimensionColumn])
+					periodAndDimensionKey = common.PeriodAndDimensionKey(string(periodKey) + " " + string(dimensionValue))
+					updateMetric(lineCountAndKPIByDateByVersion, periodAndDimensionKey, timegrain, periodKey, dimension, dimensionValue, record, kpiColumn, commitSha, commitTimestamp, commit, commitMessages)
+
 				}
-
-				kpiStr := record[kpiColumn]
-				kpi, _ := decimal.NewFromString(kpiStr)
-
-				newLineCount := lineCountAndKPIByDateByVersion[periodKey][commitSha].Lines + 1
-				newKPI := kpi.Add(lineCountAndKPIByDateByVersion[periodKey][commitSha].KPI)
-
-				lineCountAndKPIByDateByVersion[periodKey][commitSha] = common.CommitData{
-					Lines:           newLineCount,
-					KPI:             newKPI,
-					CommitTimestamp: commitTimestamp,
-					CommitUrl:       *commit.HTMLURL,
-					CommitComments:  commitMessages}
 			}
 		}
 
@@ -137,7 +143,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 
 		var countsStr string
 		var kpiStr string
-		for _, count := range lineCounts {
+		for _, count := range lineCounts.History {
 			countsStr += fmt.Sprintf("%d ", count.Lines)
 		}
 		fmt.Printf("Line Count %s: %s\n", dateStr, countsStr)
@@ -146,28 +152,10 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 
 	if _, err := os.Stat("dist"); os.IsNotExist(err) {
 		if err := os.Mkdir("dist", 0755); err != nil {
-			log.Fatalf("Error creating directory: %v", err)
+			log.Fatalf("Error creating directory: %v", err.Error())
 		}
 	}
 
-	// Create a slice to hold the date strings.
-	dates := make([]string, 0, len(lineCountAndKPIByDateByVersion))
-
-	// Add the date strings to the slice.
-	for dateStr := range lineCountAndKPIByDateByVersion {
-		dates = append(dates, string(dateStr))
-	}
-
-	// Sort the date strings in ascending order.
-	sort.Strings(dates)
-
-	// Create a map to hold the line counts by date by version, ordered by date.
-	orderedLineCountsByDateByVersion := make(map[string]map[CommitSha]common.CommitData)
-
-	// Copy the line counts by date by version to the new map, ordered by date.
-	for _, dateStr := range dates {
-		orderedLineCountsByDateByVersion[dateStr] = lineCountAndKPIByDateByVersion[PeriodId(dateStr)]
-	}
 	// Generate a timestamp to include in the JSON file name.
 	timestamp := time.Now().Format("2006-01-02_15-04-05")
 
@@ -175,17 +163,43 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 	filepath := fmt.Sprintf("dist/"+metricName+"lineCountAndKPIByDateByVersion_%s.json", timestamp)
 	file, err := os.Create(filepath)
 	if err != nil {
-		log.Fatalf("Error creating file: %v", err)
+		log.Fatalf("Error creating file: %v", err.Error())
 	}
 	defer file.Close()
 
 	// Write the line counts and KPI values to the JSON file.
 	enc := json.NewEncoder(file)
-	if err := enc.Encode(orderedLineCountsByDateByVersion); err != nil {
-		log.Fatalf("Error writing JSON to file: %v", err)
+	if err := enc.Encode(lineCountAndKPIByDateByVersion); err != nil {
+		log.Fatalf("Error writing JSON to file: %v", err.Error())
 	}
 	fmt.Println("Results written to lineCountsAndKPIs.json")
 	return filepath, nil
+}
+
+func updateMetric(lineCountAndKPIByDateByVersion common.Metrics, periodAndDimensionKey common.PeriodAndDimensionKey, timegrain common.TimeGrain, periodKey common.PeriodKey, dimension common.Dimension, dimensionValue common.DimensionValue, record []string, kpiColumn int, commitSha common.CommitSha, commitTimestamp int64, commit *github.RepositoryCommit, commitMessages []common.CommitComments) {
+	if lineCountAndKPIByDateByVersion[periodAndDimensionKey].History == nil {
+		lineCountAndKPIByDateByVersion[periodAndDimensionKey] = common.Metric{
+			TimeGrain:      timegrain,
+			Period:         periodKey,
+			Dimension:      dimension,
+			DimensionValue: dimensionValue,
+			History:        make(map[common.CommitSha]common.CommitData),
+		}
+	}
+
+	kpiStr := record[kpiColumn]
+	kpi, _ := decimal.NewFromString(kpiStr)
+
+	newLineCount := lineCountAndKPIByDateByVersion[periodAndDimensionKey].History[commitSha].Lines + 1
+	newKPI := kpi.Add(lineCountAndKPIByDateByVersion[periodAndDimensionKey].History[commitSha].KPI)
+
+	lineCountAndKPIByDateByVersion[periodAndDimensionKey].History[commitSha] = common.CommitData{
+		Lines:           newLineCount,
+		KPI:             newKPI,
+		CommitTimestamp: commitTimestamp,
+		CommitUrl:       *commit.HTMLURL,
+		CommitComments:  commitMessages,
+	}
 }
 
 func getFileContentsForCommit(client *github.Client, owner, name, path, sha string) ([]byte, error) {

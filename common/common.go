@@ -4,7 +4,7 @@ import "github.com/shopspring/decimal"
 
 type KPIReport struct {
 	KPIName      string          `json:"kpiName"`
-	PeriodId     string          `json:"periodId"`
+	PeriodId     PeriodKey       `json:"periodId"`
 	GraphQLURL   string          `json:"graphqlUrl"`
 	InitialValue decimal.Decimal `json:"firstRoundedKPI"`
 	LatestValue  decimal.Decimal `json:"lastRoundedKPI"`
@@ -55,10 +55,25 @@ func (c CommitData) Timestamp() int64 {
 	return c.CommitTimestamp
 }
 
+type CommitSha string
+type PeriodKey string
+type PeriodAndDimensionKey string
+type Dimension string
+type DimensionValue string
+type MetricHistory map[CommitSha]CommitData
+type Metric struct {
+	TimeGrain      TimeGrain
+	Period         PeriodKey
+	Dimension      Dimension
+	DimensionValue DimensionValue
+	History        MetricHistory
+}
+type Metrics map[PeriodAndDimensionKey]Metric
+
 type Config struct {
-	NotionAPIToken   string   `json:"notionAPIToken"`
-	NotionDatabaseID string   `json:"notionDatabaseId"`
-	Metrics          []Metric `json:"metrics"`
+	NotionAPIToken   string         `json:"notionAPIToken"`
+	NotionDatabaseID string         `json:"notionDatabaseId"`
+	Metrics          []MetricConfig `json:"metrics"`
 }
 
 type TimeGrain string
@@ -71,7 +86,7 @@ const (
 	Year    TimeGrain = "year"
 )
 
-type Metric struct {
+type MetricConfig struct {
 	Filepath       string      `json:"filepath"`
 	DateColumnName string      `json:"dateColumnName"`
 	KPIColumnName  string      `json:"KPIColumnName"`

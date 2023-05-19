@@ -36,13 +36,13 @@ func DebugFunction() {
 		panic("Client not configured")
 	}
 	if filepath == "" {
-		newFilepath, err := history.ProcessHistory(client, githubRepoOwner, githubRepoName, common.Metric{
+		newFilepath, err := history.ProcessHistory(client, githubRepoOwner, githubRepoName, common.MetricConfig{
 			MetricName:     "Default metric name",
 			KPIColumnName:  kpiColumn,
 			DateColumnName: dateColumn,
 			Filepath:       githubRepoFilePath,
 			TimeGrains:     []common.TimeGrain{common.Quarter, common.Year},
-			Dimensions:     []string{},
+			Dimensions:     []string{"country"},
 		})
 
 		if err != nil {
@@ -51,7 +51,7 @@ func DebugFunction() {
 		filepath = newFilepath
 	}
 
-	chartResults := charts.ProcessCharts(filepath, common.Metric{MetricName: "Default metric name"})
+	chartResults := charts.ProcessCharts(filepath, common.MetricConfig{MetricName: "Default metric name"})
 
 	// if (len(chartResults)) != 0 {
 	// 	println("Stop exectution here")
