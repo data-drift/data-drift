@@ -75,6 +75,10 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 		}
 		var dateColumn int
 		var kpiColumn int
+		var dimensionColumns []struct {
+			dimensionName   string
+			dimensionColumn int
+		}
 
 		for i, columnName := range records[0] {
 			if columnName == dateColumnName {
@@ -82,6 +86,17 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 			}
 			if columnName == KPIColumnName {
 				kpiColumn = i
+			}
+			for _, metricDimension := range metric.Dimensions {
+				if columnName == metricDimension {
+					dimensionColumns = append(dimensionColumns, struct {
+						dimensionName   string
+						dimensionColumn int
+					}{
+						dimensionName:   metricDimension,
+						dimensionColumn: i,
+					})
+				}
 			}
 		}
 		for _, record := range records[1:] { // Skip the header row.
@@ -109,28 +124,14 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 				dimension := common.Dimension("none")
 				dimensionValue := common.DimensionValue("none")
 
-				if lineCountAndKPIByDateByVersion[periodAndDimensionKey].History == nil {
-					lineCountAndKPIByDateByVersion[periodAndDimensionKey] = common.Metric{
-						TimeGrain:      timegrain,
-						Period:         periodKey,
-						Dimension:      dimension,
-						DimensionValue: dimensionValue,
-						History:        make(map[common.CommitSha]common.CommitData),
-					}
-				}
+				updateMetric(lineCountAndKPIByDateByVersion, periodAndDimensionKey, timegrain, periodKey, dimension, dimensionValue, record, kpiColumn, commitSha, commitTimestamp, commit, commitMessages)
 
-				kpiStr := record[kpiColumn]
-				kpi, _ := decimal.NewFromString(kpiStr)
+				for _, metricDimension := range dimensionColumns {
+					dimension = common.Dimension(metricDimension.dimensionName)
+					dimensionValue = common.DimensionValue(record[metricDimension.dimensionColumn])
+					periodAndDimensionKey = common.PeriodAndDimensionKey(string(periodKey) + " " + string(dimensionValue))
+					updateMetric(lineCountAndKPIByDateByVersion, periodAndDimensionKey, timegrain, periodKey, dimension, dimensionValue, record, kpiColumn, commitSha, commitTimestamp, commit, commitMessages)
 
-				newLineCount := lineCountAndKPIByDateByVersion[periodAndDimensionKey].History[commitSha].Lines + 1
-				newKPI := kpi.Add(lineCountAndKPIByDateByVersion[periodAndDimensionKey].History[commitSha].KPI)
-
-				lineCountAndKPIByDateByVersion[periodAndDimensionKey].History[commitSha] = common.CommitData{
-					Lines:           newLineCount,
-					KPI:             newKPI,
-					CommitTimestamp: commitTimestamp,
-					CommitUrl:       *commit.HTMLURL,
-					CommitComments:  commitMessages,
 				}
 			}
 		}
@@ -173,6 +174,32 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 	}
 	fmt.Println("Results written to lineCountsAndKPIs.json")
 	return filepath, nil
+}
+
+func updateMetric(lineCountAndKPIByDateByVersion common.Metrics, periodAndDimensionKey common.PeriodAndDimensionKey, timegrain common.TimeGrain, periodKey common.PeriodKey, dimension common.Dimension, dimensionValue common.DimensionValue, record []string, kpiColumn int, commitSha common.CommitSha, commitTimestamp int64, commit *github.RepositoryCommit, commitMessages []common.CommitComments) {
+	if lineCountAndKPIByDateByVersion[periodAndDimensionKey].History == nil {
+		lineCountAndKPIByDateByVersion[periodAndDimensionKey] = common.Metric{
+			TimeGrain:      timegrain,
+			Period:         periodKey,
+			Dimension:      dimension,
+			DimensionValue: dimensionValue,
+			History:        make(map[common.CommitSha]common.CommitData),
+		}
+	}
+
+	kpiStr := record[kpiColumn]
+	kpi, _ := decimal.NewFromString(kpiStr)
+
+	newLineCount := lineCountAndKPIByDateByVersion[periodAndDimensionKey].History[commitSha].Lines + 1
+	newKPI := kpi.Add(lineCountAndKPIByDateByVersion[periodAndDimensionKey].History[commitSha].KPI)
+
+	lineCountAndKPIByDateByVersion[periodAndDimensionKey].History[commitSha] = common.CommitData{
+		Lines:           newLineCount,
+		KPI:             newKPI,
+		CommitTimestamp: commitTimestamp,
+		CommitUrl:       *commit.HTMLURL,
+		CommitComments:  commitMessages,
+	}
 }
 
 func getFileContentsForCommit(client *github.Client, owner, name, path, sha string) ([]byte, error) {
