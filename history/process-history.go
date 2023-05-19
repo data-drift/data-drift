@@ -19,7 +19,9 @@ import (
 type CommitSha string
 type PeriodId string
 
-type PeriodData map[PeriodId]map[CommitSha]common.CommitData
+type PeriodData map[PeriodId]struct {
+	History map[CommitSha]common.CommitData
+}
 
 func ProcessHistory(client *github.Client, repoOwner string, repoName string, metric common.Metric) (string, error) {
 
@@ -111,17 +113,19 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 					log.Fatalf("Invalid time grain: %s", timegrain)
 				}
 
-				if lineCountAndKPIByDateByVersion[periodKey] == nil {
-					lineCountAndKPIByDateByVersion[periodKey] = make(map[CommitSha]common.CommitData)
+				if lineCountAndKPIByDateByVersion[periodKey].History == nil {
+					lineCountAndKPIByDateByVersion[periodKey] = struct {
+						History map[CommitSha]common.CommitData
+					}{History: make(map[CommitSha]common.CommitData)}
 				}
 
 				kpiStr := record[kpiColumn]
 				kpi, _ := decimal.NewFromString(kpiStr)
 
-				newLineCount := lineCountAndKPIByDateByVersion[periodKey][commitSha].Lines + 1
-				newKPI := kpi.Add(lineCountAndKPIByDateByVersion[periodKey][commitSha].KPI)
+				newLineCount := lineCountAndKPIByDateByVersion[periodKey].History[commitSha].Lines + 1
+				newKPI := kpi.Add(lineCountAndKPIByDateByVersion[periodKey].History[commitSha].KPI)
 
-				lineCountAndKPIByDateByVersion[periodKey][commitSha] = common.CommitData{
+				lineCountAndKPIByDateByVersion[periodKey].History[commitSha] = common.CommitData{
 					Lines:           newLineCount,
 					KPI:             newKPI,
 					CommitTimestamp: commitTimestamp,
@@ -137,7 +141,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 
 		var countsStr string
 		var kpiStr string
-		for _, count := range lineCounts {
+		for _, count := range lineCounts.History {
 			countsStr += fmt.Sprintf("%d ", count.Lines)
 		}
 		fmt.Printf("Line Count %s: %s\n", dateStr, countsStr)
@@ -166,7 +170,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 
 	// Copy the line counts by date by version to the new map, ordered by date.
 	for _, dateStr := range dates {
-		orderedLineCountsByDateByVersion[dateStr] = lineCountAndKPIByDateByVersion[PeriodId(dateStr)]
+		orderedLineCountsByDateByVersion[dateStr] = lineCountAndKPIByDateByVersion[PeriodId(dateStr)].History
 	}
 	// Generate a timestamp to include in the JSON file name.
 	timestamp := time.Now().Format("2006-01-02_15-04-05")
