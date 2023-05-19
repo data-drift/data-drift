@@ -81,7 +81,7 @@ func DebugFunction() {
 	println(filepath)
 }
 
-func writeMetadataToFile(metadata map[common.TimeGrain]reducers.MetricMetadata, filename string) error {
+func writeMetadataToFile(metadata map[common.TimeGrain]map[common.PeriodKey]reducers.MetricMetadata, filename string) error {
 	// Convert metadata to JSON-encoded byte array
 	metadataBytes, err := json.Marshal(metadata)
 	if err != nil {

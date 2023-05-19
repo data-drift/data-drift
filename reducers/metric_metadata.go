@@ -20,12 +20,21 @@ type MetricMetadata struct {
 	RelativeHistory map[time.Duration]RelativeHistoricalEvent
 }
 
-func ProcessMetricMetadata(metricConfig common.MetricConfig, metrics common.Metrics) map[common.TimeGrain]MetricMetadata {
+func ProcessMetricMetadata(metricConfig common.MetricConfig, metrics common.Metrics) map[common.TimeGrain]map[common.PeriodKey]MetricMetadata {
 
-	metric := metrics[common.PeriodAndDimensionKey("2023-02 FR")]
-	metricMetadata := getMetadataOfMetric(metric)
-	return map[common.TimeGrain]MetricMetadata{
-		common.Month: metricMetadata,
+	metricMetadatas := map[common.PeriodKey]MetricMetadata{}
+	for _, metric := range metrics {
+		if metric.TimeGrain != common.Month {
+			continue
+		}
+		if metric.Dimension != "none" {
+			continue
+		}
+		metricMetadata := getMetadataOfMetric(metric)
+		metricMetadatas[metric.Period] = metricMetadata
+	}
+	return map[common.TimeGrain]map[common.PeriodKey]MetricMetadata{
+		common.Month: metricMetadatas,
 	}
 }
 
