@@ -237,8 +237,9 @@ func displayDiff(diff decimal.Decimal) string {
 }
 
 func displayDiffColor(diff decimal.Decimal) notion.Color {
-
-	if diff.IsNegative() {
+	if diff.Equal(decimal.Zero) {
+		return notion.ColorGreen
+	} else if diff.IsNegative() {
 		return notion.ColorOrange
 	}
 	return notion.ColorBlue
