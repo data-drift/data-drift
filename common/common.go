@@ -57,8 +57,9 @@ func (c CommitData) Timestamp() int64 {
 
 type CommitSha string
 type PeriodId string
+type MetricHistory map[CommitSha]CommitData
 type Metric struct {
-	History map[CommitSha]CommitData
+	History MetricHistory
 }
 type Metrics map[PeriodId]Metric
 

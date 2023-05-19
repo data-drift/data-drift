@@ -27,30 +27,25 @@ func ProcessCharts(historyFilepath string, metric common.MetricConfig) []common.
 
 	var kpiInfos []common.KPIReport
 
-	for key := range data {
+	for periodId := range data {
+		key := string(periodId)
 		fmt.Println("Key:", key)
 		// Access the value associated with the key: data[key]
 		// Additional logic for processing the value
 		// ...
-		kpi := OrderDataAndCreateChart(metric.MetricName+" "+key, key, data[key].History)
+		kpi := OrderDataAndCreateChart(metric.MetricName+" "+key, key, data[periodId].History)
 		kpiInfos = append(kpiInfos, kpi)
 	}
 
 	return kpiInfos
 }
 
-func OrderDataAndCreateChart(KPIName string, periodId string, unsortedResults map[string]struct {
-	Lines           int
-	KPI             string
-	CommitTimestamp int64
-	CommitUrl       string
-	CommitComments  []common.CommitComments
-}) common.KPIReport {
+func OrderDataAndCreateChart(KPIName string, periodId string, unsortedResults common.MetricHistory) common.KPIReport {
 	// Extract the values from the map into a slice of struct objects
 	var dataSortableArray []common.CommitData
 
 	for _, stats := range unsortedResults {
-		KPI, _ := decimal.NewFromString(stats.KPI)
+		KPI := stats.KPI
 		dataSortableArray = append(dataSortableArray, common.CommitData{
 			Lines:           stats.Lines,
 			KPI:             KPI,
@@ -234,15 +229,7 @@ func convertToChartMakerURL(url string) string {
 	return chartMakerURL
 }
 
-func getKeysFromJSON(path string) (map[string]struct {
-	History map[string]struct {
-		Lines           int
-		KPI             string
-		CommitTimestamp int64
-		CommitUrl       string
-		CommitComments  []common.CommitComments
-	}
-}, error) {
+func getKeysFromJSON(path string) (common.Metrics, error) {
 	// Read the file at the given path
 	jsonFile, err := os.ReadFile(path)
 	if err != nil {
@@ -250,15 +237,7 @@ func getKeysFromJSON(path string) (map[string]struct {
 	}
 
 	// Unmarshal the JSON data into the desired type
-	var data map[string]struct {
-		History map[string]struct {
-			Lines           int
-			KPI             string
-			CommitTimestamp int64
-			CommitUrl       string
-			CommitComments  []common.CommitComments
-		}
-	}
+	var data common.Metrics
 	err = json.Unmarshal(jsonFile, &data)
 	if err != nil {
 		return nil, err
