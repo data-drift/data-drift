@@ -110,11 +110,12 @@ func CreateMetadataChart(metricMetadatas map[common.PeriodKey]MetricMetadata) st
 	for _, metricMetadata := range metricMetadatas {
 
 		datasets = append(datasets, map[string]interface{}{
-			"label":       metricMetadata.PeriodKey,
-			"showLine":    true,
-			"lineTension": 0,
-			"borderColor": helpers.GetColorFromString(string(metricMetadata.PeriodKey)),
-			"data":        mapChartDataToDatasets(metricMetadata.RelativeHistory),
+			"label":           metricMetadata.PeriodKey,
+			"showLine":        true,
+			"lineTension":     0,
+			"borderColor":     helpers.GetColorFromString(string(metricMetadata.PeriodKey)),
+			"backgroundColor": "transparent",
+			"data":            mapChartDataToDatasets(metricMetadata.RelativeHistory),
 		})
 	}
 	jsonBody := map[string]interface{}{
