@@ -102,7 +102,7 @@ func mapChartDataToDatasets(chartData map[time.Duration]RelativeHistoricalEvent)
 		return data[i]["x"].(float64) < data[j]["x"].(float64)
 	})
 
-	return data
+	return removeDuplicatesByY(data)
 }
 
 func CreateMetadataChart(metricMetadatas map[common.PeriodKey]MetricMetadata) string {
@@ -112,6 +112,7 @@ func CreateMetadataChart(metricMetadatas map[common.PeriodKey]MetricMetadata) st
 		datasets = append(datasets, map[string]interface{}{
 			"label":       metricMetadata.PeriodKey,
 			"showLine":    true,
+			"lineTension": 0,
 			"borderColor": helpers.GetColorFromString(string(metricMetadata.PeriodKey)),
 			"data":        mapChartDataToDatasets(metricMetadata.RelativeHistory),
 		})
@@ -167,4 +168,18 @@ func CreateMetadataChart(metricMetadatas map[common.PeriodKey]MetricMetadata) st
 
 	// Return only the URL
 	return interactiveUrl
+}
+
+func removeDuplicatesByY(data []map[string]interface{}) []map[string]interface{} {
+
+	var result []map[string]interface{}
+	var lastKPI float64
+	for _, point := range data {
+		if lastKPI == 0 || point["y"] != lastKPI {
+			result = append(result, point)
+			lastKPI = point["y"].(float64)
+		}
+	}
+
+	return result
 }
