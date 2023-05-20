@@ -1,15 +1,14 @@
 package debug
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strconv"
 
 	"github.com/data-drift/kpi-git-history/common"
 	"github.com/data-drift/kpi-git-history/database/notion_database"
 	"github.com/data-drift/kpi-git-history/github"
+	"github.com/data-drift/kpi-git-history/helpers"
 	"github.com/data-drift/kpi-git-history/history"
 	"github.com/data-drift/kpi-git-history/reducers"
 	"github.com/data-drift/kpi-git-history/reports"
@@ -61,7 +60,8 @@ func DebugFunction() {
 	}
 
 	metadata := reducers.ProcessMetricMetadata(metricConfig, metrics)
-	writeMetadataToFile(metadata, "dist/metadata.json")
+	reducers.CreateMetadataChart(metadata[common.Month])
+	helpers.WriteMetadataToFile(metadata, "dist/metadata.json")
 	if len(metrics) > 0 {
 		panic("Stop debug")
 	}
@@ -79,20 +79,4 @@ func DebugFunction() {
 		}
 	}
 	println(filepath)
-}
-
-func writeMetadataToFile(metadata map[common.TimeGrain]map[common.PeriodKey]reducers.MetricMetadata, filename string) error {
-	// Convert metadata to JSON-encoded byte array
-	metadataBytes, err := json.Marshal(metadata)
-	if err != nil {
-		return err
-	}
-
-	// Write byte array to file
-	err = ioutil.WriteFile(filename, metadataBytes, 0644)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

@@ -4,6 +4,8 @@
 
 kpi-git-history
 
+.DS_Store
+
 # Folders
 _obj
 _test

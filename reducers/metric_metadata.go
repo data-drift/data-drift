@@ -1,9 +1,15 @@
 package reducers
 
 import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"sort"
 	"time"
 
 	"github.com/data-drift/kpi-git-history/common"
+	"github.com/data-drift/kpi-git-history/helpers"
 	"github.com/shopspring/decimal"
 )
 
@@ -79,4 +85,86 @@ func getMetadataOfMetric(metric common.Metric) MetricMetadata {
 func getDuration(commitTimestamp int64, firstDateOfPeriod time.Time) time.Duration {
 	commitTime := time.Unix(commitTimestamp, 0)
 	return commitTime.Sub(firstDateOfPeriod)
+}
+
+func mapChartDataToDatasets(chartData map[time.Duration]RelativeHistoricalEvent) []map[string]interface{} {
+
+	var data []map[string]interface{}
+	for _, point := range chartData {
+
+		data = append(data, map[string]interface{}{
+			"x": helpers.GetFloat(point.DaysFromHistorization),
+			"y": helpers.GetFloat(point.RelativeValue),
+		})
+	}
+
+	sort.Slice(data, func(i, j int) bool {
+		return data[i]["x"].(float64) < data[j]["x"].(float64)
+	})
+
+	return data
+}
+
+func CreateMetadataChart(metricMetadatas map[common.PeriodKey]MetricMetadata) string {
+	datasets := []map[string]interface{}{}
+	for _, metricMetadata := range metricMetadatas {
+
+		datasets = append(datasets, map[string]interface{}{
+			"label":       metricMetadata.PeriodKey,
+			"showLine":    true,
+			"borderColor": helpers.GetColorFromString(string(metricMetadata.PeriodKey)),
+			"data":        mapChartDataToDatasets(metricMetadata.RelativeHistory),
+		})
+	}
+	jsonBody := map[string]interface{}{
+		"version":          "4",
+		"backgroundColor":  "transparent",
+		"width":            500,
+		"height":           300,
+		"devicePixelRatio": 2.0,
+		"format":           "svg",
+		"chart": map[string]interface{}{
+			"type": "scatter",
+			"data": map[string]interface{}{
+
+				"datasets": datasets,
+			},
+		},
+	}
+
+	helpers.WriteMetadataToFile(jsonBody, "dist/payload.json")
+
+	newData, _ := json.Marshal(jsonBody)
+	url := "https://quickchart.io/chart/create"
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(newData))
+	req.Header.Set("Content-Type", "application/json")
+
+	if err != nil {
+		panic(err)
+	}
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	fmt.Println("Response Status:", resp.Status)
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(resp.Body)
+	fmt.Println(buf.String())
+
+	var chartResponse ChartResponse
+	jsonUnmarshalError := json.Unmarshal(buf.Bytes(), &chartResponse)
+	if jsonUnmarshalError != nil {
+		fmt.Println("Error parsing JSON:", err.Error())
+		return "" // Return an empty string or handle the error as needed
+	}
+
+	interactiveUrl := convertToChartMakerURL(chartResponse.URL)
+	fmt.Println("Interactive URL:", interactiveUrl)
+
+	// Return only the URL
+	return interactiveUrl
 }
