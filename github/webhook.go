@@ -114,9 +114,11 @@ func processWebhookInTheBackground(config common.Config, c *gin.Context, Install
 		}
 
 		metadataChartResults, metadataChartError := reducers.ProcessMetricMetadataCharts(filepath, metric)
-		fmt.Println("metadataChartResults", metadataChartResults)
-		fmt.Println("metadataChartError", metadataChartError)
-		// TODO createSumarryReport(metadataChartResults, metric)
+		if metadataChartError != nil {
+			fmt.Println("[DATADRIFT_ERROR] create summary report", metadataChartError.Error())
+		} else {
+			reports.CreateSummaryReport(common.SyncConfig{NotionAPIKey: config.NotionAPIToken, NotionDatabaseID: config.NotionDatabaseID}, metric, metadataChartResults)
+		}
 	}
 	return false
 }
