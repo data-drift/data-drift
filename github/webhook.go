@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/data-drift/kpi-git-history/charts"
 	"github.com/data-drift/kpi-git-history/common"
 	"github.com/data-drift/kpi-git-history/database/notion_database"
 	"github.com/data-drift/kpi-git-history/history"
+	"github.com/data-drift/kpi-git-history/reducers"
 	"github.com/data-drift/kpi-git-history/reports"
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-github/v42/github"
@@ -104,7 +104,7 @@ func processWebhookInTheBackground(config common.Config, c *gin.Context, Install
 
 		}
 
-		chartResults := charts.ProcessCharts(filepath, metric)
+		chartResults := reducers.ProcessMetricHistory(filepath, metric)
 
 		for _, chartResult := range chartResults {
 			err = reports.CreateReport(common.SyncConfig{NotionAPIKey: config.NotionAPIToken, NotionDatabaseID: config.NotionDatabaseID}, chartResult)

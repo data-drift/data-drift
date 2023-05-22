@@ -1,4 +1,4 @@
-package charts
+package reducers
 
 import (
 	"testing"
