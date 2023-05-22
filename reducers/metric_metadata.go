@@ -26,25 +26,42 @@ type MetricMetadata struct {
 	RelativeHistory map[time.Duration]RelativeHistoricalEvent
 }
 
+func ProcessMetricMetadataCharts(filepath string, metricConfig common.MetricConfig) (map[common.TimeGrain]string, error) {
+	metrics, marshelingError := GetKeysFromJSON(filepath)
+	if marshelingError != nil {
+		fmt.Println("[DATADRIFT ERROR]: marshaling data", marshelingError.Error())
+		return nil, marshelingError
+	}
+
+	metadata := ProcessMetricMetadata(metricConfig, metrics)
+	metadataChartUrls := make(map[common.TimeGrain]string)
+	for _, timeGrain := range metricConfig.TimeGrains {
+		chartUrl := CreateMetadataChart(metadata[timeGrain])
+		metadataChartUrls[timeGrain] = chartUrl
+	}
+	return metadataChartUrls, nil
+}
+
 func ProcessMetricMetadata(metricConfig common.MetricConfig, metrics common.Metrics) map[common.TimeGrain]map[common.PeriodKey]MetricMetadata {
 
-	metricMetadatas := map[common.PeriodKey]MetricMetadata{}
+	metricMetadatas := make(map[common.TimeGrain]map[common.PeriodKey]MetricMetadata)
 	for _, metric := range metrics {
-		if metric.TimeGrain != common.Month {
-			continue
-		}
 		if metric.Dimension != "none" {
 			continue
 		}
-		metricMetadata := getMetadataOfMetric(metric)
-		metricMetadatas[metric.Period] = metricMetadata
+		metricMetadata, metricMetadataErr := getMetadataOfMetric(metric)
+		if metricMetadataErr != nil {
+			continue
+		}
+		if metricMetadatas[metric.TimeGrain] == nil {
+			metricMetadatas[metric.TimeGrain] = make(map[common.PeriodKey]MetricMetadata)
+		}
+		metricMetadatas[metric.TimeGrain][metric.Period] = metricMetadata
 	}
-	return map[common.TimeGrain]map[common.PeriodKey]MetricMetadata{
-		common.Month: metricMetadatas,
-	}
+	return metricMetadatas
 }
 
-func getMetadataOfMetric(metric common.Metric) MetricMetadata {
+func getMetadataOfMetric(metric common.Metric) (MetricMetadata, error) {
 	firstDateOfPeriod := getFirstDateOfPeriod(metric.Period)
 	var dataSortableArray []common.CommitData
 
@@ -60,6 +77,10 @@ func getMetadataOfMetric(metric common.Metric) MetricMetadata {
 	}
 
 	sortedAndFilteredArray := FilterAndSortByCommitTimestamp(dataSortableArray, firstDateOfPeriod)
+
+	if len(sortedAndFilteredArray) == 0 {
+		return MetricMetadata{}, fmt.Errorf("no data for metric")
+	}
 
 	relativeHistory := make(map[time.Duration]RelativeHistoricalEvent)
 	initialValue := sortedAndFilteredArray[0].KPI
@@ -79,7 +100,7 @@ func getMetadataOfMetric(metric common.Metric) MetricMetadata {
 		FirstDate:       firstDateOfPeriod,
 		RelativeHistory: relativeHistory,
 	}
-	return metricMetadata
+	return metricMetadata, nil
 }
 
 func getDuration(commitTimestamp int64, firstDateOfPeriod time.Time) time.Duration {

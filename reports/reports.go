@@ -233,6 +233,41 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error 
 	return nil
 }
 
+func CreateSummaryReport(syncConfig common.SyncConfig, metricConfig common.MetricConfig, chartUrls map[common.TimeGrain]string) error {
+	fmt.Println("Creating summary report")
+	reportNotionPageId, findOrCreateError := notion_database.FindOrCreateSummaryReportPage(syncConfig.NotionAPIKey, syncConfig.NotionDatabaseID, "Summary of "+metricConfig.MetricName)
+	fmt.Println(reportNotionPageId)
+	fmt.Println(findOrCreateError)
+
+	var children []notion.Block
+	for _, timeGrain := range []common.TimeGrain{common.Day, common.Week, common.Month, common.Quarter, common.Year} {
+		chartUrl := chartUrls[timeGrain]
+		if chartUrl == "" {
+			continue
+		}
+		children = append(children, notion.Heading1Block{
+			RichText: []notion.RichText{
+				{
+					Text: &notion.Text{
+						Content: "Cohorts " + string(timeGrain),
+					},
+				},
+			},
+		},
+			notion.EmbedBlock{
+				URL: chartUrl,
+			},
+		)
+
+	}
+	err := notion_database.UpdateReport(syncConfig.NotionAPIKey, reportNotionPageId, children, &notion.DatabasePageProperties{})
+	if err != nil {
+		return fmt.Errorf("failed to create page: %v", err.Error())
+	}
+
+	return nil
+}
+
 func displayDiff(diff decimal.Decimal) string {
 	if diff.IsPositive() {
 
