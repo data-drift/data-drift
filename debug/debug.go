@@ -55,7 +55,7 @@ func DebugFunction() {
 
 	metrics, marshelingError := reducers.GetKeysFromJSON(filepath)
 	if marshelingError != nil {
-		println(marshelingError.Error())
+		fmt.Println("[DATADRIFT ERROR]: marshaling data", marshelingError.Error())
 		panic("Error marsheling")
 	}
 

@@ -112,6 +112,11 @@ func processWebhookInTheBackground(config common.Config, c *gin.Context, Install
 				fmt.Println("[DATADRIFT_ERROR] create report", err.Error())
 			}
 		}
+
+		metadataChartResults, metadataChartError := reducers.ProcessMetricMetadataCharts(filepath, metric)
+		fmt.Println("metadataChartResults", metadataChartResults)
+		fmt.Println("metadataChartError", metadataChartError)
+		// TODO createSumarryReport(metadataChartResults, metric)
 	}
 	return false
 }

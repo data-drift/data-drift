@@ -26,6 +26,22 @@ type MetricMetadata struct {
 	RelativeHistory map[time.Duration]RelativeHistoricalEvent
 }
 
+func ProcessMetricMetadataCharts(filepath string, metricConfig common.MetricConfig) (map[common.TimeGrain]string, error) {
+	metrics, marshelingError := GetKeysFromJSON(filepath)
+	if marshelingError != nil {
+		fmt.Println("[DATADRIFT ERROR]: marshaling data", marshelingError.Error())
+		return nil, marshelingError
+	}
+
+	metadata := ProcessMetricMetadata(metricConfig, metrics)
+	metadataChartUrls := make(map[common.TimeGrain]string)
+	for _, timeGrain := range metricConfig.TimeGrains {
+		chartUrl := CreateMetadataChart(metadata[timeGrain])
+		metadataChartUrls[timeGrain] = chartUrl
+	}
+	return metadataChartUrls, nil
+}
+
 func ProcessMetricMetadata(metricConfig common.MetricConfig, metrics common.Metrics) map[common.TimeGrain]map[common.PeriodKey]MetricMetadata {
 
 	metricMetadatas := map[common.PeriodKey]MetricMetadata{}
