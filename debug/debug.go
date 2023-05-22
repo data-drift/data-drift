@@ -8,7 +8,6 @@ import (
 	"github.com/data-drift/kpi-git-history/common"
 	"github.com/data-drift/kpi-git-history/database/notion_database"
 	"github.com/data-drift/kpi-git-history/github"
-	"github.com/data-drift/kpi-git-history/helpers"
 	"github.com/data-drift/kpi-git-history/history"
 	"github.com/data-drift/kpi-git-history/reducers"
 	"github.com/data-drift/kpi-git-history/reports"
@@ -52,25 +51,18 @@ func DebugFunction() {
 		}
 		filepath = newFilepath
 	}
-
-	metrics, marshelingError := reducers.GetKeysFromJSON(filepath)
-	if marshelingError != nil {
-		fmt.Println("[DATADRIFT ERROR]: marshaling data", marshelingError.Error())
-		panic("Error marsheling")
+	metadataChartResults, metadataChartError := reducers.ProcessMetricMetadataCharts(filepath, metricConfig)
+	if metadataChartError != nil {
+		println(metadataChartError)
+		panic("Error processing metadata charts")
 	}
 
-	metadata := reducers.ProcessMetricMetadata(metricConfig, metrics)
-	reducers.CreateMetadataChart(metadata[common.Month])
-	helpers.WriteMetadataToFile(metadata, "dist/metadata.json")
-	if len(metrics) > 0 {
-		panic("Stop debug")
+	reports.CreateSummaryReport(metricConfig, metadataChartResults)
+	if metadataChartResults != nil {
+		panic("Stop execution here")
 	}
+
 	chartResults := reducers.ProcessMetricHistory(filepath, common.MetricConfig{MetricName: "Default metric name"})
-
-	// if (len(chartResults)) != 0 {
-	// 	println("Stop exectution here")
-	// 	return
-	// }
 
 	for _, chartResult := range chartResults {
 		err := reports.CreateReport(common.SyncConfig{NotionAPIKey: notionAPIKey, NotionDatabaseID: notionDatabaseID}, chartResult)

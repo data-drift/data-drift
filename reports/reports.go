@@ -233,6 +233,14 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error 
 	return nil
 }
 
+func CreateSummaryReport(metricConfig common.MetricConfig, chartUrls map[common.TimeGrain]string) error {
+	fmt.Println("Creating summary report")
+	// Find or Create page
+	// create children content
+	// update page
+	return nil
+}
+
 func displayDiff(diff decimal.Decimal) string {
 	if diff.IsPositive() {
 
