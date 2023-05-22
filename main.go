@@ -7,11 +7,11 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/data-drift/kpi-git-history/charts"
 	"github.com/data-drift/kpi-git-history/common"
 	"github.com/data-drift/kpi-git-history/debug"
 	"github.com/data-drift/kpi-git-history/github"
 	"github.com/data-drift/kpi-git-history/history"
+	"github.com/data-drift/kpi-git-history/reducers"
 	"github.com/data-drift/kpi-git-history/reports"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -97,7 +97,7 @@ func performTask(syncConfig common.SyncConfig) error {
 		filepath = newFilepath
 	}
 	// Call functions from charts.go and reports.go
-	chartResults := charts.ProcessCharts(filepath, common.MetricConfig{MetricName: "Default metric name"})
+	chartResults := reducers.ProcessMetricHistory(filepath, common.MetricConfig{MetricName: "Default metric name"})
 
 	for _, chartResult := range chartResults {
 		err := reports.CreateReport(syncConfig, chartResult)

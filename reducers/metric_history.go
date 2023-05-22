@@ -1,4 +1,4 @@
-package charts
+package reducers
 
 import (
 	"bytes"
@@ -18,22 +18,21 @@ type ChartResponse struct {
 	URL     string `json:"url"`
 }
 
-func ProcessCharts(historyFilepath string, metric common.MetricConfig) []common.KPIReport {
+func ProcessMetricHistory(historyFilepath string, metric common.MetricConfig) []common.KPIReport {
 
-	data, err := getKeysFromJSON(historyFilepath)
+	data, err := GetKeysFromJSON(historyFilepath)
 	if err != nil {
 		fmt.Println("Error:", err.Error())
 	}
 
 	var kpiInfos []common.KPIReport
 
-	for periodIdAndDimensionKey := range data {
+	for periodIdAndDimensionKey, datum := range data {
 		key := string(periodIdAndDimensionKey)
-		fmt.Println("Key:", key)
 		// Access the value associated with the key: data[key]
 		// Additional logic for processing the value
 		// ...
-		kpi := OrderDataAndCreateChart(metric.MetricName+" "+key, data[periodIdAndDimensionKey].Period, data[periodIdAndDimensionKey].History, data[periodIdAndDimensionKey].DimensionValue)
+		kpi := OrderDataAndCreateChart(metric.MetricName+" "+key, datum.Period, datum.History, datum.DimensionValue)
 		kpiInfos = append(kpiInfos, kpi)
 	}
 
@@ -230,7 +229,7 @@ func convertToChartMakerURL(url string) string {
 	return chartMakerURL
 }
 
-func getKeysFromJSON(path string) (common.Metrics, error) {
+func GetKeysFromJSON(path string) (common.Metrics, error) {
 	// Read the file at the given path
 	jsonFile, err := os.ReadFile(path)
 	if err != nil {

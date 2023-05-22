@@ -5,11 +5,12 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/data-drift/kpi-git-history/charts"
 	"github.com/data-drift/kpi-git-history/common"
 	"github.com/data-drift/kpi-git-history/database/notion_database"
 	"github.com/data-drift/kpi-git-history/github"
+	"github.com/data-drift/kpi-git-history/helpers"
 	"github.com/data-drift/kpi-git-history/history"
+	"github.com/data-drift/kpi-git-history/reducers"
 	"github.com/data-drift/kpi-git-history/reports"
 )
 
@@ -31,19 +32,20 @@ func DebugFunction() {
 
 	_ = notion_database.AssertDatabaseHasDatadriftProperties(notionDatabaseID, notionAPIKey)
 
-	client, _ := github.CreateClientFromGithubApp(int64(githubApplicationId))
-	if client == nil {
-		panic("Client not configured")
+	metricConfig := common.MetricConfig{
+		MetricName:     "Default metric name",
+		KPIColumnName:  kpiColumn,
+		DateColumnName: dateColumn,
+		Filepath:       githubRepoFilePath,
+		TimeGrains:     []common.TimeGrain{common.Quarter, common.Year, common.Month},
+		Dimensions:     []string{"country"},
 	}
 	if filepath == "" {
-		newFilepath, err := history.ProcessHistory(client, githubRepoOwner, githubRepoName, common.MetricConfig{
-			MetricName:     "Default metric name",
-			KPIColumnName:  kpiColumn,
-			DateColumnName: dateColumn,
-			Filepath:       githubRepoFilePath,
-			TimeGrains:     []common.TimeGrain{common.Quarter, common.Year},
-			Dimensions:     []string{"country"},
-		})
+		client, _ := github.CreateClientFromGithubApp(int64(githubApplicationId))
+		if client == nil {
+			panic("Client not configured")
+		}
+		newFilepath, err := history.ProcessHistory(client, githubRepoOwner, githubRepoName, metricConfig)
 
 		if err != nil {
 			println(err)
@@ -51,7 +53,19 @@ func DebugFunction() {
 		filepath = newFilepath
 	}
 
-	chartResults := charts.ProcessCharts(filepath, common.MetricConfig{MetricName: "Default metric name"})
+	metrics, marshelingError := reducers.GetKeysFromJSON(filepath)
+	if marshelingError != nil {
+		println(marshelingError.Error())
+		panic("Error marsheling")
+	}
+
+	metadata := reducers.ProcessMetricMetadata(metricConfig, metrics)
+	reducers.CreateMetadataChart(metadata[common.Month])
+	helpers.WriteMetadataToFile(metadata, "dist/metadata.json")
+	if len(metrics) > 0 {
+		panic("Stop debug")
+	}
+	chartResults := reducers.ProcessMetricHistory(filepath, common.MetricConfig{MetricName: "Default metric name"})
 
 	// if (len(chartResults)) != 0 {
 	// 	println("Stop exectution here")
