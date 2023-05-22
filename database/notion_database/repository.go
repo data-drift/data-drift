@@ -33,6 +33,19 @@ func FindOrCreateReportPageId(apiKey string, databaseId string, reportName strin
 	return existingReportId, nil
 }
 
+func FindOrCreateSummaryReportPage(apiKey string, databaseId string, reportName string) (string, error) {
+	existingReportId, err := QueryDatabaseWithReportId(apiKey, databaseId, reportName)
+	if err != nil {
+		return "", err
+	}
+	if existingReportId == "" {
+		fmt.Println("No existing report found, creating new one")
+		newReportId, err := CreateEmptySummaryReport(apiKey, databaseId, reportName)
+		return newReportId, err
+	}
+	return existingReportId, nil
+}
+
 type httpTransport struct {
 	w io.Writer
 }
@@ -126,6 +139,44 @@ func CreateEmptyReport(apiKey string, databaseId string, reportId string, period
 					{
 						Text: &notion.Text{
 							Content: string(dimensionValue),
+						},
+					},
+				},
+			},
+		},
+	}
+	newReport, err := client.CreatePage(ctx, params)
+	return newReport.ID, err
+}
+
+func CreateEmptySummaryReport(apiKey string, databaseId string, reportId string) (string, error) {
+	buf := &bytes.Buffer{}
+	ctx := context.Background()
+
+	httpClient := &http.Client{
+		Timeout:   10 * time.Second,
+		Transport: &httpTransport{w: buf},
+	}
+	client := notion.NewClient(apiKey, notion.WithHTTPClient(httpClient))
+	params := notion.CreatePageParams{
+		ParentType: notion.ParentTypeDatabase,
+		ParentID:   databaseId,
+
+		DatabasePageProperties: &notion.DatabasePageProperties{
+			"title": notion.DatabasePageProperty{
+				Title: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: reportId,
+						},
+					},
+				},
+			},
+			PROPERTY_DATADRIFT_ID: notion.DatabasePageProperty{
+				RichText: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: reportId,
 						},
 					},
 				},

@@ -57,7 +57,9 @@ func DebugFunction() {
 		panic("Error processing metadata charts")
 	}
 
-	reports.CreateSummaryReport(metricConfig, metadataChartResults)
+	notionSyncConfig := common.SyncConfig{NotionAPIKey: notionAPIKey, NotionDatabaseID: notionDatabaseID}
+
+	reports.CreateSummaryReport(notionSyncConfig, metricConfig, metadataChartResults)
 	if metadataChartResults != nil {
 		panic("Stop execution here")
 	}
@@ -65,7 +67,7 @@ func DebugFunction() {
 	chartResults := reducers.ProcessMetricHistory(filepath, common.MetricConfig{MetricName: "Default metric name"})
 
 	for _, chartResult := range chartResults {
-		err := reports.CreateReport(common.SyncConfig{NotionAPIKey: notionAPIKey, NotionDatabaseID: notionDatabaseID}, chartResult)
+		err := reports.CreateReport(notionSyncConfig, chartResult)
 		if err != nil {
 			println(err)
 		}
