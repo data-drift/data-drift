@@ -131,7 +131,7 @@ func TestGetMetadataOfMetric(t *testing.T) {
 		RelativeHistory: relativeHistory,
 	}
 
-	result := getMetadataOfMetric(metric)
+	result, _ := getMetadataOfMetric(metric)
 
 	if expected.FirstDate != result.FirstDate {
 		t.Errorf("Expected firstDate %s, but got %s", expected.FirstDate, result.FirstDate)
