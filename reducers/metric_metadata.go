@@ -87,7 +87,7 @@ func getMetadataOfMetric(metric common.Metric) (MetricMetadata, error) {
 	for _, commitData := range sortedAndFilteredArray {
 		durationFromFirstComputation := getDuration(commitData.CommitTimestamp, firstDateOfPeriod)
 		relativeHistoricalEvent := RelativeHistoricalEvent{
-			RelativeValue:         commitData.KPI.Div(initialValue).Mul(decimal.NewFromInt(100)),
+			RelativeValue:         commitData.KPI.Sub(initialValue).Div(initialValue).Mul(decimal.NewFromInt(100)),
 			DaysFromHistorization: decimal.NewFromFloat(durationFromFirstComputation.Hours() / 24),
 		}
 		relativeHistory[durationFromFirstComputation] = relativeHistoricalEvent
