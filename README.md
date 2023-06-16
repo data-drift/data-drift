@@ -1,3 +1,15 @@
+</br>
+<p align="center">
+  <a href="https://www.data-drift.io">
+    <img src="./datadrift-logo.png" width="100px" alt="DataDrift logo" />
+  </a>
+</p>
+
+<h2 align="center" >A Changelog for Data</h3>
+<p align="center">Git-Based. Data-Consumer-Friendly.</p>
+
+<p align="center"><a href="https://data-drift.io">Website</a> · <a href="https://www.data-drift.io/blog">Blog</a></p>
+
 # Datadrift is an open-source metric-focused data quality tool
 - Historize your key metrics with data-git to get started quickly
 - Monitor unexpected raw data updates impacting an historical metric  
