@@ -5,10 +5,16 @@
   </a>
 </p>
 
-<h2 align="center" >A Changelog for Data</h3>
+<h1 align="center" >A Changelog for Data</h1>
 <p align="center">Git-Based. Data-Consumer-Friendly.</p>
 
 <p align="center"><a href="https://data-drift.io">Website</a> · <a href="https://www.data-drift.io/blog">Blog</a></p>
+
+<p align="center">
+  <a href="https://www.data-drift.io">
+    <img src="./datadrift-hero-charts.png" alt="DataDrift hero with metric volatility charts" />
+  </a>
+</p>
 
 # Datadrift is an open-source metric-focused data quality tool
 - Historize your key metrics with data-git to get started quickly
