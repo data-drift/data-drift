@@ -5,41 +5,114 @@
   </a>
 </p>
 
-<h1 align="center" >A Changelog for Data</h1>
-<p align="center">Git-Based. Data-Consumer-Friendly.</p>
+<h1 align="center" >The Context Layer for your Metrics</h1>
+<p align="center">Supercharge your semantic layer with context & observability to built trusted and actionnable metrics</p>
 
-<p align="center"><a href="https://data-drift.io">Website</a> · <a href="https://www.data-drift.io/blog">Blog</a></p>
-
+<p align="center"><a href="https://data-drift.io">Website</a> · <a href="https://www.data-drift.io/blog">Blog</a> · <a href="https://github.com/data-drift/data-drift/issues">Issues</p>
+</br>
 <p align="center">
   <a href="https://www.data-drift.io">
     <img src="./datadrift-hero-charts.png" alt="DataDrift hero with metric volatility charts" />
   </a>
 </p>
+</br>
 
-# Datadrift is an open-source metric-focused data quality tool
-- Historize your key metrics with data-git to get started quickly
-- Monitor unexpected raw data updates impacting an historical metric  
-- Investigate simply what data has changed and how the metric has been impacted  
-- Report automatically why the metric has drifted via a shared Notion page with data consumers 
-- Keep control over your data by deploying on your infrastructure 
+# 👋 About
 
-# Get started for free
-We are just launching our beta and are looking for feedbacks.
+## The Problem: Data consumers interact with raw metrics only. Context is key to make metrics trusted and actionable.  
 
-# Contributing
-We <3 contributions big and small. In priority order (although everything is appreciated) with the most helpful first:
+</br>
+Most data consumers never query a data warehouse table, yet use data on a daily basis through the lens of metrics.  
 
-- Give us feedback by filling this [form](https://forms.gle/8q2NzoZC417cgdo38)
-- Submit a feature request or bug report directly in this [form](https://forms.gle/8q2NzoZC417cgdo38)
+To trust metrics and make decisions based on them, we need to guarante the quality of the metrics itself (not only the underlying tables) and give (a lot of) context around it.
 
-# Philosophy 
-Accurate warehouse data is essential but current tools only address row-level quality (e.g. non-null values), not time-varying metrics like ARR or revenues. These metrics inform critical decisions for internal teams, investors, and public markets. Financial metrics in particular demand precision and immutability.
+</br>
+Context is vital because is gives data consumers awareness of: 
 
-However, metrics from your data warehouse are mutable due to:
-- human errors (engineering team has bugs, third party API has bugs);
-- breaking changes (definition of KPI is changed); and
-- delay to reach its final state (eg. a transaction status assumed to be completed but canceled several weeks after).
+- **Computation**: how a metric was calculated and associated caveats  
 
-As a result, data consumers (finance teams, accounting, executives or investors) consistently require data analysts to investigate “data quality” issues. The data analyst becomes an auditor.
+- **Gouvernance**: who computed the metric, who reviewed it and who acts on it  
 
-Our ultimate goal: ***transform the data warehouse into a reliable, audit-ready system for crucial decision-making, with 100% accurate and trusted metrics.***
+- **Changelog**: when was the metric computed, when was it last updated and what was the impact of the change  
+
+- **Historical trajectory**: what happened to the metric overtime to prevent misinterpretation (remember the reason of that single unexpected revenue drop last quarter?)
+
+</br>
+<p align="center">
+  <a href="https://www.data-drift.io">
+    <img src="./datadrift-repo-meme.png" alt="DataDrift hero with metric volatility charts" />
+  </a>
+</p>
+Data teams be like...(yes, providing context is hard)
+
+</br>
+
+
+## The Solution: Datadrift, the open-source context layer for data-driven companies
+
+- Comprehensive **metadata** to certify a quality standard for metrics  
+
+- Easy governance with **version control and historisation**
+
+- Usable **changelog and audit trail** of a metric lifecycle for data consumers  
+
+- Visibility and **centralized knowledge** of a metric’s historical trajectory
+
+</br>
+
+**Open-source, Open Architecture:**
+
+- **Flexible**: compose your own context layer based on our building blocks  
+
+- **Secure**: deploy on your own infra to keep control over your data  
+
+- **Integrated**: not another tool to manage in your stack, use datadrift directly from current tools (dbt, BI)
+
+</br>
+
+# 🚀 Quickstart
+
+## Deploy locally
+Coming soon. In the meantime, you can you [join our Design Partner Programme.](https://www.data-drift.io/design-partner)
+
+## Use our cloud-based product
+[Contact our team by filling the form on our website](https://www.data-drift.io/) to get started with Datadrift Cloud.
+
+</br>
+
+# 💚 Helping us
+
+We 💚 contributions big and small. In priority order (although everything is appreciated) with the most helpful first:
+
+- Star this repo to help us get visibility
+- Open an issue to share your idea or a bug you might have spotted
+
+</br>
+
+# 🗓 Roadmap
+
+## Released
+
+✅ Metric snapshots and diff checks
+
+✅ Historical trajectory monitoring and alerting
+
+✅ Metric changelog for data consumers
+
+## In progress
+
+🌀 Automatic lineage drill-down and diff checks
+
+🌀 dbt integration
+
+## Next
+
+🗓 Sharing via Slack & emails 
+
+🗓 Warehouse native integration
+
+🗓 BI tools integration
+
+🗓 Gsheet integration
+
+🆕 **Open an issue to share your feature requests**
