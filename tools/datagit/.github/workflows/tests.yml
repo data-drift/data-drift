@@ -10,6 +10,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tools/datagit
 
     steps:
       - uses: actions/checkout@v2
