@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="dbt_snapshot_analysis",
-    version="0.2.9",
+    version="0.2.11",
     packages=find_packages(),
     py_modules=["dbt_snapshot_analysis"],
     install_requires=["pandas", "plotly", "streamlit"],
