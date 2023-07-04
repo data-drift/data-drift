@@ -23,12 +23,12 @@ dbt Snapshot Analysis is Python package to get insight on the quality and stabil
 </br>
 <p align="center">
   <a href="https://pypi.org/project/dbt-snapshot-analysis">
-    <img src="https://github.com/data-drift/dbt-snapshot-analytics/blob/main/dbt-snapshot-analysis.gif?raw=true" alt="dbt snapshot analysis gif" />
+    <img src="https://github.com/data-drift/data-drift/blob/main/tools/dbt-snapshot-analysis/dbt-snapshot-analysis.gif?raw=true" alt="dbt snapshot analysis gif" />
   </a>
 </p>
 
-
 # 🚀 Quickstart
+
 ## Installation
 
 You can install DBT Snapshot Analysis using `pip`:
