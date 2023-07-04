@@ -16,7 +16,7 @@ setup(
     author="Sammy Teillet",
     author_email="sammy.teillet@gmail.com",
     description="A package for analyzing snapshots",
-    url="https://github.com/data-drift/dbt-snapshot-analytics",
+    url="https://github.com/data-drift/data-drift/tree/main/tools/dbt-snapshot-analysis",
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
