@@ -44,20 +44,23 @@ def push_metric(dataframe, assignees, reported_branch, computed_branch, store_js
             new_dataframe = dataframe[~dataframe[date_column].isin(
                 already_stored_dates)]
             old_data_with_freshdata = pd.concat(
-                [old_dataframe, new_dataframe])
+                [old_dataframe, new_dataframe]).reset_index(drop=True)
             if len(new_dataframe) > 0:
                 print("New data found")
                 push_new_lines(
                     file_path, repo, reported_branch, old_data_with_freshdata, store_json)
             checkout_branch_from_default_branch(repo, computed_branch)
-            if not old_data_with_freshdata.equals(dataframe):
+
+            if not old_data_with_freshdata.equals(dataframe.reset_index(drop=True)):
                 print("Drift detected")
+
                 push_drift_lines(file_path, repo, computed_branch,
                                  dataframe, store_json)
                 print("Drift pushed")
                 print("Creating pull request")
                 description_body = f"Drift detected:\n" + \
-                    compare_dataframes(old_data_with_freshdata, dataframe, "unique_key")
+                    compare_dataframes(old_data_with_freshdata,
+                                       dataframe, "unique_key")
                 create_pullrequest(repo, computed_branch,
                                    assignees, file_path, description_body)
 
