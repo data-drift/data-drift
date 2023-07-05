@@ -11,7 +11,7 @@ class TestBuildQuery(unittest.TestCase):
         expected_query = """
             SELECT
               CONCAT(period, '__', organisation_id) AS unique_key,
-              date AS dd_date,
+              date AS date,
               col1, col2
             FROM my_table
             WHERE col1 > 0 AND col2 < 10
@@ -31,7 +31,7 @@ class TestBuildQuery(unittest.TestCase):
         expected_query = """
             SELECT 
               CONCAT(period, '__', organisation_id) AS unique_key,
-              date AS dd_date, 
+              date AS date, 
               * 
             FROM my_table 
             WHERE col1 > 0 AND col2 < 10 
@@ -49,7 +49,7 @@ class TestBuildQuery(unittest.TestCase):
         expected_query = """
             SELECT 
               CONCAT(period, '__', organisation_id) AS unique_key,
-              date AS dd_date, 
+              date AS date, 
               col1, col2 
             FROM my_table 
             WHERE TRUE 

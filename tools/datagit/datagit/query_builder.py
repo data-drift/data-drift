@@ -19,7 +19,7 @@ def build_query(
     return f"""
         SELECT
           CONCAT({unique_key_str}) AS unique_key,
-          {date_column} AS dd_date,
+          {date_column} AS date,
           {column_str}
         FROM {table_id}
         WHERE {where_clause}
