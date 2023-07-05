@@ -59,8 +59,8 @@ Datagit provides a simple query builder to store a table:
 
 ```python
 >>> from datagit import query_builder
->>> query = query_builder.build_query(table_id="my_table", unique_key_columns=["organisation_id", "date_month"])
-'SELECT CONCAT(organisation_id, '__', date_month) AS unique_key, * FROM my_table WHERE TRUE ORDER BY 1'
+>>> query = query_builder.build_query(table_id="my_table", unique_key_columns=["organisation_id", "date_month"], date="date_month")
+'SELECT CONCAT(organisation_id, '__', date_month) AS unique_key, date_month as date, * FROM my_table WHERE TRUE ORDER BY 1'
 ```
 
 More [examples here](tests/test_query_builder.py)

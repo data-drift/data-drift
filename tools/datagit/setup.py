@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="datagit",
-    version="0.9",
+    version="0.10",
     packages=find_packages(),
     author="Sammy Teillet",
     author_email="sammy.teillet@gmail.com",

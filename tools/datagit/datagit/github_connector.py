@@ -4,8 +4,6 @@ import pandas as pd
 from github import Github, Repository, ContentFile, GithubException
 from datagit.dataset_helpers import compare_dataframes, sort_dataframe_on_first_column_and_assert_is_unique
 import re
-import base64
-import io
 
 
 def store_metric(ghClient: Github, dataframe: pd.DataFrame, filepath: str, assignees: List[str] = [], branch: Optional[str] = None, store_json: bool = True) -> None:
@@ -26,15 +24,15 @@ def push_metric(dataframe, assignees, reported_branch, computed_branch, store_js
         print("Metric not found, creating it on branch: " + reported_branch)
         create_file_on_branch(file_path, repo, reported_branch,
                               dataframe, assignees, store_json)
+        print("Metric stored")
         pass
     else:
         print("Metric found, updating it on branch: " + reported_branch)
         date_column = find_date_column(dataframe)
         if contents.content is not None and date_column is not None:
             # Compare the contents of the file with the new contents and assert if it need 2 commits
-            decoded_content = base64.b64decode(contents.content)
-            content_string = decoded_content.decode('utf-8')
-            old_dataframe = pd.read_csv(io.StringIO(content_string))
+            print("Content", contents.download_url)
+            old_dataframe = pd.read_csv(contents.download_url)
             try:
                 old_dates = set(old_dataframe[date_column])
             except KeyError:
@@ -54,6 +52,12 @@ def push_metric(dataframe, assignees, reported_branch, computed_branch, store_js
             if not old_data_with_freshdata.equals(dataframe.reset_index(drop=True)):
                 print("Drift detected")
 
+                try:
+                    print(old_data_with_freshdata.compare(
+                        dataframe.reset_index(drop=True)))
+                except:
+                    print("Could not display drift")
+
                 push_drift_lines(file_path, repo, computed_branch,
                                  dataframe, store_json)
                 print("Drift pushed")
@@ -63,6 +67,8 @@ def push_metric(dataframe, assignees, reported_branch, computed_branch, store_js
                                        dataframe, "unique_key")
                 create_pullrequest(repo, computed_branch,
                                    assignees, file_path, description_body)
+            else:
+                print("No drift detected")
 
     pass
 

@@ -11,14 +11,15 @@ class TestBuildQuery(unittest.TestCase):
         expected_query = """
             SELECT
               CONCAT(period, '__', organisation_id) AS unique_key,
+              date AS date,
               col1, col2
             FROM my_table
             WHERE col1 > 0 AND col2 < 10
             ORDER BY 1
         """
 
-        query = build_query(table_id,
-                            unique_key_columns, columns, where_clauses)
+        query = build_query(table_id=table_id,
+                            unique_key_columns=unique_key_columns, columns=columns, where_clauses=where_clauses, date_column="date")
         self.assertEqual(' '.join(query.split()).strip(),
                          ' '.join(expected_query.split()).strip())
 
@@ -29,14 +30,15 @@ class TestBuildQuery(unittest.TestCase):
         where_clauses = ["col1 > 0", "col2 < 10"]
         expected_query = """
             SELECT 
-              CONCAT(period, '__', organisation_id) AS unique_key, 
+              CONCAT(period, '__', organisation_id) AS unique_key,
+              date AS date, 
               * 
             FROM my_table 
             WHERE col1 > 0 AND col2 < 10 
             ORDER BY 1
         """
-        query = build_query(table_id,
-                            unique_key_columns, columns, where_clauses)
+        query = build_query(table_id=table_id,
+                            unique_key_columns=unique_key_columns, columns=columns, where_clauses=where_clauses, date_column="date")
         self.assertEqual(' '.join(query.split()).strip(),
                          ' '.join(expected_query.split()).strip())
 
@@ -46,13 +48,15 @@ class TestBuildQuery(unittest.TestCase):
         unique_key_columns = ["period", "organisation_id"]
         expected_query = """
             SELECT 
-              CONCAT(period, '__', organisation_id) AS unique_key, 
+              CONCAT(period, '__', organisation_id) AS unique_key,
+              date AS date, 
               col1, col2 
             FROM my_table 
             WHERE TRUE 
             ORDER BY 1
         """
-        query = build_query(table_id, unique_key_columns, columns)
+        query = build_query(
+            table_id=table_id, unique_key_columns=unique_key_columns, columns=columns, date_column="date")
         self.assertEqual(' '.join(query.split()).strip(),
                          ' '.join(expected_query.split()).strip())
 
@@ -62,4 +66,5 @@ class TestBuildQuery(unittest.TestCase):
         unique_key_columns = []
         where_clauses = ["col1 > 0", "col2 < 10"]
         with self.assertRaises(ValueError):
-            build_query(table_id, unique_key_columns, columns, where_clauses)
+            build_query(table_id=table_id, unique_key_columns=unique_key_columns,
+                        columns=columns, where_clauses=where_clauses, date_column="date")
