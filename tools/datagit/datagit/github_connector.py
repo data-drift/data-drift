@@ -4,8 +4,6 @@ import pandas as pd
 from github import Github, Repository, ContentFile, GithubException
 from datagit.dataset_helpers import compare_dataframes, sort_dataframe_on_first_column_and_assert_is_unique
 import re
-import base64
-import io
 
 
 def store_metric(ghClient: Github, dataframe: pd.DataFrame, filepath: str, assignees: List[str] = [], branch: Optional[str] = None, store_json: bool = True) -> None:
@@ -52,6 +50,12 @@ def push_metric(dataframe, assignees, reported_branch, computed_branch, store_js
 
             if not old_data_with_freshdata.equals(dataframe.reset_index(drop=True)):
                 print("Drift detected")
+
+                try:
+                    print(old_data_with_freshdata.compare(
+                        dataframe.reset_index(drop=True)))
+                except:
+                    print("Could not display drift")
 
                 push_drift_lines(file_path, repo, computed_branch,
                                  dataframe, store_json)
