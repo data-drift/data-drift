@@ -32,9 +32,8 @@ def push_metric(dataframe, assignees, reported_branch, computed_branch, store_js
         date_column = find_date_column(dataframe)
         if contents.content is not None and date_column is not None:
             # Compare the contents of the file with the new contents and assert if it need 2 commits
-            decoded_content = base64.b64decode(contents.content)
-            content_string = decoded_content.decode('utf-8')
-            old_dataframe = pd.read_csv(io.StringIO(content_string))
+            print("Content", contents.download_url)
+            old_dataframe = pd.read_csv(contents.download_url)
             try:
                 old_dates = set(old_dataframe[date_column])
             except KeyError:
