@@ -24,6 +24,7 @@ def push_metric(dataframe, assignees, reported_branch, computed_branch, store_js
         print("Metric not found, creating it on branch: " + reported_branch)
         create_file_on_branch(file_path, repo, reported_branch,
                               dataframe, assignees, store_json)
+        print("Metric stored")
         pass
     else:
         print("Metric found, updating it on branch: " + reported_branch)
@@ -66,6 +67,8 @@ def push_metric(dataframe, assignees, reported_branch, computed_branch, store_js
                                        dataframe, "unique_key")
                 create_pullrequest(repo, computed_branch,
                                    assignees, file_path, description_body)
+            else:
+                print("No drift detected")
 
     pass
 
