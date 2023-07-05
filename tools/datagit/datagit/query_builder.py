@@ -4,6 +4,7 @@ from typing import List, Optional, Sequence
 def build_query(
     table_id: str,
     unique_key_columns: List[str],
+    date_column: str,
     columns: Optional[List[str]] = None,
     where_clauses: Optional[Sequence[str]] = None,
 ) -> str:
@@ -18,6 +19,7 @@ def build_query(
     return f"""
         SELECT
           CONCAT({unique_key_str}) AS unique_key,
+          {date_column} AS dd_date,
           {column_str}
         FROM {table_id}
         WHERE {where_clause}
