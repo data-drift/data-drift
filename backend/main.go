@@ -33,7 +33,7 @@ func main() {
 		return
 	}
 
-	port := os.Getenv("PORT")
+	port := defaultIfEmpty(os.Getenv("PORT"), "8080")
 
 	router := gin.New()
 	router.Use(gin.Logger())
@@ -108,4 +108,11 @@ func performTask(syncConfig common.SyncConfig) error {
 	fmt.Println("Custom function completed. Chart result:", filepath)
 	fmt.Println("Custom function completed. Chart result:", chartResults)
 	return nil
+}
+
+func defaultIfEmpty(value, defaultValue string) string {
+	if value == "" {
+		return defaultValue
+	}
+	return value
 }
