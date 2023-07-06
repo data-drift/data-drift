@@ -13,10 +13,28 @@ def assert_dataset_has_unique_key(dataset: pd.DataFrame) -> None:
         raise ValueError(f"The {first_column} column is not unique")
 
 
+def assert_dataset_has_date_column(dataset: pd.DataFrame) -> None:
+    if "date" not in dataset.columns:
+        raise ValueError(f"The dataset does not have a date column")
+
+
+def parse_date_column(dataset: pd.DataFrame) -> pd.DataFrame:
+    column = "date"
+    date_values = pd.to_datetime(dataset[column], errors='coerce')
+
+    formatted_dates = date_values.dt.strftime('%Y-%m-%d')
+
+    dataset[column] = formatted_dates
+    return dataset
+
+
 def sort_dataframe_on_first_column_and_assert_is_unique(df: pd.DataFrame) -> pd.DataFrame:
     assert_dataset_has_unique_key(df)
+    assert_dataset_has_date_column(df)
 
-    sorted_df = df.sort_values(by=['unique_key'])
+    df_with_parsed_dates = parse_date_column(df)
+
+    sorted_df = df_with_parsed_dates.sort_values(by=['unique_key'])
     return sorted_df
 
 

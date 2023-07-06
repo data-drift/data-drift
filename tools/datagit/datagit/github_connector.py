@@ -87,6 +87,7 @@ def assert_file_exists(repo: Repository.Repository, file_path: str, ref: str) ->
 
 
 def push_new_lines(file_path: str, repo: Repository.Repository, branch: str, dataframe: pd.DataFrame, store_json: bool):
+    dataframe = dataframe.sort_values(by=['unique_key'])
     commit_message = "New data: " + file_path
     print("Commit: " + commit_message)
     update_file_with_retry(repo, file_path, commit_message,
@@ -102,6 +103,7 @@ def push_new_lines(file_path: str, repo: Repository.Repository, branch: str, dat
 
 
 def push_drift_lines(file_path: str, repo: Repository.Repository, branch: str, dataframe: pd.DataFrame, store_json: bool):
+    dataframe = dataframe.sort_values(by=['unique_key'])
     commit_message = "Drift: " + file_path
     print("Commit: " + commit_message)
     update_file_with_retry(repo, file_path, commit_message,
