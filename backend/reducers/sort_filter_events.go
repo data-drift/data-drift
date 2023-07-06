@@ -5,8 +5,8 @@ import (
 	"sort"
 	"time"
 
-	"github.com/data-drift/kpi-git-history/common"
-	"github.com/data-drift/kpi-git-history/reports"
+	"github.com/data-drift/data-drift/common"
+	"github.com/data-drift/data-drift/reports"
 )
 
 type ObjectWithDate interface {

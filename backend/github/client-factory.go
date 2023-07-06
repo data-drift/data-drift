@@ -61,6 +61,6 @@ func CreateGithubTransport(privateKeyPath string, privateKey string, githubAppId
 		}
 		return itr, nil
 	} else {
-		return nil, fmt.Errorf("missing GitHub App private key information")
+		return nil, fmt.Errorf("missing GitHub App private key information, please provide GITHUB_APP_PRIVATE_KEY_PATH or GITHUB_APP_PRIVATE_KEY")
 	}
 }

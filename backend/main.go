@@ -7,12 +7,12 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/data-drift/kpi-git-history/common"
-	"github.com/data-drift/kpi-git-history/debug"
-	"github.com/data-drift/kpi-git-history/github"
-	"github.com/data-drift/kpi-git-history/history"
-	"github.com/data-drift/kpi-git-history/reducers"
-	"github.com/data-drift/kpi-git-history/reports"
+	"github.com/data-drift/data-drift/common"
+	"github.com/data-drift/data-drift/debug"
+	"github.com/data-drift/data-drift/github"
+	"github.com/data-drift/data-drift/history"
+	"github.com/data-drift/data-drift/reducers"
+	"github.com/data-drift/data-drift/reports"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )

@@ -2,7 +2,7 @@
 *.a
 *.so
 
-kpi-git-history
+data-drift
 
 .DS_Store
 
