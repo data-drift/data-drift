@@ -30,7 +30,3 @@ class TestDateParsing(unittest.TestCase):
         result_df = parse_date_column(df)
 
         self.assertTrue(result_df.equals(expected_df))
-
-
-if __name__ == '__main__':
-    unittest.main()
