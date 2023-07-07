@@ -17,7 +17,14 @@ func CreateClientFromGithubApp(installationId int64) (*github.Client, error) {
 	privateKeyPath := os.Getenv("GITHUB_APP_PRIVATE_KEY_PATH")
 	privateKey := os.Getenv("GITHUB_APP_PRIVATE_KEY")
 
+	if privateKeyPath == "" && privateKey == "" {
+		return nil, fmt.Errorf("missing GitHub App private key information, please provide GITHUB_APP_PRIVATE_KEY_PATH or GITHUB_APP_PRIVATE_KEY")
+	}
+
 	appIDStr := os.Getenv("GITHUB_APP_ID")
+	if appIDStr == "" {
+		return nil, fmt.Errorf("missing GitHub App ID, please provide GITHUB_APP_ID")
+	}
 	githubAppId, err := strconv.ParseInt(appIDStr, 10, 64)
 	if err != nil {
 		return nil, err
