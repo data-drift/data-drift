@@ -1,0 +1,17 @@
+commonLabels:
+  app: datadrift
+
+namespace: datadrift
+
+resources:
+- service.yaml
+- deployment.yaml
+- ingress.yaml
+
+secretGenerator:
+- name: datadrift-secrets
+  envs:
+  - .env.secret
+- name: private-key
+  files:
+  - private-key.pem

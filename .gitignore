@@ -2,7 +2,7 @@
 *.a
 *.so
 
-kpi-git-history
+data-drift
 
 .DS_Store
 
@@ -22,5 +22,6 @@ dist
 vendor/
 
 .env
+.env.secret
 
 *.pem
