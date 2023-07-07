@@ -5,12 +5,12 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/data-drift/kpi-git-history/common"
-	"github.com/data-drift/kpi-git-history/database/notion_database"
-	"github.com/data-drift/kpi-git-history/github"
-	"github.com/data-drift/kpi-git-history/history"
-	"github.com/data-drift/kpi-git-history/reducers"
-	"github.com/data-drift/kpi-git-history/reports"
+	"github.com/data-drift/data-drift/common"
+	"github.com/data-drift/data-drift/database/notion_database"
+	"github.com/data-drift/data-drift/github"
+	"github.com/data-drift/data-drift/history"
+	"github.com/data-drift/data-drift/reducers"
+	"github.com/data-drift/data-drift/reports"
 )
 
 func DebugFunction() {

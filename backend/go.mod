@@ -1,4 +1,4 @@
-module github.com/data-drift/kpi-git-history
+module github.com/data-drift/data-drift
 
 go 1.20
 
