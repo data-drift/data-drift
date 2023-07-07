@@ -16,6 +16,7 @@ In order to run Data Drift, you will need:
 - Create an app and add the buildpack https://github.com/timanovsky/subdir-heroku-buildpack
 - Add a config vars `PROJECT_PATH` equals to `backend`
 - Add a config vars `GITHUB_APP_PRIVATE_KEY` with your certificate `-----BEGIN RSA PRIVATE KEY-----` (the content of the .private-key.pem)
+- Add a config vars `GITHUB_APP_ID` with you gihub app id
 - Push this repository to heroku
 
 Go to the #Verify section.
@@ -31,7 +32,7 @@ docker pull quay.io/datadrift/data-drift:0.0.1
 - Run with the GITHUB_APP_PRIVATE_KEY_PATH
 
 ```
-docker run -v /path/to/local/private-key.pem:/app/private-key.pem -e GITHUB_APP_ID=325270 -e GITHUB_APP_PRIVATE_KEY_PATH=private-key.pem -e GITHUB_APP_ID=github_app_id quay.io/datadrift/data-drift:0.0.1
+docker run -v /path/to/local/private-key.pem:/app/private-key.pem -e GITHUB_APP_ID=your_app_id -e GITHUB_APP_PRIVATE_KEY_PATH=private-key.pem -e GITHUB_APP_ID=github_app_id quay.io/datadrift/data-drift:0.0.1
 ```
 
 ## Kubernetes
