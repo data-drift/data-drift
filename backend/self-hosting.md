@@ -34,6 +34,10 @@ docker pull quay.io/datadrift/data-drift:0.0.1
 docker run -v /path/to/local/private-key.pem:/app/private-key.pem -e GITHUB_APP_ID=325270 -e GITHUB_APP_PRIVATE_KEY_PATH=private-key.pem -e GITHUB_APP_ID=github_app_id quay.io/datadrift/data-drift:0.0.1
 ```
 
+## Kubernetes
+
+Go see [deployment documentation](../self-hosting/k8s/README.md)
+
 # Verify
 
 Go to your URL you should see {"status":"OK"}.
