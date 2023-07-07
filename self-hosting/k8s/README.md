@@ -34,7 +34,12 @@ cp .env.secret.example .env.secret
 
 Modify the `.env.secret` file by adding the appropriate values for your secrets.
 
-4.  Apply the deployment resources using Kustomize:
+4. Configure the ingress
+
+In the ingress file, replace the `-host: datadrift.REPLACE_WITH_YOUR_DOMAIN` in the rules section
+In the ingress file, replace the `-datadrift.REPLACE_WITH_YOUR_DOMAIN` in hosts section
+
+5. Apply the deployment resources using Kustomize:
 
 ```bash
 kubectl apply -k .
@@ -46,7 +51,7 @@ This will apply the following resources:
 - Deployment: Deploys the DataDrift application containers to the Kubernetes cluster.
 - Ingress: Configures traffic routing to the DataDrift application.
 
-1.  Verify that the deployment was successful:
+6.  Verify that the deployment was successful:
 
 ```bash
 kubectl get pods

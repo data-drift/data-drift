@@ -13,7 +13,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: datadrift.cmer.fr
+  - host: datadrift.REPLACE_WITH_YOUR_DOMAIN
     http:
       paths:
       - path: /*
@@ -25,5 +25,5 @@ spec:
               number: 9000
   tls:
   - hosts:
-    - datadrift.cmer.fr
+    - datadrift.REPLACE_WITH_YOUR_DOMAIN
     secretName: datadrift-crt-tls

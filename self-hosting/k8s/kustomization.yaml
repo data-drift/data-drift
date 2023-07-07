@@ -9,6 +9,9 @@ resources:
 - ingress.yaml
 
 secretGenerator:
-- name: github-token
+- name: github-app-private-key
+  envs:
+  - .env.secret
+- name: github-app-id
   envs:
   - .env.secret

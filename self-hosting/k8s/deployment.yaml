@@ -7,18 +7,23 @@ spec:
     spec:
       containers:
       - name: datadrift
-        image: registry/datadrift:tag
+        image: quay.io/datadrift/data-drift:0.0.1
         imagePullPolicy: Always
         ports:
         - name: http
           containerPort: 9000
           protocol: TCP
         env:
-        - name: GITHUB_TOKEN
+        - name: GITHUB_APP_PRIVATE_KEY
           valueFrom:
             secretKeyRef:
-              name: github-token
-              key: GITHUB_TOKEN
+              name: github-app-private-key
+              key: GITHUB_APP_PRIVATE_KEY
+        - name: GITHUB_APP_ID
+          valueFrom:
+            secretKeyRef:
+              name: github-app-id
+              key: GITHUB_APP_ID
         resources:
           requests:
             cpu: 200m
