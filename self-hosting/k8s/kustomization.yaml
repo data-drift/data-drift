@@ -1,0 +1,14 @@
+commonLabels:
+  app: datadrift
+
+namespace: my-k8s-namespace
+
+resources:
+- service.yaml
+- deployment.yaml
+- ingress.yaml
+
+secretGenerator:
+- name: github-token
+  envs:
+  - .env.secret

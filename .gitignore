@@ -22,5 +22,6 @@ dist
 vendor/
 
 .env
+.env.secret
 
 *.pem
