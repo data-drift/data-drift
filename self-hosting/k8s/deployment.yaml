@@ -17,8 +17,8 @@ spec:
         - name: GITHUB_APP_PRIVATE_KEY
           valueFrom:
             secretKeyRef:
-              name: datadrift-secrets
-              key: GITHUB_APP_PRIVATE_KEY
+              name: private-key
+              key: private-key.pem
         - name: GITHUB_APP_ID
           valueFrom:
             secretKeyRef:

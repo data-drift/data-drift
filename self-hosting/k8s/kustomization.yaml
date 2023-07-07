@@ -1,7 +1,7 @@
 commonLabels:
   app: datadrift
 
-namespace: my-k8s-namespace
+namespace: datadrift
 
 resources:
 - service.yaml
@@ -12,3 +12,6 @@ secretGenerator:
 - name: datadrift-secrets
   envs:
   - .env.secret
+- name: private-key
+  files:
+  - private-key.pem

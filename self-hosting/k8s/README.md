@@ -17,7 +17,7 @@ To deploy the DataDrift application, follow the steps below:
 1.  Clone this repository to your local machine:
 
 ```bash
-git clone https://github.com/your-username/datadrift.git
+git clone https://github.com/data-drift/data-drift
 ```
 
 2.  Navigate to the project directory:
@@ -39,9 +39,10 @@ Modify the `.env.secret` file by adding the appropriate values for your secrets.
 In the ingress file, replace the `-host: datadrift.REPLACE_WITH_YOUR_DOMAIN` in the rules section
 In the ingress file, replace the `-datadrift.REPLACE_WITH_YOUR_DOMAIN` in hosts section
 
-5. Apply the deployment resources using Kustomize:
+5. Create a namespace for datadrift and apply the deployment resources using Kustomize:
 
 ```bash
+kubectl create namespace datadrift
 kubectl apply -k .
 ```
 
@@ -54,9 +55,20 @@ This will apply the following resources:
 6.  Verify that the deployment was successful:
 
 ```bash
-kubectl get pods
-kubectl get services
-kubectl get ingress
+kubectl get pods -n datadrift
+kubectl get services -n datadrift
+kubectl get ingress -n datadrift
 ```
 
 Make sure the pods are running, the service is exposed, and the ingress is properly configured.
+
+7. Check the pod and the github credentials
+
+Either go to the datadrift.yourdomain.com or bind a port to your localhost
+
+```bash
+kubectl port-forward datadrift-6df8ff84c5-bq2p5 8082:8080 -n datadrift
+```
+
+Go to your URL [localhost:8082](localhost:8082) you should see {"status":"OK"}.
+Go to [localhost:8082/ghhealth](localhost:8082/ghhealth) you should see {"status":"OK"}.

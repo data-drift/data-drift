@@ -42,3 +42,4 @@ Go see [deployment documentation](../self-hosting/k8s/README.md)
 # Verify
 
 Go to your URL you should see {"status":"OK"}.
+Go to /ghhealth you should see {"status":"OK"}.
