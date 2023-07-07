@@ -22,7 +22,7 @@ spec:
           service:
             name: datadrift
             port:
-              number: 9000
+              number: 8080
   tls:
   - hosts:
     - datadrift.REPLACE_WITH_YOUR_DOMAIN

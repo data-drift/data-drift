@@ -11,18 +11,18 @@ spec:
         imagePullPolicy: Always
         ports:
         - name: http
-          containerPort: 9000
+          containerPort: 8080
           protocol: TCP
         env:
         - name: GITHUB_APP_PRIVATE_KEY
           valueFrom:
             secretKeyRef:
-              name: github-app-private-key
+              name: datadrift-secrets
               key: GITHUB_APP_PRIVATE_KEY
         - name: GITHUB_APP_ID
           valueFrom:
             secretKeyRef:
-              name: github-app-id
+              name: datadrift-secrets
               key: GITHUB_APP_ID
         resources:
           requests:

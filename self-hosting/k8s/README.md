@@ -60,7 +60,3 @@ kubectl get ingress
 ```
 
 Make sure the pods are running, the service is exposed, and the ingress is properly configured.
-
-## Contributions
-
-Contributions to this project are welcome. If you would like to make improvements or report issues, please submit a pull request or open an issue.
