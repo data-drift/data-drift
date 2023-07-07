@@ -34,12 +34,20 @@ cp .env.secret.example .env.secret
 
 Modify the `.env.secret` file by adding the appropriate values for your secrets.
 
-4. Configure the ingress
+4. Download the private-key.pem file from your github application
+
+Go to the Github App page and download a private key, then move it in this folder
+
+```bash
+cp ~/Download/your-freshly-downloaded.private-key.pem ./private-key.pem
+```
+
+5. Configure the ingress
 
 In the ingress file, replace the `-host: datadrift.REPLACE_WITH_YOUR_DOMAIN` in the rules section
 In the ingress file, replace the `-datadrift.REPLACE_WITH_YOUR_DOMAIN` in hosts section
 
-5. Create a namespace for datadrift and apply the deployment resources using Kustomize:
+6. Create a namespace for datadrift and apply the deployment resources using Kustomize:
 
 ```bash
 kubectl create namespace datadrift
@@ -52,7 +60,7 @@ This will apply the following resources:
 - Deployment: Deploys the DataDrift application containers to the Kubernetes cluster.
 - Ingress: Configures traffic routing to the DataDrift application.
 
-6.  Verify that the deployment was successful:
+7.  Verify that the deployment was successful:
 
 ```bash
 kubectl get pods -n datadrift
@@ -62,7 +70,7 @@ kubectl get ingress -n datadrift
 
 Make sure the pods are running, the service is exposed, and the ingress is properly configured.
 
-7. Check the pod and the github credentials
+8. Check the pod and the github credentials
 
 Either go to the datadrift.yourdomain.com or bind a port to your localhost
 

@@ -2,12 +2,17 @@
 
 In order to run Data Drift, you will need:
 
-- a Github application:
-  - It'll need to suubscribe to the events "push".
-  - It'll need access to the **content**, read-only
-  - When it is created download a secret key \*.private-key.pem
-  - Store the github app id as well
-  - When your app is running you'll need to update the webhook url to your url + `/webhook/github`
+- Create a [new Github application](https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/registering-a-github-app)
+- The GH application parameters:
+  - In the homepage URL set: https://datadrift.yourdomain.com/
+  - In the webhook URL set: https://datadrift.yourdomain.com/webhook/github
+  - In the permissions:
+    - It'll need access to the **content**, read-only
+    - It'll need to subscribe to the events "push".
+- When it is created download a secret key \*.private-key.pem
+- Store the github app id as well
+
+When the app is created, click "Public page" and install the app on your datadrift repository.
 
 # Hosting
 
@@ -43,3 +48,6 @@ Go see [deployment documentation](../self-hosting/k8s/README.md)
 
 Go to your URL you should see {"status":"OK"}.
 Go to /ghhealth you should see {"status":"OK"}.
+
+Make sure you have updated the webhook url to be /webhook/github.
+Go to the "Advanced" section of your github app, and redeliver the last webhook, it should succeed.
