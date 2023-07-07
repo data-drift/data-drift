@@ -43,6 +43,7 @@ func main() {
 	router.POST("/", ManualSync)
 
 	router.GET("/ghhealth", github.HealthCheck)
+	router.GET("/ghhealth/:installation-id", github.HealthCheckInstallation)
 
 	router.POST("webhooks/github", github.HandleWebhook)
 
