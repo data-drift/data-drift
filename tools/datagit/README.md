@@ -78,3 +78,32 @@ Datagit provides a simple query builder to store a table:
 ```
 
 More [examples here](tests/test_query_builder.py)
+
+# Drift
+
+A drift is a modification of historical data. It can be a modification, addition or deletion in a table that is supposed to be "non-moving data".
+
+## Drift evaluator
+
+When a drift is detected, the default behaviour is to trigger an alert and prompt the user to explain the drift before merging it to the dataset. But a custom function can be used to decide weather an alert should be triggered, or if the drift should be merged automatically.
+
+### Default drift evaluator
+
+The default drift evaluator will open a pull request with a message containing the number of addition, modifications and deletions of the drift.
+
+### Custom drift evaluator
+
+You can provide a custom evaluator which is a function with the following properties:
+
+- parameters:
+  - `data_drift_context``: a dictionnary with:
+  - computed_dataframe (the metric up to date)
+  - reported_dataframe (the metric already reported)
+- return value:
+  - A dictionnary containing:
+  - "should_alert": Boolean, If `True` a pull request will be opened, If `False` the drift will be merged
+  - "message": str, the message to display in the pull request, or the body message of the drift commit
+
+### No alert drift evaluator
+
+In case you just want to store the metric in a git branch, this drift evaluator merge the drift in the reported branch without any alert.
