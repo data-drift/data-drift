@@ -20,25 +20,29 @@ def assert_dataset_has_date_column(dataset: pd.DataFrame) -> None:
 
 def parse_date_column(dataset: pd.DataFrame) -> pd.DataFrame:
     column = "date"
-    date_values = pd.to_datetime(dataset[column], errors='coerce')
+    date_values = pd.to_datetime(dataset[column], errors="coerce")
 
-    formatted_dates = date_values.dt.strftime('%Y-%m-%d')
+    formatted_dates = date_values.dt.strftime("%Y-%m-%d")
 
     dataset[column] = formatted_dates
     return dataset
 
 
-def sort_dataframe_on_first_column_and_assert_is_unique(df: pd.DataFrame) -> pd.DataFrame:
+def sort_dataframe_on_first_column_and_assert_is_unique(
+    df: pd.DataFrame,
+) -> pd.DataFrame:
     assert_dataset_has_unique_key(df)
     assert_dataset_has_date_column(df)
 
     df_with_parsed_dates = parse_date_column(df)
 
-    sorted_df = df_with_parsed_dates.sort_values(by=['unique_key'])
+    sorted_df = df_with_parsed_dates.sort_values(by=["unique_key"])
     return sorted_df
 
 
-def compare_dataframes(initial_df: pd.DataFrame, final_df: pd.DataFrame, unique_key: str):
+def compare_dataframes(
+    initial_df: pd.DataFrame, final_df: pd.DataFrame, unique_key: str
+):
     try:
         # Get the unique keys for each dataframe
         initial_keys = set(initial_df[unique_key])
@@ -53,10 +57,12 @@ def compare_dataframes(initial_df: pd.DataFrame, final_df: pd.DataFrame, unique_
         # Get the intersection of the unique keys
 
         # Filter the rows in df1 and df2 that match the intersection of the unique keys
-        df1_intersection = initial_df[initial_df[unique_key].isin(
-            intersection_keys)].reset_index(drop=True)
-        df2_intersection = final_df[final_df[unique_key].isin(
-            intersection_keys)].reset_index(drop=True)
+        df1_intersection = initial_df[
+            initial_df[unique_key].isin(intersection_keys)
+        ].reset_index(drop=True)
+        df2_intersection = final_df[
+            final_df[unique_key].isin(intersection_keys)
+        ].reset_index(drop=True)
 
         diff = df1_intersection.compare(df2_intersection)
 
@@ -69,7 +75,9 @@ def compare_dataframes(initial_df: pd.DataFrame, final_df: pd.DataFrame, unique_
         else:
             result += f"- ~~🆕 0 addition~~\n"
         if modifications > 0:
-            result += f"- ♻️ {modifications} modification{'s' if modifications > 1 else ''}\n"
+            result += (
+                f"- ♻️ {modifications} modification{'s' if modifications > 1 else ''}\n"
+            )
         else:
             result += f"- ~~♻️ 0 modification~~\n"
         if deletions > 0:

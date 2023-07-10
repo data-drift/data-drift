@@ -11,7 +11,13 @@ from unittest.mock import patch
 
 def mocked_read_csv(url, *args, **kwargs):
     # Return a dummy DataFrame instead of reading the URL
-    return pd.DataFrame({'col1': [1, 2, 3], 'col2': [4, 5, 6], 'date': ['2021-01-01', '2022-02-02', '2023-03-03']})
+    return pd.DataFrame(
+        {
+            "col1": [1, 2, 3],
+            "col2": [4, 5, 6],
+            "date": ["2021-01-01", "2022-02-02", "2023-03-03"],
+        }
+    )
 
 
 class TestStoreMetric(unittest.TestCase):
@@ -23,14 +29,21 @@ class TestStoreMetric(unittest.TestCase):
         self.repo.get_contents.return_value = self.contents
         self.ghClient.get_repo.return_value = self.repo
         self.dataframe = pd.DataFrame(
-            {"unique_key": [1, 2], "col2": [3, 4], 'date': ['2021-01-01', '2022-02-02']})
+            {"unique_key": [1, 2], "col2": [3, 4], "date": ["2021-01-01", "2022-02-02"]}
+        )
         self.filepath = "org/repo/path/to/file.csv"
 
     def test_store_metric(self):
-        with patch('pandas.read_csv', side_effect=mocked_read_csv):
+        with patch("pandas.read_csv", side_effect=mocked_read_csv):
 
-            store_metric(self.ghClient, self.dataframe,
-                         self.filepath, ["jerome"], "production", False)
+            store_metric(
+                self.ghClient,
+                self.dataframe,
+                self.filepath,
+                ["jerome"],
+                "production",
+                False,
+            )
             self.repo.get_contents.assert_has_calls(
                 [
                     call("path/to/file.csv", ref=self.repo.default_branch),
@@ -39,11 +52,18 @@ class TestStoreMetric(unittest.TestCase):
             )
 
     def test_store_metric_pull_request_already_exists(self):
-        with patch('pandas.read_csv', side_effect=mocked_read_csv):
+        with patch("pandas.read_csv", side_effect=mocked_read_csv):
             self.repo.create_pull.side_effect = GithubException(
-                422, {"message": "A pull request already exists"}, None)
-            store_metric(self.ghClient, self.dataframe,
-                         self.filepath, ["jerome"], "production", False)
+                422, {"message": "A pull request already exists"}, None
+            )
+            store_metric(
+                self.ghClient,
+                self.dataframe,
+                self.filepath,
+                ["jerome"],
+                "production",
+                False,
+            )
 
             self.repo.get_contents.assert_has_calls(
                 [
@@ -53,9 +73,10 @@ class TestStoreMetric(unittest.TestCase):
             )
 
     def test_store_metric_with_no_assignee(self):
-        with patch('pandas.read_csv', side_effect=mocked_read_csv):
-            store_metric(self.ghClient, self.dataframe,
-                         self.filepath, [], "production", False)
+        with patch("pandas.read_csv", side_effect=mocked_read_csv):
+            store_metric(
+                self.ghClient, self.dataframe, self.filepath, [], "production", False
+            )
 
             self.repo.get_contents.assert_has_calls(
                 [

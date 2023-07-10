@@ -18,10 +18,16 @@ class TestBuildQuery(unittest.TestCase):
             ORDER BY 1
         """
 
-        query = build_query(table_id=table_id,
-                            unique_key_columns=unique_key_columns, columns=columns, where_clauses=where_clauses, date_column="date")
-        self.assertEqual(' '.join(query.split()).strip(),
-                         ' '.join(expected_query.split()).strip())
+        query = build_query(
+            table_id=table_id,
+            unique_key_columns=unique_key_columns,
+            columns=columns,
+            where_clauses=where_clauses,
+            date_column="date",
+        )
+        self.assertEqual(
+            " ".join(query.split()).strip(), " ".join(expected_query.split()).strip()
+        )
 
     def test_build_query_no_columns(self):
         table_id = "my_table"
@@ -37,10 +43,16 @@ class TestBuildQuery(unittest.TestCase):
             WHERE col1 > 0 AND col2 < 10 
             ORDER BY 1
         """
-        query = build_query(table_id=table_id,
-                            unique_key_columns=unique_key_columns, columns=columns, where_clauses=where_clauses, date_column="date")
-        self.assertEqual(' '.join(query.split()).strip(),
-                         ' '.join(expected_query.split()).strip())
+        query = build_query(
+            table_id=table_id,
+            unique_key_columns=unique_key_columns,
+            columns=columns,
+            where_clauses=where_clauses,
+            date_column="date",
+        )
+        self.assertEqual(
+            " ".join(query.split()).strip(), " ".join(expected_query.split()).strip()
+        )
 
     def test_build_query_no_where_clauses(self):
         table_id = "my_table"
@@ -56,9 +68,14 @@ class TestBuildQuery(unittest.TestCase):
             ORDER BY 1
         """
         query = build_query(
-            table_id=table_id, unique_key_columns=unique_key_columns, columns=columns, date_column="date")
-        self.assertEqual(' '.join(query.split()).strip(),
-                         ' '.join(expected_query.split()).strip())
+            table_id=table_id,
+            unique_key_columns=unique_key_columns,
+            columns=columns,
+            date_column="date",
+        )
+        self.assertEqual(
+            " ".join(query.split()).strip(), " ".join(expected_query.split()).strip()
+        )
 
     def test_build_query_empty_unique_key_columns(self):
         table_id = "my_table"
@@ -66,5 +83,10 @@ class TestBuildQuery(unittest.TestCase):
         unique_key_columns = []
         where_clauses = ["col1 > 0", "col2 < 10"]
         with self.assertRaises(ValueError):
-            build_query(table_id=table_id, unique_key_columns=unique_key_columns,
-                        columns=columns, where_clauses=where_clauses, date_column="date")
+            build_query(
+                table_id=table_id,
+                unique_key_columns=unique_key_columns,
+                columns=columns,
+                where_clauses=where_clauses,
+                date_column="date",
+            )
