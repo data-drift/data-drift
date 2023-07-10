@@ -145,7 +145,12 @@ def push_metric(
                 else:
                     print("No alert needed, pushing on reported branch")
                     push_drift_lines(
-                        file_path, repo, reported_branch, dataframe, store_json
+                        file_path,
+                        repo,
+                        reported_branch,
+                        dataframe,
+                        store_json,
+                        drift_evaluation["message"],
                     )
                     print("Drift pushed on reported branch")
 
@@ -202,10 +207,13 @@ def push_drift_lines(
     branch: str,
     dataframe: pd.DataFrame,
     store_json: bool,
+    commit_body: str = "",
 ):
     dataframe = dataframe.sort_values(by=["unique_key"])
     commit_message = "Drift: " + file_path
     print("Commit: " + commit_message)
+    if commit_body != "":
+        commit_message = commit_message + "\n\n" + commit_body
     update_file_with_retry(
         repo,
         file_path,
