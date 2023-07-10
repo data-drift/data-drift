@@ -335,14 +335,18 @@ def run():
                 )
                 st.plotly_chart(lifespan_fig, use_container_width=True)
                 volatility_expander = st.expander("💡 Learn more about lifespan")
-                volatility_expander.write("The lifespan is the number of days between two updates of a given row. For Lifespan without active, we exclude row that have never been updated (still valid).")
+                volatility_expander.write(
+                    "The lifespan is the number of days between two updates of a given row. For Lifespan without active, we exclude row that have never been updated (still valid)."
+                )
 
             with versionTab:
                 st.write("#### Version distribution")
                 print(f"Number of unique ids: {unique_ids.shape[0]}")
                 st.bar_chart(versions_count)
                 volatility_expander = st.expander("💡 Learn more about version")
-                volatility_expander.write("A version represents a row for a given unique id. When an id has never been updated it's 1, the current version is the only version.")
+                volatility_expander.write(
+                    "A version represents a row for a given unique id. When an id has never been updated it's 1, the current version is the only version."
+                )
 
             with dataTab:
                 st.write("#### Raw data")
