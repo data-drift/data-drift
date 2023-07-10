@@ -227,9 +227,13 @@ def update_file_with_retry(
         try:
             content = assert_file_exists(repo, file_path, ref=branch)
             if content is None:
-                repo.create_file(file_path, commit_message, data, branch)
+                response = repo.create_file(file_path, commit_message, data, branch)
+                print(response["commit"].html_url)
             else:
-                repo.update_file(file_path, commit_message, data, content.sha, branch)
+                response = repo.update_file(
+                    file_path, commit_message, data, content.sha, branch
+                )
+                print(response["commit"].html_url)
             return
         except GithubException as e:
             if e.status == 409:
