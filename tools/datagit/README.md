@@ -52,6 +52,20 @@ One can use any library to get the data as long as the format fits the following
 
 1. The first column of the dataframe must be `unique_key`
 2. The first columns must have only unique keys
+3. The second column must be a date
+
+The granularity of the dataframe depends on every use case:
+
+- it can be at very low level (like transaction) or aggregated (like a metric)
+- it can contain all the dimension, or none
+
+## 1st column: Unique key
+
+The unique_key is used to detect a modification in historical data
+
+## 2nd column: Date
+
+The date key is used to detect new historical data, or deleted historical data
 
 ## Query Builder
 
@@ -64,3 +78,32 @@ Datagit provides a simple query builder to store a table:
 ```
 
 More [examples here](tests/test_query_builder.py)
+
+# Drift
+
+A drift is a modification of historical data. It can be a modification, addition or deletion in a table that is supposed to be "non-moving data".
+
+## Drift evaluator
+
+When a drift is detected, the default behaviour is to trigger an alert and prompt the user to explain the drift before merging it to the dataset. But a custom function can be used to decide weather an alert should be triggered, or if the drift should be merged automatically.
+
+### Default drift evaluator
+
+The default drift evaluator will open a pull request with a message containing the number of addition, modifications and deletions of the drift.
+
+### Custom drift evaluator
+
+You can provide a custom evaluator which is a function with the following properties:
+
+- parameters:
+  - `data_drift_context``: a dictionnary with:
+  - computed_dataframe (the metric up to date)
+  - reported_dataframe (the metric already reported)
+- return value:
+  - A dictionnary containing:
+  - "should_alert": Boolean, If `True` a pull request will be opened, If `False` the drift will be merged
+  - "message": str, the message to display in the pull request, or the body message of the drift commit
+
+### No alert drift evaluator
+
+In case you just want to store the metric in a git branch, this drift evaluator merge the drift in the reported branch without any alert.
