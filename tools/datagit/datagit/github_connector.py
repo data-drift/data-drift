@@ -132,18 +132,23 @@ def push_metric(
                     drift_evaluation = {"should_alert": True, "message": alert_message}
 
                 print("Drift evaluation: " + str(drift_evaluation))
+                if drift_evaluation["should_alert"]:
+                    push_drift_lines(
+                        file_path, repo, computed_branch, dataframe, store_json
+                    )
+                    print("Drift pushed")
+                    print("Creating pull request")
+                    description_body = drift_evaluation["message"]
+                    create_pullrequest(
+                        repo, computed_branch, assignees, file_path, description_body
+                    )
+                else:
+                    print("No alert needed, pushing on reported branch")
+                    push_drift_lines(
+                        file_path, repo, reported_branch, dataframe, store_json
+                    )
+                    print("Drift pushed on reported branch")
 
-                push_drift_lines(
-                    file_path, repo, computed_branch, dataframe, store_json
-                )
-                print("Drift pushed")
-                print("Creating pull request")
-                description_body = f"Drift detected:\n" + compare_dataframes(
-                    old_data_with_freshdata, dataframe, "unique_key"
-                )
-                create_pullrequest(
-                    repo, computed_branch, assignees, file_path, description_body
-                )
             else:
                 print("No drift detected")
 
