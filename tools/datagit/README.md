@@ -52,6 +52,20 @@ One can use any library to get the data as long as the format fits the following
 
 1. The first column of the dataframe must be `unique_key`
 2. The first columns must have only unique keys
+3. The second column must be a date
+
+The granularity of the dataframe depends on every use case:
+
+- it can be at very low level (like transaction) or aggregated (like a metric)
+- it can contain all the dimension, or none
+
+## 1st column: Unique key
+
+The unique_key is used to detect a modification in historical data
+
+## 2nd column: Date
+
+The date key is used to detect new historical data, or deleted historical data
 
 ## Query Builder
 
