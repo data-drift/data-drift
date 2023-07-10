@@ -1,7 +1,8 @@
 import time
-from typing import Optional, List
+from typing import Optional, List, Callable, Dict
 import pandas as pd
 from github import Github, Repository, ContentFile, GithubException
+from datagit.drift_evaluators import default_drift_evaluator
 from datagit.dataset_helpers import (
     compare_dataframes,
     sort_dataframe_on_first_column_and_assert_is_unique,
@@ -16,6 +17,9 @@ def store_metric(
     assignees: List[str] = [],
     branch: Optional[str] = None,
     store_json: bool = True,
+    drift_evaluator: Callable[
+        [Dict[str, pd.DataFrame]], Dict
+    ] = default_drift_evaluator,
 ) -> None:
     """
     Store metrics into a specific repository file on Github.
@@ -40,12 +44,26 @@ def store_metric(
     dataframe = sort_dataframe_on_first_column_and_assert_is_unique(dataframe)
 
     push_metric(
-        dataframe, assignees, repo.default_branch, branch, store_json, file_path, repo
+        dataframe,
+        assignees,
+        repo.default_branch,
+        branch,
+        store_json,
+        file_path,
+        repo,
+        drift_evaluator,
     )
 
 
 def push_metric(
-    dataframe, assignees, reported_branch, computed_branch, store_json, file_path, repo
+    dataframe,
+    assignees,
+    reported_branch,
+    computed_branch,
+    store_json,
+    file_path,
+    repo,
+    drift_evaluator,
 ):
     contents = assert_file_exists(repo, file_path, ref=reported_branch)
     if contents is None:
@@ -96,6 +114,24 @@ def push_metric(
                     )
                 except:
                     print("Could not display drift")
+
+                try:
+                    data_drift_context = {
+                        "reported_dataframe": old_data_with_freshdata,
+                        "computed_dataframe": dataframe,
+                    }
+                    drift_evaluation = drift_evaluator(data_drift_context)
+                except Exception as e:
+                    print("Drift evaluator failed: " + str(e))
+                    print("Using default drift evaluator")
+                    alert_message = f"Drift detected:\n" + compare_dataframes(
+                        old_data_with_freshdata,
+                        dataframe,
+                        "unique_key",
+                    )
+                    drift_evaluation = {"should_alert": True, "message": alert_message}
+
+                print("Drift evaluation: " + str(drift_evaluation))
 
                 push_drift_lines(
                     file_path, repo, computed_branch, dataframe, store_json
