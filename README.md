@@ -31,7 +31,7 @@ Context is vital because is gives data consumers awareness of:
 
 - **Computation**: how a metric was calculated and associated caveats  
 
-- **Gouvernance**: who computed the metric, who reviewed it and who acts on it  
+- **Governance**: who computed the metric, who reviewed it and who acts on it
 
 - **Changelog**: when was the metric computed, when was it last updated and what was the impact of the change  
 
