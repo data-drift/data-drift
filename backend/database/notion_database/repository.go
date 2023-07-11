@@ -391,14 +391,28 @@ func UpdateReport(apiKey string, reportNotionPageId string, children []notion.Bl
 				Type:  "title",
 				Title: &notion.EmptyMetadata{},
 			},
+			"Created At": notion.DatabaseProperty{
+				Type: "date",
+				Date: &notion.EmptyMetadata{},
+			},
+			"Commit": notion.DatabaseProperty{
+				Type: "url",
+				URL:  &notion.EmptyMetadata{},
+			},
+			"Impact": notion.DatabaseProperty{
+				Type: "number",
+				Number: &notion.NumberMetadata{
+					Format: notion.NumberFormatNumberWithCommas,
+				},
+			},
 		},
 	}
-	print("Creating ChangeLog database...", reportChangeLogCreateDatabaseParams)
+	print("\n Creating ChangeLog database...", reportChangeLogCreateDatabaseParams)
 	result, err := client.CreateDatabase(ctx, *reportChangeLogCreateDatabaseParams)
 	if err != nil {
 		fmt.Println("[DATADRIFT_ERROR]: err during changelog db creation", err.Error())
 	}
-	print("ChangeLog Database created", result.ID)
+	print("\n ChangeLog Database created", result.ID)
 
 	return err
 }
