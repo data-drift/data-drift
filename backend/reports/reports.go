@@ -16,11 +16,8 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error 
 	timeGrain, _ := GetTimeGrain(KPIInfo.PeriodId)
 	reportNotionPageId, findOrCreateError := notion_database.FindOrCreateReportPageId(syncConfig.NotionAPIKey, syncConfig.NotionDatabaseID, KPIInfo.KPIName, string(KPIInfo.PeriodId), timeGrain, KPIInfo.DimensionValue)
 	if findOrCreateError != nil {
-
 		return fmt.Errorf("failed to create reportNotionPageId: %v", findOrCreateError.Error())
 	}
-
-	fmt.Println(reportNotionPageId)
 
 	diffFloat64, _ := KPIInfo.LatestValue.Sub(KPIInfo.InitialValue).Float64()
 
