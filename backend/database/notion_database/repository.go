@@ -569,8 +569,27 @@ func UpdateChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo com
 			print("block is not a known block type")
 		}
 	}
-	print("\n driftBlock: ", driftBlock.ID())
-	print("\n currentValueBlock: ", currentValueBlock.ID())
+	if driftBlock != nil {
+		print("\n  Updating driftBlock: ", driftBlock.ID())
+		blockID := driftBlock.ID()
+		newContent := buildDriftParagraph(KPIInfo)
+
+		_, err := client.UpdateBlock(ctx, blockID, newContent)
+		if err != nil {
+			print(err)
+		}
+	}
+
+	if currentValueBlock != nil {
+		print("\n  Updating currentValueBlock: ", currentValueBlock.ID())
+		blockID := currentValueBlock.ID()
+		newContent := buildCurrentValueParagraph(KPIInfo)
+
+		_, err := client.UpdateBlock(ctx, blockID, newContent)
+		if err != nil {
+			print(err)
+		}
+	}
 
 	return nil
 }
