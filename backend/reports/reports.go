@@ -19,12 +19,12 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error 
 		return fmt.Errorf("failed to create reportNotionPageId: %v", findOrCreateError.Error())
 	}
 
-	diffFloat64, _ := KPIInfo.LatestValue.Sub(KPIInfo.InitialValue).Float64()
+	driftAmount, _ := KPIInfo.LatestValue.Sub(KPIInfo.InitialValue).Float64()
 
 	params := notion.CreatePageParams{
 		DatabasePageProperties: &notion.DatabasePageProperties{
 			notion_database.PROPERTY_DATADRIFT_DRIFT_VALUE: notion.DatabasePageProperty{
-				Number: &diffFloat64,
+				Number: &driftAmount,
 			},
 		},
 		Children: []notion.Block{
