@@ -415,24 +415,7 @@ func InitChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo commo
 			},
 			buildInitialValueParagraph(KPIInfo),
 			buildCurrentValueParagraph(KPIInfo),
-			notion.ParagraphBlock{
-				RichText: []notion.RichText{
-					{
-						Text: &notion.Text{
-							Content: summaryTextInitialValueWas,
-						},
-					},
-					{
-						Text: &notion.Text{
-							Content: displayDiff(KPIInfo.LatestValue.Sub(KPIInfo.InitialValue)),
-						},
-						Annotations: &notion.Annotations{
-							Bold:  true,
-							Color: displayDiffColor(KPIInfo.LatestValue.Sub(KPIInfo.InitialValue)),
-						},
-					},
-				},
-			},
+			buildDriftParagraph(KPIInfo),
 			notion.Heading1Block{
 				RichText: []notion.RichText{
 					{
@@ -696,6 +679,27 @@ func buildInitialValueParagraph(KPIInfo common.KPIReport) notion.ParagraphBlock 
 				},
 				Annotations: &notion.Annotations{
 					Bold: true,
+				},
+			},
+		},
+	}
+}
+
+func buildDriftParagraph(KPIInfo common.KPIReport) notion.ParagraphBlock {
+	return notion.ParagraphBlock{
+		RichText: []notion.RichText{
+			{
+				Text: &notion.Text{
+					Content: summaryTextInitialValueWas,
+				},
+			},
+			{
+				Text: &notion.Text{
+					Content: displayDiff(KPIInfo.LatestValue.Sub(KPIInfo.InitialValue)),
+				},
+				Annotations: &notion.Annotations{
+					Bold:  true,
+					Color: displayDiffColor(KPIInfo.LatestValue.Sub(KPIInfo.InitialValue)),
 				},
 			},
 		},
