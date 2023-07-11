@@ -438,31 +438,7 @@ func InitChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo commo
 					},
 				},
 			},
-			notion.ParagraphBlock{
-				RichText: []notion.RichText{
-					{
-						Text: &notion.Text{
-							Content: KPIInfo.KPIName,
-						},
-						Annotations: &notion.Annotations{
-							Code: true,
-						},
-					},
-					{
-						Text: &notion.Text{
-							Content: summaryTextCurrentValueIs,
-						},
-					},
-					{
-						Text: &notion.Text{
-							Content: KPIInfo.LatestValue.String(),
-						},
-						Annotations: &notion.Annotations{
-							Bold: true,
-						},
-					},
-				},
-			},
+			buildCurrentValueParagraph(KPIInfo),
 			notion.ParagraphBlock{
 				RichText: []notion.RichText{
 					{
@@ -693,3 +669,31 @@ func getEventEmoji(diff float64) string {
 
 const summaryTextInitialValueWas = "Total drift since initial value: "
 const summaryTextCurrentValueIs = " current value is: "
+
+func buildCurrentValueParagraph(KPIInfo common.KPIReport) notion.ParagraphBlock {
+	return notion.ParagraphBlock{
+		RichText: []notion.RichText{
+			{
+				Text: &notion.Text{
+					Content: KPIInfo.KPIName,
+				},
+				Annotations: &notion.Annotations{
+					Code: true,
+				},
+			},
+			{
+				Text: &notion.Text{
+					Content: summaryTextCurrentValueIs,
+				},
+			},
+			{
+				Text: &notion.Text{
+					Content: KPIInfo.LatestValue.String(),
+				},
+				Annotations: &notion.Annotations{
+					Bold: true,
+				},
+			},
+		},
+	}
+}
