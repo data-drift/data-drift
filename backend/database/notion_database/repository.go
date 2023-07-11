@@ -658,6 +658,10 @@ func createMissingEvents(client *notion.Client, ctx context.Context, databaseID 
 	for _, event := range KPIInfo.Events {
 		if eventsToCreate[event.CommitUrl] {
 			print("Creating the event", event.CommitUrl)
+			err := createEventInNotionReport(event, client, ctx, databaseID)
+			if err != nil {
+				fmt.Println("[DATADRIFT_ERROR]: err during create page", err.Error())
+			}
 		}
 	}
 
