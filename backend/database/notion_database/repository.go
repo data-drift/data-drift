@@ -547,13 +547,59 @@ func InitChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo commo
 		},
 	}
 	print("\n Creating ChangeLog database...", reportChangeLogCreateDatabaseParams)
-	result, err := client.CreateDatabase(ctx, *reportChangeLogCreateDatabaseParams)
+	changeLogDatabase, err := client.CreateDatabase(ctx, *reportChangeLogCreateDatabaseParams)
 	if err != nil {
 		fmt.Println("[DATADRIFT_ERROR]: err during changelog db creation", err.Error())
 	}
-	print("\n ChangeLog Database created", result.ID)
+	print("\n ChangeLog Database created", changeLogDatabase.ID)
 
 	// Add all the change log to the report
+	for _, event := range KPIInfo.Events {
+		print("\n Adding changeLog to report", event.CommitComments)
+		_, err := client.CreatePage(ctx, notion.CreatePageParams{
+			ParentID:   changeLogDatabase.ID,
+			ParentType: notion.ParentTypeDatabase,
+			Children: []notion.Block{
+				notion.ParagraphBlock{
+					RichText: []notion.RichText{
+						{
+							Text: &notion.Text{
+								Content: displayCommitComments(event),
+							},
+						},
+					},
+				},
+			},
+			DatabasePageProperties: &notion.DatabasePageProperties{
+				"Name": notion.DatabasePageProperty{
+					Title: []notion.RichText{
+						{
+							Text: &notion.Text{
+								Content: "New Drift ",
+							},
+						},
+						{
+							Text: &notion.Text{
+								Content: displayDiff(decimal.NewFromFloat(event.Diff)),
+							},
+							Annotations: &notion.Annotations{
+								Bold:  true,
+								Color: displayDiffColor(decimal.NewFromFloat(event.Diff)),
+							},
+						},
+					},
+				},
+				"Created At": notion.DatabasePageProperty{
+					Date: &notion.Date{
+						Start: notion.NewDateTime(time.Unix(event.CommitTimestamp, 0), true),
+					},
+				},
+			},
+		})
+		if err != nil {
+			fmt.Println("[DATADRIFT_ERROR]: err during create page", err.Error())
+		}
+	}
 
 	return err
 }
@@ -572,4 +618,23 @@ func displayDiffColor(diff decimal.Decimal) notion.Color {
 		return notion.ColorOrange
 	}
 	return notion.ColorBlue
+}
+
+func displayCommitComments(event common.EventObject) string {
+	if len(event.CommitComments) == 0 {
+		return "No explanation available"
+	}
+
+	result := ""
+
+	for _, comment := range event.CommitComments {
+		result += "Author: " + comment.CommentAuthor + "\n"
+		result += "Comment: " + comment.CommentBody + "\n"
+		result += "\n"
+	}
+
+	if len(result) > 2000 {
+		result = result[:2000]
+	}
+	return result
 }

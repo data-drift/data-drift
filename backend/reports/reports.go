@@ -133,22 +133,3 @@ func ParseQuarterDate(s string) (time.Time, error) {
 		return time.Time{}, fmt.Errorf("invalid quarter format in quarter date: %s", s)
 	}
 }
-
-func displayCommitComments(event common.EventObject) string {
-	if len(event.CommitComments) == 0 {
-		return "No explanation available"
-	}
-
-	result := ""
-
-	for _, comment := range event.CommitComments {
-		result += "Author: " + comment.CommentAuthor + "\n"
-		result += "Comment: " + comment.CommentBody + "\n"
-		result += "\n"
-	}
-
-	if len(result) > 2000 {
-		result = result[:2000]
-	}
-	return result
-}
