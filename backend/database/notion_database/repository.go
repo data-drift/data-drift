@@ -3,6 +3,7 @@ package notion_database
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -514,11 +515,11 @@ func InitChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo commo
 						Start: notion.NewDateTime(time.Unix(event.CommitTimestamp, 0), true),
 					},
 				},
-				"Commit": notion.DatabasePageProperty{
-					URL: &event.CommitUrl,
-				},
 				"Impact": notion.DatabasePageProperty{
 					Number: &event.Diff,
+				},
+				"Commit": notion.DatabasePageProperty{
+					URL: &event.CommitUrl,
 				},
 			},
 		})
@@ -554,6 +555,7 @@ func UpdateChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo com
 	var driftBlock *notion.ParagraphBlock
 	var currentValueBlock *notion.ParagraphBlock
 	var embedChartBlock *notion.EmbedBlock
+	var changeLogDatabaseId string
 	for _, block := range pageContent.Results {
 		switch b := block.(type) {
 		case *notion.ParagraphBlock:
@@ -570,9 +572,16 @@ func UpdateChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo com
 			if strings.HasPrefix(b.URL, "https://quickchart.io") {
 				embedChartBlock = b
 			}
+		case *notion.ChildDatabaseBlock:
+			print("\n block is a child database block", b.ID())
+			changeLogDatabaseId = b.ID()
 		default:
 			print("\n block is not a known block type")
 		}
+	}
+	if changeLogDatabaseId != "" {
+		print("\n Adding missing events in ChangeLog database...", changeLogDatabaseId)
+		createMissingEvents(client, ctx, changeLogDatabaseId, KPIInfo)
 	}
 	if driftBlock != nil {
 		print("\n  Updating driftBlock: ", driftBlock.ID())
@@ -603,6 +612,47 @@ func UpdateChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo com
 		_, err := client.UpdateBlock(ctx, blockID, newContent)
 		if err != nil {
 			print(err)
+		}
+	}
+
+	return nil
+}
+
+func createMissingEvents(client *notion.Client, ctx context.Context, databaseID string, KPIInfo common.KPIReport) error {
+	// Get the database
+	db, err := client.QueryDatabase(ctx, databaseID, nil)
+	if err != nil {
+		return err
+	}
+
+	eventsToCreate := make(map[string]bool)
+	for _, event := range KPIInfo.Events {
+		eventsToCreate[event.CommitUrl] = true
+	}
+
+	// Get the existing events
+	for _, page := range db.Results {
+		// Type-assert Properties to a map[string]notion.PropertyValue
+		properties := page.Properties
+
+		jsonProperties, _ := json.Marshal(properties)
+		var propertiesMap map[string]interface{}
+		if err := json.Unmarshal(jsonProperties, &propertiesMap); err != nil {
+			print(err)
+		}
+
+		// Access the "Commit" property
+		if commitProp, ok := propertiesMap["Commit"].(map[string]interface{}); ok {
+			if commitURL, ok := commitProp["url"].(string); ok {
+				eventsToCreate[commitURL] = false
+			}
+		}
+	}
+
+	print(eventsToCreate)
+	for _, event := range KPIInfo.Events {
+		if eventsToCreate[event.CommitUrl] {
+			print("Creating the event", event.CommitUrl)
 		}
 	}
 
