@@ -450,7 +450,7 @@ func InitChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo commo
 					},
 					{
 						Text: &notion.Text{
-							Content: " current value is: ",
+							Content: summaryTextCurrentValueIs,
 						},
 					},
 					{
@@ -467,7 +467,7 @@ func InitChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo commo
 				RichText: []notion.RichText{
 					{
 						Text: &notion.Text{
-							Content: "Total drift since initial value: ",
+							Content: summaryTextInitialValueWas,
 						},
 					},
 					{
@@ -646,3 +646,6 @@ func getEventEmoji(diff float64) string {
 	}
 	return "🔶"
 }
+
+const summaryTextInitialValueWas = "Total drift since initial value: "
+const summaryTextCurrentValueIs = " current value is: "

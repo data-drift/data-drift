@@ -24,7 +24,10 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error 
 			return fmt.Errorf("failed to create page: %v", err.Error())
 		}
 	} else {
-		print("Updating report")
+		err := notion_database.UpdateChangeLogReport(syncConfig.NotionAPIKey, reportNotionPageId, KPIInfo)
+		if err != nil {
+			print("Updating report error", err.Error())
+		}
 	}
 
 	return nil
