@@ -332,7 +332,7 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 	return err
 }
 
-func UpdateReport(apiKey string, reportNotionPageId string, children []notion.Block, pageProperties *notion.DatabasePageProperties) error {
+func UpdateMetadataReport(apiKey string, reportNotionPageId string, children []notion.Block, pageProperties *notion.DatabasePageProperties) error {
 	if reportNotionPageId == "" {
 		fmt.Println("No report page id provided")
 		return nil

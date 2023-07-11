@@ -57,7 +57,7 @@ func CreateSummaryReport(syncConfig common.SyncConfig, metricConfig common.Metri
 		)
 
 	}
-	err := notion_database.UpdateReport(syncConfig.NotionAPIKey, reportNotionPageId, children, &notion.DatabasePageProperties{})
+	err := notion_database.UpdateMetadataReport(syncConfig.NotionAPIKey, reportNotionPageId, children, &notion.DatabasePageProperties{})
 	if err != nil {
 		return fmt.Errorf("failed to create page: %v", err.Error())
 	}
