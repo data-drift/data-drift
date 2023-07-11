@@ -493,15 +493,6 @@ func InitChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo commo
 			notion.EmbedBlock{
 				URL: KPIInfo.GraphQLURL,
 			},
-			notion.Heading1Block{
-				RichText: []notion.RichText{
-					{
-						Text: &notion.Text{
-							Content: "Changelog",
-						},
-					},
-				},
-			},
 		},
 	}
 
@@ -579,16 +570,7 @@ func InitChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo commo
 					Title: []notion.RichText{
 						{
 							Text: &notion.Text{
-								Content: "New Drift ",
-							},
-						},
-						{
-							Text: &notion.Text{
-								Content: displayDiff(decimal.NewFromFloat(event.Diff)),
-							},
-							Annotations: &notion.Annotations{
-								Bold:  true,
-								Color: displayDiffColor(decimal.NewFromFloat(event.Diff)),
+								Content: displayEventTitle(event.Diff),
 							},
 						},
 					},
@@ -598,6 +580,12 @@ func InitChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo commo
 						Start: notion.NewDateTime(time.Unix(event.CommitTimestamp, 0), true),
 					},
 				},
+				"Commit": notion.DatabasePageProperty{
+					URL: &event.CommitUrl,
+				},
+				"Impact": notion.DatabasePageProperty{
+					Number: &event.Diff,
+				},
 			},
 		})
 		if err != nil {
@@ -606,6 +594,13 @@ func InitChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo commo
 	}
 
 	return err
+}
+
+func displayEventTitle(diff float64) string {
+	if diff == 0 {
+		return "Initial Value"
+	}
+	return "New Drift " + displayDiff(decimal.NewFromFloat(diff))
 }
 
 func displayDiff(diff decimal.Decimal) string {
