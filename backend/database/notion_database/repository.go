@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/data-drift/data-drift/common"
@@ -425,9 +426,7 @@ func InitChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo commo
 					},
 				},
 			},
-			notion.EmbedBlock{
-				URL: KPIInfo.GraphQLURL,
-			},
+			buildEmberChartBlock(KPIInfo),
 		},
 	}
 
@@ -554,6 +553,7 @@ func UpdateChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo com
 
 	var driftBlock *notion.ParagraphBlock
 	var currentValueBlock *notion.ParagraphBlock
+	var embedChartBlock *notion.EmbedBlock
 	for _, block := range pageContent.Results {
 		switch b := block.(type) {
 		case *notion.ParagraphBlock:
@@ -565,8 +565,13 @@ func UpdateChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo com
 				currentValueBlock = b
 				break
 			}
+		case *notion.EmbedBlock:
+			print("\n block is an embed block", strings.HasPrefix(b.URL, "https://quickchart.io"), b.URL)
+			if strings.HasPrefix(b.URL, "https://quickchart.io") {
+				embedChartBlock = b
+			}
 		default:
-			print("block is not a known block type")
+			print("\n block is not a known block type")
 		}
 	}
 	if driftBlock != nil {
@@ -584,6 +589,16 @@ func UpdateChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo com
 		print("\n  Updating currentValueBlock: ", currentValueBlock.ID())
 		blockID := currentValueBlock.ID()
 		newContent := buildCurrentValueParagraph(KPIInfo)
+
+		_, err := client.UpdateBlock(ctx, blockID, newContent)
+		if err != nil {
+			print(err)
+		}
+	}
+	if embedChartBlock != nil {
+		print("\n  Updating embedChartBlock: ", embedChartBlock.ID())
+		blockID := embedChartBlock.ID()
+		newContent := buildEmberChartBlock(KPIInfo)
 
 		_, err := client.UpdateBlock(ctx, blockID, newContent)
 		if err != nil {
@@ -722,5 +737,11 @@ func buildDriftParagraph(KPIInfo common.KPIReport) notion.ParagraphBlock {
 				},
 			},
 		},
+	}
+}
+
+func buildEmberChartBlock(KPIInfo common.KPIReport) notion.EmbedBlock {
+	return notion.EmbedBlock{
+		URL: KPIInfo.GraphQLURL,
 	}
 }
