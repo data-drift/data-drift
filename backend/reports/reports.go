@@ -21,7 +21,7 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error 
 
 	driftAmount, _ := KPIInfo.LatestValue.Sub(KPIInfo.InitialValue).Float64()
 
-	params := notion.CreatePageParams{
+	createPageParams := notion.CreatePageParams{
 		DatabasePageProperties: &notion.DatabasePageProperties{
 			notion_database.PROPERTY_DATADRIFT_DRIFT_VALUE: notion.DatabasePageProperty{
 				Number: &driftAmount,
@@ -220,9 +220,9 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error 
 			children = append(children, driftEventDate, bulletListFirstItemUpdateEvent, bulletListSecondItemUpdateEvent, toggleUpdateEvent)
 		}
 	}
-	params.Children = append(params.Children, children...)
+	createPageParams.Children = append(createPageParams.Children, children...)
 
-	err := notion_database.UpdateReport(syncConfig.NotionAPIKey, reportNotionPageId, params.Children, params.DatabasePageProperties)
+	err := notion_database.UpdateReport(syncConfig.NotionAPIKey, reportNotionPageId, createPageParams.Children, createPageParams.DatabasePageProperties)
 	if err != nil {
 		return fmt.Errorf("failed to create page: %v", err.Error())
 	}
