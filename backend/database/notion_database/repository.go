@@ -480,54 +480,59 @@ func InitChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo commo
 	print("\n ChangeLog Database created", changeLogDatabase.ID)
 	// Add all the change log to the report
 	for _, event := range KPIInfo.Events {
-		eventEmoji := getEventEmoji(event.Diff)
-		print("\n Adding changeLog to report", event.CommitTimestamp, eventEmoji)
-		_, err := client.CreatePage(ctx, notion.CreatePageParams{
-			ParentID:   changeLogDatabase.ID,
-			ParentType: notion.ParentTypeDatabase,
-			Icon: &notion.Icon{
-				Type:  notion.IconTypeEmoji,
-				Emoji: &eventEmoji,
-			},
-			Children: []notion.Block{
-				notion.ParagraphBlock{
-					RichText: []notion.RichText{
-						{
-							Text: &notion.Text{
-								Content: displayCommitComments(event),
-							},
-						},
-					},
-				},
-			},
-			DatabasePageProperties: &notion.DatabasePageProperties{
-				"Name": notion.DatabasePageProperty{
-					Title: []notion.RichText{
-						{
-							Text: &notion.Text{
-								Content: displayEventTitle(event.Diff),
-							},
-						},
-					},
-				},
-				"Created At": notion.DatabasePageProperty{
-					Date: &notion.Date{
-						Start: notion.NewDateTime(time.Unix(event.CommitTimestamp, 0), true),
-					},
-				},
-				"Impact": notion.DatabasePageProperty{
-					Number: &event.Diff,
-				},
-				"Commit": notion.DatabasePageProperty{
-					URL: &event.CommitUrl,
-				},
-			},
-		})
+		err := createEventInNotionReport(event, client, ctx, changeLogDatabase.ID)
 		if err != nil {
 			fmt.Println("[DATADRIFT_ERROR]: err during create page", err.Error())
 		}
 	}
 
+	return err
+}
+
+func createEventInNotionReport(event common.EventObject, client *notion.Client, ctx context.Context, changeLogDatabaseId string) error {
+	eventEmoji := getEventEmoji(event.Diff)
+	print("\n Adding changeLog to report", event.CommitTimestamp, eventEmoji)
+	_, err := client.CreatePage(ctx, notion.CreatePageParams{
+		ParentID:   changeLogDatabaseId,
+		ParentType: notion.ParentTypeDatabase,
+		Icon: &notion.Icon{
+			Type:  notion.IconTypeEmoji,
+			Emoji: &eventEmoji,
+		},
+		Children: []notion.Block{
+			notion.ParagraphBlock{
+				RichText: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: displayCommitComments(event),
+						},
+					},
+				},
+			},
+		},
+		DatabasePageProperties: &notion.DatabasePageProperties{
+			"Name": notion.DatabasePageProperty{
+				Title: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: displayEventTitle(event.Diff),
+						},
+					},
+				},
+			},
+			"Created At": notion.DatabasePageProperty{
+				Date: &notion.Date{
+					Start: notion.NewDateTime(time.Unix(event.CommitTimestamp, 0), true),
+				},
+			},
+			"Impact": notion.DatabasePageProperty{
+				Number: &event.Diff,
+			},
+			"Commit": notion.DatabasePageProperty{
+				URL: &event.CommitUrl,
+			},
+		},
+	})
 	return err
 }
 
