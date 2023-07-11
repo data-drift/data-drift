@@ -375,5 +375,30 @@ func UpdateReport(apiKey string, reportNotionPageId string, children []notion.Bl
 	if err != nil {
 		fmt.Println("[DATADRIFT_ERROR]: err during append", err.Error())
 	}
+
+	reportChangeLogCreateDatabaseParams := &notion.CreateDatabaseParams{
+		ParentPageID: reportNotionPageId,
+		IsInline:     true,
+		Title: []notion.RichText{
+			{
+				Text: &notion.Text{
+					Content: "ChangeLog",
+				},
+			},
+		},
+		Properties: notion.DatabaseProperties{
+			"Name": notion.DatabaseProperty{
+				Type:  "title",
+				Title: &notion.EmptyMetadata{},
+			},
+		},
+	}
+	print("Creating ChangeLog database...", reportChangeLogCreateDatabaseParams)
+	result, err := client.CreateDatabase(ctx, *reportChangeLogCreateDatabaseParams)
+	if err != nil {
+		fmt.Println("[DATADRIFT_ERROR]: err during changelog db creation", err.Error())
+	}
+	print("ChangeLog Database created", result.ID)
+
 	return err
 }
