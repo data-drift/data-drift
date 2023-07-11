@@ -596,6 +596,50 @@ func InitChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo commo
 	return err
 }
 
+func UpdateChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo common.KPIReport) error {
+	if reportNotionPageId == "" {
+		fmt.Println("No report page id provided")
+		return nil
+	}
+
+	fmt.Println("Updating report", reportNotionPageId)
+	buf := &bytes.Buffer{}
+	ctx := context.Background()
+
+	httpClient := &http.Client{
+		Timeout:   10 * time.Second,
+		Transport: &httpTransport{w: buf},
+	}
+	client := notion.NewClient(apiKey, notion.WithHTTPClient(httpClient))
+
+	pageContent, err := client.FindBlockChildrenByID(ctx, reportNotionPageId, &notion.PaginationQuery{PageSize: 100})
+	if err != nil {
+		return err
+	}
+
+	var driftBlock *notion.ParagraphBlock
+	var currentValueBlock *notion.ParagraphBlock
+	for _, block := range pageContent.Results {
+		switch b := block.(type) {
+		case *notion.ParagraphBlock:
+			if len(b.RichText) > 0 && b.RichText[0].Text.Content == summaryTextInitialValueWas {
+				driftBlock = b
+				break
+			}
+			if len(b.RichText) > 1 && b.RichText[1].Text.Content == summaryTextCurrentValueIs {
+				currentValueBlock = b
+				break
+			}
+		default:
+			print("block is not a known block type")
+		}
+	}
+	print("\n driftBlock: ", driftBlock.ID())
+	print("\n currentValueBlock: ", currentValueBlock.ID())
+
+	return nil
+}
+
 func displayEventTitle(diff float64) string {
 	if diff == 0 {
 		return "Initial Value"
