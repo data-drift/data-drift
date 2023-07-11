@@ -10,6 +10,7 @@ import (
 
 	"github.com/data-drift/data-drift/common"
 	"github.com/dstotijn/go-notion"
+	"github.com/shopspring/decimal"
 )
 
 const PROPERTY_DATADRIFT_ID = "datadrift-id"
@@ -20,17 +21,17 @@ const PROPERTY_DATADRIFT_DIMENSION = "datadrift-dimension"
 
 var DefaultPropertiesToDelete = []string{"Tags", "Status", "Étiquette", "Étiquettes"}
 
-func FindOrCreateReportPageId(apiKey string, databaseId string, reportName string, period string, timeGrain common.TimeGrain, dimensionValue common.DimensionValue) (string, error) {
+func FindOrCreateReportPageId(apiKey string, databaseId string, reportName string, period string, timeGrain common.TimeGrain, dimensionValue common.DimensionValue) (string, bool, error) {
 	existingReportId, err := QueryDatabaseWithReportId(apiKey, databaseId, reportName)
 	if err != nil {
-		return "", err
+		return "", false, err
 	}
 	if existingReportId == "" {
 		fmt.Println("No existing report found, creating new one")
 		newReportId, err := CreateEmptyReport(apiKey, databaseId, reportName, period, timeGrain, dimensionValue)
-		return newReportId, err
+		return newReportId, true, err
 	}
-	return existingReportId, nil
+	return existingReportId, false, nil
 }
 
 func FindOrCreateSummaryReportPage(apiKey string, databaseId string, reportName string) (string, error) {
@@ -375,6 +376,144 @@ func UpdateReport(apiKey string, reportNotionPageId string, children []notion.Bl
 	if err != nil {
 		fmt.Println("[DATADRIFT_ERROR]: err during append", err.Error())
 	}
+	return err
+}
+
+func InitChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo common.KPIReport) error {
+	if reportNotionPageId == "" {
+		fmt.Println("No report page id provided")
+		return nil
+	}
+
+	fmt.Println("Updating report", reportNotionPageId)
+	buf := &bytes.Buffer{}
+	ctx := context.Background()
+
+	httpClient := &http.Client{
+		Timeout:   10 * time.Second,
+		Transport: &httpTransport{w: buf},
+	}
+	client := notion.NewClient(apiKey, notion.WithHTTPClient(httpClient))
+
+	driftAmount, _ := KPIInfo.LatestValue.Sub(KPIInfo.InitialValue).Float64()
+
+	createPageParams := notion.CreatePageParams{
+		DatabasePageProperties: &notion.DatabasePageProperties{
+			PROPERTY_DATADRIFT_DRIFT_VALUE: notion.DatabasePageProperty{
+				Number: &driftAmount,
+			},
+		},
+		Children: []notion.Block{
+			notion.Heading1Block{
+				RichText: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: "Overview",
+						},
+					},
+				},
+			},
+			notion.ParagraphBlock{
+				RichText: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: KPIInfo.KPIName,
+						},
+						Annotations: &notion.Annotations{
+							Code: true,
+						},
+					},
+					{
+						Text: &notion.Text{
+							Content: " initial value was: ",
+						},
+					},
+					{
+						Text: &notion.Text{
+							Content: KPIInfo.InitialValue.String(),
+						},
+						Annotations: &notion.Annotations{
+							Bold: true,
+						},
+					},
+				},
+			},
+			notion.ParagraphBlock{
+				RichText: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: KPIInfo.KPIName,
+						},
+						Annotations: &notion.Annotations{
+							Code: true,
+						},
+					},
+					{
+						Text: &notion.Text{
+							Content: " current value is: ",
+						},
+					},
+					{
+						Text: &notion.Text{
+							Content: KPIInfo.LatestValue.String(),
+						},
+						Annotations: &notion.Annotations{
+							Bold: true,
+						},
+					},
+				},
+			},
+			notion.ParagraphBlock{
+				RichText: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: "Total drift since initial value: ",
+						},
+					},
+					{
+						Text: &notion.Text{
+							Content: displayDiff(KPIInfo.LatestValue.Sub(KPIInfo.InitialValue)),
+						},
+						Annotations: &notion.Annotations{
+							Bold:  true,
+							Color: displayDiffColor(KPIInfo.LatestValue.Sub(KPIInfo.InitialValue)),
+						},
+					},
+				},
+			},
+			notion.Heading1Block{
+				RichText: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: "Timeline",
+						},
+					},
+				},
+			},
+			notion.EmbedBlock{
+				URL: KPIInfo.GraphQLURL,
+			},
+			notion.Heading1Block{
+				RichText: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: "Changelog",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	_, updateErr := client.UpdatePage(ctx, reportNotionPageId, notion.UpdatePageParams{DatabasePageProperties: *createPageParams.DatabasePageProperties})
+	if updateErr != nil {
+		fmt.Println("[DATADRIFT_ERROR]: err during update", reportNotionPageId, updateErr.Error())
+	}
+
+	_, err := client.AppendBlockChildren(ctx, reportNotionPageId, createPageParams.Children)
+	if err != nil {
+		fmt.Println("[DATADRIFT_ERROR]: err during append", err.Error())
+	}
 
 	reportChangeLogCreateDatabaseParams := &notion.CreateDatabaseParams{
 		ParentPageID: reportNotionPageId,
@@ -414,5 +553,23 @@ func UpdateReport(apiKey string, reportNotionPageId string, children []notion.Bl
 	}
 	print("\n ChangeLog Database created", result.ID)
 
+	// Add all the change log to the report
+
 	return err
+}
+
+func displayDiff(diff decimal.Decimal) string {
+	if diff.IsPositive() {
+		return "+" + diff.String()
+	}
+	return diff.String()
+}
+
+func displayDiffColor(diff decimal.Decimal) notion.Color {
+	if diff.Equal(decimal.Zero) {
+		return notion.ColorGreen
+	} else if diff.IsNegative() {
+		return notion.ColorOrange
+	}
+	return notion.ColorBlue
 }
