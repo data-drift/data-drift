@@ -413,31 +413,7 @@ func InitChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo commo
 					},
 				},
 			},
-			notion.ParagraphBlock{
-				RichText: []notion.RichText{
-					{
-						Text: &notion.Text{
-							Content: KPIInfo.KPIName,
-						},
-						Annotations: &notion.Annotations{
-							Code: true,
-						},
-					},
-					{
-						Text: &notion.Text{
-							Content: " initial value was: ",
-						},
-					},
-					{
-						Text: &notion.Text{
-							Content: KPIInfo.InitialValue.String(),
-						},
-						Annotations: &notion.Annotations{
-							Bold: true,
-						},
-					},
-				},
-			},
+			buildInitialValueParagraph(KPIInfo),
 			buildCurrentValueParagraph(KPIInfo),
 			notion.ParagraphBlock{
 				RichText: []notion.RichText{
@@ -689,6 +665,34 @@ func buildCurrentValueParagraph(KPIInfo common.KPIReport) notion.ParagraphBlock 
 			{
 				Text: &notion.Text{
 					Content: KPIInfo.LatestValue.String(),
+				},
+				Annotations: &notion.Annotations{
+					Bold: true,
+				},
+			},
+		},
+	}
+}
+
+func buildInitialValueParagraph(KPIInfo common.KPIReport) notion.ParagraphBlock {
+	return notion.ParagraphBlock{
+		RichText: []notion.RichText{
+			{
+				Text: &notion.Text{
+					Content: KPIInfo.KPIName,
+				},
+				Annotations: &notion.Annotations{
+					Code: true,
+				},
+			},
+			{
+				Text: &notion.Text{
+					Content: " initial value was: ",
+				},
+			},
+			{
+				Text: &notion.Text{
+					Content: KPIInfo.InitialValue.String(),
 				},
 				Annotations: &notion.Annotations{
 					Bold: true,
