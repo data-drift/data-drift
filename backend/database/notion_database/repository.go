@@ -552,13 +552,17 @@ func InitChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo commo
 		fmt.Println("[DATADRIFT_ERROR]: err during changelog db creation", err.Error())
 	}
 	print("\n ChangeLog Database created", changeLogDatabase.ID)
-
 	// Add all the change log to the report
 	for _, event := range KPIInfo.Events {
-		print("\n Adding changeLog to report", event.CommitComments)
+		eventEmoji := getEventEmoji(event.Diff)
+		print("\n Adding changeLog to report", event.CommitTimestamp, eventEmoji)
 		_, err := client.CreatePage(ctx, notion.CreatePageParams{
 			ParentID:   changeLogDatabase.ID,
 			ParentType: notion.ParentTypeDatabase,
+			Icon: &notion.Icon{
+				Type:  notion.IconTypeEmoji,
+				Emoji: &eventEmoji,
+			},
 			Children: []notion.Block{
 				notion.ParagraphBlock{
 					RichText: []notion.RichText{
@@ -637,4 +641,13 @@ func displayCommitComments(event common.EventObject) string {
 		result = result[:2000]
 	}
 	return result
+}
+
+func getEventEmoji(diff float64) string {
+	if diff == 0 {
+		return "🆕"
+	} else if diff > 0 {
+		return "🔷"
+	}
+	return "🔶"
 }
