@@ -464,6 +464,10 @@ func InitChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo commo
 				Type: "url",
 				URL:  &notion.EmptyMetadata{},
 			},
+			"datadrift-event-id": notion.DatabaseProperty{
+				Type:     "rich_text",
+				RichText: &notion.EmptyMetadata{},
+			},
 			"Impact": notion.DatabaseProperty{
 				Type: "number",
 				Number: &notion.NumberMetadata{
@@ -530,6 +534,16 @@ func createEventInNotionReport(event common.EventObject, client *notion.Client, 
 			},
 			"Commit": notion.DatabasePageProperty{
 				URL: &event.CommitUrl,
+			},
+			"datadrift-event-id": notion.DatabasePageProperty{
+				RichText: []notion.RichText{
+					{
+						Text: &notion.Text{
+							Content: fmt.Sprintf("event-timestamp-%d", event.CommitTimestamp),
+						},
+						Type: "text",
+					},
+				},
 			},
 		},
 	})
