@@ -1,18 +1,23 @@
 </br>
 <p align="center">
   <a href="https://www.data-drift.io">
-    <img src="./datadrift-logo.png" width="100px" alt="DataDrift logo" />
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="./datadrift-logo-light.png" width="200px">
+      <source media="(prefers-color-scheme: light)" srcset="./datadrift-logo-dark.png" width="200px">
+      <img src="./datadrift-logo-dark.png" width="200px" alt="Datadrift logo" />
+    </picture>
   </a>
 </p>
 
+
 <h1 align="center" >The Context Layer for your Metrics</h1>
-<p align="center">Supercharge your semantic layer with context & observability to built trusted and actionnable metrics</p>
+<p align="center">Supercharge your semantic layer with context to built trusted and actionnable metrics</p>
 
 <p align="center"><a href="https://data-drift.io">Website</a> · <a href="https://www.data-drift.io/blog">Blog</a> · <a href="https://github.com/data-drift/data-drift/issues">Issues</p>
 </br>
 <p align="center">
   <a href="https://www.data-drift.io">
-    <img src="./datadrift-hero-charts.png" alt="DataDrift hero with metric volatility charts" />
+    <img src="./datadrift-new-drift.png" alt="DataDrift hero with metric volatility charts" />
   </a>
 </p>
 </br>
@@ -69,11 +74,24 @@ Data teams be like...(yes, providing context is hard)
 - **Integrated**: not another tool to manage in your stack, use datadrift directly from current tools (dbt, BI)
 
 </br>
+<p align="center">
+  <a href="https://www.data-drift.io">
+    <img src="./datadrift-stack-schema.png" alt="Headless context for your metrics, wherever they are" />
+  </a>
+</p>
+
+</br>
 
 # 🚀 Quickstart
 
-## Deploy locally
-Coming soon. In the meantime, you can you [join our Design Partner Programme.](https://www.data-drift.io/design-partner)
+## Version-control your key metrics with Datagit
+[Install Datagit](https://github.com/data-drift/data-drift/tree/main/tools/datagit#datagit) to historise and diff-checks your metrics' underlying data.
+
+You can [learn more about Datagit in this article](https://www.data-drift.io/blog/git-for-your-data).
+
+## Deploy Datadrift locally
+Coming soon. 
+In the meantime, you can you [join our Design Partner Programme.](https://www.data-drift.io/design-partner)
 
 ## Use our cloud-based product
 [Contact our team by filling the form on our website](https://www.data-drift.io/) to get started with Datadrift Cloud.
