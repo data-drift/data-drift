@@ -630,9 +630,10 @@ func createMissingEvents(client *notion.Client, ctx context.Context, databaseID 
 		return err
 	}
 
-	eventsToCreate := make(map[string]bool)
+	eventsToCreate := make(map[int64]bool)
 	for _, event := range KPIInfo.Events {
-		eventsToCreate[event.CommitUrl] = true
+		print("\n Adding event to create  ", event.CommitTimestamp)
+		eventsToCreate[event.CommitTimestamp] = true
 	}
 
 	// Get the existing events
@@ -647,16 +648,21 @@ func createMissingEvents(client *notion.Client, ctx context.Context, databaseID 
 		}
 
 		// Access the "Commit" property
-		if commitProp, ok := propertiesMap["Commit"].(map[string]interface{}); ok {
-			if commitURL, ok := commitProp["url"].(string); ok {
-				eventsToCreate[commitURL] = false
+		if createdAtProp, ok := propertiesMap["Created At"].(map[string]interface{}); ok {
+			if startDate, ok := createdAtProp["date"].(map[string]interface{}); ok {
+				if startTimeString, ok := startDate["start"].(string); ok {
+					createdAt, _ := time.Parse(time.RFC3339, startTimeString)
+					print("\n Found existing date  ", startTimeString)
+					print("\n Found existing event  ", createdAt.Unix())
+					eventsToCreate[createdAt.Unix()] = false
+				}
 			}
 		}
 	}
 
 	print(eventsToCreate)
 	for _, event := range KPIInfo.Events {
-		if eventsToCreate[event.CommitUrl] {
+		if eventsToCreate[event.CommitTimestamp] {
 			print("Creating the event", event.CommitUrl)
 			err := createEventInNotionReport(event, client, ctx, databaseID)
 			if err != nil {
