@@ -79,8 +79,14 @@ Data teams be like...(yes, providing context is hard)
 
 # 🚀 Quickstart
 
-## Deploy locally
-Coming soon. In the meantime, you can you [join our Design Partner Programme.](https://www.data-drift.io/design-partner)
+## Version-control your key metrics with Datagit
+[Install Datagit](https://github.com/data-drift/data-drift/tree/main/tools/datagit#datagit) to historise and diff-checks your metrics' underlying data.
+
+You can [learn more about Datagit in this article](https://www.data-drift.io/blog/git-for-your-data).
+
+## Deploy Datadrift locally
+Coming soon. 
+In the meantime, you can you [join our Design Partner Programme.](https://www.data-drift.io/design-partner)
 
 ## Use our cloud-based product
 [Contact our team by filling the form on our website](https://www.data-drift.io/) to get started with Datadrift Cloud.
