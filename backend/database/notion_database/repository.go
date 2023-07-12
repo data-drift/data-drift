@@ -539,7 +539,7 @@ func createEventInNotionReport(event common.EventObject, client *notion.Client, 
 				RichText: []notion.RichText{
 					{
 						Text: &notion.Text{
-							Content: fmt.Sprintf("event-timestamp-%d", event.CommitTimestamp),
+							Content: generateEventId(event),
 						},
 						Type: "text",
 					},
@@ -644,10 +644,22 @@ func createMissingEvents(client *notion.Client, ctx context.Context, databaseID 
 		return err
 	}
 
-	eventsToCreate := make(map[int64]bool)
+	eventsToCreate := make(map[string]bool)
 	for _, event := range KPIInfo.Events {
 		print("\n Adding event to create  ", event.CommitTimestamp)
-		eventsToCreate[event.CommitTimestamp] = true
+		eventsToCreate[generateEventId(event)] = true
+	}
+
+	type ChangeLogRichText struct {
+		PlainText string `json:"plain_text"`
+	}
+
+	type ChangeLogDatadriftID struct {
+		RichText []ChangeLogRichText `json:"rich_text"`
+	}
+
+	type ChangeLogProperties struct {
+		DatadriftID ChangeLogDatadriftID `json:"datadrift-event-id"`
 	}
 
 	// Get the existing events
@@ -656,32 +668,29 @@ func createMissingEvents(client *notion.Client, ctx context.Context, databaseID 
 		properties := page.Properties
 
 		jsonProperties, _ := json.Marshal(properties)
-		var propertiesMap map[string]interface{}
+
+		var propertiesMap ChangeLogProperties
 		if err := json.Unmarshal(jsonProperties, &propertiesMap); err != nil {
 			print(err)
 		}
 
 		// Access the "Commit" property
-		if createdAtProp, ok := propertiesMap["Created At"].(map[string]interface{}); ok {
-			if startDate, ok := createdAtProp["date"].(map[string]interface{}); ok {
-				if startTimeString, ok := startDate["start"].(string); ok {
-					createdAt, _ := time.Parse(time.RFC3339, startTimeString)
-					print("\n Found existing date  ", startTimeString)
-					print("\n Found existing event  ", createdAt.Unix())
-					eventsToCreate[createdAt.Unix()] = false
-				}
-			}
-		}
+
+		changeLogEventId := propertiesMap.DatadriftID.RichText[0].PlainText
+		eventsToCreate[changeLogEventId] = false
+
 	}
 
 	print(eventsToCreate)
 	for _, event := range KPIInfo.Events {
-		if eventsToCreate[event.CommitTimestamp] {
-			print("Creating the event", event.CommitUrl)
+		if eventsToCreate[generateEventId(event)] {
+			print("\n Creating the event: ", generateEventId(event))
 			err := createEventInNotionReport(event, client, ctx, databaseID)
 			if err != nil {
 				fmt.Println("[DATADRIFT_ERROR]: err during create page", err.Error())
 			}
+		} else {
+			print("\n Event already exist: ", generateEventId(event))
 		}
 	}
 
@@ -823,4 +832,8 @@ func buildEmberChartBlock(KPIInfo common.KPIReport) notion.EmbedBlock {
 	return notion.EmbedBlock{
 		URL: KPIInfo.GraphQLURL,
 	}
+}
+
+func generateEventId(event common.EventObject) string {
+	return fmt.Sprintf("event-timestamp-%d", event.CommitTimestamp)
 }
