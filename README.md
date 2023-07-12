@@ -1,18 +1,18 @@
 </br>
 <p align="center">
   <a href="https://www.data-drift.io">
-    <img src="./datadrift-logo.png" width="100px" alt="DataDrift logo" />
+    <img src="./datadrift-logo-white.png" width="200px" alt="DataDrift logo" />
   </a>
 </p>
 
 <h1 align="center" >The Context Layer for your Metrics</h1>
-<p align="center">Supercharge your semantic layer with context & observability to built trusted and actionnable metrics</p>
+<p align="center">Supercharge your semantic layer with context to built trusted and actionnable metrics</p>
 
 <p align="center"><a href="https://data-drift.io">Website</a> · <a href="https://www.data-drift.io/blog">Blog</a> · <a href="https://github.com/data-drift/data-drift/issues">Issues</p>
 </br>
 <p align="center">
   <a href="https://www.data-drift.io">
-    <img src="./datadrift-hero-charts.png" alt="DataDrift hero with metric volatility charts" />
+    <img src="./datadrift-new-drift.png" alt="DataDrift hero with metric volatility charts" />
   </a>
 </p>
 </br>
@@ -67,6 +67,13 @@ Data teams be like...(yes, providing context is hard)
 - **Secure**: deploy on your own infra to keep control over your data  
 
 - **Integrated**: not another tool to manage in your stack, use datadrift directly from current tools (dbt, BI)
+
+</br>
+<p align="center">
+  <a href="https://www.data-drift.io">
+    <img src="./datadrift-stack-schema.png" alt="Headless context for your metrics, wherever they are" />
+  </a>
+</p>
 
 </br>
 
