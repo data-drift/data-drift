@@ -1,9 +1,14 @@
 </br>
 <p align="center">
   <a href="https://www.data-drift.io">
-    <img src="./datadrift-logo-white.png" width="200px" alt="DataDrift logo" />
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="./datadrift-logo-light.png" width="200px">
+      <source media="(prefers-color-scheme: light)" srcset="./datadrift-logo-dark.png" width="200px">
+      <img src="./datadrift-logo-dark.png" width="200px" alt="Datadrift logo" />
+    </picture>
   </a>
 </p>
+
 
 <h1 align="center" >The Context Layer for your Metrics</h1>
 <p align="center">Supercharge your semantic layer with context to built trusted and actionnable metrics</p>
