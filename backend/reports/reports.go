@@ -9,225 +9,25 @@ import (
 	"github.com/data-drift/data-drift/common"
 	"github.com/data-drift/data-drift/database/notion_database"
 	"github.com/dstotijn/go-notion"
-	"github.com/shopspring/decimal"
 )
 
 func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error {
 	timeGrain, _ := GetTimeGrain(KPIInfo.PeriodId)
-	reportNotionPageId, findOrCreateError := notion_database.FindOrCreateReportPageId(syncConfig.NotionAPIKey, syncConfig.NotionDatabaseID, KPIInfo.KPIName, string(KPIInfo.PeriodId), timeGrain, KPIInfo.DimensionValue)
+	reportNotionPageId, shouldInitReport, findOrCreateError := notion_database.FindOrCreateReportPageId(syncConfig.NotionAPIKey, syncConfig.NotionDatabaseID, KPIInfo.KPIName, string(KPIInfo.PeriodId), timeGrain, KPIInfo.DimensionValue)
 	if findOrCreateError != nil {
-
 		return fmt.Errorf("failed to create reportNotionPageId: %v", findOrCreateError.Error())
 	}
 
-	fmt.Println(reportNotionPageId)
-
-	diffFloat64, _ := KPIInfo.LatestValue.Sub(KPIInfo.InitialValue).Float64()
-
-	params := notion.CreatePageParams{
-		DatabasePageProperties: &notion.DatabasePageProperties{
-			notion_database.PROPERTY_DATADRIFT_DRIFT_VALUE: notion.DatabasePageProperty{
-				Number: &diffFloat64,
-			},
-		},
-		Children: []notion.Block{
-			notion.Heading1Block{
-				RichText: []notion.RichText{
-					{
-						Text: &notion.Text{
-							Content: "Overview",
-						},
-					},
-				},
-			},
-			notion.ParagraphBlock{
-				RichText: []notion.RichText{
-					{
-						Text: &notion.Text{
-							Content: KPIInfo.KPIName,
-						},
-						Annotations: &notion.Annotations{
-							Code: true,
-						},
-					},
-					{
-						Text: &notion.Text{
-							Content: " initial value was: ",
-						},
-					},
-					{
-						Text: &notion.Text{
-							Content: KPIInfo.InitialValue.String(),
-						},
-						Annotations: &notion.Annotations{
-							Bold: true,
-						},
-					},
-				},
-			},
-			notion.ParagraphBlock{
-				RichText: []notion.RichText{
-					{
-						Text: &notion.Text{
-							Content: KPIInfo.KPIName,
-						},
-						Annotations: &notion.Annotations{
-							Code: true,
-						},
-					},
-					{
-						Text: &notion.Text{
-							Content: " current value is: ",
-						},
-					},
-					{
-						Text: &notion.Text{
-							Content: KPIInfo.LatestValue.String(),
-						},
-						Annotations: &notion.Annotations{
-							Bold: true,
-						},
-					},
-				},
-			},
-			notion.ParagraphBlock{
-				RichText: []notion.RichText{
-					{
-						Text: &notion.Text{
-							Content: "Total drift since initial value: ",
-						},
-					},
-					{
-						Text: &notion.Text{
-							Content: displayDiff(KPIInfo.LatestValue.Sub(KPIInfo.InitialValue)),
-						},
-						Annotations: &notion.Annotations{
-							Bold:  true,
-							Color: displayDiffColor(KPIInfo.LatestValue.Sub(KPIInfo.InitialValue)),
-						},
-					},
-				},
-			},
-			notion.Heading1Block{
-				RichText: []notion.RichText{
-					{
-						Text: &notion.Text{
-							Content: "Timeline",
-						},
-					},
-				},
-			},
-			notion.EmbedBlock{
-				URL: KPIInfo.GraphQLURL,
-			},
-			notion.Heading1Block{
-				RichText: []notion.RichText{
-					{
-						Text: &notion.Text{
-							Content: "Changelog",
-						},
-					},
-				},
-			},
-		},
-	}
-	var children []notion.Block
-	for _, event := range KPIInfo.Events {
-		driftEventDate := notion.ParagraphBlock{
-			RichText: []notion.RichText{
-				{
-					Text: &notion.Text{
-						Content: "🗓 Event ",
-					},
-				},
-
-				{
-					Mention: &notion.Mention{
-						Type: notion.MentionTypeDate,
-						Date: &notion.Date{
-							Start: notion.NewDateTime(time.Unix(event.CommitTimestamp, 0), true),
-						},
-					},
-				},
-			},
+	if shouldInitReport {
+		err := notion_database.InitChangeLogReport(syncConfig.NotionAPIKey, reportNotionPageId, KPIInfo)
+		if err != nil {
+			return fmt.Errorf("failed to create page: %v", err.Error())
 		}
-		bulletListFirstItemCreateEvent := notion.BulletedListItemBlock{
-			RichText: []notion.RichText{
-				{
-					Text: &notion.Text{
-						Content: "Initial value: ",
-					},
-				},
-				{
-					Text: &notion.Text{
-						Content: KPIInfo.InitialValue.String(),
-					},
-					Annotations: &notion.Annotations{
-						Bold:  true,
-						Color: notion.ColorGray,
-					},
-				},
-			},
+	} else {
+		err := notion_database.UpdateChangeLogReport(syncConfig.NotionAPIKey, reportNotionPageId, KPIInfo)
+		if err != nil {
+			print("Updating report error", err.Error())
 		}
-		bulletListFirstItemUpdateEvent := notion.BulletedListItemBlock{
-			RichText: []notion.RichText{
-				{
-					Text: &notion.Text{
-						Content: "Impact: ",
-					},
-				},
-				{
-					Text: &notion.Text{
-						Content: displayDiff(decimal.NewFromFloat(event.Diff)),
-					},
-					Annotations: &notion.Annotations{
-						Bold:  true,
-						Color: displayDiffColor(decimal.NewFromFloat(event.Diff)),
-					},
-				},
-			},
-		}
-		bulletListSecondItemUpdateEvent := notion.BulletedListItemBlock{
-			RichText: []notion.RichText{
-				{
-					Text: &notion.Text{
-						Content: "commit",
-						Link:    &notion.Link{URL: event.CommitUrl},
-					},
-				},
-			},
-		}
-		toggleUpdateEvent := notion.ToggleBlock{
-			RichText: []notion.RichText{
-				{
-					Text: &notion.Text{
-						Content: "Explanation",
-					},
-				},
-			},
-			Children: []notion.Block{
-				notion.ParagraphBlock{
-					RichText: []notion.RichText{
-						{
-							Text: &notion.Text{
-								Content: displayCommitComments(event),
-							},
-						},
-					},
-				},
-			},
-		}
-		if event.EventType == "create" {
-			children = append(children, driftEventDate, bulletListFirstItemCreateEvent)
-		} else {
-			children = append(children, driftEventDate, bulletListFirstItemUpdateEvent, bulletListSecondItemUpdateEvent, toggleUpdateEvent)
-		}
-	}
-	params.Children = append(params.Children, children...)
-
-	err := notion_database.UpdateReport(syncConfig.NotionAPIKey, reportNotionPageId, params.Children, params.DatabasePageProperties)
-	if err != nil {
-		return fmt.Errorf("failed to create page: %v", err.Error())
 	}
 
 	return nil
@@ -260,29 +60,12 @@ func CreateSummaryReport(syncConfig common.SyncConfig, metricConfig common.Metri
 		)
 
 	}
-	err := notion_database.UpdateReport(syncConfig.NotionAPIKey, reportNotionPageId, children, &notion.DatabasePageProperties{})
+	err := notion_database.UpdateMetadataReport(syncConfig.NotionAPIKey, reportNotionPageId, children, &notion.DatabasePageProperties{})
 	if err != nil {
 		return fmt.Errorf("failed to create page: %v", err.Error())
 	}
 
 	return nil
-}
-
-func displayDiff(diff decimal.Decimal) string {
-	if diff.IsPositive() {
-
-		return "+" + diff.String()
-	}
-	return diff.String()
-}
-
-func displayDiffColor(diff decimal.Decimal) notion.Color {
-	if diff.Equal(decimal.Zero) {
-		return notion.ColorGreen
-	} else if diff.IsNegative() {
-		return notion.ColorOrange
-	}
-	return notion.ColorBlue
 }
 
 func GetTimeGrain(periodKeyParam common.PeriodKey) (common.TimeGrain, error) {
@@ -352,23 +135,4 @@ func ParseQuarterDate(s string) (time.Time, error) {
 	default:
 		return time.Time{}, fmt.Errorf("invalid quarter format in quarter date: %s", s)
 	}
-}
-
-func displayCommitComments(event common.EventObject) string {
-	if len(event.CommitComments) == 0 {
-		return "No explanation available"
-	}
-
-	result := ""
-
-	for _, comment := range event.CommitComments {
-		result += "Author: " + comment.CommentAuthor + "\n"
-		result += "Comment: " + comment.CommentBody + "\n"
-		result += "\n"
-	}
-
-	if len(result) > 2000 {
-		result = result[:2000]
-	}
-	return result
 }

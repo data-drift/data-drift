@@ -51,18 +51,18 @@ func DebugFunction() {
 		}
 		filepath = newFilepath
 	}
-	metadataChartResults, metadataChartError := reducers.ProcessMetricMetadataCharts(filepath, metricConfig)
-	if metadataChartError != nil {
-		println(metadataChartError)
-		panic("Error processing metadata charts")
-	}
-
 	notionSyncConfig := common.SyncConfig{NotionAPIKey: notionAPIKey, NotionDatabaseID: notionDatabaseID}
 
-	reports.CreateSummaryReport(notionSyncConfig, metricConfig, metadataChartResults)
-	if metadataChartResults != nil {
-		panic("Stop execution here")
-	}
+	// metadataChartResults, metadataChartError := reducers.ProcessMetricMetadataCharts(filepath, metricConfig)
+	// if metadataChartError != nil {
+	// 	println(metadataChartError)
+	// 	panic("Error processing metadata charts")
+	// }
+
+	// reports.CreateSummaryReport(notionSyncConfig, metricConfig, metadataChartResults)
+	// if metadataChartResults != nil {
+	// 	panic("Stop execution here")
+	// }
 
 	chartResults := reducers.ProcessMetricHistory(filepath, common.MetricConfig{MetricName: "Default metric name"})
 
