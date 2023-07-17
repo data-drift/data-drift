@@ -65,6 +65,7 @@ def push_metric(
     repo,
     drift_evaluator,
 ):
+    dataframe = dataframe.astype("string")
     contents = assert_file_exists(repo, file_path, ref=reported_branch)
     if contents is None:
         print("Metric not found, creating it on branch: " + reported_branch)
@@ -79,19 +80,24 @@ def push_metric(
         if contents.content is not None and date_column is not None:
             # Compare the contents of the file with the new contents and assert if it need 2 commits
             print("Content", contents.download_url)
-            old_dataframe = pd.read_csv(contents.download_url)
+            print("Dataframe dtypes", dataframe.dtypes.to_dict())
+            old_dataframe = pd.read_csv(
+                contents.download_url,
+                dtype="string",
+            )
+            print("Old Dataframe dtypes", old_dataframe.dtypes.to_dict())
+
             try:
                 old_dates = set(old_dataframe[date_column])
             except KeyError:
+                print("No date column found")
                 old_dates = []
             new_dates = set(dataframe[date_column])
             already_stored_dates = new_dates.intersection(old_dates)
             new_dataframe = dataframe[
                 ~dataframe[date_column].isin(already_stored_dates)
             ]
-            old_data_with_freshdata = pd.concat(
-                [old_dataframe, new_dataframe]
-            ).reset_index(drop=True)
+            old_data_with_freshdata = pd.concat([old_dataframe, new_dataframe])
             if len(new_dataframe) > 0:
                 print("New data found")
                 push_new_lines(
@@ -101,21 +107,17 @@ def push_metric(
                     old_data_with_freshdata,
                     store_json,
                 )
+
             checkout_branch_from_default_branch(repo, computed_branch)
 
-            if not old_data_with_freshdata.equals(dataframe.reset_index(drop=True)):
+            if not old_data_with_freshdata.equals(dataframe):
+                print("dataframe length", len(dataframe))
+                print("new_dataframe len", len(new_dataframe))
+                print("old_data_with_freshdata len", len(old_data_with_freshdata))
                 print("Drift detected")
 
                 try:
-                    print(
-                        old_data_with_freshdata.compare(
-                            dataframe.reset_index(drop=True)
-                        )
-                    )
-                except:
-                    print("Could not display drift")
-
-                try:
+                    copy_and_compare_dataframes(old_data_with_freshdata, dataframe)
                     data_drift_context = {
                         "reported_dataframe": old_data_with_freshdata,
                         "computed_dataframe": dataframe,
