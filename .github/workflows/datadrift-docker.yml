@@ -1,0 +1,21 @@
+name: Data-Drift Docker
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Get the date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+
+      - name: Build Docker image
+        run: docker build -t my-image:${{ steps.date.outputs.date }} .
