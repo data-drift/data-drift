@@ -15,7 +15,7 @@ jobs:
 
       - name: Get the date
         id: date
-        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
       - name: Build Docker image
         run: docker build -t quay.io/datadrift/data-drift:${{ steps.date.outputs.date }} .
