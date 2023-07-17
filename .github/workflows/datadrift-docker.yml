@@ -1,0 +1,26 @@
+name: Data-Drift Docker
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Get the date
+        id: date
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+      - name: Build Docker image
+        run: docker build -t quay.io/datadrift/data-drift:${{ steps.date.outputs.date }} .
+
+      - name: Login to Quay.io
+        run: docker login quay.io -u ${{ secrets.QUAY_USERNAME }} -p ${{ secrets.QUAY_PASSWORD }}
+
+      - name: Push Docker image
+        run: docker push quay.io/datadrift/data-drift:${{ steps.date.outputs.date }}
