@@ -109,20 +109,29 @@ def push_metric(
                 )
 
             checkout_branch_from_default_branch(repo, computed_branch)
+            should_push_drift = True
+            try:
+                difference_between_old_and_new = copy_and_compare_dataframes(
+                    old_data_with_freshdata, dataframe
+                )
+                if (difference_between_old_and_new is not None) and (
+                    len(difference_between_old_and_new) == 0
+                ):
+                    should_push_drift = False
+            except Exception as e:
+                print("Dataframe comparison failed, default to push drift: " + str(e))
 
-            if not old_data_with_freshdata.equals(dataframe):
-                print("dataframe length", len(dataframe))
-                print("new_dataframe len", len(new_dataframe))
-                print("old_data_with_freshdata len", len(old_data_with_freshdata))
+            if should_push_drift:
                 print("Drift detected")
 
                 try:
-                    copy_and_compare_dataframes(old_data_with_freshdata, dataframe)
                     data_drift_context = {
-                        "reported_dataframe": old_data_with_freshdata,
-                        "computed_dataframe": dataframe,
+                        "reported_dataframe": old_data_with_freshdata.copy(),
+                        "computed_dataframe": dataframe.copy(),
                     }
-                    drift_evaluation = drift_evaluator(data_drift_context)
+                    drift_evaluation = drift_evaluator(
+                        data_drift_context=data_drift_context
+                    )
                 except Exception as e:
                     print("Drift evaluator failed: " + str(e))
                     print("Using default drift evaluator")
