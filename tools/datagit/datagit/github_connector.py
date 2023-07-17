@@ -393,3 +393,20 @@ def checkout_branch_from_default_branch(repo: Repository.Repository, branch_name
     ref = repo.create_git_ref(f"refs/heads/{branch_name}", default_branch.commit.sha)
 
     return ref
+
+
+def copy_and_compare_dataframes(initial_df1: pd.DataFrame, initial_df2: pd.DataFrame):
+    df1 = initial_df1.copy()
+    df2 = initial_df2.copy()
+    df1 = df1[df2.columns]
+
+    df1.set_index("unique_key", inplace=True)
+    df2.set_index("unique_key", inplace=True)
+    df1.sort_index(inplace=True)
+    df2.sort_index(inplace=True)
+    try:
+        comparison = df1.compare(df2)
+        print("comparison", comparison)
+        return comparison
+    except Exception as e:
+        print("Could not display drift", e)
