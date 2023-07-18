@@ -65,6 +65,7 @@ def push_metric(
     repo,
     drift_evaluator,
 ):
+    dataframe = dataframe.astype("string")
     contents = assert_file_exists(repo, file_path, ref=reported_branch)
     if contents is None:
         print("Metric not found, creating it on branch: " + reported_branch)
@@ -79,19 +80,24 @@ def push_metric(
         if contents.content is not None and date_column is not None:
             # Compare the contents of the file with the new contents and assert if it need 2 commits
             print("Content", contents.download_url)
-            old_dataframe = pd.read_csv(contents.download_url)
+            print("Dataframe dtypes", dataframe.dtypes.to_dict())
+            old_dataframe = pd.read_csv(
+                contents.download_url,
+                dtype="string",
+            )
+            print("Old Dataframe dtypes", old_dataframe.dtypes.to_dict())
+
             try:
                 old_dates = set(old_dataframe[date_column])
             except KeyError:
+                print("No date column found")
                 old_dates = []
             new_dates = set(dataframe[date_column])
             already_stored_dates = new_dates.intersection(old_dates)
             new_dataframe = dataframe[
                 ~dataframe[date_column].isin(already_stored_dates)
             ]
-            old_data_with_freshdata = pd.concat(
-                [old_dataframe, new_dataframe]
-            ).reset_index(drop=True)
+            old_data_with_freshdata = pd.concat([old_dataframe, new_dataframe])
             if len(new_dataframe) > 0:
                 print("New data found")
                 push_new_lines(
@@ -101,26 +107,31 @@ def push_metric(
                     old_data_with_freshdata,
                     store_json,
                 )
-            checkout_branch_from_default_branch(repo, computed_branch)
 
-            if not old_data_with_freshdata.equals(dataframe.reset_index(drop=True)):
+            checkout_branch_from_default_branch(repo, computed_branch)
+            should_push_drift = True
+            try:
+                difference_between_old_and_new = copy_and_compare_dataframes(
+                    old_data_with_freshdata, dataframe
+                )
+                if (difference_between_old_and_new is not None) and (
+                    len(difference_between_old_and_new) == 0
+                ):
+                    should_push_drift = False
+            except Exception as e:
+                print("Dataframe comparison failed, default to push drift: " + str(e))
+
+            if should_push_drift:
                 print("Drift detected")
 
                 try:
-                    print(
-                        old_data_with_freshdata.compare(
-                            dataframe.reset_index(drop=True)
-                        )
-                    )
-                except:
-                    print("Could not display drift")
-
-                try:
                     data_drift_context = {
-                        "reported_dataframe": old_data_with_freshdata,
-                        "computed_dataframe": dataframe,
+                        "reported_dataframe": old_data_with_freshdata.copy(),
+                        "computed_dataframe": dataframe.copy(),
                     }
-                    drift_evaluation = drift_evaluator(data_drift_context)
+                    drift_evaluation = drift_evaluator(
+                        data_drift_context=data_drift_context
+                    )
                 except Exception as e:
                     print("Drift evaluator failed: " + str(e))
                     print("Using default drift evaluator")
@@ -393,3 +404,20 @@ def checkout_branch_from_default_branch(repo: Repository.Repository, branch_name
     ref = repo.create_git_ref(f"refs/heads/{branch_name}", default_branch.commit.sha)
 
     return ref
+
+
+def copy_and_compare_dataframes(initial_df1: pd.DataFrame, initial_df2: pd.DataFrame):
+    df1 = initial_df1.copy()
+    df2 = initial_df2.copy()
+    df1 = df1[df2.columns]
+
+    df1.set_index("unique_key", inplace=True)
+    df2.set_index("unique_key", inplace=True)
+    df1.sort_index(inplace=True)
+    df2.sort_index(inplace=True)
+    try:
+        comparison = df1.compare(df2)
+        print("comparison", comparison)
+        return comparison
+    except Exception as e:
+        print("Could not display drift", e)
