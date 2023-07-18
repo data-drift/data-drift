@@ -84,6 +84,7 @@ def push_metric(
             old_dataframe = pd.read_csv(
                 contents.download_url,
                 dtype="string",
+                keep_default_na=False,
             )
             print("Old Dataframe dtypes", old_dataframe.dtypes.to_dict())
 
