@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef } from "react";
 import styled from "@emotion/styled";
 
 // define the CSS
@@ -9,36 +9,33 @@ const TableContainer = styled.div`
 `;
 
 const StyledTd = styled.td`
-  width: 200px; // same width for every cell
+  width: 300px; // same width for every cell
   height: 50px; // same height for every cell
 `;
 
 interface TableProps {
   data: any[][];
-  onScroll: (event: React.UIEvent<HTMLDivElement, UIEvent>) => void;
 }
 
-const Table: React.FC<TableProps> = ({ data, onScroll }) => (
-  <TableContainer onScroll={onScroll}>
-    <table>
-      <thead>
-        <tr>
-          {data[0].map((_, i) => (
-            <th key={i}>Column {i}</th>
+const Table: React.FC<TableProps> = ({ data }) => (
+  <table>
+    <thead>
+      <tr>
+        {data[0].map((_, i) => (
+          <th key={i}>Column {i}</th>
+        ))}
+      </tr>
+    </thead>
+    <tbody>
+      {data.map((row, i) => (
+        <tr key={i}>
+          {row.map((cell, j) => (
+            <StyledTd key={j}>{cell}</StyledTd>
           ))}
         </tr>
-      </thead>
-      <tbody>
-        {data.map((row, i) => (
-          <tr key={i}>
-            {row.map((cell, j) => (
-              <StyledTd key={j}>{cell}</StyledTd>
-            ))}
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </TableContainer>
+      ))}
+    </tbody>
+  </table>
 );
 
 interface DualTableProps {
@@ -50,31 +47,32 @@ export const DualTable = ({ data1, data2 }: DualTableProps) => {
   const table1Ref = useRef<HTMLDivElement>(null);
   const table2Ref = useRef<HTMLDivElement>(null);
 
-  const handleScroll =
-    (
-      src: React.RefObject<HTMLDivElement>,
-      dest: React.RefObject<HTMLDivElement>
-    ) =>
-    (event: React.UIEvent<HTMLDivElement, UIEvent>) => {
-      if (dest.current && src.current) {
-        dest.current.scrollTop = src.current.scrollTop;
-        dest.current.scrollLeft = src.current.scrollLeft;
-      }
-    };
-
-  useEffect(() => {
-    const table1 = table1Ref.current;
-    const table2 = table2Ref.current;
-    if (table1 && table2) {
-      table1.onscroll = handleScroll(table1Ref, table2Ref);
-      table2.onscroll = handleScroll(table2Ref, table1Ref);
+  const handleScrollLeft = (
+    _scrollEvent: React.UIEvent<HTMLDivElement, UIEvent>
+  ) => {
+    if (table2Ref.current && table1Ref.current) {
+      table2Ref.current.scrollTop = table1Ref.current.scrollTop;
+      table2Ref.current.scrollLeft = table1Ref.current.scrollLeft;
     }
-  }, []);
+  };
+
+  const handleScrollRight = (
+    _scrollEvent: React.UIEvent<HTMLDivElement, UIEvent>
+  ) => {
+    if (table1Ref.current && table2Ref.current) {
+      table1Ref.current.scrollTop = table2Ref.current.scrollTop;
+      table1Ref.current.scrollLeft = table2Ref.current.scrollLeft;
+    }
+  };
 
   return (
     <>
-      <Table data={data1} onScroll={handleScroll(table1Ref, table2Ref)} />
-      <Table data={data2} onScroll={handleScroll(table2Ref, table1Ref)} />
+      <TableContainer ref={table1Ref} onScroll={handleScrollLeft}>
+        <Table data={data1} />
+      </TableContainer>
+      <TableContainer ref={table2Ref} onScroll={handleScrollRight}>
+        <Table data={data2} />
+      </TableContainer>
     </>
   );
 };

@@ -14,13 +14,13 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const dataarray = Array.from({ length: 100 }).map((_, i) =>
-  Array.from({ length: 10 }).map((_, j) => `Old ${i}-${j}`)
-);
-
 export const SimpleCase: Story = {
   args: {
-    data1: dataarray,
-    data2: dataarray,
+    data1: Array.from({ length: 100 }).map((_, i) =>
+      Array.from({ length: 10 }).map((_, j) => `Old ${i}-${j}`)
+    ),
+    data2: Array.from({ length: 100 }).map((_, i) =>
+      Array.from({ length: 10 }).map((_, j) => `New ${i}-${j}`)
+    ),
   },
 };
