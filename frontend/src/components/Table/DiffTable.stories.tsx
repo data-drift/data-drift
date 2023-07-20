@@ -16,7 +16,7 @@ type Story = StoryObj<typeof meta>;
 
 export const SimpleCase: Story = {
   args: {
-    ancientData: ["ancient", "data"],
-    newData: ["new", "data"],
+    lineCount: 100,
+    headerCount: 10,
   },
 };

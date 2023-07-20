@@ -1,13 +1,17 @@
 import styled from "@emotion/styled";
+import { useRef } from "react";
 
 const TableContainer = styled.div`
   display: flex;
   justify-content: space-between;
+  overflow-x: auto;
 `;
 
 const Table = styled.table`
-  width: 100%;
+  width: 50%;
   border-collapse: collapse;
+  overflow-y: hidden;
+  white-space: nowrap;
 `;
 
 const TableHeader = styled.th`
@@ -28,48 +32,68 @@ const RightCell = styled.td`
 
 interface DiffTableProps {
   /**
-   * What is the ancient data
+   * How many lines
    */
-  ancientData: string[];
+  lineCount: number;
   /**
-   * What is the new data
+   * How many columns
    */
-  newData: string[];
+  headerCount: number;
 }
 
-export const DiffTable = ({ ancientData, newData }: DiffTableProps) => {
+export const DiffTable = ({ lineCount, headerCount }: DiffTableProps) => {
+  const leftTableRef = useRef<HTMLTableElement>(null);
+  const rightTableRef = useRef<HTMLTableElement>(null);
+
+  const handleScroll = (event: any) => {
+    const { scrollTop } = event.target;
+    if (leftTableRef.current && rightTableRef.current) {
+      leftTableRef.current.scrollTop = scrollTop;
+      rightTableRef.current.scrollTop = scrollTop;
+    }
+    const { scrollLeft } = event.currentTarget;
+    if (leftTableRef.current) leftTableRef.current.scrollLeft = scrollLeft;
+    if (rightTableRef.current) rightTableRef.current.scrollLeft = scrollLeft;
+  };
+
   return (
-    <TableContainer>
-      <Table>
+    <TableContainer onScroll={handleScroll}>
+      <Table ref={leftTableRef}>
         <thead>
           <tr>
-            <TableHeader>Header 1</TableHeader>
-            <TableHeader>Header 2</TableHeader>
-            {/* Add more header columns as needed */}
+            {Array.from({ length: headerCount }).map((_, index) => (
+              <TableHeader key={index}>Header {index + 1}</TableHeader>
+            ))}
           </tr>
         </thead>
         <tbody>
-          {ancientData.map((ancientValue, index) => (
-            <tr key={index}>
-              <LeftCell>{ancientValue}</LeftCell>
-              {/* Add more left-side cells as needed */}
+          {Array.from({ length: lineCount }).map((_, indexValue) => (
+            <tr key={indexValue}>
+              {Array.from({ length: headerCount }).map((_, index) => (
+                <LeftCell>
+                  {"ancient"} {indexValue + 1} {index + 1}
+                </LeftCell>
+              ))}
             </tr>
           ))}
         </tbody>
       </Table>
-      <Table>
+      <Table ref={rightTableRef} onScroll={handleScroll}>
         <thead>
           <tr>
-            <TableHeader>Header 1</TableHeader>
-            <TableHeader>Header 2</TableHeader>
-            {/* Add more header columns as needed */}
+            {Array.from({ length: headerCount }).map((_, index) => (
+              <TableHeader key={index}>Header {index + 1}</TableHeader>
+            ))}
           </tr>
         </thead>
         <tbody>
-          {newData.map((newValue, index) => (
-            <tr key={index}>
-              <RightCell>{newValue}</RightCell>
-              {/* Add more right-side cells as needed */}
+          {Array.from({ length: lineCount }).map((_, indexValue) => (
+            <tr key={indexValue}>
+              {Array.from({ length: headerCount }).map((_, index) => (
+                <RightCell>
+                  {"coucou"} {indexValue + 1} {index + 1}
+                </RightCell>
+              ))}
             </tr>
           ))}
         </tbody>
