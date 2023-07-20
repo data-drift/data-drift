@@ -39,11 +39,11 @@ const Table: React.FC<TableProps> = ({ data }) => (
 );
 
 interface DualTableProps {
-  data1: any[][];
-  data2: any[][];
+  tableProps1: TableProps;
+  tableProps2: TableProps;
 }
 
-export const DualTable = ({ data1, data2 }: DualTableProps) => {
+export const DualTable = ({ tableProps1, tableProps2 }: DualTableProps) => {
   const table1Ref = useRef<HTMLDivElement>(null);
   const table2Ref = useRef<HTMLDivElement>(null);
 
@@ -68,10 +68,10 @@ export const DualTable = ({ data1, data2 }: DualTableProps) => {
   return (
     <>
       <TableContainer ref={table1Ref} onScroll={handleScrollLeft}>
-        <Table data={data1} />
+        <Table {...tableProps1} />
       </TableContainer>
       <TableContainer ref={table2Ref} onScroll={handleScrollRight}>
-        <Table data={data2} />
+        <Table {...tableProps2} />
       </TableContainer>
     </>
   );
