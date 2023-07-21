@@ -17,11 +17,13 @@ type Story = StoryObj<typeof meta>;
 export const SimpleCase: Story = {
   args: {
     tableProps1: {
+      diffType: "removed",
       data: Array.from({ length: 100 }).map((_, i) =>
         Array.from({ length: 10 }).map((_, j) => `Old ${i}-${j}`)
       ),
     },
     tableProps2: {
+      diffType: "added",
       data: Array.from({ length: 100 }).map((_, i) =>
         Array.from({ length: 10 }).map((_, j) => `New ${i}-${j}`)
       ),

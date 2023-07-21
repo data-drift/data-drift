@@ -8,6 +8,8 @@ const StyledTd = styled.td`
 `;
 
 export interface TableProps {
+  // Are those data removed or added
+  diffType: "removed" | "added";
   // What are the data to display
   data: any[][];
 }
