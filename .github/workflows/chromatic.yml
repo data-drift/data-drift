@@ -1,0 +1,24 @@
+name: "Chromatic"
+
+on:
+  push:
+    branches: ["main"]
+    paths: "frontend/**"
+  pull_request:
+    branches: ["main"]
+    paths: "frontend/**"
+
+jobs:
+  chromatic-deployment:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install dependencies
+        run: npm install
+      - name: Publish to Chromatic
+        uses: chromaui/action@v1
+        with:
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
