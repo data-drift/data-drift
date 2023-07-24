@@ -15,6 +15,7 @@ type Story = StoryObj<typeof meta>;
 
 export const AddedTable: Story = {
   args: {
+    headers: ["header1", "header2"],
     data: [["new data"]],
     diffType: "added",
   },
@@ -22,6 +23,7 @@ export const AddedTable: Story = {
 
 export const RemovedTable: Story = {
   args: {
+    headers: ["header1", "header2"],
     data: [["removed data"]],
     diffType: "removed",
   },

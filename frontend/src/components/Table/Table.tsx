@@ -12,14 +12,16 @@ export interface TableProps {
   diffType: "removed" | "added";
   // What are the data to display
   data: any[][];
+  // What are the headers
+  headers: string[];
 }
 
-export const Table: React.FC<TableProps> = ({ data }) => (
+export const Table: React.FC<TableProps> = ({ data, headers }) => (
   <table>
     <thead>
       <tr>
-        {data[0].map((_, i) => (
-          <th key={i}>Column {i}</th>
+        {headers.map((header, i) => (
+          <th key={"header" + i}>{header}</th>
         ))}
       </tr>
     </thead>
@@ -27,7 +29,7 @@ export const Table: React.FC<TableProps> = ({ data }) => (
       {data.map((row, i) => (
         <tr key={i}>
           {row.map((cell, j) => (
-            <StyledTd key={j}>{cell}</StyledTd>
+            <StyledTd key={"cell" + i + "-" + j}>{cell}</StyledTd>
           ))}
         </tr>
       ))}
