@@ -18,10 +18,11 @@ const StyledTh = styled.th`
   border: 1px solid ${(props) => props.theme.colors.text};
   width: 100%;
   padding: 8px 24px;
+  white-space: nowrap;
 
-  font-size: 16px;
   font-style: normal;
-  font-weight: 500;
+  font-size: ${(props) => props.theme.text.fontSize.medium};
+  font-weight: ${(props) => props.theme.text.fontWeight.medium};
   line-height: normal;
 `;
 
@@ -39,9 +40,9 @@ const StyledTd = styled.td`
   border: 1px solid ${(props) => props.theme.colors.background2};
 
   color: ${(props) => props.theme.colors.text2};
-  font-size: 10px;
   font-style: normal;
-  font-weight: 400;
+  font-size: ${(props) => props.theme.text.fontSize.small};
+  font-weight: ${(props) => props.theme.text.fontWeight.regular};
   line-height: 150%;
   letter-spacing: 0.1px;
 `;
