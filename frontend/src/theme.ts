@@ -1,6 +1,8 @@
 export const theme = {
   colors: {
-    primary: "hotpink",
+    background: "#2C2C2C",
+    text: "#F0F0F0",
+    text2: "#FFFFFF",
   },
 };
 

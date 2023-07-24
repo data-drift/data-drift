@@ -1,9 +1,34 @@
 import styled from "@emotion/styled";
 
+const StyledTable = styled.table`
+  background-color: ${(props) => props.theme.colors.background};
+`;
+
+const StyledTHead = styled.thead`
+  color: ${(props) => props.theme.colors.text};
+`;
+
+const StyledTr = styled.tr`
+  display: flex;
+  align-items: flex-start;
+  align-self: stretch;
+`;
+
+const StyledTh = styled.th`
+  display: flex;
+  padding: 8px 24px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  align-self: stretch;
+  border-right: 1px solid ${(props) => props.theme.colors.text};
+`;
+
 const StyledTd = styled.td`
   width: 300px; // same width for every cell
   height: 50px; // same height for every cell
-  color: ${(props) => props.theme.colors.primary};
+  color: ${(props) => props.theme.colors.text2};
 `;
 
 export interface TableProps {
@@ -16,14 +41,14 @@ export interface TableProps {
 }
 
 export const Table: React.FC<TableProps> = ({ data, headers }) => (
-  <table>
-    <thead>
-      <tr>
+  <StyledTable>
+    <StyledTHead>
+      <StyledTr>
         {headers.map((header, i) => (
-          <th key={`header-${i}`}>{header}</th>
+          <StyledTh key={`header-${i}`}>{header}</StyledTh>
         ))}
-      </tr>
-    </thead>
+      </StyledTr>
+    </StyledTHead>
     <tbody>
       {data.map((row, i) => (
         <tr key={`row-i`}>
@@ -33,5 +58,5 @@ export const Table: React.FC<TableProps> = ({ data, headers }) => (
         </tr>
       ))}
     </tbody>
-  </table>
+  </StyledTable>
 );
