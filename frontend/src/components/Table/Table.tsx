@@ -22,6 +22,7 @@ const StyledTh = styled.th`
   align-items: center;
   gap: 8px;
   align-self: stretch;
+  width: 100%;
 
   border: 1px solid ${(props) => props.theme.colors.text};
   font-size: 16px;
