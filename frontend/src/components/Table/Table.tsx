@@ -12,7 +12,6 @@ const StyledTHead = styled.thead`
 
 const StyledTr = styled.tr`
   display: flex;
-  border-collapse: collapse;
 `;
 
 const StyledTh = styled.th`
@@ -23,7 +22,8 @@ const StyledTh = styled.th`
   align-items: center;
   gap: 8px;
   align-self: stretch;
-  border-right: 1px solid ${(props) => props.theme.colors.text};
+
+  border: 1px solid ${(props) => props.theme.colors.text};
   font-size: 16px;
   font-style: normal;
   font-weight: 500;
@@ -32,13 +32,15 @@ const StyledTh = styled.th`
 
 const StyledTd = styled.td`
   display: flex;
+  padding: 8px 24px;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   align-self: stretch;
   width: 100%;
   box-sizing: border-box;
-  border-collapse: collapse;
+
+  border: 1px solid red;
 
   color: ${(props) => props.theme.colors.text2};
   font-size: 10px;
@@ -46,7 +48,6 @@ const StyledTd = styled.td`
   font-weight: 400;
   line-height: 150%;
   letter-spacing: 0.1px;
-  border: 1px solid red;
 `;
 
 export interface TableProps {
