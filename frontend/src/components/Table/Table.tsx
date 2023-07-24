@@ -26,13 +26,16 @@ const StyledTh = styled.th`
   // text
   font-style: normal;
   font-size: ${(props) => props.theme.text.fontSize.medium};
-  font-weight: ${(props) => props.theme.text.fontWeight.medium};
+  font-weight: 500;
   line-height: normal;
 `;
 
 const StyledTBody = styled.tbody``;
 
-const StyledTd = styled.td`
+const StyledTd = styled.td<{
+  diffType: TableProps["diffType"];
+  isEmphasized: Datum["isEmphasized"];
+}>`
   // layout
   width: 100%;
   max-width: 350px;
@@ -50,7 +53,7 @@ const StyledTd = styled.td`
   color: ${(props) => props.theme.colors.text2};
   font-style: normal;
   font-size: ${(props) => props.theme.text.fontSize.small};
-  font-weight: ${(props) => props.theme.text.fontWeight.regular};
+  font-weight: ${(props) => (props.isEmphasized ? 700 : 400)};
   line-height: 150%;
   letter-spacing: 0.1px;
 `;
@@ -69,7 +72,7 @@ export interface TableProps {
   headers: string[];
 }
 
-export const Table: React.FC<TableProps> = ({ data, headers }) => (
+export const Table: React.FC<TableProps> = ({ data, headers, diffType }) => (
   <StyledTable>
     <StyledTHead>
       <StyledTr>
@@ -82,7 +85,13 @@ export const Table: React.FC<TableProps> = ({ data, headers }) => (
       {data.map((row, i) => (
         <StyledTr key={`row-i`}>
           {row.map((cell, j) => (
-            <StyledTd key={`cell-${i}-${j}`}>{cell.value}</StyledTd>
+            <StyledTd
+              key={`cell-${i}-${j}`}
+              diffType={diffType}
+              isEmphasized={cell.isEmphasized}
+            >
+              {cell.value}
+            </StyledTd>
           ))}
         </StyledTr>
       ))}
