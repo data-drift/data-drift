@@ -18,7 +18,7 @@ export const SimpleCase: Story = {
   args: {
     tableProps1: {
       diffType: "removed",
-      data: Array.from({ length: 100 }).map((_, i) => ({
+      data: Array.from({ length: 13 }).map((_, i) => ({
         isEmphasized: i % 5 === 4,
         data: Array.from({ length: 10 }).map((_, j) => ({
           isEmphasized: i % 5 === 4 && (j + 2 * i) % 6 === 2,
@@ -29,7 +29,7 @@ export const SimpleCase: Story = {
     },
     tableProps2: {
       diffType: "added",
-      data: Array.from({ length: 100 }).map((_, i) => ({
+      data: Array.from({ length: 13 }).map((_, i) => ({
         isEmphasized: i % 5 === 4,
         data: Array.from({ length: 10 }).map((_, j) => ({
           isEmphasized: i % 5 === 4 && (j + 2 * i) % 6 === 2,
