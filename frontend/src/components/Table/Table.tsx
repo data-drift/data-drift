@@ -2,6 +2,8 @@ import styled from "@emotion/styled";
 
 const StyledTable = styled.table`
   background-color: ${(props) => props.theme.colors.background};
+  table-layout: fixed;
+  border-collapse: collapse;
 `;
 
 const StyledTHead = styled.thead`
@@ -10,8 +12,7 @@ const StyledTHead = styled.thead`
 
 const StyledTr = styled.tr`
   display: flex;
-  align-items: flex-start;
-  align-self: stretch;
+  border-collapse: collapse;
 `;
 
 const StyledTh = styled.th`
@@ -23,12 +24,29 @@ const StyledTh = styled.th`
   gap: 8px;
   align-self: stretch;
   border-right: 1px solid ${(props) => props.theme.colors.text};
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
 `;
 
 const StyledTd = styled.td`
-  width: 300px; // same width for every cell
-  height: 50px; // same height for every cell
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  align-self: stretch;
+  width: 100%;
+  box-sizing: border-box;
+  border-collapse: collapse;
+
   color: ${(props) => props.theme.colors.text2};
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 150%;
+  letter-spacing: 0.1px;
+  border: 1px solid red;
 `;
 
 export interface TableProps {
@@ -51,11 +69,11 @@ export const Table: React.FC<TableProps> = ({ data, headers }) => (
     </StyledTHead>
     <tbody>
       {data.map((row, i) => (
-        <tr key={`row-i`}>
+        <StyledTr key={`row-i`}>
           {row.map((cell, j) => (
             <StyledTd key={`cell-${i}-${j}`}>{cell}</StyledTd>
           ))}
-        </tr>
+        </StyledTr>
       ))}
     </tbody>
   </StyledTable>
