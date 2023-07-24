@@ -1,6 +1,7 @@
 import type { Preview } from "@storybook/react";
 import { withThemeFromJSXProvider } from "@storybook/addon-styling";
 import { theme } from "../src/theme";
+import { GlobalStyles } from "../src/GlobalStyles";
 import { ThemeProvider } from "@emotion/react";
 
 const preview: Preview = {
@@ -22,6 +23,7 @@ export const decorators = [
     },
     defaultTheme: "light",
     Provider: ThemeProvider,
+    GlobalStyles,
   }),
 ];
 
