@@ -14,27 +14,45 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const AddedTable: Story = {
+export const EmphasizedTable: Story = {
   args: {
-    headers: ["header1", "header2"],
+    headers: ["header1", "header2", "header3"],
     data: [
-      ["new data", "new data"],
-      ["new data", "new data"],
-    ].map(mapStringArrayToDatum),
+      { data: [{ value: "data" }, { value: "data" }, { value: "data" }] },
+      {
+        data: [
+          { value: "data" },
+          { value: "new data", isEmphasized: true },
+          { value: "data" },
+        ],
+        isEmphasized: true,
+      },
+      { data: [{ value: "data" }, { value: "data" }, { value: "data" }] },
+    ],
     diffType: "added",
   },
 };
 
-export const RemovedTable: Story = {
+export const LongValueTable: Story = {
   args: {
     headers: ["header1", "header2"],
     data: [
-      [
-        "YYYY-MM-DD bfb63190-cb98-4a28-b165-f1345b01733c 4a28-b165-f1345b01733c",
-        "removed data",
-      ],
-      ["removed data", "YYYY-MM-DD bfb63190-cb98-4a28-b165-f1345b01733c"],
-    ].map(mapStringArrayToDatum),
+      {
+        data: [
+          {
+            value:
+              "YYYY-MM-DD bfb63190-cb98-4a28-b165-f1345b01733c 4a28-b165-f1345b01733c",
+          },
+          { value: "removed data" },
+        ],
+      },
+      {
+        data: [
+          { value: "removed data" },
+          { value: "YYYY-MM-DD bfb63190-cb98-4a28-b165-f1345b01733c" },
+        ],
+      },
+    ],
     diffType: "removed",
   },
 };

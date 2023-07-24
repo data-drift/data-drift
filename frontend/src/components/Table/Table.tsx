@@ -70,11 +70,16 @@ export interface Datum {
   value: string;
 }
 
+export interface Row {
+  data: Datum[];
+  isEmphasized?: boolean;
+}
+
 export interface TableProps {
   // Are those data removed or added
   diffType: "removed" | "added";
   // What are the data to display
-  data: Datum[][];
+  data: Row[];
   // What are the headers
   headers: string[];
 }
@@ -91,11 +96,17 @@ export const Table: React.FC<TableProps> = ({ data, headers, diffType }) => (
     <StyledTBody>
       {data.map((row, i) => (
         <StyledTr key={`row-i`}>
-          {row.map((cell, j) => (
+          {row.data.map((cell, j) => (
             <StyledTd
               key={`cell-${i}-${j}`}
               diffType={diffType}
-              isEmphasized={cell.isEmphasized ? "cell" : undefined}
+              isEmphasized={
+                cell.isEmphasized
+                  ? "cell"
+                  : row.isEmphasized
+                  ? "row"
+                  : undefined
+              }
             >
               {cell.value}
             </StyledTd>
