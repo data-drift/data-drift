@@ -3,3 +3,5 @@ export const theme = {
     primary: "hotpink",
   },
 };
+
+export type ThemeType = typeof theme;
