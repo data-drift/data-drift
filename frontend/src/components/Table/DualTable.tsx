@@ -5,7 +5,15 @@ import { Table, TableProps } from "./Table";
 const TableContainer = styled.div`
   display: inline-block;
   overflow: auto;
-  width: 50%;
+  width: calc(50% - 4px);
+
+  &:first-child {
+    margin-right: 4px;
+  }
+
+  &:last-child {
+    margin-left: 4px;
+  }
 `;
 
 interface DualTableProps {
