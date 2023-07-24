@@ -28,8 +28,11 @@ export const RemovedTable: Story = {
   args: {
     headers: ["header1", "header2"],
     data: [
-      ["removed data", "removed data"],
-      ["removed data", "removed data"],
+      [
+        "YYYY-MM-DD bfb63190-cb98-4a28-b165-f1345b01733c 4a28-b165-f1345b01733c",
+        "removed data",
+      ],
+      ["removed data", "YYYY-MM-DD bfb63190-cb98-4a28-b165-f1345b01733c"],
     ],
     diffType: "removed",
   },

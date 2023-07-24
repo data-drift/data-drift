@@ -4,44 +4,39 @@ const StyledTable = styled.table`
   background-color: ${(props) => props.theme.colors.background};
   table-layout: fixed;
   border-collapse: collapse;
+  box-sizing: border-box;
 `;
 
 const StyledTHead = styled.thead`
   color: ${(props) => props.theme.colors.text};
+  background-color: ${(props) => props.theme.colors.background2};
 `;
 
-const StyledTr = styled.tr`
-  display: flex;
-`;
+const StyledTr = styled.tr``;
 
 const StyledTh = styled.th`
-  display: flex;
-  padding: 8px 24px;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  align-self: stretch;
-  width: 100%;
-
   border: 1px solid ${(props) => props.theme.colors.text};
+  width: 100%;
+  padding: 8px 24px;
+
   font-size: 16px;
   font-style: normal;
   font-weight: 500;
   line-height: normal;
 `;
 
-const StyledTd = styled.td`
-  display: flex;
-  padding: 8px 24px;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  align-self: stretch;
-  width: 100%;
-  box-sizing: border-box;
+const StyledTBody = styled.tbody``;
 
-  border: 1px solid red;
+const StyledTd = styled.td`
+  width: 100%;
+  max-width: 350px;
+  padding: 8px 24px;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  border: 1px solid ${(props) => props.theme.colors.background2};
 
   color: ${(props) => props.theme.colors.text2};
   font-size: 10px;
@@ -69,7 +64,7 @@ export const Table: React.FC<TableProps> = ({ data, headers }) => (
         ))}
       </StyledTr>
     </StyledTHead>
-    <tbody>
+    <StyledTBody>
       {data.map((row, i) => (
         <StyledTr key={`row-i`}>
           {row.map((cell, j) => (
@@ -77,6 +72,6 @@ export const Table: React.FC<TableProps> = ({ data, headers }) => (
           ))}
         </StyledTr>
       ))}
-    </tbody>
+    </StyledTBody>
   </StyledTable>
 );
