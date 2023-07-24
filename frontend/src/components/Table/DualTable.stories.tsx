@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
 
 import { DualTable } from "./DualTable";
-import { mapStringArrayToDatum } from "./helpers";
 
 const meta = {
   title: "Drift/DualTable",
