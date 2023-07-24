@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 
 import { DualTable } from "./DualTable";
+import { mapStringArrayToDatum } from "./helpers";
 
 const meta = {
   title: "Drift/DualTable",
@@ -18,16 +19,20 @@ export const SimpleCase: Story = {
   args: {
     tableProps1: {
       diffType: "removed",
-      data: Array.from({ length: 100 }).map((_, i) =>
-        Array.from({ length: 10 }).map((_, j) => `Old ${i}-${j}`)
-      ),
+      data: Array.from({ length: 100 })
+        .map((_, i) =>
+          Array.from({ length: 10 }).map((_, j) => `Old ${i}-${j}`)
+        )
+        .map(mapStringArrayToDatum),
       headers: Array.from({ length: 10 }).map((_, j) => `Header ${j}`),
     },
     tableProps2: {
       diffType: "added",
-      data: Array.from({ length: 100 }).map((_, i) =>
-        Array.from({ length: 10 }).map((_, j) => `New ${i}-${j}`)
-      ),
+      data: Array.from({ length: 100 })
+        .map((_, i) =>
+          Array.from({ length: 10 }).map((_, j) => `New ${i}-${j}`)
+        )
+        .map(mapStringArrayToDatum),
       headers: Array.from({ length: 10 }).map((_, j) => `Header ${j}`),
     },
   },

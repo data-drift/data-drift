@@ -46,11 +46,16 @@ const StyledTd = styled.td`
   letter-spacing: 0.1px;
 `;
 
+export interface Datum {
+  isEmphasized?: boolean;
+  value: string;
+}
+
 export interface TableProps {
   // Are those data removed or added
   diffType: "removed" | "added";
   // What are the data to display
-  data: any[][];
+  data: Datum[][];
   // What are the headers
   headers: string[];
 }
@@ -68,7 +73,7 @@ export const Table: React.FC<TableProps> = ({ data, headers }) => (
       {data.map((row, i) => (
         <StyledTr key={`row-i`}>
           {row.map((cell, j) => (
-            <StyledTd key={`cell-${i}-${j}`}>{cell}</StyledTd>
+            <StyledTd key={`cell-${i}-${j}`}>{cell.value}</StyledTd>
           ))}
         </StyledTr>
       ))}

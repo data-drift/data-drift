@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { Table } from "./Table";
+import { mapStringArrayToDatum } from "./helpers";
 
 const meta = {
   title: "Drift/Table",
@@ -19,7 +20,7 @@ export const AddedTable: Story = {
     data: [
       ["new data", "new data"],
       ["new data", "new data"],
-    ],
+    ].map(mapStringArrayToDatum),
     diffType: "added",
   },
 };
@@ -33,7 +34,7 @@ export const RemovedTable: Story = {
         "removed data",
       ],
       ["removed data", "YYYY-MM-DD bfb63190-cb98-4a28-b165-f1345b01733c"],
-    ],
+    ].map(mapStringArrayToDatum),
     diffType: "removed",
   },
 };
