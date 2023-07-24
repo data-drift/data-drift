@@ -15,11 +15,15 @@ const StyledTHead = styled.thead`
 const StyledTr = styled.tr``;
 
 const StyledTh = styled.th`
+  // layout
   border: 1px solid ${(props) => props.theme.colors.text};
   width: 100%;
-  padding: 8px 24px;
+  padding: var(--vertical-padding) var(--horizontal-padding);
+  --vertical-padding: ${({ theme }) => theme.spacing(2)};
+  --horizontal-padding: ${({ theme }) => theme.spacing(6)};
   white-space: nowrap;
 
+  // text
   font-style: normal;
   font-size: ${(props) => props.theme.text.fontSize.medium};
   font-weight: ${(props) => props.theme.text.fontWeight.medium};
@@ -29,9 +33,12 @@ const StyledTh = styled.th`
 const StyledTBody = styled.tbody``;
 
 const StyledTd = styled.td`
+  // layout
   width: 100%;
   max-width: 350px;
-  padding: 8px 24px;
+  padding: var(--vertical-padding) var(--horizontal-padding);
+  --vertical-padding: ${({ theme }) => theme.spacing(2)};
+  --horizontal-padding: ${({ theme }) => theme.spacing(6)};
   text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -39,6 +46,7 @@ const StyledTd = styled.td`
 
   border: 1px solid ${(props) => props.theme.colors.background2};
 
+  // text
   color: ${(props) => props.theme.colors.text2};
   font-style: normal;
   font-size: ${(props) => props.theme.text.fontSize.small};
