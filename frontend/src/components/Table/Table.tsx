@@ -34,7 +34,7 @@ const StyledTBody = styled.tbody``;
 
 const StyledTd = styled.td<{
   diffType: TableProps["diffType"];
-  isEmphasized: Datum["isEmphasized"];
+  isEmphasized: "cell" | "row" | undefined;
 }>`
   // layout
   width: 100%;
@@ -56,6 +56,13 @@ const StyledTd = styled.td<{
   font-weight: ${(props) => (props.isEmphasized ? 700 : 400)};
   line-height: 150%;
   letter-spacing: 0.1px;
+
+  background-color: ${(props) =>
+    props.isEmphasized === "cell"
+      ? props.theme.colors.diffSelect(props.diffType).strong
+      : props.isEmphasized === "row"
+      ? props.theme.colors.diffSelect(props.diffType).light
+      : "inherit"};
 `;
 
 export interface Datum {
@@ -88,7 +95,7 @@ export const Table: React.FC<TableProps> = ({ data, headers, diffType }) => (
             <StyledTd
               key={`cell-${i}-${j}`}
               diffType={diffType}
-              isEmphasized={cell.isEmphasized}
+              isEmphasized={cell.isEmphasized ? "cell" : undefined}
             >
               {cell.value}
             </StyledTd>
