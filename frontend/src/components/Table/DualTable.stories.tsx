@@ -21,12 +21,14 @@ export const SimpleCase: Story = {
       data: Array.from({ length: 100 }).map((_, i) =>
         Array.from({ length: 10 }).map((_, j) => `Old ${i}-${j}`)
       ),
+      headers: Array.from({ length: 10 }).map((_, j) => `Header ${j}`),
     },
     tableProps2: {
       diffType: "added",
       data: Array.from({ length: 100 }).map((_, i) =>
         Array.from({ length: 10 }).map((_, j) => `New ${i}-${j}`)
       ),
+      headers: Array.from({ length: 10 }).map((_, j) => `Header ${j}`),
     },
   },
 };
