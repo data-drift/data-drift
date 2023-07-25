@@ -119,7 +119,7 @@ We 💚 contributions big and small. In priority order (although everything is 
 
 ## In progress
 
-🌀 Automatic lineage drill-down and diff checks
+🌀 Automatic lineage drill-down and diff checks. [Learn more about this feature](https://www.data-drift.io/join-the-waitlist)
 
 🌀 dbt integration
 
