@@ -23,19 +23,22 @@ function GithubForm() {
   return (
     <form onSubmit={handleSubmit}>
       <label>
-        URL:
+        <span> GitHub Url:</span>
         <input
           type="text"
           value={url}
+          style={{ width: "300px" }}
           onChange={(e) => setUrl(e.target.value)}
         />
       </label>
       <br />
       <label>
-        GitHub Token:
+        <span>GitHub Token:</span>
+
         <input
           type="text"
           value={token}
+          style={{ width: "300px" }}
           onChange={(e) => setToken(e.target.value)}
         />
       </label>
