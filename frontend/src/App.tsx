@@ -5,7 +5,7 @@ import { DualTable, DualTableProps } from "./components/Table/DualTable";
 import { parsePatch } from "./services/patch.mapper";
 import GithubForm from "./GithubForm";
 
-interface CommitInfo {
+export interface CommitInfo {
   owner: string;
   repo: string;
   commitSHA: string;
