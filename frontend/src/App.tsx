@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-import { FunctionResponse, getCommitFiles } from "./services/github";
+import { getCommitFiles } from "./services/github";
+import { DualTable, DualTableProps } from "./components/Table/DualTable";
+import { parsePatch } from "./services/patch.mapper";
 
 const [owner, repo, commitSHA] = [
   "Samox",
@@ -9,14 +11,21 @@ const [owner, repo, commitSHA] = [
 ];
 
 function App() {
-  const [commitData, setCommitData] = useState<FunctionResponse | null>(null);
+  const [dualTableProps, setTableProps] = useState<DualTableProps | null>(null);
 
   useEffect(() => {
     const fetchCommitData = async () => {
       try {
-        const response = await getCommitFiles(owner, repo, commitSHA);
-        console.log("response", response);
-        setCommitData(response);
+        const files = await getCommitFiles(owner, repo, commitSHA);
+        if (!files) {
+          throw new Error("No files found");
+        }
+        if (files[0] && files[0].patch) {
+          const { oldData, newData } = parsePatch(files[0].patch);
+          console.log("oldData", oldData);
+          console.log("newData", newData);
+          setTableProps({ tableProps1: oldData, tableProps2: newData });
+        }
       } catch (error) {
         console.error("Error fetching GitHub commit data:", error);
       }
@@ -30,9 +39,7 @@ function App() {
       <a href={`https://github.com/${owner}/${repo}/commit/${commitSHA}`}>
         Link to commit {`${owner}/${repo}/commit/${commitSHA}`}
       </a>
-      <div className="card">
-        <p>The commit contains {commitData?.length || 0} file(s)</p>
-      </div>
+      {dualTableProps && <DualTable {...dualTableProps} />}
     </>
   );
 }

@@ -16,7 +16,7 @@ const TableContainer = styled.div`
   }
 `;
 
-interface DualTableProps {
+export interface DualTableProps {
   /**
    * Properties for the left table
    */
