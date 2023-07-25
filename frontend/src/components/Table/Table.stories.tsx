@@ -55,3 +55,17 @@ export const LongValueTable: Story = {
     diffType: "removed",
   },
 };
+
+export const EmptyLineTable: Story = {
+  args: {
+    headers: ["header1", "header2", "header3"],
+    data: [
+      { data: [{ value: "data" }, { value: "data" }, { value: "data" }] },
+      {
+        data: [{ value: "_" }, { value: "_" }, { value: "_" }],
+      },
+      { data: [{ value: "data" }, { value: "data" }, { value: "data" }] },
+    ],
+    diffType: "added",
+  },
+};

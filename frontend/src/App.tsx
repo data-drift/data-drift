@@ -1,38 +1,45 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
+import { useEffect, useState } from "react";
 import "./App.css";
-import styled from "@emotion/styled";
+import { getCommitFiles } from "./services/github";
+import { DualTable, DualTableProps } from "./components/Table/DualTable";
+import { parsePatch } from "./services/patch.mapper";
 
-const Button = styled.button`
-  color: hotpink;
-`;
+const [owner, repo, commitSHA] = [
+  "Samox",
+  "datadrift-example",
+  "036f9d6b685ee02a14faa70ed05e0bd60650c477",
+];
 
 function App() {
-  const [count, setCount] = useState(0);
+  const [dualTableProps, setTableProps] = useState<DualTableProps | null>(null);
+
+  useEffect(() => {
+    const fetchCommitData = async () => {
+      try {
+        const files = await getCommitFiles(owner, repo, commitSHA);
+        if (!files) {
+          throw new Error("No files found");
+        }
+        if (files[0] && files[0].patch) {
+          const { oldData, newData } = parsePatch(files[0].patch);
+          console.log("oldData", oldData);
+          console.log("newData", newData);
+          setTableProps({ tableProps1: oldData, tableProps2: newData });
+        }
+      } catch (error) {
+        console.error("Error fetching GitHub commit data:", error);
+      }
+    };
+
+    fetchCommitData().catch(console.error);
+  }, []);
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <Button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </Button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <a href={`https://github.com/${owner}/${repo}/commit/${commitSHA}`}>
+        Link to commit {`${owner}/${repo}/commit/${commitSHA}`}
+      </a>
+      {dualTableProps && <DualTable {...dualTableProps} />}
     </>
   );
 }
