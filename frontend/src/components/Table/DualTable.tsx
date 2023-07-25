@@ -50,13 +50,13 @@ export const DualTable = ({ tableProps1, tableProps2 }: DualTableProps) => {
   };
 
   return (
-    <>
+    <div>
       <TableContainer ref={table1Ref} onScroll={handleScrollLeft}>
         <Table {...tableProps1} />
       </TableContainer>
       <TableContainer ref={table2Ref} onScroll={handleScrollRight}>
         <Table {...tableProps2} />
       </TableContainer>
-    </>
+    </div>
   );
 };
