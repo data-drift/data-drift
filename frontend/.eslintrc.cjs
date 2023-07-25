@@ -36,4 +36,5 @@ module.exports = {
       },
     ],
   },
+  ignorePatterns: ["jest.config.js", ".eslintrc.cjs"],
 };
