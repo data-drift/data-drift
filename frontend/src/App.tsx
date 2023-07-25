@@ -1,21 +1,31 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import { getCommitFiles } from "./services/github";
 import { DualTable, DualTableProps } from "./components/Table/DualTable";
 import { parsePatch } from "./services/patch.mapper";
+import GithubForm from "./GithubForm";
 
-const [owner, repo, commitSHA] = [
-  "Samox",
-  "datadrift-example",
-  "036f9d6b685ee02a14faa70ed05e0bd60650c477",
-];
+export interface CommitInfo {
+  owner: string;
+  repo: string;
+  commitSHA: string;
+}
 
 function App() {
   const [dualTableProps, setTableProps] = useState<DualTableProps | null>(null);
+  const [commitInfo, setCommitInfo] = useState<CommitInfo | null>(null);
+  const pathArray = useMemo(() => window.location.pathname.split("/"), []);
 
   useEffect(() => {
     const fetchCommitData = async () => {
       try {
+        const owner = pathArray[1];
+        const repo = pathArray[2];
+        const commitSHA = pathArray[4];
+        if (!owner || !repo || !commitSHA) {
+          return;
+        }
+        setCommitInfo({ owner, repo, commitSHA });
         const files = await getCommitFiles(owner, repo, commitSHA);
         if (!files) {
           throw new Error("No files found");
@@ -32,15 +42,19 @@ function App() {
     };
 
     fetchCommitData().catch(console.error);
-  }, []);
+  }, [pathArray]);
 
-  return (
+  return commitInfo ? (
     <>
-      <a href={`https://github.com/${owner}/${repo}/commit/${commitSHA}`}>
-        Link to commit {`${owner}/${repo}/commit/${commitSHA}`}
+      <a
+        href={`https://github.com/${commitInfo.owner}/${commitInfo.repo}/commit/${commitInfo.commitSHA}`}
+      >
+        Link to commit{" "}
       </a>
       {dualTableProps && <DualTable {...dualTableProps} />}
     </>
+  ) : (
+    <GithubForm />
   );
 }
 
