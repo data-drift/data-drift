@@ -1,5 +1,5 @@
 import { FormEvent, useState, useEffect } from "react";
-import { LOCAL_STORAGE_GITHUB_TOKEN } from "./services/github";
+import { LOCAL_STORAGE_GITHUB_TOKEN, parseGithubUrl } from "./services/github";
 
 function GithubForm() {
   const [url, setUrl] = useState("");
@@ -8,7 +8,9 @@ function GithubForm() {
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     localStorage.setItem(LOCAL_STORAGE_GITHUB_TOKEN, token);
-    window.location.href = url;
+    const commitInfo = parseGithubUrl(url);
+    console.log(commitInfo);
+    window.location.href = `/${commitInfo.owner}/${commitInfo.repo}/commit/${commitInfo.commitSHA}`;
   };
 
   useEffect(() => {

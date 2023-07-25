@@ -32,3 +32,22 @@ export const getCommitFiles = async (
   }
   return response?.data?.files;
 };
+
+export const parseGithubUrl = (url: string) => {
+  let regex =
+    /^https?:\/\/github\.com\/([^/]+)\/([^/]+)\/pull\/([^/]+)\/commits\/([^/]+)/;
+  let match = url.match(regex);
+  if (match) {
+    const [, owner, repo, pullRequest, commitSHA] = match;
+    return { owner, repo, pullRequest, commitSHA };
+  } else {
+    regex = /^https?:\/\/github\.com\/([^/]+)\/([^/]+)\/commit\/([^/]+)/;
+    match = url.match(regex);
+    if (match) {
+      const [, owner, repo, commitSHA] = match;
+      return { owner, repo, commitSHA };
+    } else {
+      throw new Error("Invalid GitHub URL");
+    }
+  }
+};
