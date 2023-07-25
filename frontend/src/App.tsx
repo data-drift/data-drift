@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import { getCommitFiles } from "./services/github";
 import { DualTable, DualTableProps } from "./components/Table/DualTable";
@@ -13,11 +13,11 @@ interface CommitInfo {
 function App() {
   const [dualTableProps, setTableProps] = useState<DualTableProps | null>(null);
   const [commitInfo, setCommitInfo] = useState<CommitInfo | null>(null);
+  const pathArray = useMemo(() => window.location.pathname.split("/"), []);
 
   useEffect(() => {
     const fetchCommitData = async () => {
       try {
-        const pathArray = window.location.pathname.split("/");
         const owner = pathArray[1];
         const repo = pathArray[2];
         const commitSHA = pathArray[4];
@@ -38,7 +38,7 @@ function App() {
     };
 
     fetchCommitData().catch(console.error);
-  }, []);
+  }, [pathArray]);
 
   return commitInfo ? (
     <>
