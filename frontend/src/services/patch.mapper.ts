@@ -7,9 +7,13 @@ export const parsePatch = (patch: string) => {
   const headerData = headersLine.match(
     /^@@ -(\d+),(\d+) \+(\d+),(\d+) @@ (.*)$/
   );
-  if (!headerData) throw new Error("No header data found");
-  const [_, _startLine, _originalLength, _newLine, _newLength, headerString] =
-    headerData;
+  let headerString: string;
+  if (!headerData) {
+    headerString = lines.shift() || "";
+  } else {
+    headerString = headerData[5];
+  }
+
   if (!headerString) throw new Error("No header string found");
   const headers = headerString.split(",").map((header) => header.trim()) || [];
 
