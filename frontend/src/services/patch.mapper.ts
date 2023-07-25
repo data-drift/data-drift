@@ -19,8 +19,13 @@ export const parsePatch = (patch: string) => {
   const uniqueKeyAfter: Record<string, boolean> = {};
   const uniqueKeyBefore: Record<string, boolean> = {};
 
+  let csvColumnsLength = 0;
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
+    if (csvColumnsLength === 0) {
+      csvColumnsLength = line.split(",").length;
+    }
     if (line.startsWith("-")) {
       uniqueKeyBefore[getUniqueKey(line.substring(1))] = true;
     } else if (line.startsWith("+")) {
@@ -36,12 +41,12 @@ export const parsePatch = (patch: string) => {
     if (line.startsWith("-")) {
       oldData.data.push(csvStringLineToRowData(line.substring(1), true));
       if (!uniqueKeyAfter[getUniqueKey(line.substring(1))]) {
-        newData.data.push(emptyRow);
+        newData.data.push(emptyRow(csvColumnsLength));
       }
     } else if (line.startsWith("+")) {
       newData.data.push(csvStringLineToRowData(line.substring(1), true));
       if (!uniqueKeyBefore[getUniqueKey(line.substring(1))]) {
-        oldData.data.push(emptyRow);
+        oldData.data.push(emptyRow(csvColumnsLength));
       }
     } else if (line.startsWith(" ")) {
       oldData.data.push(csvStringLineToRowData(line.substring(1)));
@@ -56,7 +61,10 @@ const getUniqueKey = (line: string) => {
   return line.split(",")[0];
 };
 
-const emptyRow: Row = { data: [], isEmphasized: false };
+const emptyRow = (csvColumnsLength: number): Row => ({
+  data: Array.from({ length: csvColumnsLength }).map(() => ({ value: "_" })),
+  isEmphasized: false,
+});
 
 const csvStringLineToRowData = (line: string, isEmphasized = false): Row => {
   return {

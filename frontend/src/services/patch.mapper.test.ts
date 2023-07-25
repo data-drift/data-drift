@@ -29,7 +29,10 @@ const expectedOldData: Row[] = [
       { value: "36" },
     ],
   },
-  { isEmphasized: false, data: [] }, // empty line here
+  {
+    isEmphasized: false,
+    data: [{ value: "_" }, { value: "_" }, { value: "_" }, { value: "_" }],
+  }, // empty line here
   {
     isEmphasized: false,
     data: [
@@ -150,7 +153,10 @@ const expectedNewData: Row[] = [
       { value: "42" },
     ],
   },
-  { isEmphasized: false, data: [] }, // empty line here
+  {
+    isEmphasized: false,
+    data: [{ value: "_" }, { value: "_" }, { value: "_" }, { value: "_" }],
+  }, // empty line here
   {
     isEmphasized: false,
     data: [
