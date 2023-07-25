@@ -21,6 +21,9 @@ function App() {
         const owner = pathArray[1];
         const repo = pathArray[2];
         const commitSHA = pathArray[4];
+        if (!owner || !repo || !commitSHA) {
+          return;
+        }
         setCommitInfo({ owner, repo, commitSHA });
         const files = await getCommitFiles(owner, repo, commitSHA);
         if (!files) {
