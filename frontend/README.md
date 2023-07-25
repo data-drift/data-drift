@@ -10,5 +10,5 @@ To get started, clone this repository and run the following commands:
 ```sh
 cd frontend
 npm install
-npm run storybook
+npm run dev
 ```
