@@ -1,11 +1,13 @@
 import axios from "axios";
 import { Endpoints } from "@octokit/types";
 
+export const LOCAL_STORAGE_GITHUB_TOKEN = "github_token";
+
 type CommitResponse =
   Endpoints["GET /repos/{owner}/{repo}/commits/{ref}"]["response"];
 
 const getRequestHeaders = () => {
-  const githubAccessToken = localStorage.getItem("github_token");
+  const githubAccessToken = localStorage.getItem(LOCAL_STORAGE_GITHUB_TOKEN);
   if (githubAccessToken) {
     return {
       Authorization: `bearer ${githubAccessToken}`,

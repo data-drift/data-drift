@@ -3,6 +3,7 @@ import "./App.css";
 import { getCommitFiles } from "./services/github";
 import { DualTable, DualTableProps } from "./components/Table/DualTable";
 import { parsePatch } from "./services/patch.mapper";
+import GithubForm from "./GithubForm";
 
 interface CommitInfo {
   owner: string;
@@ -53,7 +54,7 @@ function App() {
       {dualTableProps && <DualTable {...dualTableProps} />}
     </>
   ) : (
-    <div>Could not parse URL with format /$owner/$repo/commit/$commitSHA</div>
+    <GithubForm />
   );
 }
 
