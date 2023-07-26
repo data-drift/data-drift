@@ -48,7 +48,7 @@ const expectedOldData: Row[] = [
       { value: "2023-02-Didier" },
       { value: "Didier" },
       { value: "2023-02" },
-      { value: "40" },
+      { value: "40", isEmphasized: true },
     ],
   },
   {
@@ -141,7 +141,7 @@ const expectedNewData: Row[] = [
       { value: "2023-02-Didier" },
       { value: "Didier" },
       { value: "2023-02" },
-      { value: "43" },
+      { value: "43", isEmphasized: true },
     ],
   },
   {
@@ -178,7 +178,7 @@ const expectedNewData: Row[] = [
 ];
 
 describe("parsePatch", () => {
-  it("should parse a patch string into old and new data tables", () => {
+  it("should detect added and removed lines with isEmphasized on the rows", () => {
     const patch =
       "@@ -2,9 +2,9 @@ unique_key,name,date,age\n 2022-12-Alice,Alice,2022-12,25\n 2023-01-Bob,Bob,2023-01,30\n 2023-01-Charlie,Charlie,2023-01,36\n+2023-01-Charline,Charline,2023-01,42\n 2023-02-Antoine,Antoine,2023-02,40\n-2023-02-Didier,Didier,2023-02,40\n+2023-02-Didier,Didier,2023-02,43\n 2023-02-Philipe,Philipe,2023-02,42\n-2023-03-Clement,Clement,2023-03,45\n 2023-03-Cyril,Cyril,2023-03,45\n 2023-03-Victor,Victor,2023-03,46";
     const { oldData, newData } = parsePatch(patch);
@@ -209,5 +209,19 @@ describe("parsePatch", () => {
 
     expect(oldData.headers).toEqual(["unique_key", "name", "date", "age"]);
     expect(newData.headers).toEqual(["unique_key", "name", "date", "age"]);
+  });
+
+  it("should detect modified lines with isEmphasized on the rows", () => {
+    const patch =
+      "@@ -2,9 +2,9 @@ unique_key,name,date,age\n-2022-12-Alice,Alice,2022-12,25\n+2022-12-Alice,Alice,2022-12,26";
+    const { oldData, newData } = parsePatch(patch);
+    expect(oldData.data[0].data[3]).toStrictEqual({
+      value: "25",
+      isEmphasized: true,
+    });
+    expect(newData.data[0].data[3]).toStrictEqual({
+      value: "26",
+      isEmphasized: true,
+    });
   });
 });
