@@ -1,5 +1,6 @@
 import { parsePatch } from "./patch.mapper";
 import * as addedAndRemoved from "./patch.mapper.tests.use-cases/added-and-removed.ts";
+import * as largeDataset from "./patch.mapper.tests.use-cases/large-dataset.ts";
 
 describe("parsePatch", () => {
   it("should detect added and removed lines with isEmphasized on the rows", () => {
@@ -46,5 +47,11 @@ describe("parsePatch", () => {
       value: "26",
       isEmphasized: true,
     });
+  });
+
+  it("should handle large datasets", () => {
+    const { oldData, newData } = parsePatch(largeDataset.patch);
+    expect(oldData).toStrictEqual(largeDataset.oldData);
+    expect(newData).toStrictEqual(largeDataset.newData);
   });
 });
