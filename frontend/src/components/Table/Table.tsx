@@ -73,6 +73,8 @@ export interface Datum {
 export interface Row {
   data: Datum[];
   isEmphasized?: boolean;
+  isEmpty?: boolean;
+  isEllipsis?: boolean;
 }
 
 export interface TableProps {
