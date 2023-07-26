@@ -69,3 +69,18 @@ export const EmptyLineTable: Story = {
     diffType: "added",
   },
 };
+
+export const EllipsisLineTable: Story = {
+  args: {
+    headers: ["header1", "header2", "header3"],
+    data: [
+      { data: [{ value: "data" }, { value: "data" }, { value: "data" }] },
+      {
+        isEllipsis: true,
+        data: [],
+      },
+      { data: [{ value: "data" }, { value: "data" }, { value: "data" }] },
+    ],
+    diffType: "added",
+  },
+};
