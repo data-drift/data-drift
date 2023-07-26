@@ -20,8 +20,8 @@ export const parsePatch = (patch: string) => {
   const oldData: TableProps = { diffType: "removed", data: [], headers };
   const newData: TableProps = { diffType: "added", data: [], headers };
 
-  const uniqueKeyAfter: Record<string, boolean> = {};
-  const uniqueKeyBefore: Record<string, boolean> = {};
+  const uniqueKeyAfter: Record<string, Row> = {};
+  const uniqueKeyBefore: Record<string, Row> = {};
 
   let csvColumnsLength = 0;
 
@@ -30,31 +30,35 @@ export const parsePatch = (patch: string) => {
     if (csvColumnsLength === 0) {
       csvColumnsLength = line.split(",").length;
     }
+    const lineData = line.substring(1);
+    const uniqueKey = getUniqueKey(lineData);
     if (line.startsWith("-")) {
-      uniqueKeyBefore[getUniqueKey(line.substring(1))] = true;
+      uniqueKeyBefore[uniqueKey] = csvStringLineToRowData(lineData, true);
     } else if (line.startsWith("+")) {
-      uniqueKeyAfter[getUniqueKey(line.substring(1))] = true;
+      uniqueKeyAfter[uniqueKey] = csvStringLineToRowData(lineData, true);
     } else if (line.startsWith(" ")) {
-      uniqueKeyBefore[getUniqueKey(line.substring(1))] = true;
-      uniqueKeyAfter[getUniqueKey(line.substring(1))] = true;
+      uniqueKeyBefore[uniqueKey] = csvStringLineToRowData(lineData);
+      uniqueKeyAfter[uniqueKey] = csvStringLineToRowData(lineData);
     }
   }
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
+    const lineData = line.substring(1);
+    const uniqueKey = getUniqueKey(lineData);
     if (line.startsWith("-")) {
-      oldData.data.push(csvStringLineToRowData(line.substring(1), true));
-      if (!uniqueKeyAfter[getUniqueKey(line.substring(1))]) {
+      oldData.data.push(csvStringLineToRowData(lineData, true));
+      if (!uniqueKeyAfter[uniqueKey]) {
         newData.data.push(emptyRow(csvColumnsLength));
       }
     } else if (line.startsWith("+")) {
-      newData.data.push(csvStringLineToRowData(line.substring(1), true));
-      if (!uniqueKeyBefore[getUniqueKey(line.substring(1))]) {
+      newData.data.push(csvStringLineToRowData(lineData, true));
+      if (!uniqueKeyBefore[uniqueKey]) {
         oldData.data.push(emptyRow(csvColumnsLength));
       }
     } else if (line.startsWith(" ")) {
-      oldData.data.push(csvStringLineToRowData(line.substring(1)));
-      newData.data.push(csvStringLineToRowData(line.substring(1)));
+      oldData.data.push(csvStringLineToRowData(lineData));
+      newData.data.push(csvStringLineToRowData(lineData));
     }
   }
 
