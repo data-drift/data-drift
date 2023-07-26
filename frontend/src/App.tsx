@@ -45,14 +45,7 @@ function App() {
   }, [pathArray]);
 
   return commitInfo ? (
-    <>
-      <a
-        href={`https://github.com/${commitInfo.owner}/${commitInfo.repo}/commit/${commitInfo.commitSHA}`}
-      >
-        Link to commit{" "}
-      </a>
-      {dualTableProps && <DualTable {...dualTableProps} />}
-    </>
+    <>{dualTableProps && <DualTable {...dualTableProps} />}</>
   ) : (
     <GithubForm />
   );
