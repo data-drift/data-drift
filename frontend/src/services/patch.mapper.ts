@@ -20,8 +20,8 @@ export const parsePatch = (patch: string) => {
   const oldData: TableProps = { diffType: "removed", data: [], headers };
   const newData: TableProps = { diffType: "added", data: [], headers };
 
-  const uniqueKeyAfter: Record<string, Row> = {};
-  const uniqueKeyBefore: Record<string, Row> = {};
+  const rowByUniqueKeyAfter: Record<string, Row> = {};
+  const rowByUniqueKeyBefore: Record<string, Row> = {};
 
   let csvColumnsLength = 0;
 
@@ -33,12 +33,12 @@ export const parsePatch = (patch: string) => {
     const lineData = line.substring(1);
     const uniqueKey = getUniqueKey(lineData);
     if (line.startsWith("-")) {
-      uniqueKeyBefore[uniqueKey] = csvStringLineToRowData(lineData, true);
+      rowByUniqueKeyBefore[uniqueKey] = csvStringLineToRowData(lineData, true);
     } else if (line.startsWith("+")) {
-      uniqueKeyAfter[uniqueKey] = csvStringLineToRowData(lineData, true);
+      rowByUniqueKeyAfter[uniqueKey] = csvStringLineToRowData(lineData, true);
     } else if (line.startsWith(" ")) {
-      uniqueKeyBefore[uniqueKey] = csvStringLineToRowData(lineData);
-      uniqueKeyAfter[uniqueKey] = csvStringLineToRowData(lineData);
+      rowByUniqueKeyBefore[uniqueKey] = csvStringLineToRowData(lineData);
+      rowByUniqueKeyAfter[uniqueKey] = csvStringLineToRowData(lineData);
     }
   }
 
@@ -48,13 +48,29 @@ export const parsePatch = (patch: string) => {
     const uniqueKey = getUniqueKey(lineData);
     if (line.startsWith("-")) {
       oldData.data.push(csvStringLineToRowData(lineData, true));
-      if (!uniqueKeyAfter[uniqueKey]) {
+      if (!rowByUniqueKeyAfter[uniqueKey]) {
         newData.data.push(emptyRow(csvColumnsLength));
+      } else {
+        const emphasizedCellIndexes = getCellIndexesToEmphasize(
+          rowByUniqueKeyAfter[uniqueKey],
+          csvStringLineToRowData(lineData, true)
+        );
+        emphasizedCellIndexes.forEach((index) => {
+          oldData.data[oldData.data.length - 1].data[index].isEmphasized = true;
+        });
       }
     } else if (line.startsWith("+")) {
       newData.data.push(csvStringLineToRowData(lineData, true));
-      if (!uniqueKeyBefore[uniqueKey]) {
+      if (!rowByUniqueKeyBefore[uniqueKey]) {
         oldData.data.push(emptyRow(csvColumnsLength));
+      } else {
+        const emphasizedCellIndexes = getCellIndexesToEmphasize(
+          rowByUniqueKeyBefore[uniqueKey],
+          csvStringLineToRowData(lineData, true)
+        );
+        emphasizedCellIndexes.forEach((index) => {
+          newData.data[newData.data.length - 1].data[index].isEmphasized = true;
+        });
       }
     } else if (line.startsWith(" ")) {
       oldData.data.push(csvStringLineToRowData(lineData));
@@ -79,4 +95,14 @@ const csvStringLineToRowData = (line: string, isEmphasized = false): Row => {
     data: line.split(",").map((value) => ({ value })),
     isEmphasized,
   };
+};
+
+const getCellIndexesToEmphasize = (row: Row, rowToCompare: Row): number[] => {
+  const differentIndexes: number[] = [];
+  row.data.forEach((cell, index) => {
+    if (cell.value !== rowToCompare.data[index].value) {
+      differentIndexes.push(index);
+    }
+  });
+  return differentIndexes;
 };
