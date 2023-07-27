@@ -107,23 +107,15 @@ We 💚 contributions big and small. In priority order (although everything is 
 
 </br>
 
-# 🗓 Roadmap
+# 🗓 Upcoming features
 
-## Released
-
-✅ Metric snapshots and diff checks
-
-✅ Historical trajectory monitoring and alerting
-
-✅ Metric changelog for data consumers
-
-## In progress
+## Coming Soon
 
 🌀 Automatic lineage drill-down and diff checks. [Learn more about this feature](https://www.data-drift.io/join-the-waitlist)
 
 🌀 dbt integration
 
-## Next
+## Coming later this year
 
 🗓 Sharing via Slack & emails 
 
@@ -133,4 +125,4 @@ We 💚 contributions big and small. In priority order (although everything is 
 
 🗓 Gsheet integration
 
-🆕 **Open an issue to share your feature requests**
+Track planning on [Github Projects](https://github.com/orgs/data-drift/projects/3) and help us prioritising by upvoting or creating [issues](https://github.com/data-drift/data-drift/issues).
