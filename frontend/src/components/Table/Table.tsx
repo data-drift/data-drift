@@ -94,6 +94,11 @@ export interface TableProps {
 
 export const Table: React.FC<TableProps> = ({ data, headers, diffType }) => (
   <StyledTable>
+    <colgroup>
+      {Array.from({ length: headers.length }).map((_, i) => (
+        <col key={`col-${diffType}-${i}`}></col>
+      ))}
+    </colgroup>
     <StyledTHead>
       <StyledTr>
         {headers.map((header, i) => (
