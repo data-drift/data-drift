@@ -75,6 +75,15 @@ export const parsePatch = (patch: string) => {
     } else if (line.startsWith(" ")) {
       oldData.data.push(csvStringLineToRowData(lineData));
       newData.data.push(csvStringLineToRowData(lineData));
+    } else if (line.startsWith("@@")) {
+      oldData.data.push({
+        isEllipsis: true,
+        data: [],
+      });
+      newData.data.push({
+        isEllipsis: true,
+        data: [],
+      });
     }
   }
 

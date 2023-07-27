@@ -32,6 +32,12 @@ const StyledTh = styled.th`
 
 const StyledTBody = styled.tbody``;
 
+const EllispsisTd = styled.td`
+  width: 100%;
+  height: ${({ theme }) => theme.spacing(2)};
+  background-color: ${(props) => props.theme.colors.background2};
+`;
+
 const StyledTd = styled.td<{
   diffType: TableProps["diffType"];
   isEmphasized: "cell" | "row" | undefined;
@@ -73,6 +79,8 @@ export interface Datum {
 export interface Row {
   data: Datum[];
   isEmphasized?: boolean;
+  isEmpty?: boolean;
+  isEllipsis?: boolean;
 }
 
 export interface TableProps {
@@ -96,21 +104,25 @@ export const Table: React.FC<TableProps> = ({ data, headers, diffType }) => (
     <StyledTBody>
       {data.map((row, i) => (
         <StyledTr key={`row-i`}>
-          {row.data.map((cell, j) => (
-            <StyledTd
-              key={`cell-${i}-${j}`}
-              diffType={diffType}
-              isEmphasized={
-                cell.isEmphasized
-                  ? "cell"
-                  : row.isEmphasized
-                  ? "row"
-                  : undefined
-              }
-            >
-              {cell.value}
-            </StyledTd>
-          ))}
+          {row.isEllipsis
+            ? Array.from({ length: headers.length }).map((_, j) => (
+                <EllispsisTd key={`ellipsis-${i}-${j}`}></EllispsisTd>
+              ))
+            : row.data.map((cell, j) => (
+                <StyledTd
+                  key={`cell-${i}-${j}`}
+                  diffType={diffType}
+                  isEmphasized={
+                    cell.isEmphasized
+                      ? "cell"
+                      : row.isEmphasized
+                      ? "row"
+                      : undefined
+                  }
+                >
+                  {cell.value}
+                </StyledTd>
+              ))}
         </StyledTr>
       ))}
     </StyledTBody>
