@@ -19,6 +19,8 @@ const StyledTHead = styled.thead`
 const StyledTh = styled.th`
   // layout
   border: 0.5px solid ${(props) => props.theme.colors.text};
+  border-top: 1px solid;
+  border-bottom: 1px solid;
   width: 100%;
   padding: var(--vertical-padding) var(--horizontal-padding);
   --vertical-padding: ${({ theme }) => theme.spacing(2)};
