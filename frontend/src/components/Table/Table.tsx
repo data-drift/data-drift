@@ -97,20 +97,22 @@ export const Table: React.FC<TableProps> = ({ data, headers, diffType }) => (
     <StyledTHead>
       <StyledTr>
         {headers.map((header, i) => (
-          <StyledTh key={`header-${i}`}>{header}</StyledTh>
+          <StyledTh key={`header-${diffType}-${i}`}>{header}</StyledTh>
         ))}
       </StyledTr>
     </StyledTHead>
     <StyledTBody>
       {data.map((row, i) => (
-        <StyledTr key={`row-i`}>
+        <StyledTr key={`row-${diffType}-${i}`}>
           {row.isEllipsis
             ? Array.from({ length: headers.length }).map((_, j) => (
-                <EllispsisTd key={`ellipsis-${i}-${j}`}></EllispsisTd>
+                <EllispsisTd
+                  key={`ellipsis-${diffType}-${i}-${j}`}
+                ></EllispsisTd>
               ))
             : row.data.map((cell, j) => (
                 <StyledTd
-                  key={`cell-${i}-${j}`}
+                  key={`cell-${diffType}-${i}-${j}`}
                   diffType={diffType}
                   isEmphasized={
                     cell.isEmphasized

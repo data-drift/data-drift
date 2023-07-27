@@ -7,7 +7,7 @@ const TableContainer = styled.div`
   overflow: auto;
   width: calc(50% - 4px);
 
-  &:first-child {
+  &:first-of-type {
     margin-right: 4px;
   }
 
