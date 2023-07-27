@@ -3,25 +3,30 @@ import styled from "@emotion/styled";
 const StyledTable = styled.table`
   background-color: ${(props) => props.theme.colors.background};
   table-layout: fixed;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   box-sizing: border-box;
 `;
 
 const StyledTHead = styled.thead`
   color: ${(props) => props.theme.colors.text};
   background-color: ${(props) => props.theme.colors.background2};
-`;
 
-const StyledTr = styled.tr``;
+  position: sticky;
+  top: 0;
+`;
 
 const StyledTh = styled.th`
   // layout
-  border: 1px solid ${(props) => props.theme.colors.text};
+  border: 0.5px solid ${(props) => props.theme.colors.text};
   width: 100%;
   padding: var(--vertical-padding) var(--horizontal-padding);
   --vertical-padding: ${({ theme }) => theme.spacing(2)};
   --horizontal-padding: ${({ theme }) => theme.spacing(6)};
   white-space: nowrap;
+
+  position: sticky;
+  top: 0;
 
   // text
   font-style: normal;
@@ -31,6 +36,8 @@ const StyledTh = styled.th`
 `;
 
 const StyledTBody = styled.tbody``;
+
+const StyledTr = styled.tr``;
 
 const EllispsisTd = styled.td`
   width: 100%;
@@ -53,7 +60,7 @@ const StyledTd = styled.td<{
   text-overflow: ellipsis;
   white-space: nowrap;
 
-  border: 1px solid ${(props) => props.theme.colors.background2};
+  border: 0.5px solid ${(props) => props.theme.colors.background2};
 
   // text
   color: ${(props) => props.theme.colors.text2};
