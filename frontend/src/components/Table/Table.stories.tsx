@@ -84,3 +84,13 @@ export const EllipsisLineTable: Story = {
     diffType: "added",
   },
 };
+
+export const ManyRowsTable: Story = {
+  args: {
+    headers: ["header1", "header2", "header3"],
+    data: Array.from({ length: 100 }).map(() => ({
+      data: [{ value: "data" }, { value: "data" }, { value: "data" }],
+    })),
+    diffType: "added",
+  },
+};
