@@ -6,8 +6,9 @@ const TableContainer = styled.div`
   display: inline-block;
   overflow: auto;
   width: calc(50% - 4px);
+  height: 100%;
 
-  &:first-child {
+  &:first-of-type {
     margin-right: 4px;
   }
 
@@ -50,7 +51,7 @@ export const DualTable = ({ tableProps1, tableProps2 }: DualTableProps) => {
   };
 
   return (
-    <div>
+    <div style={{ height: "90vh" }}>
       <TableContainer ref={table1Ref} onScroll={handleScrollLeft}>
         <Table {...tableProps1} />
       </TableContainer>

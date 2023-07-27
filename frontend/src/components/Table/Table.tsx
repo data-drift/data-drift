@@ -3,25 +3,32 @@ import styled from "@emotion/styled";
 const StyledTable = styled.table`
   background-color: ${(props) => props.theme.colors.background};
   table-layout: fixed;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   box-sizing: border-box;
 `;
 
 const StyledTHead = styled.thead`
   color: ${(props) => props.theme.colors.text};
   background-color: ${(props) => props.theme.colors.background2};
-`;
 
-const StyledTr = styled.tr``;
+  position: sticky;
+  top: 0;
+`;
 
 const StyledTh = styled.th`
   // layout
-  border: 1px solid ${(props) => props.theme.colors.text};
+  border: 0.5px solid ${(props) => props.theme.colors.text};
+  border-top: 1px solid;
+  border-bottom: 1px solid;
   width: 100%;
   padding: var(--vertical-padding) var(--horizontal-padding);
   --vertical-padding: ${({ theme }) => theme.spacing(2)};
   --horizontal-padding: ${({ theme }) => theme.spacing(6)};
   white-space: nowrap;
+
+  position: sticky;
+  top: 0;
 
   // text
   font-style: normal;
@@ -31,6 +38,8 @@ const StyledTh = styled.th`
 `;
 
 const StyledTBody = styled.tbody``;
+
+const StyledTr = styled.tr``;
 
 const EllispsisTd = styled.td`
   width: 100%;
@@ -53,7 +62,7 @@ const StyledTd = styled.td<{
   text-overflow: ellipsis;
   white-space: nowrap;
 
-  border: 1px solid ${(props) => props.theme.colors.background2};
+  border: 0.5px solid ${(props) => props.theme.colors.background2};
 
   // text
   color: ${(props) => props.theme.colors.text2};
@@ -94,35 +103,43 @@ export interface TableProps {
 
 export const Table: React.FC<TableProps> = ({ data, headers, diffType }) => (
   <StyledTable>
+    <colgroup>
+      {Array.from({ length: headers.length }).map((_, i) => (
+        <col key={`col-${diffType}-${i}`}></col>
+      ))}
+    </colgroup>
     <StyledTHead>
       <StyledTr>
         {headers.map((header, i) => (
-          <StyledTh key={`header-${i}`}>{header}</StyledTh>
+          <StyledTh key={`header-${diffType}-${i}`}>{header}</StyledTh>
         ))}
       </StyledTr>
     </StyledTHead>
     <StyledTBody>
       {data.map((row, i) => (
-        <StyledTr key={`row-i`}>
-          {row.isEllipsis
-            ? Array.from({ length: headers.length }).map((_, j) => (
-                <EllispsisTd key={`ellipsis-${i}-${j}`}></EllispsisTd>
-              ))
-            : row.data.map((cell, j) => (
-                <StyledTd
-                  key={`cell-${i}-${j}`}
-                  diffType={diffType}
-                  isEmphasized={
-                    cell.isEmphasized
-                      ? "cell"
-                      : row.isEmphasized
-                      ? "row"
-                      : undefined
-                  }
-                >
-                  {cell.value}
-                </StyledTd>
-              ))}
+        <StyledTr key={`row-${diffType}-${i}`}>
+          {row.isEllipsis ? (
+            <EllispsisTd
+              colSpan={headers.length}
+              key={`ellipsis-${diffType}-${i}`}
+            ></EllispsisTd>
+          ) : (
+            row.data.map((cell, j) => (
+              <StyledTd
+                key={`cell-${diffType}-${i}-${j}`}
+                diffType={diffType}
+                isEmphasized={
+                  cell.isEmphasized
+                    ? "cell"
+                    : row.isEmphasized
+                    ? "row"
+                    : undefined
+                }
+              >
+                {cell.value}
+              </StyledTd>
+            ))
+          )}
         </StyledTr>
       ))}
     </StyledTBody>
