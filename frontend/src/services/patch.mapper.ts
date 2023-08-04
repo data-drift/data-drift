@@ -1,20 +1,16 @@
 import { Row, TableProps } from "../components/Table/Table";
 
-export const parsePatch = (patch: string) => {
+export const parsePatch = (patch: string, headerString: string) => {
   const lines = patch.split("\n");
   const headersLine = lines.shift();
   if (!headersLine) throw new Error("No headers line found");
   const headerData = headersLine.match(
     /^@@ -(\d+),(\d+) \+(\d+),(\d+) @@ (.*)$/
   );
-  let headerString: string;
   if (!headerData) {
-    headerString = lines.shift() || "";
-  } else {
-    headerString = headerData[5];
+    lines.shift();
   }
 
-  if (!headerString) throw new Error("No header string found");
   const headers = headerString.split(",").map((header) => header.trim()) || [];
 
   const oldData: TableProps = { diffType: "removed", data: [], headers };

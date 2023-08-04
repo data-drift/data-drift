@@ -33,7 +33,7 @@ function App() {
         const file = files[0];
         if (file && file.patch) {
           const headers = await getCsvHeaders(file.contents_url);
-          const { oldData, newData } = parsePatch(file.patch);
+          const { oldData, newData } = parsePatch(file.patch, headers);
           console.log("oldData", oldData);
           console.log("newData", newData);
           setTableProps({ tableProps1: oldData, tableProps2: newData });
