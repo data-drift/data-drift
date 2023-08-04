@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import "./App.css";
-import { getCommitFiles } from "./services/github";
+import { getCommitFiles, getCsvHeaders } from "./services/github";
 import { DualTable, DualTableProps } from "./components/Table/DualTable";
 import { parsePatch } from "./services/patch.mapper";
 import GithubForm from "./GithubForm";
@@ -30,8 +30,10 @@ function App() {
         if (!files) {
           throw new Error("No files found");
         }
-        if (files[0] && files[0].patch) {
-          const { oldData, newData } = parsePatch(files[0].patch);
+        const file = files[0];
+        if (file && file.patch) {
+          const headers = await getCsvHeaders(file.contents_url);
+          const { oldData, newData } = parsePatch(file.patch);
           console.log("oldData", oldData);
           console.log("newData", newData);
           setTableProps({ tableProps1: oldData, tableProps2: newData });
