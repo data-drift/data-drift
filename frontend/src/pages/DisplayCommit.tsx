@@ -17,7 +17,7 @@ function assertParamsIsCommitInfo(params: Params<string>): CommitInfo {
   return { owner, repo, commitSHA };
 }
 
-const getOldAndNewDataFromGithub = async ({
+const getCommitDiffFromGithub = async ({
   params,
 }: {
   params: Params<string>;
@@ -42,6 +42,6 @@ function DisplayCommit() {
   return <>{results && <DualTable {...results} />}</>;
 }
 
-DisplayCommit.githubLoader = getOldAndNewDataFromGithub;
+DisplayCommit.githubLoader = getCommitDiffFromGithub;
 
 export default DisplayCommit;
