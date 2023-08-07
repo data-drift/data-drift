@@ -1,6 +1,7 @@
 import { Row, TableProps } from "../components/Table/Table";
 
 export const parsePatch = (patch: string, headers: string[]) => {
+  let oldHeaders = headers;
   const lines = patch.split("\n");
   const headersLine = lines.shift();
   if (!headersLine) throw new Error("No headers line found");
@@ -8,10 +9,18 @@ export const parsePatch = (patch: string, headers: string[]) => {
     /^@@ -(\d+),(\d+) \+(\d+),(\d+) @@ (.*)$/
   );
   if (!headerData) {
-    lines.shift();
+    const oldHeadersString = lines.shift();
+    oldHeaders =
+      oldHeadersString?.split(",").map((header) => header.trim()) || [];
   }
 
-  const oldData: TableProps = { diffType: "removed", data: [], headers };
+  console.log(oldHeaders);
+
+  const oldData: TableProps = {
+    diffType: "removed",
+    data: [],
+    headers: oldHeaders,
+  };
   const newData: TableProps = { diffType: "added", data: [], headers };
 
   const rowByUniqueKeyAfter: Record<string, Row> = {};
