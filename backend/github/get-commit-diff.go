@@ -1,6 +1,7 @@
 package github
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -48,8 +49,29 @@ func GetCommitDiff(c *gin.Context) {
 		return
 	}
 
+	content, _, _, err := client.Repositories.GetContents(c, owner, repo, csvFile.GetFilename(), &github.RepositoryContentGetOptions{Ref: commitSha})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err})
+		return
+	}
+	stringContent, _ := content.GetContent()
+	contentReader := strings.NewReader(stringContent)
+	csvReader := csv.NewReader(contentReader)
+	records, err := csvReader.ReadAll()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err})
+		return
+	}
+
+	if len(records) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "no records in CSV file"})
+		return
+	}
+
+	firstRecord := records[0]
+
 	patch := csvFile.GetPatch()
-	jsonData, err := json.Marshal(gin.H{"patch": patch})
+	jsonData, err := json.Marshal(gin.H{"patch": patch, "headers": firstRecord})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "error marshaling JSON"})
 		return
