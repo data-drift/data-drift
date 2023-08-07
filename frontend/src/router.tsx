@@ -10,5 +10,6 @@ export const router = createBrowserRouter([
   {
     path: "/:owner/:repo/commit/:commitSHA",
     element: <DisplayCommit />,
+    loader: DisplayCommit.githubLoader,
   },
 ]);
