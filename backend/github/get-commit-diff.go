@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/go-github/v42/github"
 )
 
 func GetCommitDiff(c *gin.Context) {
@@ -33,9 +35,21 @@ func GetCommitDiff(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "no files in commit"})
 		return
 	}
+	var csvFile *github.CommitFile
+	for _, file := range commit.Files {
+		if strings.HasSuffix(file.GetFilename(), ".csv") {
+			csvFile = file
+			break
+		}
+	}
 
-	firstPatch := commit.Files[0].GetPatch()
-	jsonData, err := json.Marshal(gin.H{"patch": firstPatch})
+	if csvFile == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "no CSV files in commit"})
+		return
+	}
+
+	patch := csvFile.GetPatch()
+	jsonData, err := json.Marshal(gin.H{"patch": patch})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "error marshaling JSON"})
 		return
