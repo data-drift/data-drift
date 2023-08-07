@@ -1,6 +1,6 @@
 import { FormEvent, useState, useEffect } from "react";
-import { LOCAL_STORAGE_GITHUB_TOKEN, parseGithubUrl } from "./services/github";
-import { CommitInfo } from "./App";
+import { LOCAL_STORAGE_GITHUB_TOKEN, parseGithubUrl } from "../services/github";
+import { CommitInfo } from "../App";
 
 function GithubForm() {
   const [url, setUrl] = useState("");

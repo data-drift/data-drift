@@ -3,7 +3,7 @@ import "./App.css";
 import { getCommitFiles, getCsvHeaders } from "./services/github";
 import { DualTable, DualTableProps } from "./components/Table/DualTable";
 import { parsePatch } from "./services/patch.mapper";
-import GithubForm from "./GithubForm";
+import GithubForm from "./pages/GithubForm";
 
 export interface CommitInfo {
   owner: string;
