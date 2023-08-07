@@ -15,8 +15,10 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-func ProcessHistory(client *github.Client, repoOwner string, repoName string, metric common.MetricConfig) (string, error) {
+func ProcessHistory(client *github.Client, repoOwner string, repoName string, metric common.MetricConfig, installationId int) (string, error) {
 
+	reportBaseUrl := fmt.Sprintf("https://app.data-drift.io/report/%d/%s/%s/commit/", installationId, repoOwner, repoName)
+	fmt.Println(reportBaseUrl)
 	ctx := context.Background()
 
 	filePath := metric.Filepath
@@ -124,13 +126,13 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 				dimension := common.Dimension("none")
 				dimensionValue := common.DimensionValue("No dimension")
 
-				updateMetric(lineCountAndKPIByDateByVersion, periodAndDimensionKey, timegrain, periodKey, dimension, dimensionValue, record, kpiColumn, commitSha, commitTimestamp, commit, commitMessages)
+				updateMetric(lineCountAndKPIByDateByVersion, periodAndDimensionKey, timegrain, periodKey, dimension, dimensionValue, record, kpiColumn, commitSha, commitTimestamp, commit, commitMessages, reportBaseUrl)
 
 				for _, metricDimension := range dimensionColumns {
 					dimension = common.Dimension(metricDimension.dimensionName)
 					dimensionValue = common.DimensionValue(record[metricDimension.dimensionColumn])
 					periodAndDimensionKey = common.PeriodAndDimensionKey(string(periodKey) + " " + string(dimensionValue))
-					updateMetric(lineCountAndKPIByDateByVersion, periodAndDimensionKey, timegrain, periodKey, dimension, dimensionValue, record, kpiColumn, commitSha, commitTimestamp, commit, commitMessages)
+					updateMetric(lineCountAndKPIByDateByVersion, periodAndDimensionKey, timegrain, periodKey, dimension, dimensionValue, record, kpiColumn, commitSha, commitTimestamp, commit, commitMessages, reportBaseUrl)
 
 				}
 			}
@@ -176,7 +178,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 	return filepath, nil
 }
 
-func updateMetric(lineCountAndKPIByDateByVersion common.Metrics, periodAndDimensionKey common.PeriodAndDimensionKey, timegrain common.TimeGrain, periodKey common.PeriodKey, dimension common.Dimension, dimensionValue common.DimensionValue, record []string, kpiColumn int, commitSha common.CommitSha, commitTimestamp int64, commit *github.RepositoryCommit, commitMessages []common.CommitComments) {
+func updateMetric(lineCountAndKPIByDateByVersion common.Metrics, periodAndDimensionKey common.PeriodAndDimensionKey, timegrain common.TimeGrain, periodKey common.PeriodKey, dimension common.Dimension, dimensionValue common.DimensionValue, record []string, kpiColumn int, commitSha common.CommitSha, commitTimestamp int64, commit *github.RepositoryCommit, commitMessages []common.CommitComments, reportBaseUrl string) {
 	if lineCountAndKPIByDateByVersion[periodAndDimensionKey].History == nil {
 		lineCountAndKPIByDateByVersion[periodAndDimensionKey] = common.Metric{
 			TimeGrain:      timegrain,
@@ -197,9 +199,13 @@ func updateMetric(lineCountAndKPIByDateByVersion common.Metrics, periodAndDimens
 		Lines:           newLineCount,
 		KPI:             newKPI,
 		CommitTimestamp: commitTimestamp,
-		CommitUrl:       *commit.HTMLURL,
+		CommitUrl:       buildReportDiffUrl(reportBaseUrl, string(commitSha)),
 		CommitComments:  commitMessages,
 	}
+}
+
+func buildReportDiffUrl(reportBaseUrl string, commitSha string) string {
+	return reportBaseUrl + "/" + commitSha
 }
 
 func getFileContentsForCommit(client *github.Client, owner, name, path, sha string) ([]byte, error) {

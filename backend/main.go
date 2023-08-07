@@ -100,6 +100,7 @@ func performTask(syncConfig common.SyncConfig) error {
 				TimeGrains:     []common.TimeGrain{common.Day},
 				Dimensions:     []string{},
 			},
+			int(0),
 		)
 
 		if err != nil {
