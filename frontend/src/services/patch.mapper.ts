@@ -10,13 +10,12 @@ export const parsePatch = (patch: string, headers: string[]) => {
     /^@@ -(\d+),(\d+) \+(\d+),(\d+) @@ (.*)$/
   );
   if (!headerData) {
-    const oldHeadersString = lines.shift();
+    const oldHeadersStringWithModifier = lines.shift();
+    const oldHeadersString = oldHeadersStringWithModifier?.substring(1);
     oldHeaders =
       oldHeadersString?.split(",").map((header) => header.trim()) || [];
     firstAddedLineShouldBeSkiped = true;
   }
-
-  console.log(oldHeaders);
 
   const oldData: TableProps = {
     diffType: "removed",
@@ -57,8 +56,9 @@ export const parsePatch = (patch: string, headers: string[]) => {
         newData.data.push(emptyRow(csvColumnsLength));
       } else {
         const emphasizedCellIndexes = getCellIndexesToEmphasize(
+          csvStringLineToRowData(lineData, true),
           rowByUniqueKeyAfter[uniqueKey],
-          csvStringLineToRowData(lineData, true)
+          getNewIndexFromOldIndex(oldHeaders, headers)
         );
         emphasizedCellIndexes.forEach((index) => {
           oldData.data[oldData.data.length - 1].data[index].isEmphasized = true;
@@ -74,8 +74,9 @@ export const parsePatch = (patch: string, headers: string[]) => {
         oldData.data.push(emptyRow(csvColumnsLength));
       } else {
         const emphasizedCellIndexes = getCellIndexesToEmphasize(
+          csvStringLineToRowData(lineData, true),
           rowByUniqueKeyBefore[uniqueKey],
-          csvStringLineToRowData(lineData, true)
+          getOldIndexFromNewIndex(oldHeaders, headers)
         );
         emphasizedCellIndexes.forEach((index) => {
           if (newData.data[newData.data.length - 1].data[index])
@@ -117,12 +118,42 @@ const csvStringLineToRowData = (line: string, isEmphasized = false): Row => {
   };
 };
 
-const getCellIndexesToEmphasize = (row: Row, rowToCompare: Row): number[] => {
+const getCellIndexesToEmphasize = (
+  row: Row,
+  rowToCompare: Row,
+  indexMapper: (number: number) => number | undefined
+): number[] => {
   const differentIndexes: number[] = [];
   row.data.forEach((cell, index) => {
-    if (cell.value !== rowToCompare.data[index]?.value) {
+    const indexToCompare = indexMapper(index);
+    if (
+      indexToCompare &&
+      cell.value !== rowToCompare.data[indexToCompare]?.value
+    ) {
       differentIndexes.push(index);
     }
   });
   return differentIndexes;
+};
+
+const getNewIndexFromOldIndex = (
+  oldHeaders: string[],
+  newHeaders: string[]
+) => {
+  return (oldIndex: number) => {
+    const oldHeader = oldHeaders[oldIndex];
+    const newIndex = newHeaders.indexOf(oldHeader);
+    return newIndex;
+  };
+};
+
+const getOldIndexFromNewIndex = (
+  oldHeaders: string[],
+  newHeaders: string[]
+) => {
+  return (newIndex: number) => {
+    const newHeader = newHeaders[newIndex];
+    const oldIndex = oldHeaders.indexOf(newHeader);
+    return oldIndex;
+  };
 };
