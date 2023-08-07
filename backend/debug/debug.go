@@ -44,7 +44,7 @@ func DebugFunction() {
 		if client == nil {
 			panic("Client not configured")
 		}
-		newFilepath, err := history.ProcessHistory(client, githubRepoOwner, githubRepoName, metricConfig)
+		newFilepath, err := history.ProcessHistory(client, githubRepoOwner, githubRepoName, metricConfig, int(githubApplicationId))
 
 		if err != nil {
 			println(err)

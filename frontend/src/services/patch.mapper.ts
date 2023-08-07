@@ -1,19 +1,27 @@
 import { Row, TableProps } from "../components/Table/Table";
 
-export const parsePatch = (patch: string, headerString: string) => {
+export const parsePatch = (patch: string, headers: string[]) => {
+  let oldHeaders = headers;
   const lines = patch.split("\n");
   const headersLine = lines.shift();
   if (!headersLine) throw new Error("No headers line found");
+  let firstAddedLineShouldBeSkiped = false;
   const headerData = headersLine.match(
     /^@@ -(\d+),(\d+) \+(\d+),(\d+) @@ (.*)$/
   );
   if (!headerData) {
-    lines.shift();
+    const oldHeadersStringWithModifier = lines.shift();
+    const oldHeadersString = oldHeadersStringWithModifier?.substring(1);
+    oldHeaders =
+      oldHeadersString?.split(",").map((header) => header.trim()) || [];
+    firstAddedLineShouldBeSkiped = true;
   }
 
-  const headers = headerString.split(",").map((header) => header.trim()) || [];
-
-  const oldData: TableProps = { diffType: "removed", data: [], headers };
+  const oldData: TableProps = {
+    diffType: "removed",
+    data: [],
+    headers: oldHeaders,
+  };
   const newData: TableProps = { diffType: "added", data: [], headers };
 
   const rowByUniqueKeyAfter: Record<string, Row> = {};
@@ -48,24 +56,32 @@ export const parsePatch = (patch: string, headerString: string) => {
         newData.data.push(emptyRow(csvColumnsLength));
       } else {
         const emphasizedCellIndexes = getCellIndexesToEmphasize(
+          csvStringLineToRowData(lineData, true),
           rowByUniqueKeyAfter[uniqueKey],
-          csvStringLineToRowData(lineData, true)
+          getNewIndexFromOldIndex(oldHeaders, headers)
         );
         emphasizedCellIndexes.forEach((index) => {
           oldData.data[oldData.data.length - 1].data[index].isEmphasized = true;
         });
       }
     } else if (line.startsWith("+")) {
+      if (firstAddedLineShouldBeSkiped) {
+        firstAddedLineShouldBeSkiped = false;
+        continue;
+      }
       newData.data.push(csvStringLineToRowData(lineData, true));
       if (!rowByUniqueKeyBefore[uniqueKey]) {
         oldData.data.push(emptyRow(csvColumnsLength));
       } else {
         const emphasizedCellIndexes = getCellIndexesToEmphasize(
+          csvStringLineToRowData(lineData, true),
           rowByUniqueKeyBefore[uniqueKey],
-          csvStringLineToRowData(lineData, true)
+          getOldIndexFromNewIndex(oldHeaders, headers)
         );
         emphasizedCellIndexes.forEach((index) => {
-          newData.data[newData.data.length - 1].data[index].isEmphasized = true;
+          if (newData.data[newData.data.length - 1].data[index])
+            newData.data[newData.data.length - 1].data[index].isEmphasized =
+              true;
         });
       }
     } else if (line.startsWith(" ")) {
@@ -102,12 +118,42 @@ const csvStringLineToRowData = (line: string, isEmphasized = false): Row => {
   };
 };
 
-const getCellIndexesToEmphasize = (row: Row, rowToCompare: Row): number[] => {
+const getCellIndexesToEmphasize = (
+  row: Row,
+  rowToCompare: Row,
+  indexMapper: (number: number) => number | undefined
+): number[] => {
   const differentIndexes: number[] = [];
   row.data.forEach((cell, index) => {
-    if (cell.value !== rowToCompare.data[index].value) {
+    const indexToCompare = indexMapper(index);
+    if (
+      indexToCompare &&
+      cell.value !== rowToCompare.data[indexToCompare]?.value
+    ) {
       differentIndexes.push(index);
     }
   });
   return differentIndexes;
+};
+
+const getNewIndexFromOldIndex = (
+  oldHeaders: string[],
+  newHeaders: string[]
+) => {
+  return (oldIndex: number) => {
+    const oldHeader = oldHeaders[oldIndex];
+    const newIndex = newHeaders.indexOf(oldHeader);
+    return newIndex;
+  };
+};
+
+const getOldIndexFromNewIndex = (
+  oldHeaders: string[],
+  newHeaders: string[]
+) => {
+  return (newIndex: number) => {
+    const newHeader = newHeaders[newIndex];
+    const oldIndex = oldHeaders.indexOf(newHeader);
+    return oldIndex;
+  };
 };

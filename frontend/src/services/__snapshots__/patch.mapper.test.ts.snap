@@ -438,3 +438,175 @@ exports[`parsePatch should handle large datasets 1`] = `
   },
 }
 `;
+
+exports[`parsePatch should handle when headers change 1`] = `
+{
+  "newData": {
+    "data": [
+      {
+        "data": [
+          {
+            "value": "2022-01-01__FR",
+          },
+          {
+            "value": "2022-01-01",
+          },
+          {
+            "value": "FR",
+          },
+          {
+            "isEmphasized": true,
+            "value": "22.22",
+          },
+          {
+            "isEmphasized": true,
+            "value": "-22.0",
+          },
+          {
+            "isEmphasized": true,
+            "value": "-22.0",
+          },
+          {
+            "isEmphasized": true,
+            "value": "-22.0",
+          },
+          {
+            "isEmphasized": true,
+            "value": "22.22",
+          },
+        ],
+        "isEmphasized": true,
+      },
+    ],
+    "diffType": "added",
+    "headers": [
+      "unique_key",
+      "date_month",
+      "country",
+      "mrr_bop",
+      "resurrected_mrr",
+      "downsell_mrr",
+      "fail_to_engage_mrr",
+      "churn_mrr",
+      "mrr_eop",
+    ],
+  },
+  "oldData": {
+    "data": [
+      {
+        "data": [
+          {
+            "value": "2022-01-01__FR",
+          },
+          {
+            "value": "2022-01-01",
+          },
+          {
+            "value": "FR",
+          },
+          {
+            "isEmphasized": true,
+            "value": "11.11",
+          },
+          {
+            "isEmphasized": true,
+            "value": "11.0",
+          },
+          {
+            "isEmphasized": true,
+            "value": "-11.0",
+          },
+          {
+            "isEmphasized": true,
+            "value": "-11.0",
+          },
+          {
+            "isEmphasized": true,
+            "value": "-11.0",
+          },
+          {
+            "isEmphasized": true,
+            "value": "11.11",
+          },
+        ],
+        "isEmphasized": true,
+      },
+    ],
+    "diffType": "removed",
+    "headers": [
+      "unique_key",
+      "date_month",
+      "country",
+      "mrr_bop",
+      "resurrected_mrr",
+      "downsell_mrr",
+      "fail_to_engage_mrr",
+      "churn_mrr",
+      "mrr_eop",
+    ],
+  },
+}
+`;
+
+exports[`parsePatch should handle when headers reverse order 1`] = `
+{
+  "newData": {
+    "data": [
+      {
+        "data": [
+          {
+            "value": "2022-01-01__FR",
+          },
+          {
+            "value": "2022-01-01",
+          },
+          {
+            "isEmphasized": true,
+            "value": "22.22",
+          },
+          {
+            "value": "FR",
+          },
+        ],
+        "isEmphasized": true,
+      },
+    ],
+    "diffType": "added",
+    "headers": [
+      "unique_key",
+      "date_month",
+      "mrr_bop",
+      "country",
+    ],
+  },
+  "oldData": {
+    "data": [
+      {
+        "data": [
+          {
+            "value": "2022-01-01__FR",
+          },
+          {
+            "value": "2022-01-01",
+          },
+          {
+            "value": "FR",
+          },
+          {
+            "isEmphasized": true,
+            "value": "11.11",
+          },
+        ],
+        "isEmphasized": true,
+      },
+    ],
+    "diffType": "removed",
+    "headers": [
+      "unique_key",
+      "date_month",
+      "country",
+      "mrr_bop",
+    ],
+  },
+}
+`;
