@@ -1,7 +1,7 @@
 import { getCommitFiles, getCsvHeaders } from "../services/github";
 import { DualTable, DualTableProps } from "../components/Table/DualTable";
 import { parsePatch } from "../services/patch.mapper";
-import { useLoaderData } from "react-router";
+import { Params, useLoaderData } from "react-router";
 
 export interface CommitInfo {
   owner: string;
@@ -9,11 +9,20 @@ export interface CommitInfo {
   commitSHA: string;
 }
 
+function assertParamsIsCommitInfo(params: Params<string>): CommitInfo {
+  const { owner, repo, commitSHA } = params;
+  if (!owner || !repo || !commitSHA) {
+    throw new Error("Invalid params");
+  }
+  return { owner, repo, commitSHA };
+}
+
 const getOldAndNewDataFromGithub = async ({
-  params: { owner, repo, commitSHA },
+  params,
 }: {
-  params: { owner: string; repo: string; commitSHA: string };
+  params: Params<string>;
 }) => {
+  const { owner, repo, commitSHA } = assertParamsIsCommitInfo(params);
   const files = await getCommitFiles(owner, repo, commitSHA);
   if (!files) {
     throw new Error("No files found");
