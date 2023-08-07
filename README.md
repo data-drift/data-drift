@@ -11,7 +11,9 @@
 
 
 <h1 align="center" >The Context Layer for your Metrics</h1>
-<p align="center">Supercharge your semantic layer with context to built trusted and actionnable metrics</p>
+<p align="center">Supercharge your semantic layer with context for your data consumers.
+Build actionnable and trusted metrics with changelog, monitoring and centralized interpretation.
+</p>
 
 <p align="center"><a href="https://data-drift.io">Website</a> · <a href="https://www.data-drift.io/blog">Blog</a> · <a href="https://github.com/data-drift/data-drift/issues">Issues</p>
 </br>
@@ -87,11 +89,10 @@ Data teams be like...(yes, providing context is hard)
 ## Version-control your key metrics with Datagit
 [Install Datagit](https://github.com/data-drift/data-drift/tree/main/tools/datagit#datagit) to historise and diff-checks your metrics' underlying data.
 
-You can [learn more about Datagit in this article](https://www.data-drift.io/blog/git-for-your-data).
+This is a mandatory step to generate context for your metrics. You can [learn more about Datagit in this article](https://www.data-drift.io/blog/git-for-your-data).
 
 ## Deploy Datadrift locally
-Coming soon. 
-In the meantime, you can you [join our Design Partner Programme.](https://www.data-drift.io/design-partner)
+Follow our [step-by-step installation guide](https://lucas2vries.notion.site/Step-by-Step-Installation-752ffb590d4e4b27bdb753f9654ef676) to use Datadrift.
 
 ## Use our cloud-based product
 [Contact our team by filling the form on our website](https://www.data-drift.io/) to get started with Datadrift Cloud.
@@ -103,7 +104,8 @@ In the meantime, you can you [join our Design Partner Programme.](https://www.da
 We 💚 contributions big and small. In priority order (although everything is appreciated) with the most helpful first:
 
 - Star this repo to help us get visibility
-- Open an issue to share your idea or a bug you might have spotted
+- [Become a Design Partner](https://www.data-drift.io/design-partner) to co-built a product you & users love
+- [Open an issue](https://github.com/data-drift/data-drift/issues) to share your idea or a bug you might have spotted
 
 </br>
 
