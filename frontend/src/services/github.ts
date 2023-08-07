@@ -66,7 +66,7 @@ export const getCsvHeaders = async (contentUrl: string) => {
   if ("content" in response.data) {
     const content = response.data.content;
     const headerString = atob(content).split("\n")[0];
-    return headerString;
+    return headerString.split(",").map((header) => header.trim()) || [];
   } else {
     throw new Error("Error fetching commit content");
   }

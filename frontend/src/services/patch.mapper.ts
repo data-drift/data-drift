@@ -1,6 +1,6 @@
 import { Row, TableProps } from "../components/Table/Table";
 
-export const parsePatch = (patch: string, headerString: string) => {
+export const parsePatch = (patch: string, headers: string[]) => {
   const lines = patch.split("\n");
   const headersLine = lines.shift();
   if (!headersLine) throw new Error("No headers line found");
@@ -10,8 +10,6 @@ export const parsePatch = (patch: string, headerString: string) => {
   if (!headerData) {
     lines.shift();
   }
-
-  const headers = headerString.split(",").map((header) => header.trim()) || [];
 
   const oldData: TableProps = { diffType: "removed", data: [], headers };
   const newData: TableProps = { diffType: "added", data: [], headers };

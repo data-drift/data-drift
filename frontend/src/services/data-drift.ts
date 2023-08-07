@@ -12,6 +12,6 @@ export const getPatchAndHeader = async (
   console.log("result", result);
   return {
     patch: result.data.patch,
-    headers: result.data.headers.join(","),
+    headers: result.data.headers,
   };
 };
