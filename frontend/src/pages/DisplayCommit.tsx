@@ -18,6 +18,16 @@ function assertParamsIsCommitInfo(params: Params<string>): CommitInfo {
   return { owner, repo, commitSHA };
 }
 
+function assertParamsHasInstallationIs(
+  params: Params<string>
+): CommitInfo & { installationId: string } {
+  const { installationId, owner, repo, commitSHA } = params;
+  if (!installationId || !owner || !repo || !commitSHA) {
+    throw new Error("Invalid params");
+  }
+  return { installationId, owner, repo, commitSHA };
+}
+
 const getCommitDiffFromGithub = async ({
   params,
 }: {
@@ -36,8 +46,20 @@ const getCommitDiffFromGithub = async ({
   }
 };
 
-const getCommitDiffFromDataDrift = ({ params }: { params: Params<string> }) => {
-  const { patch, headers } = getPatchAndHeader(params);
+const getCommitDiffFromDataDrift = async ({
+  params,
+}: {
+  params: Params<string>;
+}) => {
+  const { installationId, owner, repo, commitSHA } =
+    assertParamsHasInstallationIs(params);
+
+  const { patch, headers } = await getPatchAndHeader({
+    installationId,
+    owner,
+    repo,
+    commitSHA,
+  });
   const { oldData, newData } = parsePatch(patch, headers);
   return { tableProps1: oldData, tableProps2: newData };
 };

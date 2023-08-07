@@ -12,4 +12,9 @@ export const router = createBrowserRouter([
     element: <DisplayCommit />,
     loader: DisplayCommit.githubLoader,
   },
+  {
+    path: "report/:installationId/:owner/:repo/commit/:commitSHA",
+    element: <DisplayCommit />,
+    loader: DisplayCommit.dataDriftLoader,
+  },
 ]);
