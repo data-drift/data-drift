@@ -4,6 +4,8 @@ import { getCommitFiles, getCsvHeaders } from "./services/github";
 import { DualTable, DualTableProps } from "./components/Table/DualTable";
 import { parsePatch } from "./services/patch.mapper";
 import GithubForm from "./pages/GithubForm";
+import { RouterProvider } from "react-router-dom";
+import { router } from "./router";
 
 export interface CommitInfo {
   owner: string;
@@ -46,11 +48,7 @@ function App() {
     fetchCommitData().catch(console.error);
   }, [pathArray]);
 
-  return commitInfo ? (
-    <>{dualTableProps && <DualTable {...dualTableProps} />}</>
-  ) : (
-    <GithubForm />
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;
