@@ -13,6 +13,7 @@ import (
 	"github.com/data-drift/data-drift/history"
 	"github.com/data-drift/data-drift/reducers"
 	"github.com/data-drift/data-drift/reports"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
@@ -36,6 +37,14 @@ func main() {
 	port := defaultIfEmpty(os.Getenv("PORT"), "8080")
 
 	router := gin.New()
+
+	// Add CORS middleware
+	config := cors.DefaultConfig()
+	config.AllowAllOrigins = true
+	// config.AllowOrigins = []string{"http://localhost:5173"}
+	config.AllowHeaders = append(config.AllowHeaders, "Installation-Id")
+	router.Use(cors.New(config))
+
 	router.Use(gin.Logger())
 
 	router.GET("/", HealthCheck)
@@ -46,6 +55,7 @@ func main() {
 	router.GET("/ghhealth/:installation-id", github.HealthCheckInstallation)
 
 	router.POST("webhooks/github", github.HandleWebhook)
+	router.GET("gh/:owner/:repo/commit/:commit-sha", github.GetCommitDiff)
 
 	router.POST("validate-config", github.ValidateConfigHandler)
 

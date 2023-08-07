@@ -43,6 +43,7 @@ require (
 require (
 	github.com/bradleyfalzon/ghinstallation v1.1.1
 	github.com/dstotijn/go-notion v0.11.0
+	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-gonic/gin v1.9.0
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/shopspring/decimal v1.3.1
