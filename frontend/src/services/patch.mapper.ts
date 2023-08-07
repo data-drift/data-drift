@@ -65,7 +65,9 @@ export const parsePatch = (patch: string, headerString: string) => {
           csvStringLineToRowData(lineData, true)
         );
         emphasizedCellIndexes.forEach((index) => {
-          newData.data[newData.data.length - 1].data[index].isEmphasized = true;
+          if (newData.data[newData.data.length - 1].data[index])
+            newData.data[newData.data.length - 1].data[index].isEmphasized =
+              true;
         });
       }
     } else if (line.startsWith(" ")) {
@@ -105,7 +107,7 @@ const csvStringLineToRowData = (line: string, isEmphasized = false): Row => {
 const getCellIndexesToEmphasize = (row: Row, rowToCompare: Row): number[] => {
   const differentIndexes: number[] = [];
   row.data.forEach((cell, index) => {
-    if (cell.value !== rowToCompare.data[index].value) {
+    if (cell.value !== rowToCompare.data[index]?.value) {
       differentIndexes.push(index);
     }
   });

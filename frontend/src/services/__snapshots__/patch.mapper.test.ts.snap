@@ -438,3 +438,164 @@ exports[`parsePatch should handle large datasets 1`] = `
   },
 }
 `;
+
+exports[`parsePatch should handle when headers change 1`] = `
+{
+  "newData": {
+    "data": [
+      {
+        "data": [
+          {
+            "value": "unique_key",
+          },
+          {
+            "value": "date_month",
+          },
+          {
+            "value": "country",
+          },
+          {
+            "value": "mrr_bop",
+          },
+          {
+            "value": "downsell_mrr",
+          },
+          {
+            "value": "fail_to_engage_mrr",
+          },
+          {
+            "value": "churn_mrr",
+          },
+          {
+            "value": "mrr_eop",
+          },
+        ],
+        "isEmphasized": true,
+      },
+      {
+        "data": [
+          {
+            "value": "2022-01-01__FR",
+          },
+          {
+            "value": "2022-01-01",
+          },
+          {
+            "value": "FR",
+          },
+          {
+            "isEmphasized": true,
+            "value": "22.22",
+          },
+          {
+            "isEmphasized": true,
+            "value": "-22.0",
+          },
+          {
+            "isEmphasized": true,
+            "value": "-22.0",
+          },
+          {
+            "isEmphasized": true,
+            "value": "-22.0",
+          },
+          {
+            "isEmphasized": true,
+            "value": "22.22",
+          },
+        ],
+        "isEmphasized": true,
+      },
+    ],
+    "diffType": "added",
+    "headers": [
+      "unique_key",
+      "date",
+      "metric_value",
+      "country_code",
+      "category",
+    ],
+  },
+  "oldData": {
+    "data": [
+      {
+        "data": [
+          {
+            "value": "2022-01-01__FR",
+          },
+          {
+            "value": "2022-01-01",
+          },
+          {
+            "value": "FR",
+          },
+          {
+            "isEmphasized": true,
+            "value": "11.11",
+          },
+          {
+            "isEmphasized": true,
+            "value": "11.0",
+          },
+          {
+            "isEmphasized": true,
+            "value": "-11.0",
+          },
+          {
+            "isEmphasized": true,
+            "value": "-11.0",
+          },
+          {
+            "isEmphasized": true,
+            "value": "-11.0",
+          },
+          {
+            "value": "11.11",
+          },
+        ],
+        "isEmphasized": true,
+      },
+      {
+        "data": [
+          {
+            "value": "_",
+          },
+          {
+            "value": "_",
+          },
+          {
+            "value": "_",
+          },
+          {
+            "value": "_",
+          },
+          {
+            "value": "_",
+          },
+          {
+            "value": "_",
+          },
+          {
+            "value": "_",
+          },
+          {
+            "value": "_",
+          },
+          {
+            "value": "_",
+          },
+        ],
+        "isEmphasized": false,
+      },
+    ],
+    "diffType": "removed",
+    "headers": [
+      "unique_key",
+      "date",
+      "metric_value",
+      "country_code",
+      "category",
+    ],
+  },
+}
+`;

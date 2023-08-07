@@ -69,4 +69,15 @@ describe("parsePatch", () => {
     );
     expect(results).toMatchSnapshot();
   });
+
+  it("should handle when headers change", () => {
+    const patch =
+      "@@ -1,31 +1,31 @@\n-unique_key,date_month,country,mrr_bop,resurrected_mrr,downsell_mrr,fail_to_engage_mrr,churn_mrr,mrr_eop\n-2022-01-01__FR,2022-01-01,FR,11.11,11.0,-11.0,-11.0,-11.0,11.11\n+unique_key,date_month,country,mrr_bop,downsell_mrr,fail_to_engage_mrr,churn_mrr,mrr_eop\n+2022-01-01__FR,2022-01-01,FR,22.22,-22.0,-22.0,-22.0,22.22";
+
+    const results = parsePatch(
+      patch,
+      "unique_key,date,metric_value,country_code,category"
+    );
+    expect(results).toMatchSnapshot();
+  });
 });
