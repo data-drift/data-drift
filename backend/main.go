@@ -46,6 +46,7 @@ func main() {
 	router.GET("/ghhealth/:installation-id", github.HealthCheckInstallation)
 
 	router.POST("webhooks/github", github.HandleWebhook)
+	router.GET("gh/:owner/:repo/commit/:commit-sha", github.GetCommitDiff)
 
 	router.POST("validate-config", github.ValidateConfigHandler)
 
