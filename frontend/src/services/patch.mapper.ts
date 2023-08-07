@@ -5,6 +5,7 @@ export const parsePatch = (patch: string, headers: string[]) => {
   const lines = patch.split("\n");
   const headersLine = lines.shift();
   if (!headersLine) throw new Error("No headers line found");
+  let firstAddedLineShouldBeSkiped = false;
   const headerData = headersLine.match(
     /^@@ -(\d+),(\d+) \+(\d+),(\d+) @@ (.*)$/
   );
@@ -12,6 +13,7 @@ export const parsePatch = (patch: string, headers: string[]) => {
     const oldHeadersString = lines.shift();
     oldHeaders =
       oldHeadersString?.split(",").map((header) => header.trim()) || [];
+    firstAddedLineShouldBeSkiped = true;
   }
 
   console.log(oldHeaders);
@@ -63,6 +65,10 @@ export const parsePatch = (patch: string, headers: string[]) => {
         });
       }
     } else if (line.startsWith("+")) {
+      if (firstAddedLineShouldBeSkiped) {
+        firstAddedLineShouldBeSkiped = false;
+        continue;
+      }
       newData.data.push(csvStringLineToRowData(lineData, true));
       if (!rowByUniqueKeyBefore[uniqueKey]) {
         oldData.data.push(emptyRow(csvColumnsLength));

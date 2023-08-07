@@ -446,35 +446,6 @@ exports[`parsePatch should handle when headers change 1`] = `
       {
         "data": [
           {
-            "value": "unique_key",
-          },
-          {
-            "value": "date_month",
-          },
-          {
-            "value": "country",
-          },
-          {
-            "value": "mrr_bop",
-          },
-          {
-            "value": "downsell_mrr",
-          },
-          {
-            "value": "fail_to_engage_mrr",
-          },
-          {
-            "value": "churn_mrr",
-          },
-          {
-            "value": "mrr_eop",
-          },
-        ],
-        "isEmphasized": true,
-      },
-      {
-        "data": [
-          {
             "value": "2022-01-01__FR",
           },
           {
@@ -554,38 +525,6 @@ exports[`parsePatch should handle when headers change 1`] = `
           },
         ],
         "isEmphasized": true,
-      },
-      {
-        "data": [
-          {
-            "value": "_",
-          },
-          {
-            "value": "_",
-          },
-          {
-            "value": "_",
-          },
-          {
-            "value": "_",
-          },
-          {
-            "value": "_",
-          },
-          {
-            "value": "_",
-          },
-          {
-            "value": "_",
-          },
-          {
-            "value": "_",
-          },
-          {
-            "value": "_",
-          },
-        ],
-        "isEmphasized": false,
       },
     ],
     "diffType": "removed",
