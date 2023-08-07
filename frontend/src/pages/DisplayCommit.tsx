@@ -2,6 +2,7 @@ import { getCommitFiles, getCsvHeaders } from "../services/github";
 import { DualTable, DualTableProps } from "../components/Table/DualTable";
 import { parsePatch } from "../services/patch.mapper";
 import { Params, useLoaderData } from "react-router";
+import { getPatchAndHeader } from "../services/data-drift";
 
 export interface CommitInfo {
   owner: string;
@@ -35,6 +36,12 @@ const getCommitDiffFromGithub = async ({
   }
 };
 
+const getCommitDiffFromDataDrift = ({ params }: { params: Params<string> }) => {
+  const { patch, headers } = getPatchAndHeader(params);
+  const { oldData, newData } = parsePatch(patch, headers);
+  return { tableProps1: oldData, tableProps2: newData };
+};
+
 function DisplayCommit() {
   const results = useLoaderData() as DualTableProps;
   console.log("results", results);
@@ -43,5 +50,6 @@ function DisplayCommit() {
 }
 
 DisplayCommit.githubLoader = getCommitDiffFromGithub;
+DisplayCommit.dataDriftLoader = getCommitDiffFromDataDrift;
 
 export default DisplayCommit;
