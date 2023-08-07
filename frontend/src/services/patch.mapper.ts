@@ -11,10 +11,13 @@ export const parsePatch = (patch: string, headers: string[]) => {
   );
   if (!headerData) {
     const oldHeadersStringWithModifier = lines.shift();
+    const modifier = oldHeadersStringWithModifier?.substring(0, 1);
+    if (modifier === "-") {
+      firstAddedLineShouldBeSkiped = true;
+    }
     const oldHeadersString = oldHeadersStringWithModifier?.substring(1);
     oldHeaders =
       oldHeadersString?.split(",").map((header) => header.trim()) || [];
-    firstAddedLineShouldBeSkiped = true;
   }
 
   const oldData: TableProps = {

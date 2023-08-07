@@ -121,4 +121,17 @@ describe("parsePatch", () => {
     ]);
     expect(results).toMatchSnapshot();
   });
+
+  it("should handle when headers are in patch", () => {
+    const patch =
+      "@@ -1,31 +1,31 @@\n unique_key,date_month,country,mrr_bop\n-2022-01-01__FR,2022-01-01,FR,11.11\n unique_key,date_month,country,mrr_bop\n+2022-01-01__FR,2022-01-01,FR,22.22";
+
+    const results = parsePatch(patch, [
+      "unique_key",
+      "date_month",
+      "mrr_bop",
+      "country",
+    ]);
+    expect(results).toMatchSnapshot();
+  });
 });

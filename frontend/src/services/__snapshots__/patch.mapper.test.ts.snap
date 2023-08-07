@@ -439,6 +439,105 @@ exports[`parsePatch should handle large datasets 1`] = `
 }
 `;
 
+exports[`parsePatch should handle when headers are in patch 1`] = `
+{
+  "newData": {
+    "data": [
+      {
+        "data": [
+          {
+            "value": "unique_key",
+          },
+          {
+            "value": "date_month",
+          },
+          {
+            "value": "country",
+          },
+          {
+            "value": "mrr_bop",
+          },
+        ],
+        "isEmphasized": false,
+      },
+      {
+        "data": [
+          {
+            "value": "2022-01-01__FR",
+          },
+          {
+            "value": "2022-01-01",
+          },
+          {
+            "isEmphasized": true,
+            "value": "FR",
+          },
+          {
+            "isEmphasized": true,
+            "value": "22.22",
+          },
+        ],
+        "isEmphasized": true,
+      },
+    ],
+    "diffType": "added",
+    "headers": [
+      "unique_key",
+      "date_month",
+      "mrr_bop",
+      "country",
+    ],
+  },
+  "oldData": {
+    "data": [
+      {
+        "data": [
+          {
+            "value": "2022-01-01__FR",
+          },
+          {
+            "value": "2022-01-01",
+          },
+          {
+            "isEmphasized": true,
+            "value": "FR",
+          },
+          {
+            "isEmphasized": true,
+            "value": "11.11",
+          },
+        ],
+        "isEmphasized": true,
+      },
+      {
+        "data": [
+          {
+            "value": "unique_key",
+          },
+          {
+            "value": "date_month",
+          },
+          {
+            "value": "country",
+          },
+          {
+            "value": "mrr_bop",
+          },
+        ],
+        "isEmphasized": false,
+      },
+    ],
+    "diffType": "removed",
+    "headers": [
+      "unique_key",
+      "date_month",
+      "country",
+      "mrr_bop",
+    ],
+  },
+}
+`;
+
 exports[`parsePatch should handle when headers change 1`] = `
 {
   "newData": {
