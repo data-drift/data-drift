@@ -9,7 +9,11 @@ import {
 } from "recharts";
 
 const formatXAxisTick = (tickValue: number) => {
-  return Math.round(tickValue).toString();
+  return `${Math.round(tickValue).toString()}d`;
+};
+
+const formatYAxisTick = (tickValue: number) => {
+  return `${tickValue}%`;
 };
 
 export const StepChart = ({ data }: { data: any[] }) => {
@@ -22,7 +26,7 @@ export const StepChart = ({ data }: { data: any[] }) => {
     >
       <CartesianGrid strokeDasharray="3 3" />
       <XAxis dataKey="x" tickFormatter={formatXAxisTick} type="number" />
-      <YAxis />
+      <YAxis tickFormatter={formatYAxisTick} />
       <Tooltip />
       <Legend />
       <Line
