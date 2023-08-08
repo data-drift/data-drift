@@ -58,7 +58,17 @@ func CreateSummaryReport(syncConfig common.SyncConfig, metricConfig common.Metri
 				URL: chartUrl,
 			},
 		)
-
+		reports, err := notion_database.QueryDatabaseWithMetricAndTimegrain(syncConfig.NotionAPIKey, syncConfig.NotionDatabaseID, metricConfig.MetricName, timeGrain)
+		for _, report := range reports {
+			children = append(children, notion.LinkToPageBlock{
+				Type:   "page_id",
+				PageID: report.ID,
+			})
+		}
+		if err != nil {
+			print("Error getting links for report in summary page", err.Error())
+		}
+		// get report of metric and timegrain, ordered by name and push them in children
 	}
 	err := notion_database.UpdateMetadataReport(syncConfig.NotionAPIKey, reportNotionPageId, children, &notion.DatabasePageProperties{})
 	if err != nil {
