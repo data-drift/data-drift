@@ -16,7 +16,13 @@ const formatYAxisTick = (tickValue: number) => {
   return `${tickValue}%`;
 };
 
-export const StepChart = ({ data }: { data: any[] }) => {
+type MetricEvolution = Array<
+  {
+    daysSinceFirstReport: number;
+  } & Record<`${number}-${number}`, number>
+>;
+
+export const StepChart = ({ data }: { data: MetricEvolution }) => {
   return (
     <LineChart
       width={500}
@@ -25,13 +31,17 @@ export const StepChart = ({ data }: { data: any[] }) => {
       margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
     >
       <CartesianGrid strokeDasharray="3 3" />
-      <XAxis dataKey="x" tickFormatter={formatXAxisTick} type="number" />
+      <XAxis
+        dataKey="daysSinceFirstReport"
+        tickFormatter={formatXAxisTick}
+        type="number"
+      />
       <YAxis tickFormatter={formatYAxisTick} />
       <Tooltip />
       <Legend />
       <Line
         type="stepAfter"
-        dataKey="y"
+        dataKey="2023-02"
         stroke="#8884d8"
         activeDot={{ r: 8 }}
       />
