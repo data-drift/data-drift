@@ -8,6 +8,8 @@ import {
   Legend,
 } from "recharts";
 
+import { scaleLinear } from "d3-scale";
+
 const formatXAxisTick = (tickValue: number) => {
   return `${Math.round(tickValue).toString()}d`;
 };
@@ -16,13 +18,41 @@ const formatYAxisTick = (tickValue: number) => {
   return `${tickValue}%`;
 };
 
+const colorSelector = (year: string) => {
+  switch (year) {
+    case "2022":
+      return ["red", "blue"];
+    case "2023":
+      return ["green", "yellow"];
+    default:
+      return ["black", "white"];
+  }
+};
+
+type YearMonthString = `${number}-${number}`;
+
 type MetricEvolution = Array<
   {
     daysSinceFirstReport: number;
-  } & Record<`${number}-${number}`, number>
+  } & Record<YearMonthString, number>
 >;
 
-export const StepChart = ({ data }: { data: MetricEvolution }) => {
+const getMetricColor = (yearMonthString: YearMonthString) => {
+  const [year, month] = yearMonthString.split("-");
+  console.log(year, month);
+  const scale = scaleLinear([0, 11], colorSelector(year));
+
+  console.log(scale(parseInt(month, 10)));
+  return scale(parseInt(month, 10));
+};
+
+export const StepChart = ({
+  data,
+  metricNames,
+}: {
+  data: MetricEvolution;
+  metricNames: YearMonthString[];
+}) => {
   return (
     <LineChart
       width={500}
@@ -39,12 +69,14 @@ export const StepChart = ({ data }: { data: MetricEvolution }) => {
       <YAxis tickFormatter={formatYAxisTick} />
       <Tooltip />
       <Legend />
-      <Line
-        type="stepAfter"
-        dataKey="2023-02"
-        stroke="#8884d8"
-        activeDot={{ r: 8 }}
-      />
+      {metricNames.map((metricName) => (
+        <Line
+          type="stepAfter"
+          dataKey={metricName}
+          stroke={getMetricColor(metricName)}
+          activeDot={{ r: 8 }}
+        />
+      ))}
     </LineChart>
   );
 };
