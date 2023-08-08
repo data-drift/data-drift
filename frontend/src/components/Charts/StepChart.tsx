@@ -8,15 +8,11 @@ import {
   Legend,
 } from "recharts";
 
-const data = [
-  { name: "A", uv: 4000 },
-  { name: "B", uv: 3000 },
-  { name: "C", uv: 2000 },
-  { name: "D", uv: 2780 },
-  { name: "E", uv: 1890 },
-];
+const formatXAxisTick = (tickValue: number) => {
+  return Math.round(tickValue).toString();
+};
 
-export const StepChart = () => {
+export const StepChart = ({ data }: { data: any[] }) => {
   return (
     <LineChart
       width={500}
@@ -25,13 +21,13 @@ export const StepChart = () => {
       margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
     >
       <CartesianGrid strokeDasharray="3 3" />
-      <XAxis dataKey="name" />
+      <XAxis dataKey="x" tickFormatter={formatXAxisTick} type="number" />
       <YAxis />
       <Tooltip />
       <Legend />
       <Line
         type="stepAfter"
-        dataKey="uv"
+        dataKey="y"
         stroke="#8884d8"
         activeDot={{ r: 8 }}
       />
