@@ -91,6 +91,46 @@ func QueryDatabaseWithReportId(apiKey string, databaseId string, reportId string
 	}
 }
 
+func QueryDatabaseWithMetricAndTimegrain(apiKey string, databaseId string, metricName string, timeGrain common.TimeGrain) ([]notion.Page, error) {
+	buf := &bytes.Buffer{}
+	ctx := context.Background()
+
+	httpClient := &http.Client{
+		Timeout:   10 * time.Second,
+		Transport: &httpTransport{w: buf},
+	}
+	client := notion.NewClient(apiKey, notion.WithHTTPClient(httpClient))
+
+	queryParams := &notion.DatabaseQuery{
+		Filter: &notion.DatabaseQueryFilter{
+			And: []notion.DatabaseQueryFilter{
+				{
+					Property: "datadrift-id",
+					DatabaseQueryPropertyFilter: notion.DatabaseQueryPropertyFilter{
+						RichText: &notion.TextPropertyFilter{
+							StartsWith: metricName,
+						},
+					},
+				},
+				{
+					Property: "datadrift-timegrain",
+					DatabaseQueryPropertyFilter: notion.DatabaseQueryPropertyFilter{
+						Select: &notion.SelectDatabaseQueryFilter{
+							Equals: string(timeGrain),
+						},
+					},
+				},
+			},
+		},
+		Sorts: []notion.DatabaseQuerySort{
+			{Property: "datadrift-id", Direction: "ascending"},
+		},
+	}
+
+	existingReport, err := client.QueryDatabase(ctx, databaseId, queryParams)
+	return existingReport.Results, err
+}
+
 func CreateEmptyReport(apiKey string, databaseId string, reportId string, period string, timeGrain common.TimeGrain, dimensionValue common.DimensionValue) (string, error) {
 	buf := &bytes.Buffer{}
 	ctx := context.Background()
