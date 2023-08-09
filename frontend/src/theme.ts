@@ -24,6 +24,8 @@ export const theme = {
       2022: ["#62A8E9", "#6EDB9F"],
       2023: ["#6EDB9F", "#287D57"],
     },
+    dataUp: "#006DCC",
+    dataDown: "#E35300",
   },
   spacing: (multiplicator: number) => `${multiplicator * 4}px`,
   text: {
