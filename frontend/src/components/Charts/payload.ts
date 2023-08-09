@@ -1,6 +1,6 @@
 import { MetricEvolution, YearMonthString } from "./StepChart";
 
-export const payload = {
+const payload = {
   datasets: [
     {
       data: [

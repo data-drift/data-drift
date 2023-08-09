@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { StepChart, YearMonthString } from "./StepChart";
+import { StepChart } from "./StepChart";
 
-import { args, payload } from "./payload";
+import { args } from "./payload";
 
 const meta = {
   title: "Charts/StepChart",
