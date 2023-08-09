@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 
 import { StepChart, YearMonthString } from "./StepChart";
 
-import { payload } from "./payload";
+import { args, payload } from "./payload";
 
 const meta = {
   title: "Charts/StepChart",
@@ -50,41 +50,6 @@ export const SingleMetric: Story = {
   },
 };
 
-const mapPayloadToArgs = (data: typeof payload): Story["args"] => {
-  console.log(data);
-  const result = data.datasets.reduce<Story["args"]>(
-    (
-      acc: {
-        metricNames: Story["args"]["metricNames"];
-        data: Story["args"]["data"];
-      },
-      dataset
-    ) => {
-      const newData = acc.data;
-      const metricName = dataset.label as YearMonthString;
-      dataset.data.forEach((dataPoint) => {
-        if (newData[dataPoint.x]) {
-          newData[dataPoint.x][metricName] = dataPoint.y;
-        } else {
-          newData.push({
-            daysSinceFirstReport: dataPoint.x,
-            [dataset.label]: dataPoint.y,
-          });
-        }
-      });
-      return {
-        metricNames: [...acc.metricNames, metricName].sort(),
-        data: newData,
-      };
-    },
-    {
-      metricNames: [] as Story["args"]["metricNames"],
-      data: [] as Story["args"]["data"],
-    }
-  );
-  return result;
-};
-
 export const MultipleMetrics: Story = {
-  args: mapPayloadToArgs(payload),
+  args: args,
 };

@@ -1,3 +1,5 @@
+import { MetricEvolution, YearMonthString } from "./StepChart";
+
 export const payload = {
   datasets: [
     {
@@ -359,3 +361,36 @@ export const payload = {
     },
   ],
 };
+
+const mapPayloadToArgs = (data: typeof payload) => {
+  console.log(data);
+  const result = data.datasets.reduce(
+    (
+      acc: {
+        metricNames: YearMonthString[];
+        data: MetricEvolution;
+      },
+      dataset
+    ) => {
+      const newData = acc.data;
+      const metricName = dataset.label as YearMonthString;
+      dataset.data.forEach((dataPoint) => {
+        newData.push({
+          daysSinceFirstReport: dataPoint.x,
+          [metricName]: dataPoint.y,
+        });
+      });
+      return {
+        metricNames: [...acc.metricNames, metricName].sort(),
+        data: newData,
+      };
+    },
+    {
+      metricNames: [] as YearMonthString[],
+      data: [] as MetricEvolution,
+    }
+  );
+  return result;
+};
+
+export const args = mapPayloadToArgs(payload);

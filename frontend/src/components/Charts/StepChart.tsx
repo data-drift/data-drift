@@ -19,7 +19,7 @@ const formatYAxisTick = (tickValue: number) => {
 
 export type YearMonthString = `${number}-${number}`;
 
-type MetricEvolution = Array<
+export type MetricEvolution = Array<
   {
     daysSinceFirstReport: number;
   } & Record<YearMonthString, number>
