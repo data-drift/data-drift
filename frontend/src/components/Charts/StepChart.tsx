@@ -18,6 +18,10 @@ const formatYAxisTick = (tickValue: number) => {
   return `${tickValue}%`;
 };
 
+const formatToolTipValueTick = (tickValue: number) => {
+  return `${tickValue.toPrecision(3)}%`;
+};
+
 export type YearMonthString = `${number}-${number}`;
 
 export type MetricEvolution = Array<
@@ -47,7 +51,11 @@ export const StepChart = ({
         type="number"
       />
       <YAxis tickFormatter={formatYAxisTick} />
-      <Tooltip />
+      <Tooltip
+        formatter={formatToolTipValueTick}
+        labelFormatter={formatXAxisTick}
+        contentStyle={{ backgroundColor: theme.colors.background }}
+      />
       <Legend />
       {metricNames.map((metricName) => (
         <Line
