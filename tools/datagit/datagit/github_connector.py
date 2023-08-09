@@ -14,12 +14,10 @@ def store_metric(
     ghClient: Github,
     dataframe: pd.DataFrame,
     filepath: str,
-    assignees: List[str] = [],
+    assignees: Optional[List[str]] = None,
     branch: Optional[str] = None,
     store_json: bool = True,
-    drift_evaluator: Callable[
-        [Dict[str, pd.DataFrame]], Dict
-    ] = default_drift_evaluator,
+    drift_evaluator: Callable[[Dict[str, pd.DataFrame]], Dict] = default_drift_evaluator,
 ) -> None:
     """
     Store metrics into a specific repository file on GitHub.
@@ -49,6 +47,9 @@ def store_metric(
       GithubException: If there is an error in interacting with the GitHub API, e.g.,
         insufficient permissions, non-existent repo, etc.
     """
+    if assignees is None:
+        assignees = []
+
     print("Storing metric...")
     repo_orga, repo_name, file_path = filepath.split("/", 2)
     branch = branch or get_valid_branch_name(file_path)
