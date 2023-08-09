@@ -1,12 +1,13 @@
 import { scaleLinear } from "d3-scale";
 import { YearMonthString } from "./StepChart";
+import { theme } from "../../theme";
 
 const colorSelector = (year: string) => {
   switch (year) {
     case "2022":
-      return ["red", "blue"];
+      return theme.colors.charts["2022"];
     case "2023":
-      return ["green", "yellow"];
+      return theme.colors.charts["2023"];
     default:
       return ["black", "white"];
   }

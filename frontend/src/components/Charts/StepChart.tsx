@@ -35,12 +35,12 @@ export const StepChart = ({
 }) => {
   return (
     <LineChart
-      width={500}
-      height={300}
+      width={1000}
+      height={600}
       data={data}
       margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
     >
-      <CartesianGrid strokeDasharray="3 3" fill={theme.colors.background} />
+      <CartesianGrid strokeDasharray="3 3" fill={theme.colors.background2} />
       <XAxis
         dataKey="daysSinceFirstReport"
         tickFormatter={formatXAxisTick}
@@ -54,7 +54,7 @@ export const StepChart = ({
           type="stepAfter"
           dataKey={metricName}
           stroke={getMetricColor(metricName)}
-          activeDot={{ r: 8 }}
+          dot={false}
         />
       ))}
     </LineChart>

@@ -20,6 +20,10 @@ export const theme = {
             light: diffColors.lightNegative,
           };
     },
+    charts: {
+      2022: ["#62A8E9", "#6EDB9F"],
+      2023: ["#6EDB9F", "#287D57"],
+    },
   },
   spacing: (multiplicator: number) => `${multiplicator * 4}px`,
   text: {
