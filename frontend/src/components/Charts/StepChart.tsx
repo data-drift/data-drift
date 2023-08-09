@@ -49,7 +49,11 @@ export const StepChart = ({
       data={data}
       margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
     >
-      <CartesianGrid strokeDasharray="3 3" fill={theme.colors.background2} />
+      <CartesianGrid
+        fill={theme.colors.background2}
+        vertical={false}
+        strokeDasharray={"2 2"}
+      />
       <XAxis
         dataKey="daysSinceFirstReport"
         tickFormatter={formatXAxisTick}
@@ -70,7 +74,7 @@ export const StepChart = ({
           type="stepAfter"
           dataKey={metricName}
           stroke={getMetricColor(metricName)}
-          strokeWidth={highlightedMetric === metricName ? 3 : 1}
+          strokeWidth={highlightedMetric === metricName ? 5 : 1}
           dot={false}
         />
       ))}
