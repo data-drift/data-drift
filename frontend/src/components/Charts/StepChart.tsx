@@ -9,6 +9,7 @@ import {
 } from "recharts";
 import { getMetricColor } from "./colors.utils";
 import { theme } from "../../theme";
+import { useState } from "react";
 
 const formatXAxisTick = (tickValue: number) => {
   return `${Math.round(tickValue).toString()}d`;
@@ -37,6 +38,10 @@ export const StepChart = ({
   data: MetricEvolution;
   metricNames: YearMonthString[];
 }) => {
+  const [highlightedMetric, setHighlightedMetric] = useState<string | null>(
+    null
+  );
+
   return (
     <LineChart
       width={1000}
@@ -56,12 +61,16 @@ export const StepChart = ({
         labelFormatter={formatXAxisTick}
         contentStyle={{ backgroundColor: theme.colors.background }}
       />
-      <Legend />
+      <Legend
+        onMouseEnter={({ dataKey }) => setHighlightedMetric(dataKey as string)}
+        onMouseLeave={() => setHighlightedMetric(null)}
+      />
       {metricNames.map((metricName) => (
         <Line
           type="stepAfter"
           dataKey={metricName}
           stroke={getMetricColor(metricName)}
+          strokeWidth={highlightedMetric === metricName ? 3 : 1}
           dot={false}
         />
       ))}
