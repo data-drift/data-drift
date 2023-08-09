@@ -36,6 +36,8 @@ def store_metric(
         If None, a branch name will be generated f"metric/{filepath}". Defaults to None.
       store_json (bool): If True, stores the dataframe in the .json format.
         Defaults to True.
+      drift_evaluator (Callable): Function that evaluates context and return information
+        about how drift should be handled. See `drift_evaluator` module.
 
     Returns:
       None: This function does not return any value, but it performs a side effect of
