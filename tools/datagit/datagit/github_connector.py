@@ -14,28 +14,42 @@ def store_metric(
     ghClient: Github,
     dataframe: pd.DataFrame,
     filepath: str,
-    assignees: List[str] = [],
+    assignees: Optional[List[str]] = None,
     branch: Optional[str] = None,
     store_json: bool = True,
-    drift_evaluator: Callable[
-        [Dict[str, pd.DataFrame]], Dict
-    ] = default_drift_evaluator,
+    drift_evaluator: Callable[[Dict[str, pd.DataFrame]], Dict] = default_drift_evaluator,
 ) -> None:
     """
-    Store metrics into a specific repository file on Github.
+    Store metrics into a specific repository file on GitHub.
+
     Parameters:
-    ghClient (Github): An instance of a Github client to interact with the Github API.
-    dataframe (pd.DataFrame): The dataframe containing the metrics to be stored.
-    filepath (str): The full path to the target file in the format 'organization/repository/path_to_file'.
-    assignees (List[str]): List of Github usernames to be assigned to the pull request. Defaults to an empty list. If list is empty no alert will be raised, nor pull request will be created.
-    branch (Optional[str]): The name of the branch where the metrics will be stored. If None, a branch name will be generated f"metric/{filepath}". Defaults to None.
-    store_json (bool): If True, stores the dataframe in the .json format. Defaults to True.
+      ghClient (Github): An instance of a GitHub client to interact with the GitHub API.
+      dataframe (pd.DataFrame): The dataframe containing the metrics to be stored.
+      filepath (str): The full path to the target file in the format
+        'organization/repository/path_to_file'.
+      assignees (List[str]): List of GitHub usernames to be assigned to the pull request.
+        Defaults to an empty list. If list is empty no alert will be raised, nor pull
+        request will be created.
+      branch (Optional[str]): The name of the branch where the metrics will be stored.
+        If None, a branch name will be generated f"metric/{filepath}". Defaults to None.
+      store_json (bool): If True, stores the dataframe in the .json format.
+        Defaults to True.
+      drift_evaluator (Callable): Function that evaluates context and return information
+        about how drift should be handled. See `drift_evaluator` module.
+
     Returns:
-    None: This function does not return any value, but it performs a side effect of pushing the metric to Github.
+      None: This function does not return any value, but it performs a side effect of
+      pushing the metric to GitHub.
+
     Raises:
-    ValueError: If the dataframe does not have a unique first column or if the file path does not have the format 'organization/repository/path_to_file'.
-    GithubException: If there is an error in interacting with the Github API, e.g., insufficient permissions, non-existent repo, etc.
+      ValueError: If the dataframe does not have a unique first column or if the file
+        path does not have the format 'organization/repository/path_to_file'.
+      GithubException: If there is an error in interacting with the GitHub API, e.g.,
+        insufficient permissions, non-existent repo, etc.
     """
+    if assignees is None:
+        assignees = []
+
     print("Storing metric...")
     repo_orga, repo_name, file_path = filepath.split("/", 2)
     branch = branch or get_valid_branch_name(file_path)

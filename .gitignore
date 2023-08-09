@@ -25,3 +25,7 @@ vendor/
 .env.secret
 
 *.pem
+
+# Pycharm internal config
+.idea
+
