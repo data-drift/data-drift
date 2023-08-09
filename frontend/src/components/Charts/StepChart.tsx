@@ -8,6 +8,7 @@ import {
   Legend,
 } from "recharts";
 import { getMetricColor } from "./colors.utils";
+import { theme } from "../../theme";
 
 const formatXAxisTick = (tickValue: number) => {
   return `${Math.round(tickValue).toString()}d`;
@@ -39,7 +40,7 @@ export const StepChart = ({
       data={data}
       margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
     >
-      <CartesianGrid strokeDasharray="3 3" />
+      <CartesianGrid strokeDasharray="3 3" fill={theme.colors.background} />
       <XAxis
         dataKey="daysSinceFirstReport"
         tickFormatter={formatXAxisTick}
