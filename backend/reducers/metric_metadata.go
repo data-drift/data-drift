@@ -16,6 +16,7 @@ import (
 type RelativeHistoricalEvent struct {
 	RelativeValue         decimal.Decimal
 	DaysFromHistorization decimal.Decimal
+	ComputationTimetamp   int64
 }
 
 type MetricMetadata struct {
@@ -89,6 +90,7 @@ func getMetadataOfMetric(metric common.Metric) (MetricMetadata, error) {
 		relativeHistoricalEvent := RelativeHistoricalEvent{
 			RelativeValue:         commitData.KPI.Sub(initialValue).Div(initialValue).Mul(decimal.NewFromInt(100)),
 			DaysFromHistorization: decimal.NewFromFloat(durationFromFirstComputation.Hours() / 24),
+			ComputationTimetamp:   commitData.CommitTimestamp,
 		}
 		relativeHistory[durationFromFirstComputation] = relativeHistoricalEvent
 	}
