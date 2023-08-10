@@ -2,6 +2,7 @@ package reports
 
 import (
 	"fmt"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -9,6 +10,7 @@ import (
 	"github.com/data-drift/data-drift/common"
 	"github.com/data-drift/data-drift/database/notion_database"
 	"github.com/dstotijn/go-notion"
+	"github.com/gin-gonic/gin"
 )
 
 func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error {
@@ -145,4 +147,33 @@ func ParseQuarterDate(s string) (time.Time, error) {
 	default:
 		return time.Time{}, fmt.Errorf("invalid quarter format in quarter date: %s", s)
 	}
+}
+
+func GetMetricCohort(c *gin.Context) {
+	metricName := []string{
+		"2022-01", "2022-02", "2022-03", "2022-04", "2022-05", "2022-06",
+		"2022-07", "2022-08", "2022-09", "2022-10", "2022-11", "2022-12",
+		"2023-01", "2023-02", "2023-03", "2023-04",
+	}
+
+	data := []map[string]interface{}{
+		{
+			"daysSinceFirstReport": 316.423287037037,
+			"2022-02":              0,
+		},
+		{
+			"daysSinceFirstReport": 316.4266087962963,
+			"2022-02":              0,
+		},
+		{
+			"daysSinceFirstReport": 316.4275,
+			"2022-02":              0,
+		},
+	}
+	response := map[string]interface{}{
+		"metricName": metricName,
+		"data":       data,
+	}
+
+	c.JSON(http.StatusOK, response)
 }

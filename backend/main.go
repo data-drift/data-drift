@@ -57,6 +57,8 @@ func main() {
 	router.POST("webhooks/github", github.HandleWebhook)
 	router.GET("gh/:owner/:repo/commit/:commit-sha", github.GetCommitDiff)
 
+	router.GET("metrics/:metric-name/cohorts", reports.GetMetricCohort)
+
 	router.POST("validate-config", github.ValidateConfigHandler)
 
 	router.Run(":" + port)
