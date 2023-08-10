@@ -105,22 +105,22 @@ func TestGetMetadataOfMetric(t *testing.T) {
 	}
 
 	relativeHistory := map[time.Duration]RelativeHistoricalEvent{
-		10*time.Hour + 45*time.Minute + 10*time.Second:   {getDecimalFromString("100").Sub(decimal.NewFromInt(100)), getDecimalFromString("0.4480324074074074")},
-		376*time.Hour + 57*time.Minute + 1*time.Second:   {getDecimalFromString("99.82359853559646").Sub(decimal.NewFromInt(100)), getDecimalFromString("15.706261574074075")},
-		395*time.Hour + 40*time.Minute + 4*time.Second:   {getDecimalFromString("99.88601751530848").Sub(decimal.NewFromInt(100)), getDecimalFromString("16.486157407407408")},
-		413*time.Hour + 31*time.Minute + 52*time.Second:  {getDecimalFromString("99.82359853559646").Sub(decimal.NewFromInt(100)), getDecimalFromString("17.230462962962964")},
-		485*time.Hour + 20*time.Minute + 20*time.Second:  {getDecimalFromString("99.88601751530848").Sub(decimal.NewFromInt(100)), getDecimalFromString("20.222453703703703")},
-		512*time.Hour + 53*time.Minute + 55*time.Second:  {getDecimalFromString("99.88601751530848").Sub(decimal.NewFromInt(100)), getDecimalFromString("21.370775462962964")},
-		533*time.Hour + 22*time.Minute + 53*time.Second:  {getDecimalFromString("99.88601751530848").Sub(decimal.NewFromInt(100)), getDecimalFromString("22.224224537037035")},
-		821*time.Hour + 23*time.Minute + 48*time.Second:  {getDecimalFromString("99.88601751530848").Sub(decimal.NewFromInt(100)), getDecimalFromString("34.22486111111111")},
-		1185*time.Hour + 4*time.Minute + 27*time.Second:  {getDecimalFromString("100.31480876724324").Sub(decimal.NewFromInt(100)), getDecimalFromString("49.37809027777778")},
-		1189*time.Hour + 43*time.Minute + 48*time.Second: {getDecimalFromString("100.31480876724324").Sub(decimal.NewFromInt(100)), getDecimalFromString("49.57208333333333")},
-		1191*time.Hour + 18*time.Minute + 50*time.Second: {getDecimalFromString("100.31480876724324").Sub(decimal.NewFromInt(100)), getDecimalFromString("49.638078703703705")},
-		1329*time.Hour + 55*time.Minute + 20*time.Second: {getDecimalFromString("100.31480876724324").Sub(decimal.NewFromInt(100)), getDecimalFromString("55.41342592592593")},
-		1350*time.Hour + 55*time.Minute + 14*time.Second: {getDecimalFromString("100.31480876724324").Sub(decimal.NewFromInt(100)), getDecimalFromString("56.288356481481486")},
-		1373*time.Hour + 51*time.Minute + 17*time.Second: {getDecimalFromString("100.44869295561106").Sub(decimal.NewFromInt(100)), getDecimalFromString("57.243946759259266")},
-		1493*time.Hour + 49*time.Minute + 14*time.Second: {getDecimalFromString("100.44869295561106").Sub(decimal.NewFromInt(100)), getDecimalFromString("62.242523148148145")},
-		1541*time.Hour + 21*time.Minute + 32*time.Second: {getDecimalFromString("100.44869295561106").Sub(decimal.NewFromInt(100)), getDecimalFromString("64.22328703703704")},
+		10*time.Hour + 45*time.Minute + 10*time.Second:   {getDecimalFromString("100").Sub(decimal.NewFromInt(100)), getDecimalFromString("0.4480324074074074"), 1677667509},
+		376*time.Hour + 57*time.Minute + 1*time.Second:   {getDecimalFromString("99.82359853559646").Sub(decimal.NewFromInt(100)), getDecimalFromString("15.706261574074075"), 1678985820},
+		395*time.Hour + 40*time.Minute + 4*time.Second:   {getDecimalFromString("99.88601751530848").Sub(decimal.NewFromInt(100)), getDecimalFromString("16.486157407407408"), 1679053203},
+		413*time.Hour + 31*time.Minute + 52*time.Second:  {getDecimalFromString("99.82359853559646").Sub(decimal.NewFromInt(100)), getDecimalFromString("17.230462962962964"), 1679117511},
+		485*time.Hour + 20*time.Minute + 20*time.Second:  {getDecimalFromString("99.88601751530848").Sub(decimal.NewFromInt(100)), getDecimalFromString("20.222453703703703"), 1679376019},
+		512*time.Hour + 53*time.Minute + 55*time.Second:  {getDecimalFromString("99.88601751530848").Sub(decimal.NewFromInt(100)), getDecimalFromString("21.370775462962964"), 1679475234},
+		533*time.Hour + 22*time.Minute + 53*time.Second:  {getDecimalFromString("99.88601751530848").Sub(decimal.NewFromInt(100)), getDecimalFromString("22.224224537037035"), 1679548972},
+		821*time.Hour + 23*time.Minute + 48*time.Second:  {getDecimalFromString("99.88601751530848").Sub(decimal.NewFromInt(100)), getDecimalFromString("34.22486111111111"), 1680585827},
+		1185*time.Hour + 4*time.Minute + 27*time.Second:  {getDecimalFromString("100.31480876724324").Sub(decimal.NewFromInt(100)), getDecimalFromString("49.37809027777778"), 1681895066},
+		1189*time.Hour + 43*time.Minute + 48*time.Second: {getDecimalFromString("100.31480876724324").Sub(decimal.NewFromInt(100)), getDecimalFromString("49.57208333333333"), 1681911827},
+		1191*time.Hour + 18*time.Minute + 50*time.Second: {getDecimalFromString("100.31480876724324").Sub(decimal.NewFromInt(100)), getDecimalFromString("49.638078703703705"), 1681917529},
+		1329*time.Hour + 55*time.Minute + 20*time.Second: {getDecimalFromString("100.31480876724324").Sub(decimal.NewFromInt(100)), getDecimalFromString("55.41342592592593"), 1682416519},
+		1350*time.Hour + 55*time.Minute + 14*time.Second: {getDecimalFromString("100.31480876724324").Sub(decimal.NewFromInt(100)), getDecimalFromString("56.288356481481486"), 1682492113},
+		1373*time.Hour + 51*time.Minute + 17*time.Second: {getDecimalFromString("100.44869295561106").Sub(decimal.NewFromInt(100)), getDecimalFromString("57.243946759259266"), 1682574676},
+		1493*time.Hour + 49*time.Minute + 14*time.Second: {getDecimalFromString("100.44869295561106").Sub(decimal.NewFromInt(100)), getDecimalFromString("62.242523148148145"), 1683006553},
+		1541*time.Hour + 21*time.Minute + 32*time.Second: {getDecimalFromString("100.44869295561106").Sub(decimal.NewFromInt(100)), getDecimalFromString("64.22328703703704"), 1683177691},
 	}
 
 	expected := MetricMetadata{
@@ -131,7 +131,7 @@ func TestGetMetadataOfMetric(t *testing.T) {
 		RelativeHistory: relativeHistory,
 	}
 
-	result, _ := getMetadataOfMetric(metric)
+	result, _ := GetMetadataOfMetric(metric)
 
 	if expected.FirstDate != result.FirstDate {
 		t.Errorf("Expected firstDate %s, but got %s", expected.FirstDate, result.FirstDate)
@@ -144,7 +144,11 @@ func TestGetMetadataOfMetric(t *testing.T) {
 	for key, value := range result.RelativeHistory {
 
 		if !expected.RelativeHistory[key].RelativeValue.Equal(value.RelativeValue) {
-			t.Errorf("Expected RelativeHistory %s for key %s, but got %s", expected.RelativeHistory[key], key, value)
+			t.Errorf("Expected RelativeHistory %s for key %s, but got %s", expected.RelativeHistory[key].RelativeValue, key, value.RelativeValue)
+		}
+
+		if expected.RelativeHistory[key].ComputationTimetamp != value.ComputationTimetamp {
+			t.Errorf("Expected RelativeHistory %d for key %s, but got %d", expected.RelativeHistory[key].ComputationTimetamp, key, value.ComputationTimetamp)
 		}
 	}
 

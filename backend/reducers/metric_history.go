@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
@@ -20,7 +19,7 @@ type ChartResponse struct {
 
 func ProcessMetricHistory(historyFilepath string, metric common.MetricConfig) []common.KPIReport {
 
-	data, err := GetKeysFromJSON(historyFilepath)
+	data, err := common.GetKeysFromJSON(historyFilepath)
 	if err != nil {
 		fmt.Println("Error:", err.Error())
 	}
@@ -227,21 +226,4 @@ func createChart(diff []interface{}, labels []interface{}, colors []interface{},
 func convertToChartMakerURL(url string) string {
 	chartMakerURL := strings.Replace(url, "chart/render", "chart-maker/view", 1)
 	return chartMakerURL
-}
-
-func GetKeysFromJSON(path string) (common.Metrics, error) {
-	// Read the file at the given path
-	jsonFile, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-
-	// Unmarshal the JSON data into the desired type
-	var data common.Metrics
-	err = json.Unmarshal(jsonFile, &data)
-	if err != nil {
-		return nil, err
-	}
-
-	return data, nil
 }

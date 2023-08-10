@@ -16,6 +16,7 @@ import (
 type RelativeHistoricalEvent struct {
 	RelativeValue         decimal.Decimal
 	DaysFromHistorization decimal.Decimal
+	ComputationTimetamp   int64
 }
 
 type MetricMetadata struct {
@@ -27,7 +28,7 @@ type MetricMetadata struct {
 }
 
 func ProcessMetricMetadataCharts(filepath string, metricConfig common.MetricConfig) (map[common.TimeGrain]string, error) {
-	metrics, marshelingError := GetKeysFromJSON(filepath)
+	metrics, marshelingError := common.GetKeysFromJSON(filepath)
 	if marshelingError != nil {
 		fmt.Println("[DATADRIFT ERROR]: marshaling data", marshelingError.Error())
 		return nil, marshelingError
@@ -49,7 +50,7 @@ func ProcessMetricMetadata(metricConfig common.MetricConfig, metrics common.Metr
 		if metric.Dimension != "none" {
 			continue
 		}
-		metricMetadata, metricMetadataErr := getMetadataOfMetric(metric)
+		metricMetadata, metricMetadataErr := GetMetadataOfMetric(metric)
 		if metricMetadataErr != nil {
 			continue
 		}
@@ -61,7 +62,7 @@ func ProcessMetricMetadata(metricConfig common.MetricConfig, metrics common.Metr
 	return metricMetadatas
 }
 
-func getMetadataOfMetric(metric common.Metric) (MetricMetadata, error) {
+func GetMetadataOfMetric(metric common.Metric) (MetricMetadata, error) {
 	firstDateOfPeriod := getFirstDateOfPeriod(metric.Period)
 	var dataSortableArray []common.CommitData
 
@@ -89,6 +90,7 @@ func getMetadataOfMetric(metric common.Metric) (MetricMetadata, error) {
 		relativeHistoricalEvent := RelativeHistoricalEvent{
 			RelativeValue:         commitData.KPI.Sub(initialValue).Div(initialValue).Mul(decimal.NewFromInt(100)),
 			DaysFromHistorization: decimal.NewFromFloat(durationFromFirstComputation.Hours() / 24),
+			ComputationTimetamp:   commitData.CommitTimestamp,
 		}
 		relativeHistory[durationFromFirstComputation] = relativeHistoricalEvent
 	}

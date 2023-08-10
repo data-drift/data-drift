@@ -1,6 +1,13 @@
 package common
 
-import "github.com/shopspring/decimal"
+import (
+	"encoding/json"
+	"fmt"
+	"os"
+	"path/filepath"
+
+	"github.com/shopspring/decimal"
+)
 
 type KPIReport struct {
 	KPIName        string          `json:"kpiName"`
@@ -94,4 +101,42 @@ type MetricConfig struct {
 	MetricName     string      `json:"metricName"`
 	TimeGrains     []TimeGrain `json:"timeGrains"`
 	Dimensions     []string    `json:"dimensions"`
+}
+
+func GetKeysFromJSON(path string) (Metrics, error) {
+	// Read the file at the given path
+	jsonFile, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	// Unmarshal the JSON data into the desired type
+	var data Metrics
+	err = json.Unmarshal(jsonFile, &data)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}
+
+func GetMetricFilepath(installationId string, metricName string, timestamp string) string {
+	filepath := fmt.Sprintf("dist/%s_%s_lineCountAndKPIByDateByVersion_%s.json", installationId, metricName, timestamp)
+	return filepath
+}
+
+func GetLatestMetricFile(installationId string, metricName string) (string, error) {
+	filepathPattern := fmt.Sprintf("dist/%s_%s_lineCountAndKPIByDateByVersion_*.json", installationId, metricName)
+	files, err := filepath.Glob(filepathPattern)
+	if err != nil {
+		return "", err
+	}
+
+	if len(files) == 0 {
+		return "", fmt.Errorf("no files found matching pattern %q", filepathPattern)
+	}
+
+	// Check the most recent file
+
+	return files[0], nil
 }
