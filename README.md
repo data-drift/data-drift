@@ -129,8 +129,6 @@ We 💚 contributions big and small. In priority order (although everything is 
 
 🌀 Automatic lineage drill-down and diff checks. [Learn more about this feature](https://www.data-drift.io/join-the-waitlist)
 
-🌀 dbt integration
-
 ## Coming later this year
 
 🗓 Sharing via Slack & emails
