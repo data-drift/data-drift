@@ -162,7 +162,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 	timestamp := time.Now().Format("2006-01-02_15-04-05")
 
 	// Open a file to write the line counts by date by version in JSON format.
-	filepath := fmt.Sprintf("dist/"+metricName+"lineCountAndKPIByDateByVersion_%s.json", timestamp)
+	filepath := fmt.Sprintf("dist/%d_%s_lineCountAndKPIByDateByVersion_%s.json", installationId, metricName, timestamp)
 	file, err := os.Create(filepath)
 	if err != nil {
 		log.Fatalf("Error creating file: %v", err.Error())
