@@ -2,7 +2,6 @@ package reports
 
 import (
 	"fmt"
-	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -10,7 +9,6 @@ import (
 	"github.com/data-drift/data-drift/common"
 	"github.com/data-drift/data-drift/database/notion_database"
 	"github.com/dstotijn/go-notion"
-	"github.com/gin-gonic/gin"
 )
 
 func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error {
@@ -146,62 +144,5 @@ func ParseQuarterDate(s string) (time.Time, error) {
 		return time.Date(year, time.December, 31, 0, 0, 0, 0, time.UTC), nil
 	default:
 		return time.Time{}, fmt.Errorf("invalid quarter format in quarter date: %s", s)
-	}
-}
-
-func GetMetricCohort(c *gin.Context) {
-
-	InstallationId := c.Request.Header.Get("Installation-Id")
-
-	if InstallationId == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "No installation id provided"})
-		return
-	}
-
-	metricName := c.Param("metric-name")
-	timeGrain := c.Param("timegrain")
-
-	filepath, err := common.GetLatestMetricFile(InstallationId, metricName)
-
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	metricHistory, err := common.GetKeysFromJSON(filepath)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	response := GetReportData(metricHistory, common.TimeGrain(timeGrain))
-
-	c.JSON(http.StatusOK, response)
-}
-
-func GetReportData(metrics common.Metrics, timeGrain common.TimeGrain) map[string]interface{} {
-	cohortDates := []string{}
-	reportData := make(map[int64]map[string]interface{})
-
-	for cohortName, cohort := range metrics {
-		if cohort.TimeGrain == timeGrain && cohort.Dimension == "none" {
-			cohortDates = append(cohortDates, string(cohortName))
-			for _, commit := range cohort.History {
-				timestampStr := commit.CommitTimestamp
-				if _, ok := reportData[timestampStr]; !ok {
-					reportData[timestampStr] = make(map[string]interface{})
-				}
-				reportData[timestampStr][string(cohortName)] = commit.KPI
-			}
-
-		}
-
-	}
-
-	// Return the response map.
-	return map[string]interface{}{
-		"timegrain":              timeGrain,
-		"cohortDates":            cohortDates,
-		"dataIndexedByTimestamp": reportData,
 	}
 }

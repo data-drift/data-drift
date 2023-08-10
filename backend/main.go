@@ -11,6 +11,7 @@ import (
 	"github.com/data-drift/data-drift/debug"
 	"github.com/data-drift/data-drift/github"
 	"github.com/data-drift/data-drift/history"
+	"github.com/data-drift/data-drift/metrics"
 	"github.com/data-drift/data-drift/reducers"
 	"github.com/data-drift/data-drift/reports"
 	"github.com/gin-contrib/cors"
@@ -57,7 +58,7 @@ func main() {
 	router.POST("webhooks/github", github.HandleWebhook)
 	router.GET("gh/:owner/:repo/commit/:commit-sha", github.GetCommitDiff)
 
-	router.GET("metrics/:metric-name/cohorts/:timegrain", reports.GetMetricCohort)
+	router.GET("metrics/:metric-name/cohorts/:timegrain", metrics.GetMetricCohort)
 
 	router.POST("validate-config", github.ValidateConfigHandler)
 
