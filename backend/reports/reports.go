@@ -159,6 +159,7 @@ func GetMetricCohort(c *gin.Context) {
 	}
 
 	metricName := c.Param("metric-name")
+	timeGrain := c.Param("timegrain")
 
 	filepath, err := common.GetLatestMetricFile(InstallationId, metricName)
 
@@ -167,33 +168,50 @@ func GetMetricCohort(c *gin.Context) {
 		return
 	}
 
-	print(filepath)
-
-	// Get file of cohorts, or get data from github and write file
-	cohortDates := []string{
-		"2022-01", "2022-02", "2022-03", "2022-04", "2022-05", "2022-06",
-		"2022-07", "2022-08", "2022-09", "2022-10", "2022-11", "2022-12",
-		"2023-01", "2023-02", "2023-03", "2023-04",
+	metricHistory, err := common.GetKeysFromJSON(filepath)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
-	data := []map[string]interface{}{
-		{
-			"daysSinceFirstReport": 316.423287037037,
-			"2022-02":              0,
-		},
-		{
-			"daysSinceFirstReport": 316.4266087962963,
-			"2022-02":              0,
-		},
-		{
-			"daysSinceFirstReport": 316.4275,
-			"2022-02":              0,
-		},
+	response := GetReportData(metricHistory, common.TimeGrain(timeGrain))
+
+	c.JSON(http.StatusOK, response)
+}
+
+func GetReportData(metrics common.Metrics, timeGrain common.TimeGrain) map[string]interface{} {
+	// Calculate the cohort dates based on the time grain.
+	cohortDates := []string{}
+	// now := time.Now()
+
+	for cohortName, cohort := range metrics {
+		if cohort.TimeGrain == timeGrain && cohort.Dimension == "none" {
+			print(string(cohort.Dimension))
+			cohortDates = append(cohortDates, string(cohortName))
+		}
 	}
-	response := map[string]interface{}{
+	// for i := 0; i < metrics; i++ {
+	// 	cohortDate := now.Add(-time.Duration(i) * timeGrain.Duration()).Format("2006-01-02")
+	// 	cohortDates = append(cohortDates, cohortDate)
+	// }
+
+	// Calculate the data based on the metrics.
+	data := []map[string]interface{}{}
+	// for _, version := range metrics.Versions {
+	// 	versionData := map[string]interface{}{
+	// 		"version": version,
+	// 	}
+	// 	for i := 0; i < metrics.CohortSize; i++ {
+	// 		date := now.Add(-time.Duration(i) * timeGrain.Duration()).Format("2006-01-02")
+	// 		count := rand.Intn(100)
+	// 		versionData[date] = count
+	// 	}
+	// 	data = append(data, versionData)
+	// }
+
+	// Return the response map.
+	return map[string]interface{}{
 		"cohortDates": cohortDates,
 		"data":        data,
 	}
-
-	c.JSON(http.StatusOK, response)
 }

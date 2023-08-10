@@ -1,7 +1,9 @@
 package common
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/shopspring/decimal"
@@ -101,6 +103,23 @@ type MetricConfig struct {
 	Dimensions     []string    `json:"dimensions"`
 }
 
+func GetKeysFromJSON(path string) (Metrics, error) {
+	// Read the file at the given path
+	jsonFile, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	// Unmarshal the JSON data into the desired type
+	var data Metrics
+	err = json.Unmarshal(jsonFile, &data)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}
+
 func GetMetricFilepath(installationId string, metricName string, timestamp string) string {
 	filepath := fmt.Sprintf("dist/%s_%s_lineCountAndKPIByDateByVersion_%s.json", installationId, metricName, timestamp)
 	return filepath
@@ -108,7 +127,6 @@ func GetMetricFilepath(installationId string, metricName string, timestamp strin
 
 func GetLatestMetricFile(installationId string, metricName string) (string, error) {
 	filepathPattern := fmt.Sprintf("dist/%s_%s_lineCountAndKPIByDateByVersion_*.json", installationId, metricName)
-	print(filepathPattern)
 	files, err := filepath.Glob(filepathPattern)
 	if err != nil {
 		return "", err
