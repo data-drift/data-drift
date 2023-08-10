@@ -1,6 +1,10 @@
 package common
 
-import "github.com/shopspring/decimal"
+import (
+	"fmt"
+
+	"github.com/shopspring/decimal"
+)
 
 type KPIReport struct {
 	KPIName        string          `json:"kpiName"`
@@ -94,4 +98,9 @@ type MetricConfig struct {
 	MetricName     string      `json:"metricName"`
 	TimeGrains     []TimeGrain `json:"timeGrains"`
 	Dimensions     []string    `json:"dimensions"`
+}
+
+func GetMetricFilepath(installationId int, metricName string, timestamp string) string {
+	filepath := fmt.Sprintf("dist/%d_%s_lineCountAndKPIByDateByVersion_%s.json", installationId, metricName, timestamp)
+	return filepath
 }
