@@ -180,14 +180,11 @@ func GetMetricCohort(c *gin.Context) {
 }
 
 func GetReportData(metrics common.Metrics, timeGrain common.TimeGrain) map[string]interface{} {
-	// Calculate the cohort dates based on the time grain.
 	cohortDates := []string{}
-
 	reportData := make(map[int64]map[string]interface{})
 
 	for cohortName, cohort := range metrics {
 		if cohort.TimeGrain == timeGrain && cohort.Dimension == "none" {
-			print(string(cohort.Dimension))
 			cohortDates = append(cohortDates, string(cohortName))
 			for _, commit := range cohort.History {
 				timestampStr := commit.CommitTimestamp
@@ -201,22 +198,10 @@ func GetReportData(metrics common.Metrics, timeGrain common.TimeGrain) map[strin
 
 	}
 
-	// Calculate the data based on the metrics.
-	// for _, cohort := range metrics {
-	// 	versionData := map[string]interface{}{
-	// 		"version": version,
-	// 	}
-	// 	for i := 0; i < metrics.CohortSize; i++ {
-	// 		date := now.Add(-time.Duration(i) * timeGrain.Duration()).Format("2006-01-02")
-	// 		count := rand.Intn(100)
-	// 		versionData[date] = count
-	// 	}
-	// 	data = append(data, versionData)
-	// }
-
 	// Return the response map.
 	return map[string]interface{}{
-		"cohortDates": cohortDates,
-		"data":        reportData,
+		"timegrain":              timeGrain,
+		"cohortDates":            cohortDates,
+		"dataIndexedByTimestamp": reportData,
 	}
 }
