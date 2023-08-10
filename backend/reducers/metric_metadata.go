@@ -50,7 +50,7 @@ func ProcessMetricMetadata(metricConfig common.MetricConfig, metrics common.Metr
 		if metric.Dimension != "none" {
 			continue
 		}
-		metricMetadata, metricMetadataErr := getMetadataOfMetric(metric)
+		metricMetadata, metricMetadataErr := GetMetadataOfMetric(metric)
 		if metricMetadataErr != nil {
 			continue
 		}
@@ -62,7 +62,7 @@ func ProcessMetricMetadata(metricConfig common.MetricConfig, metrics common.Metr
 	return metricMetadatas
 }
 
-func getMetadataOfMetric(metric common.Metric) (MetricMetadata, error) {
+func GetMetadataOfMetric(metric common.Metric) (MetricMetadata, error) {
 	firstDateOfPeriod := getFirstDateOfPeriod(metric.Period)
 	var dataSortableArray []common.CommitData
 
