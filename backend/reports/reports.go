@@ -182,22 +182,27 @@ func GetMetricCohort(c *gin.Context) {
 func GetReportData(metrics common.Metrics, timeGrain common.TimeGrain) map[string]interface{} {
 	// Calculate the cohort dates based on the time grain.
 	cohortDates := []string{}
-	// now := time.Now()
+
+	reportData := make(map[int64]map[string]interface{})
 
 	for cohortName, cohort := range metrics {
 		if cohort.TimeGrain == timeGrain && cohort.Dimension == "none" {
 			print(string(cohort.Dimension))
 			cohortDates = append(cohortDates, string(cohortName))
+			for _, commit := range cohort.History {
+				timestampStr := commit.CommitTimestamp
+				if _, ok := reportData[timestampStr]; !ok {
+					reportData[timestampStr] = make(map[string]interface{})
+				}
+				reportData[timestampStr][string(cohortName)] = commit.KPI
+			}
+
 		}
+
 	}
-	// for i := 0; i < metrics; i++ {
-	// 	cohortDate := now.Add(-time.Duration(i) * timeGrain.Duration()).Format("2006-01-02")
-	// 	cohortDates = append(cohortDates, cohortDate)
-	// }
 
 	// Calculate the data based on the metrics.
-	data := []map[string]interface{}{}
-	// for _, version := range metrics.Versions {
+	// for _, cohort := range metrics {
 	// 	versionData := map[string]interface{}{
 	// 		"version": version,
 	// 	}
@@ -212,6 +217,6 @@ func GetReportData(metrics common.Metrics, timeGrain common.TimeGrain) map[strin
 	// Return the response map.
 	return map[string]interface{}{
 		"cohortDates": cohortDates,
-		"data":        data,
+		"data":        reportData,
 	}
 }
