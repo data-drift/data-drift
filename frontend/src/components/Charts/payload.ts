@@ -363,7 +363,6 @@ const payload = {
 };
 
 const mapPayloadToArgs = (data: typeof payload) => {
-  console.log(data);
   const result = data.datasets.reduce(
     (
       acc: {

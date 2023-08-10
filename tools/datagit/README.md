@@ -1,5 +1,14 @@
 # Datagit
 
+<p align="center">
+  <a href="https://pypi.org/project/datagit/">
+    <img src="https://img.shields.io/pypi/v/datagit?style=flat-square" alt="DataGit version">
+  </a>
+  <a href="https://pypi.org/project/datagit/">
+    <img src="https://img.shields.io/pypi/dm/datagit?style=flat-square" alt="DataGit monthly downloads">
+  </a>
+</p>
+
 **Datagit** is a git based metric store
 
 ```python
