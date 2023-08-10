@@ -2,6 +2,7 @@ package common
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/shopspring/decimal"
 )
@@ -100,7 +101,24 @@ type MetricConfig struct {
 	Dimensions     []string    `json:"dimensions"`
 }
 
-func GetMetricFilepath(installationId int, metricName string, timestamp string) string {
-	filepath := fmt.Sprintf("dist/%d_%s_lineCountAndKPIByDateByVersion_%s.json", installationId, metricName, timestamp)
+func GetMetricFilepath(installationId string, metricName string, timestamp string) string {
+	filepath := fmt.Sprintf("dist/%s_%s_lineCountAndKPIByDateByVersion_%s.json", installationId, metricName, timestamp)
 	return filepath
+}
+
+func GetLatestMetricFile(installationId string, metricName string) (string, error) {
+	filepathPattern := fmt.Sprintf("dist/%s_%s_lineCountAndKPIByDateByVersion_*.json", installationId, metricName)
+	print(filepathPattern)
+	files, err := filepath.Glob(filepathPattern)
+	if err != nil {
+		return "", err
+	}
+
+	if len(files) == 0 {
+		return "", fmt.Errorf("no files found matching pattern %q", filepathPattern)
+	}
+
+	// Check the most recent file
+
+	return files[0], nil
 }

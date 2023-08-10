@@ -160,7 +160,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 
 	// Generate a timestamp to include in the JSON file name.
 	timestamp := time.Now().Format("2006-01-02_15-04-05")
-	filepath := common.GetMetricFilepath(installationId, metricName, timestamp)
+	filepath := common.GetMetricFilepath(fmt.Sprint(installationId), metricName, timestamp)
 	// Open a file to write the line counts by date by version in JSON format.
 	file, err := os.Create(filepath)
 	if err != nil {

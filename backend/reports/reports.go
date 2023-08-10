@@ -150,7 +150,27 @@ func ParseQuarterDate(s string) (time.Time, error) {
 }
 
 func GetMetricCohort(c *gin.Context) {
-	metricName := []string{
+
+	InstallationId := c.Request.Header.Get("Installation-Id")
+
+	if InstallationId == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No installation id provided"})
+		return
+	}
+
+	metricName := c.Param("metric-name")
+
+	filepath, err := common.GetLatestMetricFile(InstallationId, metricName)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	print(filepath)
+
+	// Get file of cohorts, or get data from github and write file
+	cohortDates := []string{
 		"2022-01", "2022-02", "2022-03", "2022-04", "2022-05", "2022-06",
 		"2022-07", "2022-08", "2022-09", "2022-10", "2022-11", "2022-12",
 		"2023-01", "2023-02", "2023-03", "2023-04",
@@ -171,8 +191,8 @@ func GetMetricCohort(c *gin.Context) {
 		},
 	}
 	response := map[string]interface{}{
-		"metricName": metricName,
-		"data":       data,
+		"cohortDates": cohortDates,
+		"data":        data,
 	}
 
 	c.JSON(http.StatusOK, response)
