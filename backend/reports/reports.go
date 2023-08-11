@@ -8,6 +8,7 @@ import (
 
 	"github.com/data-drift/data-drift/common"
 	"github.com/data-drift/data-drift/database/notion_database"
+	"github.com/data-drift/data-drift/urlgen"
 	"github.com/dstotijn/go-notion"
 )
 
@@ -33,7 +34,7 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error 
 	return nil
 }
 
-func CreateSummaryReport(syncConfig common.SyncConfig, metricConfig common.MetricConfig, chartUrls map[common.TimeGrain]string) error {
+func CreateSummaryReport(syncConfig common.SyncConfig, metricConfig common.MetricConfig, chartUrls map[common.TimeGrain]string, installationId string) error {
 	fmt.Println("Creating summary report")
 	reportNotionPageId, findOrCreateError := notion_database.FindOrCreateSummaryReportPage(syncConfig.NotionAPIKey, syncConfig.NotionDatabaseID, "Summary of "+metricConfig.MetricName)
 	fmt.Println(reportNotionPageId)
@@ -41,7 +42,7 @@ func CreateSummaryReport(syncConfig common.SyncConfig, metricConfig common.Metri
 
 	var children []notion.Block
 	for _, timeGrain := range []common.TimeGrain{common.Day, common.Week, common.Month, common.Quarter, common.Year} {
-		chartUrl := chartUrls[timeGrain]
+		chartUrl := urlgen.MetricCohortUrl(installationId, metricConfig.MetricName, timeGrain)
 		if chartUrl == "" {
 			continue
 		}
