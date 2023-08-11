@@ -1,7 +1,12 @@
 </br>
+
 <p align="center">
   <a href="https://www.data-drift.io">
-    <img src="https://github.com/data-drift/data-drift/blob/main/datadrift-logo.png?raw=true" width="100px" alt="DataDrift logo" />
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/data-drift/data-drift/blob/13a11b48ed7191b63f3c688eef67fbf843103323/datadrift-logo-light.png?raw=true" width="200px">
+      <source media="(prefers-color-scheme: light)" srcset="https://github.com/data-drift/data-drift/blob/13a11b48ed7191b63f3c688eef67fbf843103323/datadrift-logo-dark.png?raw=true" width="200px">
+      <img src="https://github.com/data-drift/data-drift/blob/13a11b48ed7191b63f3c688eef67fbf843103323/datadrift-logo-dark.png?raw=true" width="200px" alt="Datadrift logo" />
+    </picture>
   </a>
 </p>
 
