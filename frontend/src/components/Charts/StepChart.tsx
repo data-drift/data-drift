@@ -31,13 +31,12 @@ export type MetricEvolution = Array<
   } & Record<YearMonthString, number>
 >;
 
-export const StepChart = ({
-  data,
-  metricNames,
-}: {
+export type StepChartProps = {
   data: MetricEvolution;
   metricNames: YearMonthString[];
-}) => {
+};
+
+export const StepChart = ({ data, metricNames }: StepChartProps) => {
   const [highlightedMetric, setHighlightedMetric] = useState<string | null>(
     null
   );
