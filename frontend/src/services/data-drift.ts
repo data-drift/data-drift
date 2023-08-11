@@ -1,5 +1,6 @@
 import axios from "axios";
 import { CommitInfo } from "../pages/DisplayCommit";
+import { MetricCohortsResults } from "./data-drift.types";
 
 const DATA_DRIFT_API_URL = "https://data-drift.herokuapp.com";
 
@@ -25,7 +26,7 @@ export const getMetricCohorts = async ({
   metricName: string;
   timegrain: Timegrain;
 }) => {
-  const result = await axios.get(
+  const result = await axios.get<MetricCohortsResults>(
     `${DATA_DRIFT_API_URL}/metrics/${metricName}/cohorts/${timegrain}`,
     { headers: { "Installation-Id": installationId } }
   );
@@ -33,11 +34,12 @@ export const getMetricCohorts = async ({
 };
 
 // Define the custom type
-export type Timegrain = "quarter" | "month" | "week" | "day";
+export type Timegrain = "year" | "quarter" | "month" | "week" | "day";
 
 // The assertion function
 export function assertTimegrain(value: string): asserts value is Timegrain {
   if (
+    value !== "year" &&
     value !== "quarter" &&
     value !== "month" &&
     value !== "week" &&

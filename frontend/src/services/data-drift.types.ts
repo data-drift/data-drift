@@ -9,7 +9,7 @@ export interface MetricCohortsResults {
   timegrain: string;
 }
 
-export type CohortsMetricsMetadata = Record<CohortDate, The202>;
+export type CohortsMetricsMetadata = Record<CohortDate, CohortMetric>;
 
 export interface CohortPoint {
   RelativeValue: string;
@@ -17,12 +17,12 @@ export interface CohortPoint {
   ComputationTimetamp: number;
 }
 
-export interface The202 {
+export interface CohortMetric {
   TimeGrain: string;
   PeriodKey: string;
   InitialValue: string;
   FirstDate: Date;
-  RelativeHistory: { [key: string]: CohortPoint };
+  RelativeHistory: { [key: TimestampString]: CohortPoint };
 }
 
 export type DataIndexedByTimestamp = Record<CohortDate, string>;

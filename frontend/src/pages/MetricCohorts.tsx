@@ -5,22 +5,19 @@ import {
   assertTimegrain,
   getMetricCohorts,
 } from "../services/data-drift";
+import { mapCohortsMetricsMetadataToStepChartProps } from "../services/data-drift.mappers";
 
-const getMetricCohortsData = ({
+const getMetricCohortsData = async ({
   params,
 }: {
   params: Params<string>;
-}): StepChartProps => {
+}): Promise<StepChartProps> => {
   const typedParams = assertParamsHasNeededProperties(params);
-  const result = getMetricCohorts(typedParams);
-  console.log(result);
-  return {
-    metricNames: ["2022-01"],
-    data: [
-      { daysSinceFirstReport: 12, "2022-01": 12 },
-      { daysSinceFirstReport: 13, "2022-01": 12 },
-    ],
-  };
+  const result = await getMetricCohorts(typedParams);
+  const { metricNames, data } = mapCohortsMetricsMetadataToStepChartProps(
+    result.data.cohortsMetricsMetadata
+  );
+  return { metricNames, data };
 };
 
 function assertParamsHasNeededProperties(params: Params<string>): {
