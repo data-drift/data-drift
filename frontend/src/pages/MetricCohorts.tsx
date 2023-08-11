@@ -1,5 +1,10 @@
 import { Params, useLoaderData } from "react-router";
 import { StepChart, StepChartProps } from "../components/Charts/StepChart";
+import {
+  Timegrain,
+  assertTimegrain,
+  getMetricCohorts,
+} from "../services/data-drift";
 
 const getMetricCohortsData = ({
   params,
@@ -7,7 +12,8 @@ const getMetricCohortsData = ({
   params: Params<string>;
 }): StepChartProps => {
   const typedParams = assertParamsHasNeededProperties(params);
-  console.log(typedParams);
+  const result = getMetricCohorts(typedParams);
+  console.log(result);
   return {
     metricNames: ["2022-01"],
     data: [
@@ -16,21 +22,6 @@ const getMetricCohortsData = ({
     ],
   };
 };
-
-// Define the custom type
-type Timegrain = "quarter" | "month" | "week" | "day";
-
-// The assertion function
-function assertTimegrain(value: string): asserts value is Timegrain {
-  if (
-    value !== "quarter" &&
-    value !== "month" &&
-    value !== "week" &&
-    value !== "day"
-  ) {
-    throw new Error("Value is not a valid time unit!");
-  }
-}
 
 function assertParamsHasNeededProperties(params: Params<string>): {
   installationId: string;

@@ -15,3 +15,34 @@ export const getPatchAndHeader = async (
     headers: result.data.headers,
   };
 };
+
+export const getMetricCohorts = async ({
+  installationId,
+  metricName,
+  timegrain,
+}: {
+  installationId: string;
+  metricName: string;
+  timegrain: Timegrain;
+}) => {
+  const result = await axios.get(
+    `${DATA_DRIFT_API_URL}/metrics/${metricName}/cohorts/${timegrain}`,
+    { headers: { "Installation-Id": installationId } }
+  );
+  return result;
+};
+
+// Define the custom type
+export type Timegrain = "quarter" | "month" | "week" | "day";
+
+// The assertion function
+export function assertTimegrain(value: string): asserts value is Timegrain {
+  if (
+    value !== "quarter" &&
+    value !== "month" &&
+    value !== "week" &&
+    value !== "day"
+  ) {
+    throw new Error("Value is not a valid time unit!");
+  }
+}

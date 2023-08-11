@@ -70,6 +70,7 @@ export const StepChart = ({ data, metricNames }: StepChartProps) => {
       />
       {metricNames.map((metricName) => (
         <Line
+          key={`line-${metricName}`}
           type="stepAfter"
           dataKey={metricName}
           stroke={getMetricColor(metricName)}
