@@ -43,7 +43,7 @@ func CreateSummaryReport(syncConfig common.SyncConfig, metricConfig common.Metri
 	var children []notion.Block
 	for _, timeGrain := range []common.TimeGrain{common.Day, common.Week, common.Month, common.Quarter, common.Year} {
 		chartUrl := urlgen.MetricCohortUrl(installationId, metricConfig.MetricName, timeGrain)
-		if chartUrl == "" {
+		if chartUrls[timeGrain] == "" {
 			continue
 		}
 		children = append(children, notion.Heading1Block{
