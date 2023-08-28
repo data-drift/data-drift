@@ -21,7 +21,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 	fmt.Println(reportBaseUrl)
 	ctx := context.Background()
 
-	filePath := metric.Filepath
+	csvFilePath := metric.Filepath
 	dateColumnName := metric.DateColumnName
 	KPIColumnName := metric.KPIColumnName
 	metricName := metric.MetricName
@@ -37,7 +37,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 	// Get the commit history for the repository.
 	// Get the commit history for the file.
 	commits, _, err := client.Repositories.ListCommits(context.Background(), repoOwner, repoName, &github.CommitsListOptions{
-		Path:        filePath,
+		Path:        csvFilePath,
 		SHA:         "",
 		Until:       endDate,
 		ListOptions: github.ListOptions{PerPage: 100},
@@ -64,7 +64,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 			commitMessages = append(commitMessages, common.CommitComments{CommentBody: *comment.Body, CommentAuthor: *comment.User.Login})
 		}
 		commitTimestamp := commitDate.Unix()
-		fileContents, err := getFileContentsForCommit(client, repoOwner, repoName, filePath, *commit.SHA)
+		fileContents, err := getFileContentsForCommit(client, repoOwner, repoName, csvFilePath, *commit.SHA)
 		if err != nil {
 			log.Printf("Error getting file contents for commit %s: %v", *commit.SHA, err.Error())
 			continue
@@ -160,9 +160,9 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 
 	// Generate a timestamp to include in the JSON file name.
 	timestamp := time.Now().Format("2006-01-02_15-04-05")
-	filepath := common.GetMetricFilepath(fmt.Sprint(installationId), metricName, timestamp)
+	metricStoredFilePath := common.GetMetricFilepath(fmt.Sprint(installationId), metricName, timestamp)
 	// Open a file to write the line counts by date by version in JSON format.
-	file, err := os.Create(filepath)
+	file, err := os.Create(metricStoredFilePath)
 	if err != nil {
 		log.Fatalf("Error creating file: %v", err.Error())
 	}
@@ -174,7 +174,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 		log.Fatalf("Error writing JSON to file: %v", err.Error())
 	}
 	fmt.Println("Results written to lineCountsAndKPIs.json")
-	return filepath, nil
+	return metricStoredFilePath, nil
 }
 
 func updateMetric(lineCountAndKPIByDateByVersion common.Metrics, periodAndDimensionKey common.PeriodAndDimensionKey, timegrain common.TimeGrain, periodKey common.PeriodKey, dimension common.Dimension, dimensionValue common.DimensionValue, record []string, kpiColumn int, commitSha common.CommitSha, commitTimestamp int64, commit *github.RepositoryCommit, commitMessages []common.CommitComments, reportBaseUrl string) {

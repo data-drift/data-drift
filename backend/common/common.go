@@ -3,6 +3,7 @@ package common
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 
@@ -121,7 +122,8 @@ func GetKeysFromJSON(path string) (Metrics, error) {
 }
 
 func GetMetricFilepath(installationId string, metricName string, timestamp string) string {
-	filepath := fmt.Sprintf("dist/%s_%s_lineCountAndKPIByDateByVersion_%s.json", installationId, metricName, timestamp)
+	metricNameEncoded := url.PathEscape(metricName)
+	filepath := fmt.Sprintf("dist/%s_%s_lineCountAndKPIByDateByVersion_%s.json", installationId, metricNameEncoded, timestamp)
 	return filepath
 }
 

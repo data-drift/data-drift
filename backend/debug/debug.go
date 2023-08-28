@@ -21,6 +21,7 @@ func DebugFunction() {
 	githubRepoName := os.Getenv("GITHUB_REPO_NAME")
 	githubRepoFilePath := os.Getenv("GITHUB_REPO_FILE_PATH")
 	githubApplicationIdStr := os.Getenv("GITHUB_APPLICATION_INSTALLATION_ID")
+	metricName := os.Getenv("METRIC_NAME")
 	dateColumn := os.Getenv("DATE_COLUMN")
 	kpiColumn := os.Getenv("KPI_COLUMN")
 	notionAPIKey := os.Getenv("NOTION_API_KEY")
@@ -32,12 +33,12 @@ func DebugFunction() {
 	_ = notion_database.AssertDatabaseHasDatadriftProperties(notionDatabaseID, notionAPIKey)
 
 	metricConfig := common.MetricConfig{
-		MetricName:     "Default metric name",
+		MetricName:     metricName,
 		KPIColumnName:  kpiColumn,
 		DateColumnName: dateColumn,
 		Filepath:       githubRepoFilePath,
-		TimeGrains:     []common.TimeGrain{common.Quarter, common.Year, common.Month},
-		Dimensions:     []string{"country"},
+		TimeGrains:     []common.TimeGrain{common.Month},
+		Dimensions:     []string{},
 	}
 	if filepath == "" {
 		client, _ := github.CreateClientFromGithubApp(int64(githubApplicationId))
@@ -71,6 +72,13 @@ func DebugFunction() {
 		if err != nil {
 			println(err)
 		}
+	}
+
+	metadataChartResults, metadataChartError := reducers.ProcessMetricMetadataCharts(filepath, metricConfig)
+	if metadataChartError != nil {
+		fmt.Println("[DATADRIFT_ERROR] create summary report", metadataChartError.Error())
+	} else {
+		reports.CreateSummaryReport(notionSyncConfig, metricConfig, metadataChartResults, fmt.Sprint(githubApplicationId))
 	}
 	println(filepath)
 }

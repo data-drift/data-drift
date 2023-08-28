@@ -117,7 +117,7 @@ func processWebhookInTheBackground(config common.Config, c *gin.Context, Install
 		if metadataChartError != nil {
 			fmt.Println("[DATADRIFT_ERROR] create summary report", metadataChartError.Error())
 		} else {
-			reports.CreateSummaryReport(common.SyncConfig{NotionAPIKey: config.NotionAPIToken, NotionDatabaseID: config.NotionDatabaseID}, metric, metadataChartResults)
+			reports.CreateSummaryReport(common.SyncConfig{NotionAPIKey: config.NotionAPIToken, NotionDatabaseID: config.NotionDatabaseID}, metric, metadataChartResults, fmt.Sprint(InstallationId))
 		}
 	}
 	return false
