@@ -1,6 +1,7 @@
 package common
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -9,6 +10,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/shopspring/decimal"
 )
 
@@ -108,6 +110,8 @@ type MetricConfig struct {
 
 type FilePathString string
 
+var ctx = context.Background()
+
 func GetKeysFromJSON(path FilePathString) (Metrics, error) {
 	// Read the file at the given path
 	jsonFile, err := os.ReadFile(string(path))
@@ -140,6 +144,21 @@ func StoreMetricMetadataAndAggregatedData(installationId int, metricName string,
 		log.Fatalf("Error writing JSON to file: %v", err.Error())
 	}
 	fmt.Println("Results written to lineCountsAndKPIs.json")
+	fmt.Println("Storing results in Redis")
+	// Connect to the Redis database.
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "", // no password set
+		DB:       5,  // use default DB
+	})
+	jsonData, err := json.Marshal(lineCountAndKPIByDateByVersion)
+	if err != nil {
+		log.Fatalf("Error occurred during marshaling. Err: %s", err)
+	}
+	err = rdb.Set(ctx, string(metricStoredFilePath), jsonData, 0).Err()
+	if err != nil {
+		log.Fatalf("Could not set key. Err: %s", err)
+	}
 	return metricStoredFilePath
 }
 
