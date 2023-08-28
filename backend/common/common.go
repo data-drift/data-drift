@@ -106,9 +106,11 @@ type MetricConfig struct {
 	Dimensions     []string    `json:"dimensions"`
 }
 
-func GetKeysFromJSON(path string) (Metrics, error) {
+type FilePathString string
+
+func GetKeysFromJSON(path FilePathString) (Metrics, error) {
 	// Read the file at the given path
-	jsonFile, err := os.ReadFile(path)
+	jsonFile, err := os.ReadFile(string(path))
 	if err != nil {
 		return nil, err
 	}
@@ -123,11 +125,11 @@ func GetKeysFromJSON(path string) (Metrics, error) {
 	return data, nil
 }
 
-func StoreMetricMetadataAndAggregatedData(installationId int, metricName string, lineCountAndKPIByDateByVersion Metrics) string {
+func StoreMetricMetadataAndAggregatedData(installationId int, metricName string, lineCountAndKPIByDateByVersion Metrics) FilePathString {
 	timestamp := time.Now().Format("2006-01-02_15-04-05")
 	metricStoredFilePath := GetMetricFilepath(fmt.Sprint(installationId), metricName, timestamp)
 
-	file, err := os.Create(metricStoredFilePath)
+	file, err := os.Create(string(metricStoredFilePath))
 	if err != nil {
 		log.Fatalf("Error creating file: %v", err.Error())
 	}
@@ -141,13 +143,13 @@ func StoreMetricMetadataAndAggregatedData(installationId int, metricName string,
 	return metricStoredFilePath
 }
 
-func GetMetricFilepath(installationId string, metricName string, timestamp string) string {
+func GetMetricFilepath(installationId string, metricName string, timestamp string) FilePathString {
 	metricNameEncoded := url.PathEscape(metricName)
 	filepath := fmt.Sprintf("dist/%s_%s_lineCountAndKPIByDateByVersion_%s.json", installationId, metricNameEncoded, timestamp)
-	return filepath
+	return FilePathString(filepath)
 }
 
-func GetLatestMetricFile(installationId string, metricName string) (string, error) {
+func GetLatestMetricFile(installationId string, metricName string) (FilePathString, error) {
 	filepathPattern := fmt.Sprintf("dist/%s_%s_lineCountAndKPIByDateByVersion_*.json", installationId, metricName)
 	files, err := filepath.Glob(filepathPattern)
 	if err != nil {
@@ -160,5 +162,5 @@ func GetLatestMetricFile(installationId string, metricName string) (string, erro
 
 	// Check the most recent file
 
-	return files[0], nil
+	return FilePathString(files[0]), nil
 }

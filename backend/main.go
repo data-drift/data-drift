@@ -87,7 +87,7 @@ func ManualSync(c *gin.Context) {
 }
 
 func performTask(syncConfig common.SyncConfig) error {
-	filepath := os.Getenv("DEFAULT_FILE_PATH")
+	filepath := common.FilePathString(os.Getenv("DEFAULT_FILE_PATH"))
 	fmt.Println(filepath)
 
 	if filepath == "" {

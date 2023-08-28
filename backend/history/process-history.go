@@ -14,7 +14,7 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-func ProcessHistory(client *github.Client, repoOwner string, repoName string, metric common.MetricConfig, installationId int) (string, error) {
+func ProcessHistory(client *github.Client, repoOwner string, repoName string, metric common.MetricConfig, installationId int) (common.FilePathString, error) {
 
 	reportBaseUrl := fmt.Sprintf("https://app.data-drift.io/report/%d/%s/%s/commit/", installationId, repoOwner, repoName)
 	fmt.Println(reportBaseUrl)
