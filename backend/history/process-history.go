@@ -159,22 +159,28 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 	}
 
 	// Generate a timestamp to include in the JSON file name.
+	// Open a file to write the line counts by date by version in JSON format.
+	// Write the line counts and KPI values to the JSON file.
+	metricStoredFilePath := storeMetricMetadataAndAggregatedData(installationId, metricName, lineCountAndKPIByDateByVersion)
+	return metricStoredFilePath, nil
+}
+
+func storeMetricMetadataAndAggregatedData(installationId int, metricName string, lineCountAndKPIByDateByVersion common.Metrics) string {
 	timestamp := time.Now().Format("2006-01-02_15-04-05")
 	metricStoredFilePath := common.GetMetricFilepath(fmt.Sprint(installationId), metricName, timestamp)
-	// Open a file to write the line counts by date by version in JSON format.
+
 	file, err := os.Create(metricStoredFilePath)
 	if err != nil {
 		log.Fatalf("Error creating file: %v", err.Error())
 	}
 	defer file.Close()
 
-	// Write the line counts and KPI values to the JSON file.
 	enc := json.NewEncoder(file)
 	if err := enc.Encode(lineCountAndKPIByDateByVersion); err != nil {
 		log.Fatalf("Error writing JSON to file: %v", err.Error())
 	}
 	fmt.Println("Results written to lineCountsAndKPIs.json")
-	return metricStoredFilePath, nil
+	return metricStoredFilePath
 }
 
 func updateMetric(lineCountAndKPIByDateByVersion common.Metrics, periodAndDimensionKey common.PeriodAndDimensionKey, timegrain common.TimeGrain, periodKey common.PeriodKey, dimension common.Dimension, dimensionValue common.DimensionValue, record []string, kpiColumn int, commitSha common.CommitSha, commitTimestamp int64, commit *github.RepositoryCommit, commitMessages []common.CommitComments, reportBaseUrl string) {
