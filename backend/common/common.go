@@ -3,9 +3,11 @@ package common
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/url"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/shopspring/decimal"
 )
@@ -119,6 +121,24 @@ func GetKeysFromJSON(path string) (Metrics, error) {
 	}
 
 	return data, nil
+}
+
+func StoreMetricMetadataAndAggregatedData(installationId int, metricName string, lineCountAndKPIByDateByVersion Metrics) string {
+	timestamp := time.Now().Format("2006-01-02_15-04-05")
+	metricStoredFilePath := GetMetricFilepath(fmt.Sprint(installationId), metricName, timestamp)
+
+	file, err := os.Create(metricStoredFilePath)
+	if err != nil {
+		log.Fatalf("Error creating file: %v", err.Error())
+	}
+	defer file.Close()
+
+	enc := json.NewEncoder(file)
+	if err := enc.Encode(lineCountAndKPIByDateByVersion); err != nil {
+		log.Fatalf("Error writing JSON to file: %v", err.Error())
+	}
+	fmt.Println("Results written to lineCountsAndKPIs.json")
+	return metricStoredFilePath
 }
 
 func GetMetricFilepath(installationId string, metricName string, timestamp string) string {
