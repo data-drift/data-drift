@@ -113,15 +113,21 @@ type MetricRedisKey string
 var ctx = context.Background()
 
 func GetKeysFromJSON(path MetricRedisKey) (Metrics, error) {
-	// Read the file at the given path
-	jsonFile, err := os.ReadFile(string(path))
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "", // no password set
+		DB:       5,  // use default DB
+	})
+	// Retrieve from Redis
+	jsonData, err := rdb.Get(ctx, string(path)).Bytes()
 	if err != nil {
+		log.Fatalf("Could not get key. Err: %s", err)
 		return nil, err
 	}
 
 	// Unmarshal the JSON data into the desired type
 	var data Metrics
-	err = json.Unmarshal(jsonFile, &data)
+	err = json.Unmarshal(jsonData, &data)
 	if err != nil {
 		return nil, err
 	}
