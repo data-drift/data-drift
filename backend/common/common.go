@@ -108,11 +108,11 @@ type MetricConfig struct {
 	Dimensions     []string    `json:"dimensions"`
 }
 
-type FilePathString string
+type MetricRedisKey string
 
 var ctx = context.Background()
 
-func GetKeysFromJSON(path FilePathString) (Metrics, error) {
+func GetKeysFromJSON(path MetricRedisKey) (Metrics, error) {
 	// Read the file at the given path
 	jsonFile, err := os.ReadFile(string(path))
 	if err != nil {
@@ -129,7 +129,7 @@ func GetKeysFromJSON(path FilePathString) (Metrics, error) {
 	return data, nil
 }
 
-func StoreMetricMetadataAndAggregatedData(installationId int, metricName string, lineCountAndKPIByDateByVersion Metrics) FilePathString {
+func StoreMetricMetadataAndAggregatedData(installationId int, metricName string, lineCountAndKPIByDateByVersion Metrics) MetricRedisKey {
 	timestamp := time.Now().Format("2006-01-02_15-04-05")
 	metricStoredFilePath := GetMetricFilepath(fmt.Sprint(installationId), metricName, timestamp)
 
@@ -162,13 +162,13 @@ func StoreMetricMetadataAndAggregatedData(installationId int, metricName string,
 	return metricStoredFilePath
 }
 
-func GetMetricFilepath(installationId string, metricName string, timestamp string) FilePathString {
+func GetMetricFilepath(installationId string, metricName string, timestamp string) MetricRedisKey {
 	metricNameEncoded := url.PathEscape(metricName)
 	filepath := fmt.Sprintf("dist/%s_%s_lineCountAndKPIByDateByVersion_%s.json", installationId, metricNameEncoded, timestamp)
-	return FilePathString(filepath)
+	return MetricRedisKey(filepath)
 }
 
-func GetLatestMetricFile(installationId string, metricName string) (FilePathString, error) {
+func GetLatestMetricFile(installationId string, metricName string) (MetricRedisKey, error) {
 	filepathPattern := fmt.Sprintf("dist/%s_%s_lineCountAndKPIByDateByVersion_*.json", installationId, metricName)
 	files, err := filepath.Glob(filepathPattern)
 	if err != nil {
@@ -181,5 +181,5 @@ func GetLatestMetricFile(installationId string, metricName string) (FilePathStri
 
 	// Check the most recent file
 
-	return FilePathString(files[0]), nil
+	return MetricRedisKey(files[0]), nil
 }

@@ -27,7 +27,7 @@ func DebugFunction() {
 	notionAPIKey := os.Getenv("NOTION_API_KEY")
 	notionDatabaseID := os.Getenv("NOTION_DATABASE_ID")
 
-	filepath := common.FilePathString(os.Getenv("DEFAULT_FILE_PATH"))
+	filepath := common.MetricRedisKey(os.Getenv("DEFAULT_FILE_PATH"))
 	githubApplicationId, _ := strconv.ParseInt(githubApplicationIdStr, 10, 64)
 
 	_ = notion_database.AssertDatabaseHasDatadriftProperties(notionDatabaseID, notionAPIKey)
