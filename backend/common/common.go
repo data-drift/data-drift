@@ -112,58 +112,74 @@ type MetricRedisKey string
 
 var ctx = context.Background()
 
+// Initialize Redis client
+var redisURL = os.Getenv("REDIS_URL")
+
+var rdb = redis.NewClient(&redis.Options{
+	Addr: redisURL,
+	DB:   0,
+})
+
 func GetKeysFromJSON(path MetricRedisKey) (Metrics, error) {
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", // no password set
-		DB:       5,  // use default DB
-	})
-	// Retrieve from Redis
-	jsonData, err := rdb.Get(ctx, string(path)).Bytes()
-	if err != nil {
-		log.Fatalf("Could not get key. Err: %s", err)
-		return nil, err
-	}
+	if redisURL == "" {
+		jsonFile, err := os.ReadFile(string(path))
+		if err != nil {
+			return nil, err
+		}
 
-	// Unmarshal the JSON data into the desired type
-	var data Metrics
-	err = json.Unmarshal(jsonData, &data)
-	if err != nil {
-		return nil, err
-	}
+		var data Metrics
+		err = json.Unmarshal(jsonFile, &data)
+		if err != nil {
+			return nil, err
+		}
 
-	return data, nil
+		return data, nil
+	} else {
+
+		jsonData, err := rdb.Get(ctx, string(path)).Bytes()
+		if err != nil {
+			log.Fatalf("Could not get key. Err: %s", err)
+			return nil, err
+		}
+
+		var data Metrics
+		err = json.Unmarshal(jsonData, &data)
+		if err != nil {
+			return nil, err
+		}
+
+		return data, nil
+	}
 }
 
 func StoreMetricMetadataAndAggregatedData(installationId int, metricName string, lineCountAndKPIByDateByVersion Metrics) MetricRedisKey {
 	timestamp := time.Now().Format("2006-01-02_15-04-05")
 	metricStoredFilePath := GetMetricFilepath(fmt.Sprint(installationId), metricName, timestamp)
 
-	file, err := os.Create(string(metricStoredFilePath))
-	if err != nil {
-		log.Fatalf("Error creating file: %v", err.Error())
-	}
-	defer file.Close()
+	if redisURL == "" {
 
-	enc := json.NewEncoder(file)
-	if err := enc.Encode(lineCountAndKPIByDateByVersion); err != nil {
-		log.Fatalf("Error writing JSON to file: %v", err.Error())
-	}
-	fmt.Println("Results written to lineCountsAndKPIs.json")
-	fmt.Println("Storing results in Redis")
-	// Connect to the Redis database.
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", // no password set
-		DB:       5,  // use default DB
-	})
-	jsonData, err := json.Marshal(lineCountAndKPIByDateByVersion)
-	if err != nil {
-		log.Fatalf("Error occurred during marshaling. Err: %s", err)
-	}
-	err = rdb.Set(ctx, string(metricStoredFilePath), jsonData, 0).Err()
-	if err != nil {
-		log.Fatalf("Could not set key. Err: %s", err)
+		file, err := os.Create(string(metricStoredFilePath))
+		if err != nil {
+			log.Fatalf("Error creating file: %v", err.Error())
+		}
+		defer file.Close()
+
+		enc := json.NewEncoder(file)
+		if err := enc.Encode(lineCountAndKPIByDateByVersion); err != nil {
+			log.Fatalf("Error writing JSON to file: %v", err.Error())
+		}
+		fmt.Println("Results written to lineCountsAndKPIs.json")
+	} else {
+		fmt.Println("Storing results in Redis")
+
+		jsonData, err := json.Marshal(lineCountAndKPIByDateByVersion)
+		if err != nil {
+			log.Fatalf("Error occurred during marshaling. Err: %s", err)
+		}
+		err = rdb.Set(ctx, string(metricStoredFilePath), jsonData, 0).Err()
+		if err != nil {
+			log.Fatalf("Could not set key. Err: %s", err)
+		}
 	}
 	return metricStoredFilePath
 }
