@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/csv"
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -15,7 +14,7 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-func ProcessHistory(client *github.Client, repoOwner string, repoName string, metric common.MetricConfig, installationId int) (string, error) {
+func ProcessHistory(client *github.Client, repoOwner string, repoName string, metric common.MetricConfig, installationId int) (common.MetricRedisKey, error) {
 
 	reportBaseUrl := fmt.Sprintf("https://app.data-drift.io/report/%d/%s/%s/commit/", installationId, repoOwner, repoName)
 	fmt.Println(reportBaseUrl)
@@ -159,21 +158,9 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 	}
 
 	// Generate a timestamp to include in the JSON file name.
-	timestamp := time.Now().Format("2006-01-02_15-04-05")
-	metricStoredFilePath := common.GetMetricFilepath(fmt.Sprint(installationId), metricName, timestamp)
 	// Open a file to write the line counts by date by version in JSON format.
-	file, err := os.Create(metricStoredFilePath)
-	if err != nil {
-		log.Fatalf("Error creating file: %v", err.Error())
-	}
-	defer file.Close()
-
 	// Write the line counts and KPI values to the JSON file.
-	enc := json.NewEncoder(file)
-	if err := enc.Encode(lineCountAndKPIByDateByVersion); err != nil {
-		log.Fatalf("Error writing JSON to file: %v", err.Error())
-	}
-	fmt.Println("Results written to lineCountsAndKPIs.json")
+	metricStoredFilePath := common.StoreMetricMetadataAndAggregatedData(installationId, metricName, lineCountAndKPIByDateByVersion)
 	return metricStoredFilePath, nil
 }
 
