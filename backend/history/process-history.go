@@ -21,7 +21,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 	fmt.Println(reportBaseUrl)
 	ctx := context.Background()
 
-	filePath := metric.Filepath
+	csvFilePath := metric.Filepath
 	dateColumnName := metric.DateColumnName
 	KPIColumnName := metric.KPIColumnName
 	metricName := metric.MetricName
@@ -37,7 +37,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 	// Get the commit history for the repository.
 	// Get the commit history for the file.
 	commits, _, err := client.Repositories.ListCommits(context.Background(), repoOwner, repoName, &github.CommitsListOptions{
-		Path:        filePath,
+		Path:        csvFilePath,
 		SHA:         "",
 		Until:       endDate,
 		ListOptions: github.ListOptions{PerPage: 100},
@@ -64,7 +64,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 			commitMessages = append(commitMessages, common.CommitComments{CommentBody: *comment.Body, CommentAuthor: *comment.User.Login})
 		}
 		commitTimestamp := commitDate.Unix()
-		fileContents, err := getFileContentsForCommit(client, repoOwner, repoName, filePath, *commit.SHA)
+		fileContents, err := getFileContentsForCommit(client, repoOwner, repoName, csvFilePath, *commit.SHA)
 		if err != nil {
 			log.Printf("Error getting file contents for commit %s: %v", *commit.SHA, err.Error())
 			continue
