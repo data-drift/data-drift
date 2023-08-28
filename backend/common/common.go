@@ -113,23 +113,11 @@ type MetricRedisKey string
 
 var ctx = context.Background()
 
-func getRedisHost() string {
-	var redisURL = os.Getenv("REDIS_URL")
-	if redisURL == "" {
-		return ""
-	}
-	parsedURL, err := url.Parse(redisURL)
-	fmt.Println("Redis host: ", parsedURL.Host)
-	if err != nil {
-		return parsedURL.Host
-	}
-	return ""
-}
-
 func GetKeysFromJSON(path MetricRedisKey) (Metrics, error) {
-	var redisURL = getRedisHost()
+	var redisURL = os.Getenv("REDIS_URL")
+	redisOpt, redisErr := redis.ParseURL(redisURL)
 
-	if redisURL == "" {
+	if redisErr != nil {
 		jsonFile, err := os.ReadFile(string(path))
 		if err != nil {
 			return nil, err
@@ -143,10 +131,7 @@ func GetKeysFromJSON(path MetricRedisKey) (Metrics, error) {
 
 		return data, nil
 	} else {
-		var rdb = redis.NewClient(&redis.Options{
-			Addr: redisURL,
-			DB:   0,
-		})
+		var rdb = redis.NewClient(redisOpt)
 
 		jsonData, err := rdb.Get(ctx, string(path)).Bytes()
 		if err != nil {
@@ -167,9 +152,10 @@ func GetKeysFromJSON(path MetricRedisKey) (Metrics, error) {
 func StoreMetricMetadataAndAggregatedData(installationId int, metricName string, lineCountAndKPIByDateByVersion Metrics) MetricRedisKey {
 	timestamp := time.Now().Format("2006-01-02_15-04-05")
 	metricStoredFilePath := GetMetricFilepath(fmt.Sprint(installationId), metricName, timestamp)
-	var redisURL = getRedisHost()
+	var redisURL = os.Getenv("REDIS_URL")
+	redisOpt, redisErr := redis.ParseURL(redisURL)
 
-	if redisURL == "" {
+	if redisErr != nil {
 
 		file, err := os.Create(string(metricStoredFilePath))
 		if err != nil {
@@ -183,10 +169,7 @@ func StoreMetricMetadataAndAggregatedData(installationId int, metricName string,
 		}
 		fmt.Println("Results written to file")
 	} else {
-		var rdb = redis.NewClient(&redis.Options{
-			Addr: redisURL,
-			DB:   0,
-		})
+		var rdb = redis.NewClient(redisOpt)
 		fmt.Println("Storing results in Redis")
 
 		jsonData, err := json.Marshal(lineCountAndKPIByDateByVersion)
@@ -209,9 +192,16 @@ func GetMetricFilepath(installationId string, metricName string, timestamp strin
 
 func GetLatestMetricFile(installationId string, metricName string) (MetricRedisKey, error) {
 	filepathPattern := fmt.Sprintf("dist/%s_%s_lineCountAndKPIByDateByVersion_*.json", installationId, metricName)
-	var redisURL = getRedisHost()
+	var redisURL = os.Getenv("REDIS_URL")
+	redisOpt, redisErr := redis.ParseURL(redisURL)
 
-	if redisURL == "" {
+	if redisErr != nil {
+		fmt.Println("Redis Error: ", redisErr.Error())
+	} else {
+		fmt.Println("Redis Opt: ", redisOpt.Addr)
+	}
+
+	if redisErr != nil {
 
 		files, err := filepath.Glob(filepathPattern)
 		if err != nil {
@@ -226,10 +216,7 @@ func GetLatestMetricFile(installationId string, metricName string) (MetricRedisK
 
 		return MetricRedisKey(files[0]), nil
 	} else {
-		var rdb = redis.NewClient(&redis.Options{
-			Addr: redisURL,
-			DB:   0,
-		})
+		var rdb = redis.NewClient(redisOpt)
 		keys, err := rdb.Keys(ctx, filepathPattern).Result()
 		if err != nil {
 			return "", fmt.Errorf("error getting Redis keys: %v", err)
