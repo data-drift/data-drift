@@ -18,71 +18,92 @@ import (
 
 const configFilePath = "datadrift-config.json"
 
-type GithubWebhookPayload struct {
-	Repository struct {
-		Name  string `json:"name"`
-		Owner struct {
-			Name string `json:"name"`
-		} `json:"owner"`
-	} `json:"repository"`
-	Repositories []struct {
-		Name string `json:"name"`
-	} `json:"repositories"`
-
-	Installation struct {
-		ID      int `json:"id"`
-		Account struct {
-			Login string `json:"login"`
-		} `json:"account"`
-	} `json:"installation"`
-}
-
 func HandleWebhook(c *gin.Context) {
-	var payload GithubWebhookPayload
+	payload, err := github.ValidatePayload(c.Request, []byte(""))
 
-	if err := c.ShouldBindJSON(&payload); err != nil {
+	if err != nil {
 		c.JSON(http.StatusNotAcceptable, gin.H{"error": err.Error()})
 		return
 	}
 
-	fmt.Println("Installation ID: ", payload.Installation.ID)
-
-	InstallationId := payload.Installation.ID
-	client, err := CreateClientFromGithubApp(int64(InstallationId))
+	event, err := github.ParseWebHook(github.WebHookType(c.Request), payload)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err})
-		return
-	}
-	ctx := context.Background()
-
-	var ownerName, repoName string
-
-	if payload.Repository.Owner.Name != "" {
-		ownerName = payload.Repository.Owner.Name
-		repoName = payload.Repository.Name
-	} else if payload.Installation.Account.Login != "" {
-		ownerName = payload.Installation.Account.Login
-		repoName = payload.Repositories[0].Name
-	} else {
-		fmt.Println("No repository or account found")
-		c.JSON(http.StatusBadRequest, gin.H{"error": "No repository or account found"})
+		c.JSON(http.StatusNotAcceptable, gin.H{"error": err.Error()})
 		return
 	}
 
-	config, err := VerifyConfigFile(client, ownerName, repoName, ctx)
+	switch event := event.(type) {
+	case *github.PushEvent:
+		fmt.Println("Installation ID: ", event.Installation.ID)
 
-	fmt.Println("config", config)
+		InstallationId := *event.Installation.ID
+		client, err := CreateClientFromGithubApp(InstallationId)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err})
+			return
+		}
+		ctx := context.Background()
 
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		ownerName := *event.Repo.Owner.Name
+		repoName := *event.Repo.Name
+
+		config, err := VerifyConfigFile(client, ownerName, repoName, ctx)
+
+		fmt.Println("config", config)
+
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		fmt.Println("config", config)
+		c.JSON(http.StatusOK, gin.H{"message": "Webhook processed", "configIsValie": config, "installationId": InstallationId})
+
+		// Call functions from charts.go and reports.go
+		go processWebhookInTheBackground(config, c, int(InstallationId), client, ownerName, repoName)
+
+	case *github.InstallationEvent:
+		fmt.Println("Installation ID: ", event.Installation.ID)
+
+		InstallationId := *event.Installation.ID
+		client, err := CreateClientFromGithubApp(InstallationId)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err})
+			return
+		}
+		ctx := context.Background()
+
+		if len(event.Repositories) == 0 {
+			c.JSON(http.StatusOK, gin.H{"message": "Webhook ignored"})
+			return
+		}
+
+		ownerName := *event.Installation.Account.Login
+		repoName := *event.Repositories[0].Name
+
+		config, err := VerifyConfigFile(client, ownerName, repoName, ctx)
+
+		fmt.Println("config", config)
+
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		fmt.Println("config", config)
+		c.JSON(http.StatusOK, gin.H{"message": "Webhook processed", "configIsValie": config, "installationId": InstallationId})
+
+		// Call functions from charts.go and reports.go
+		go processWebhookInTheBackground(config, c, int(InstallationId), client, ownerName, repoName)
+		return
+
+	case *github.PullRequestEvent:
+		fmt.Println("Installation ID: ", event.Installation.ID)
+		fmt.Println("Pull request opened")
+	default:
+		c.JSON(http.StatusOK, gin.H{"message": "Webhook ignored"})
 		return
 	}
-
-	fmt.Println("config", config)
-	c.JSON(http.StatusOK, gin.H{"message": "Webhook processed", "configIsValie": config, "installationId": InstallationId})
-
-	// Call functions from charts.go and reports.go
-	go processWebhookInTheBackground(config, c, InstallationId, client, ownerName, repoName)
 
 }
 
