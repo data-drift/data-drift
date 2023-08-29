@@ -21,12 +21,7 @@ func GetMetricCohort(c *gin.Context) {
 	metricName := c.Param("metric-name")
 	timeGrain := c.Param("timegrain")
 
-	filepath, err := common.GetLatestMetricFile(InstallationId, metricName)
-
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+	filepath := common.GetMetricFilepath(InstallationId, metricName)
 
 	metricHistory, err := common.GetKeysFromJSON(filepath)
 	if err != nil {
