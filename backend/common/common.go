@@ -7,9 +7,6 @@ import (
 	"log"
 	"net/url"
 	"os"
-	"path/filepath"
-	"sort"
-	"time"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/shopspring/decimal"
@@ -150,8 +147,7 @@ func GetKeysFromJSON(path MetricRedisKey) (Metrics, error) {
 }
 
 func StoreMetricMetadataAndAggregatedData(installationId int, metricName string, lineCountAndKPIByDateByVersion Metrics) MetricRedisKey {
-	timestamp := time.Now().Format("2006-01-02_15-04-05")
-	metricStoredFilePath := GetMetricFilepath(fmt.Sprint(installationId), metricName, timestamp)
+	metricStoredFilePath := GetMetricFilepath(fmt.Sprint(installationId), metricName)
 	var redisURL = os.Getenv("REDIS_URL")
 	redisOpt, redisErr := redis.ParseURL(redisURL)
 
@@ -184,54 +180,8 @@ func StoreMetricMetadataAndAggregatedData(installationId int, metricName string,
 	return metricStoredFilePath
 }
 
-func GetMetricFilepath(installationId string, metricName string, timestamp string) MetricRedisKey {
+func GetMetricFilepath(installationId string, metricName string) MetricRedisKey {
 	metricNameEncoded := url.PathEscape(metricName)
-	filepath := fmt.Sprintf("dist/%s_%s_lineCountAndKPIByDateByVersion_%s.json", installationId, metricNameEncoded, timestamp)
+	filepath := fmt.Sprintf("dist/%s_%s_lineCountAndKPIByDateByVersion.json", installationId, metricNameEncoded)
 	return MetricRedisKey(filepath)
-}
-
-func GetLatestMetricFile(installationId string, metricName string) (MetricRedisKey, error) {
-	filepathPattern := fmt.Sprintf("dist/%s_%s_lineCountAndKPIByDateByVersion_*.json", installationId, metricName)
-	var redisURL = os.Getenv("REDIS_URL")
-	redisOpt, redisErr := redis.ParseURL(redisURL)
-
-	if redisErr != nil {
-		fmt.Println("Redis Error: ", redisErr.Error())
-	} else {
-		fmt.Println("Redis Opt: ", redisOpt.Addr)
-	}
-
-	if redisErr != nil {
-
-		files, err := filepath.Glob(filepathPattern)
-		if err != nil {
-			return "", err
-		}
-
-		if len(files) == 0 {
-			return "", fmt.Errorf("no files found matching pattern %q", filepathPattern)
-		}
-
-		// Check the most recent file
-
-		return MetricRedisKey(files[0]), nil
-	} else {
-		var rdb = redis.NewClient(redisOpt)
-		keys, err := rdb.Keys(ctx, filepathPattern).Result()
-		if err != nil {
-			return "", fmt.Errorf("error getting Redis keys: %v", err)
-		}
-
-		// Sort the keys by timestamp.
-		sort.Slice(keys, func(i, j int) bool {
-			return keys[i] > keys[j]
-		})
-
-		// Return the latest key.
-		if len(keys) > 0 {
-			return MetricRedisKey(keys[0]), nil
-		} else {
-			return "", fmt.Errorf("no keys found matching pattern: %s", filepathPattern)
-		}
-	}
 }
