@@ -96,6 +96,10 @@ func HandleWebhook(c *gin.Context) {
 		// Call functions from charts.go and reports.go
 		go processWebhookInTheBackground(config, c, int(InstallationId), client, ownerName, repoName)
 		return
+
+	case *github.PullRequestEvent:
+		fmt.Println("Installation ID: ", event.Installation.ID)
+		fmt.Println("Pull request opened")
 	default:
 		c.JSON(http.StatusOK, gin.H{"message": "Webhook ignored"})
 		return
