@@ -59,7 +59,6 @@ func ReadMetricKPI(path MetricStorageKey) (Metrics, error) {
 		if err != nil {
 			return nil, err
 		}
-		rdb.Close()
 		return data, nil
 	}
 }
@@ -92,7 +91,6 @@ func WriteMetricKPI(installationId int, metricName string, lineCountAndKPIByDate
 		if err != nil {
 			fmt.Printf("Could not set key. Err: %s", err)
 		}
-		rdb.Close()
 	}
 	return metricStoredFilePath
 }
