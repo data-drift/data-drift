@@ -141,7 +141,7 @@ func GetKeysFromJSON(path MetricRedisKey) (Metrics, error) {
 		if err != nil {
 			return nil, err
 		}
-
+		rdb.Close()
 		return data, nil
 	}
 }
@@ -176,6 +176,7 @@ func StoreMetricMetadataAndAggregatedData(installationId int, metricName string,
 		if err != nil {
 			log.Fatalf("Could not set key. Err: %s", err)
 		}
+		rdb.Close()
 	}
 	return metricStoredFilePath
 }
