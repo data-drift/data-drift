@@ -1,7 +1,7 @@
 package reducers
 
 import (
-	"log"
+	"fmt"
 	"sort"
 	"time"
 
@@ -51,7 +51,7 @@ func getFirstDateOfPeriod(periodKeyParam common.PeriodKey) time.Time {
 		periodTime, _ := time.Parse("2006", periodKey)
 		lastDay = time.Date(periodTime.Year(), 12, 31, 23, 59, 59, 0, time.UTC)
 	default:
-		log.Fatalf("Invalid time grain: %s", timegrain)
+		fmt.Printf("Invalid time grain: %s", timegrain)
 	}
 	return lastDay
 

@@ -118,7 +118,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 				case common.Year:
 					periodKey = common.PeriodKey(periodTime.Format("2006"))
 				default:
-					log.Fatalf("Invalid time grain: %s", timegrain)
+					fmt.Printf("Invalid time grain: %s", timegrain)
 				}
 
 				periodAndDimensionKey := common.PeriodAndDimensionKey(string(periodKey))
@@ -153,7 +153,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 
 	if _, err := os.Stat("dist"); os.IsNotExist(err) {
 		if err := os.Mkdir("dist", 0755); err != nil {
-			log.Fatalf("Error creating directory: %v", err.Error())
+			fmt.Printf("Error creating directory: %v", err.Error())
 		}
 	}
 

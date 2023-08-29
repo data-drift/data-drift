@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/url"
 	"os"
 
@@ -73,13 +72,13 @@ func WriteMetricKPI(installationId int, metricName string, lineCountAndKPIByDate
 
 		file, err := os.Create(string(metricStoredFilePath))
 		if err != nil {
-			log.Fatalf("Error creating file: %v", err.Error())
+			fmt.Printf("Error creating file: %v", err)
 		}
 		defer file.Close()
 
 		enc := json.NewEncoder(file)
 		if err := enc.Encode(lineCountAndKPIByDateByVersion); err != nil {
-			log.Fatalf("Error writing JSON to file: %v", err.Error())
+			fmt.Printf("Error writing JSON to file: %v", err)
 		}
 		fmt.Println("Results written to file")
 	} else {
@@ -87,7 +86,7 @@ func WriteMetricKPI(installationId int, metricName string, lineCountAndKPIByDate
 
 		jsonData, err := json.Marshal(lineCountAndKPIByDateByVersion)
 		if err != nil {
-			log.Fatalf("Error occurred during marshaling. Err: %s", err)
+			fmt.Printf("Error occurred during marshaling. Err: %s", err)
 		}
 		err = rdb.Set(ctx, string(metricStoredFilePath), jsonData, 0).Err()
 		if err != nil {
