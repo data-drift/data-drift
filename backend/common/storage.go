@@ -51,7 +51,7 @@ func ReadMetricKPI(path MetricStorageKey) (Metrics, error) {
 
 		jsonData, err := rdb.Get(ctx, string(path)).Bytes()
 		if err != nil {
-			log.Fatalf("Could not get key. Err: %s", err)
+			fmt.Printf("Could not get key. Err: %s", err)
 			return nil, err
 		}
 
@@ -91,7 +91,7 @@ func WriteMetricKPI(installationId int, metricName string, lineCountAndKPIByDate
 		}
 		err = rdb.Set(ctx, string(metricStoredFilePath), jsonData, 0).Err()
 		if err != nil {
-			log.Fatalf("Could not set key. Err: %s", err)
+			fmt.Printf("Could not set key. Err: %s", err)
 		}
 		rdb.Close()
 	}
