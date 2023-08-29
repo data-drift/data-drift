@@ -30,7 +30,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 	endDate := time.Now()
 
 	if dateColumnName == "" {
-		return "", fmt.Errorf("error no date column name provided")
+		dateColumnName = "date"
 	}
 
 	// Get the commit history for the repository.
@@ -76,6 +76,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 		}
 		var dateColumn int
 		var kpiColumn int
+		var defaultDateColumn int
 		var dimensionColumns []struct {
 			dimensionName   string
 			dimensionColumn int
@@ -84,6 +85,9 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 		for i, columnName := range records[0] {
 			if columnName == dateColumnName {
 				dateColumn = i
+			}
+			if columnName == "date" {
+				defaultDateColumn = i
 			}
 			if columnName == KPIColumnName {
 				kpiColumn = i
@@ -100,6 +104,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 				}
 			}
 		}
+
 		for _, record := range records[1:] { // Skip the header row.
 			for _, timegrain := range GetDefaultTimeGrains(metric.TimeGrains) {
 				var periodKey common.PeriodKey
@@ -110,8 +115,15 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 				periodTime, parsingError := time.Parse("2006-01-02", dateValue)
 
 				if parsingError != nil {
-					fmt.Println("Error with period:", parsingError.Error())
-					continue
+					dateValue := record[defaultDateColumn]
+					if len(dateValue) > 10 {
+						dateValue = dateValue[:10]
+					}
+					periodTime, parsingError = time.Parse("2006-01-02", dateValue)
+					if parsingError != nil {
+						fmt.Println("Error with default date:", parsingError.Error())
+						continue
+					}
 				}
 
 				switch timegrain {
