@@ -103,7 +103,11 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 		for _, record := range records[1:] { // Skip the header row.
 			for _, timegrain := range GetDefaultTimeGrains(metric.TimeGrains) {
 				var periodKey common.PeriodKey
-				periodTime, _ := time.Parse("2006-01-02", record[dateColumn][:10])
+				periodTime, parsingError := time.Parse("2006-01-02", record[dateColumn][:10])
+
+				if parsingError != nil {
+					fmt.Println("Error with period:", parsingError.Error())
+				}
 
 				switch timegrain {
 				case common.Day:
