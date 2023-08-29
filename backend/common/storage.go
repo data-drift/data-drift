@@ -15,7 +15,7 @@ type MetricRedisKey string
 
 var ctx = context.Background()
 
-func GetKeysFromJSON(path MetricRedisKey) (Metrics, error) {
+func ReadMetricKPI(path MetricRedisKey) (Metrics, error) {
 	var redisURL = os.Getenv("REDIS_URL")
 	redisOpt, redisErr := redis.ParseURL(redisURL)
 
@@ -51,8 +51,8 @@ func GetKeysFromJSON(path MetricRedisKey) (Metrics, error) {
 	}
 }
 
-func StoreMetricMetadataAndAggregatedData(installationId int, metricName string, lineCountAndKPIByDateByVersion Metrics) MetricRedisKey {
-	metricStoredFilePath := GetMetricFilepath(fmt.Sprint(installationId), metricName)
+func WriteMetricKPI(installationId int, metricName string, lineCountAndKPIByDateByVersion Metrics) MetricRedisKey {
+	metricStoredFilePath := GetMetricStorageKey(fmt.Sprint(installationId), metricName)
 	var redisURL = os.Getenv("REDIS_URL")
 	redisOpt, redisErr := redis.ParseURL(redisURL)
 
@@ -86,7 +86,7 @@ func StoreMetricMetadataAndAggregatedData(installationId int, metricName string,
 	return metricStoredFilePath
 }
 
-func GetMetricFilepath(installationId string, metricName string) MetricRedisKey {
+func GetMetricStorageKey(installationId string, metricName string) MetricRedisKey {
 	metricNameEncoded := url.PathEscape(metricName)
 	filepath := fmt.Sprintf("dist/%s_%s_lineCountAndKPIByDateByVersion.json", installationId, metricNameEncoded)
 	return MetricRedisKey(filepath)

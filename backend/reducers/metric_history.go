@@ -19,7 +19,7 @@ type ChartResponse struct {
 
 func ProcessMetricHistory(historyFilepath common.MetricRedisKey, metric common.MetricConfig) []common.KPIReport {
 
-	data, err := common.GetKeysFromJSON(historyFilepath)
+	data, err := common.ReadMetricKPI(historyFilepath)
 	if err != nil {
 		fmt.Println("Error:", err.Error())
 	}

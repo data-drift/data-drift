@@ -160,7 +160,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 	// Generate a timestamp to include in the JSON file name.
 	// Open a file to write the line counts by date by version in JSON format.
 	// Write the line counts and KPI values to the JSON file.
-	metricStoredFilePath := common.StoreMetricMetadataAndAggregatedData(installationId, metricName, lineCountAndKPIByDateByVersion)
+	metricStoredFilePath := common.WriteMetricKPI(installationId, metricName, lineCountAndKPIByDateByVersion)
 	return metricStoredFilePath, nil
 }
 

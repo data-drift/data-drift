@@ -28,7 +28,7 @@ type MetricMetadata struct {
 }
 
 func ProcessMetricMetadataCharts(filepath common.MetricRedisKey, metricConfig common.MetricConfig) (map[common.TimeGrain]string, error) {
-	metrics, marshelingError := common.GetKeysFromJSON(filepath)
+	metrics, marshelingError := common.ReadMetricKPI(filepath)
 	if marshelingError != nil {
 		fmt.Println("[DATADRIFT ERROR]: marshaling data", marshelingError.Error())
 		return nil, marshelingError
