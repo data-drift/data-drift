@@ -46,7 +46,7 @@ func CheckGithubAppConnection() error {
 	if err != nil {
 		return err
 	}
-	print("Github App ID: ", githubAppId)
+	fmt.Println("Github App ID: ", githubAppId)
 	return nil
 }
 

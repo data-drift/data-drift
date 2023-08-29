@@ -27,7 +27,7 @@ func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error 
 	} else {
 		err := notion_database.UpdateChangeLogReport(syncConfig.NotionAPIKey, reportNotionPageId, KPIInfo)
 		if err != nil {
-			print("Updating report error", err.Error())
+			fmt.Println("Updating report error", err.Error())
 		}
 	}
 
@@ -67,7 +67,7 @@ func CreateSummaryReport(syncConfig common.SyncConfig, metricConfig common.Metri
 			})
 		}
 		if err != nil {
-			print("Error getting links for report in summary page", err.Error())
+			fmt.Println("Error getting links for report in summary page", err.Error())
 		}
 		// get report of metric and timegrain, ordered by name and push them in children
 	}
