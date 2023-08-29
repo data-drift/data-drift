@@ -18,25 +18,6 @@ import (
 
 const configFilePath = "datadrift-config.json"
 
-type GithubWebhookPayload struct {
-	Repository struct {
-		Name  string `json:"name"`
-		Owner struct {
-			Name string `json:"name"`
-		} `json:"owner"`
-	} `json:"repository"`
-	Repositories []struct {
-		Name string `json:"name"`
-	} `json:"repositories"`
-
-	Installation struct {
-		ID      int `json:"id"`
-		Account struct {
-			Login string `json:"login"`
-		} `json:"account"`
-	} `json:"installation"`
-}
-
 func HandleWebhook(c *gin.Context) {
 	payload, err := github.ValidatePayload(c.Request, []byte(""))
 
