@@ -191,7 +191,7 @@ func updateMetric(lineCountAndKPIByDateByVersion common.Metrics, periodAndDimens
 }
 
 func buildReportDiffUrl(reportBaseUrl string, commitSha string) string {
-	return reportBaseUrl + "/" + commitSha
+	return reportBaseUrl + commitSha + "/"
 }
 
 func getFileContentsForCommit(client *github.Client, owner, name, path, sha string) ([]byte, error) {
