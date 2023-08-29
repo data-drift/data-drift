@@ -11,7 +11,7 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-type MetricRedisKey string
+type MetricStorageKey string
 
 var ctx = context.Background()
 
@@ -31,7 +31,7 @@ func getRedisClient() (*redis.Client, error) {
 	return rdb, nil
 }
 
-func ReadMetricKPI(path MetricRedisKey) (Metrics, error) {
+func ReadMetricKPI(path MetricStorageKey) (Metrics, error) {
 	rdb, redisErr := getRedisClient()
 
 	if redisErr != nil {
@@ -65,7 +65,7 @@ func ReadMetricKPI(path MetricRedisKey) (Metrics, error) {
 	}
 }
 
-func WriteMetricKPI(installationId int, metricName string, lineCountAndKPIByDateByVersion Metrics) MetricRedisKey {
+func WriteMetricKPI(installationId int, metricName string, lineCountAndKPIByDateByVersion Metrics) MetricStorageKey {
 	metricStoredFilePath := GetMetricStorageKey(fmt.Sprint(installationId), metricName)
 	rdb, redisErr := getRedisClient()
 
@@ -98,8 +98,8 @@ func WriteMetricKPI(installationId int, metricName string, lineCountAndKPIByDate
 	return metricStoredFilePath
 }
 
-func GetMetricStorageKey(installationId string, metricName string) MetricRedisKey {
+func GetMetricStorageKey(installationId string, metricName string) MetricStorageKey {
 	metricNameEncoded := url.PathEscape(metricName)
 	filepath := fmt.Sprintf("dist/%s_%s_lineCountAndKPIByDateByVersion.json", installationId, metricNameEncoded)
-	return MetricRedisKey(filepath)
+	return MetricStorageKey(filepath)
 }

@@ -27,7 +27,7 @@ type MetricMetadata struct {
 	RelativeHistory map[time.Duration]RelativeHistoricalEvent
 }
 
-func ProcessMetricMetadataCharts(filepath common.MetricRedisKey, metricConfig common.MetricConfig) (map[common.TimeGrain]string, error) {
+func ProcessMetricMetadataCharts(filepath common.MetricStorageKey, metricConfig common.MetricConfig) (map[common.TimeGrain]string, error) {
 	metrics, marshelingError := common.ReadMetricKPI(filepath)
 	if marshelingError != nil {
 		fmt.Println("[DATADRIFT ERROR]: marshaling data", marshelingError.Error())
