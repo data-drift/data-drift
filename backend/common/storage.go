@@ -15,9 +15,24 @@ type MetricRedisKey string
 
 var ctx = context.Background()
 
-func ReadMetricKPI(path MetricRedisKey) (Metrics, error) {
+var redisClient *redis.Client
+
+func getRedisClient() (*redis.Client, error) {
+	if redisClient != nil {
+		return redisClient, nil
+	}
 	var redisURL = os.Getenv("REDIS_URL")
 	redisOpt, redisErr := redis.ParseURL(redisURL)
+	if redisErr != nil {
+		return nil, redisErr
+	}
+	rdb := redis.NewClient(redisOpt)
+	redisClient = rdb
+	return rdb, nil
+}
+
+func ReadMetricKPI(path MetricRedisKey) (Metrics, error) {
+	rdb, redisErr := getRedisClient()
 
 	if redisErr != nil {
 		jsonFile, err := os.ReadFile(string(path))
@@ -33,7 +48,6 @@ func ReadMetricKPI(path MetricRedisKey) (Metrics, error) {
 
 		return data, nil
 	} else {
-		var rdb = redis.NewClient(redisOpt)
 
 		jsonData, err := rdb.Get(ctx, string(path)).Bytes()
 		if err != nil {
@@ -53,8 +67,7 @@ func ReadMetricKPI(path MetricRedisKey) (Metrics, error) {
 
 func WriteMetricKPI(installationId int, metricName string, lineCountAndKPIByDateByVersion Metrics) MetricRedisKey {
 	metricStoredFilePath := GetMetricStorageKey(fmt.Sprint(installationId), metricName)
-	var redisURL = os.Getenv("REDIS_URL")
-	redisOpt, redisErr := redis.ParseURL(redisURL)
+	rdb, redisErr := getRedisClient()
 
 	if redisErr != nil {
 
@@ -70,7 +83,6 @@ func WriteMetricKPI(installationId int, metricName string, lineCountAndKPIByDate
 		}
 		fmt.Println("Results written to file")
 	} else {
-		var rdb = redis.NewClient(redisOpt)
 		fmt.Println("Storing results in Redis")
 
 		jsonData, err := json.Marshal(lineCountAndKPIByDateByVersion)
