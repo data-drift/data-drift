@@ -1,6 +1,7 @@
 package metrics
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/data-drift/data-drift/common"
@@ -48,7 +49,7 @@ func GetReportData(metrics common.Metrics, timeGrain common.TimeGrain) map[strin
 			cohortDates = append(cohortDates, string(cohortName))
 			metricMetadata, err := reducers.GetMetadataOfMetric(cohort)
 			if err != nil {
-				print(err.Error())
+				fmt.Println(err.Error())
 				continue
 			}
 			cohortsMetricsMetadata[string(cohortName)] = metricMetadata
