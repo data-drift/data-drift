@@ -14,7 +14,7 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-func ProcessHistory(client *github.Client, repoOwner string, repoName string, metric common.MetricConfig, installationId int) (common.MetricRedisKey, error) {
+func ProcessHistory(client *github.Client, repoOwner string, repoName string, metric common.MetricConfig, installationId int) (common.MetricStorageKey, error) {
 
 	reportBaseUrl := fmt.Sprintf("https://app.data-drift.io/report/%d/%s/%s/commit/", installationId, repoOwner, repoName)
 	fmt.Println(reportBaseUrl)
@@ -103,7 +103,11 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 		for _, record := range records[1:] { // Skip the header row.
 			for _, timegrain := range GetDefaultTimeGrains(metric.TimeGrains) {
 				var periodKey common.PeriodKey
-				periodTime, _ := time.Parse("2006-01-02", record[dateColumn])
+				periodTime, parsingError := time.Parse("2006-01-02", record[dateColumn][:10])
+
+				if parsingError != nil {
+					fmt.Println("Error with period:", parsingError.Error())
+				}
 
 				switch timegrain {
 				case common.Day:
@@ -118,7 +122,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 				case common.Year:
 					periodKey = common.PeriodKey(periodTime.Format("2006"))
 				default:
-					log.Fatalf("Invalid time grain: %s", timegrain)
+					fmt.Printf("Invalid time grain: %s", timegrain)
 				}
 
 				periodAndDimensionKey := common.PeriodAndDimensionKey(string(periodKey))
@@ -153,14 +157,14 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 
 	if _, err := os.Stat("dist"); os.IsNotExist(err) {
 		if err := os.Mkdir("dist", 0755); err != nil {
-			log.Fatalf("Error creating directory: %v", err.Error())
+			fmt.Printf("Error creating directory: %v", err.Error())
 		}
 	}
 
 	// Generate a timestamp to include in the JSON file name.
 	// Open a file to write the line counts by date by version in JSON format.
 	// Write the line counts and KPI values to the JSON file.
-	metricStoredFilePath := common.StoreMetricMetadataAndAggregatedData(installationId, metricName, lineCountAndKPIByDateByVersion)
+	metricStoredFilePath := common.WriteMetricKPI(installationId, metricName, lineCountAndKPIByDateByVersion)
 	return metricStoredFilePath, nil
 }
 
@@ -191,7 +195,7 @@ func updateMetric(lineCountAndKPIByDateByVersion common.Metrics, periodAndDimens
 }
 
 func buildReportDiffUrl(reportBaseUrl string, commitSha string) string {
-	return reportBaseUrl + "/" + commitSha
+	return reportBaseUrl + commitSha + "/"
 }
 
 func getFileContentsForCommit(client *github.Client, owner, name, path, sha string) ([]byte, error) {

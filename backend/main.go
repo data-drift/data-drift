@@ -87,7 +87,7 @@ func ManualSync(c *gin.Context) {
 }
 
 func performTask(syncConfig common.SyncConfig) error {
-	filepath := common.MetricRedisKey(os.Getenv("DEFAULT_FILE_PATH"))
+	filepath := common.MetricStorageKey(os.Getenv("DEFAULT_FILE_PATH"))
 	fmt.Println(filepath)
 
 	if filepath == "" {
