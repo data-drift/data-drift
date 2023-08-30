@@ -59,6 +59,7 @@ func main() {
 	router.GET("gh/:owner/:repo/commit/:commit-sha", github.GetCommitDiff)
 
 	router.GET("metrics/:metric-name/cohorts/:timegrain", metrics.GetMetricCohort)
+	router.GET("metrics/:metric-name/reports", metrics.GetMetricReport)
 
 	router.POST("validate-config", github.ValidateConfigHandler)
 
