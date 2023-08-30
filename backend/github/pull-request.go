@@ -9,6 +9,9 @@ import (
 )
 
 func handlePullRequestOpened(event *github.PullRequestEvent) error {
+	if event.GetAction() != "opened" {
+		return nil
+	}
 	print("Pull request opened", event)
 	// Get the owner and repository name from the event.
 	owner := event.GetRepo().GetOwner().GetLogin()
