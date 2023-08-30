@@ -34,6 +34,27 @@ func GetMetricCohort(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+func GetMetricReport(c *gin.Context) {
+	InstallationId := c.Request.Header.Get("Installation-Id")
+
+	if InstallationId == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No installation id provided"})
+		return
+	}
+
+	metricName := c.Param("metric-name")
+
+	filepath := common.GetMetricStorageKey(InstallationId, metricName)
+
+	metricHistory, err := common.ReadMetricKPI(filepath)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, metricHistory)
+}
+
 func GetReportData(metrics common.Metrics, timeGrain common.TimeGrain) map[string]interface{} {
 	cohortDates := []string{}
 	reportData := make(map[int64]map[string]interface{})
