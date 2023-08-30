@@ -115,7 +115,7 @@ export const getMetricReport = async ({
 export type MetricReport = Record<TimegrainString, PeriodReport>;
 
 type CommitSha = string;
-interface PeriodReport {
+export interface PeriodReport {
   TimeGrain: Timegrain;
   Period: TimegrainString;
   Dimension: string;
