@@ -11,6 +11,7 @@ import {
   getMetricCohorts,
   getTimegrainFromString,
 } from "../services/data-drift";
+import { CohortMetric } from "../services/data-drift.types";
 
 const getMetricCohortsData = async ({
   params,
@@ -21,30 +22,43 @@ const getMetricCohortsData = async ({
   const result = await getMetricCohorts(typedParams);
   const metricMetadata =
     result.data.cohortsMetricsMetadata[typedParams.timegrainValue];
-  console.log(metricMetadata);
-  const data = [
-    {
-      day: "05-01",
-      drift: [980, 1000],
-      fill: theme.colors.text,
-      isInitial: true,
-    },
-    {
-      day: "05-02",
-      drift: [1000, 1050],
-      fill: theme.colors.dataUp,
-    },
-    {
-      day: "05-03",
-      drift: [1050, 1020],
-      fill: theme.colors.dataDown,
-    },
-    {
+  const { data } = getWaterfallChartPropsFromMetadata(metricMetadata);
+  return { data };
+};
+
+type Mutable<T> = {
+  -readonly [P in keyof T]: T[P];
+};
+
+const getWaterfallChartPropsFromMetadata = (
+  cohortMetric: CohortMetric
+): WaterfallChartProps => {
+  console.log(cohortMetric);
+  let latestValue = parseFloat(cohortMetric.InitialValue);
+
+  const data = [] as Mutable<WaterfallChartProps["data"]>;
+  Object.keys(cohortMetric.RelativeHistory).forEach((cohortKey) => {
+    const aberanteValue =
+      parseFloat(cohortMetric.RelativeHistory[cohortKey].RelativeValue) > 100;
+    if (aberanteValue) {
+      return;
+    }
+    const newValue =
+      parseFloat(cohortMetric.RelativeHistory[cohortKey].RelativeValue) *
+      parseFloat(cohortMetric.InitialValue);
+
+    if (newValue == latestValue) {
+      return;
+    }
+    const result = {
       day: "05-04",
-      drift: [1020, 1010],
-      fill: theme.colors.dataDown,
-    },
-  ] as const;
+      drift: [latestValue, newValue],
+      fill:
+        latestValue > newValue ? theme.colors.dataDown : theme.colors.dataUp,
+    } as const;
+    latestValue = newValue;
+    data.push(result);
+  });
   return { data };
 };
 
