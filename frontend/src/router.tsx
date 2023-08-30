@@ -23,4 +23,8 @@ export const router = createBrowserRouter([
     element: <MetricCohort />,
     loader: MetricCohort.loader,
   },
+  {
+    path: "report/:installationId/metrics/:metricName/report/:timegrain",
+    element: <p />,
+  },
 ]);
