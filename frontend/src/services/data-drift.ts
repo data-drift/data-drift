@@ -96,3 +96,42 @@ export function getTimegrainFromString(str: TimegrainString): Timegrain {
     throw new Error("Invalid timegrain string!");
   }
 }
+
+export const getMetricReport = async ({
+  installationId,
+  metricName,
+}: {
+  installationId: string;
+  metricName: string;
+  timegrain: Timegrain;
+}) => {
+  const result = await axios.get<MetricReport>(
+    `${DATA_DRIFT_API_URL}/metrics/${metricName}/reports`,
+    { headers: { "Installation-Id": installationId } }
+  );
+  return result;
+};
+
+export type MetricReport = Record<TimegrainString, PeriodReport>;
+
+type CommitSha = string;
+interface PeriodReport {
+  TimeGrain: Timegrain;
+  Period: TimegrainString;
+  Dimension: string;
+  DimensionValue: string;
+  History: { [key: CommitSha]: History };
+}
+
+interface History {
+  Lines: number;
+  KPI: string;
+  CommitTimestamp: number;
+  CommitUrl: string;
+  CommitComments: CommitComment[] | null;
+}
+
+interface CommitComment {
+  CommentAuthor: string;
+  CommentBody: string;
+}
