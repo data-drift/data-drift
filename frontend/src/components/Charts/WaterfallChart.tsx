@@ -25,7 +25,9 @@ const formatToolTipValueTick: Formatter = (
   return `${tickValue[1]} (${signedDrift})`;
 };
 
-export const WaterfallChart = ({ data }: { data: readonly DataItem[] }) => {
+export type WaterfallChartProps = { data: readonly DataItem[] };
+
+export const WaterfallChart = ({ data }: WaterfallChartProps) => {
   return (
     <BarChart
       width={730}

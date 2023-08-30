@@ -27,5 +27,6 @@ export const router = createBrowserRouter([
   {
     path: "report/:installationId/metrics/:metricName/report/:timegrain",
     element: <MetricReportWaterfall />,
+    loader: MetricReportWaterfall.loader,
   },
 ]);
