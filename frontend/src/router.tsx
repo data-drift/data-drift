@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import GithubForm from "./pages/GithubForm";
 import DisplayCommit from "./pages/DisplayCommit";
 import MetricCohort from "./pages/MetricCohorts";
+import MetricReportWaterfall from "./pages/MetricReportWaterfall";
 
 export const router = createBrowserRouter([
   {
@@ -22,5 +23,10 @@ export const router = createBrowserRouter([
     path: "report/:installationId/metrics/:metricName/cohorts/:timegrain",
     element: <MetricCohort />,
     loader: MetricCohort.loader,
+  },
+  {
+    path: "report/:installationId/metrics/:metricName/report/:timegrainValue",
+    element: <MetricReportWaterfall />,
+    loader: MetricReportWaterfall.loader,
   },
 ]);

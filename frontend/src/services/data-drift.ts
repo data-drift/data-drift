@@ -48,3 +48,51 @@ export function assertTimegrain(value: string): asserts value is Timegrain {
     throw new Error("Value is not a valid time unit!");
   }
 }
+
+type YearString = `${number}`;
+type YearMonthString = `${number}-${string & { length: 2 }}`;
+type YearMonthDayString = `${number}-${string & { length: 2 }}-${string & {
+  length: 2;
+}}`;
+type YearWeekString = `${number}-W${
+  | (number & { length: 1 })
+  | (string & { length: 2 })}`;
+type YearQuarterString = `${number}-Q${1 | 2 | 3 | 4}`;
+export type TimegrainString =
+  | YearString
+  | YearMonthString
+  | YearMonthDayString
+  | YearWeekString
+  | YearQuarterString;
+
+export function assertStringIsTimgrainString(
+  str: string
+): asserts str is TimegrainString {
+  if (
+    str.match(/^\d{4}$/) !== null ||
+    str.match(/^\d{4}-\d{2}$/) !== null ||
+    str.match(/^\d{4}-\d{2}-\d{2}$/) !== null ||
+    str.match(/^\d{4}-W\d{1,2}$/) !== null ||
+    str.match(/^\d{4}-Q[1-4]$/) !== null
+  ) {
+    return;
+  } else {
+    throw new Error("Invalid timegrain string!");
+  }
+}
+
+export function getTimegrainFromString(str: TimegrainString): Timegrain {
+  if (str.match(/^\d{4}$/) !== null) {
+    return "year";
+  } else if (str.match(/^\d{4}-\d{2}$/) !== null) {
+    return "month";
+  } else if (str.match(/^\d{4}-\d{2}-\d{2}$/) !== null) {
+    return "day";
+  } else if (str.match(/^\d{4}-W\d{1,2}$/) !== null) {
+    return "week";
+  } else if (str.match(/^\d{4}-Q[1-4]$/) !== null) {
+    return "quarter";
+  } else {
+    throw new Error("Invalid timegrain string!");
+  }
+}
