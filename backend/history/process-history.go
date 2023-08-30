@@ -10,13 +10,14 @@ import (
 	"time"
 
 	"github.com/data-drift/data-drift/common"
+	"github.com/data-drift/data-drift/urlgen"
 	"github.com/google/go-github/v42/github"
 	"github.com/shopspring/decimal"
 )
 
 func ProcessHistory(client *github.Client, repoOwner string, repoName string, metric common.MetricConfig, installationId int) (common.MetricStorageKey, error) {
 
-	reportBaseUrl := fmt.Sprintf("https://app.data-drift.io/report/%d/%s/%s/commit/", installationId, repoOwner, repoName)
+	reportBaseUrl := urlgen.BuildReportDiffBaseUrl(fmt.Sprint(installationId), repoOwner, repoName)
 	fmt.Println(reportBaseUrl)
 	ctx := context.Background()
 
@@ -206,13 +207,9 @@ func updateMetric(lineCountAndKPIByDateByVersion common.Metrics, periodAndDimens
 		Lines:           newLineCount,
 		KPI:             newKPI,
 		CommitTimestamp: commitTimestamp,
-		CommitUrl:       buildReportDiffUrl(reportBaseUrl, string(commitSha)),
+		CommitUrl:       urlgen.BuildReportDiffUrl(reportBaseUrl, string(commitSha)),
 		CommitComments:  commitMessages,
 	}
-}
-
-func buildReportDiffUrl(reportBaseUrl string, commitSha string) string {
-	return reportBaseUrl + commitSha + "/"
 }
 
 func getFileContentsForCommit(client *github.Client, owner, name, path, sha string) ([]byte, error) {
