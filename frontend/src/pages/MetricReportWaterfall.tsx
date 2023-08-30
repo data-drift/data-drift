@@ -1,11 +1,23 @@
-import { useLoaderData } from "react-router-dom";
+import { Params, useLoaderData } from "react-router-dom";
 import {
   WaterfallChart,
   WaterfallChartProps,
 } from "../components/Charts/WaterfallChart";
 import { theme } from "../theme";
+import {
+  Timegrain,
+  TimegrainString,
+  assertStringIsTimgrainString,
+  getTimegrainFromString,
+} from "../services/data-drift";
 
-const getMetricCohortsData = (): WaterfallChartProps => {
+const getMetricCohortsData = ({
+  params,
+}: {
+  params: Params<string>;
+}): WaterfallChartProps => {
+  const typedParams = assertParamsHasNeededProperties(params);
+  console.log(typedParams);
   const data = [
     {
       day: "05-01",
@@ -31,6 +43,22 @@ const getMetricCohortsData = (): WaterfallChartProps => {
   ] as const;
   return { data };
 };
+
+function assertParamsHasNeededProperties(params: Params<string>): {
+  installationId: string;
+  metricName: string;
+  timegrain: Timegrain;
+  timegrainValue: TimegrainString;
+} {
+  const { installationId, metricName, timegrainValue } = params;
+  if (!installationId || !metricName || !timegrainValue) {
+    throw new Error("Invalid params");
+  }
+  assertStringIsTimgrainString(timegrainValue);
+  const timegrain = getTimegrainFromString(timegrainValue);
+
+  return { installationId, metricName, timegrain, timegrainValue };
+}
 
 const MetricReportWaterfall = () => {
   const { data } = useLoaderData() as WaterfallChartProps;
