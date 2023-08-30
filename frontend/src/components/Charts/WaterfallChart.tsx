@@ -9,7 +9,7 @@ type Formatter = TooltipProps["formatter"];
 
 interface DataItem {
   day: string;
-  drift: [number, number];
+  drift: readonly [number, number];
   fill: string;
   isInitial?: boolean;
 }
@@ -25,12 +25,12 @@ const formatToolTipValueTick: Formatter = (
   return `${tickValue[1]} (${signedDrift})`;
 };
 
-export const WaterfallChart = ({ data }: { data: DataItem[] }) => {
+export const WaterfallChart = ({ data }: { data: readonly DataItem[] }) => {
   return (
     <BarChart
       width={730}
       height={250}
-      data={data}
+      data={[...data]}
       margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
     >
       <XAxis dataKey="day" />
