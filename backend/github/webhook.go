@@ -97,14 +97,14 @@ func HandleWebhook(c *gin.Context) {
 		go processWebhookInTheBackground(config, c, int(InstallationId), client, ownerName, repoName)
 		return
 
-	case *github.PullRequestEvent:
-		err := handlePullRequestOpened(event)
-		if err != nil {
-			c.JSON(http.StatusOK, gin.H{"message": err.Error()})
-		} else {
-			c.JSON(http.StatusOK, gin.H{"message": "Webhook received"})
-		}
-		return
+	// case *github.PullRequestEvent:
+	// 	err := handlePullRequestOpened(event)
+	// 	if err != nil {
+	// 		c.JSON(http.StatusOK, gin.H{"message": err.Error()})
+	// 	} else {
+	// 		c.JSON(http.StatusOK, gin.H{"message": "Webhook received"})
+	// 	}
+	// 	return
 	default:
 		c.JSON(http.StatusOK, gin.H{"message": "Webhook ignored"})
 		return
