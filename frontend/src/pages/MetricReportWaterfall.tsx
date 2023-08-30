@@ -8,16 +8,20 @@ import {
   Timegrain,
   TimegrainString,
   assertStringIsTimgrainString,
+  getMetricCohorts,
   getTimegrainFromString,
 } from "../services/data-drift";
 
-const getMetricCohortsData = ({
+const getMetricCohortsData = async ({
   params,
 }: {
   params: Params<string>;
-}): WaterfallChartProps => {
+}): Promise<WaterfallChartProps> => {
   const typedParams = assertParamsHasNeededProperties(params);
-  console.log(typedParams);
+  const result = await getMetricCohorts(typedParams);
+  const metricMetadata =
+    result.data.cohortsMetricsMetadata[typedParams.timegrainValue];
+  console.log(metricMetadata);
   const data = [
     {
       day: "05-01",
