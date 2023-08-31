@@ -12,7 +12,6 @@ import {
   getMetricReport,
   getTimegrainFromString,
 } from "../services/data-drift";
-import { CohortMetric } from "../services/data-drift.types";
 
 const getMetricCohortsData = async ({
   params,
