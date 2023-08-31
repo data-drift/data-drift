@@ -21,7 +21,7 @@ func handlePullRequestOpened(event *github.PullRequestEvent) error {
 	// Get the pull request number from the event.
 
 	commitDiffUrl := urlgen.BuildReportDiffUrl(urlgen.BuildReportDiffBaseUrl(fmt.Sprint(installationId), owner, repo), *event.PullRequest.Head.SHA)
-
+	log.Printf("commitDiffUrl: %s", commitDiffUrl)
 	// Create a comment on the pull request.
 	comment := &github.IssueComment{
 		Body: github.String(fmt.Sprintf("The diff is available [here](%s).", commitDiffUrl)),
