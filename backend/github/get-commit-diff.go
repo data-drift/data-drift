@@ -3,6 +3,7 @@ package github
 import (
 	"encoding/csv"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -29,6 +30,7 @@ func GetCommitDiff(c *gin.Context) {
 
 	commit, _, ghErr := client.Repositories.GetCommit(c, owner, repo, commitSha, nil)
 	if ghErr != nil {
+		fmt.Println(ghErr.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"error": ghErr})
 		return
 	}
