@@ -5,13 +5,14 @@ import {
 } from "../components/Charts/WaterfallChart";
 import { theme } from "../theme";
 import {
+  PeriodReport,
   Timegrain,
   TimegrainString,
   assertStringIsTimgrainString,
-  getMetricCohorts,
+  getMetricReport,
   getTimegrainFromString,
 } from "../services/data-drift";
-import { CohortMetric } from "../services/data-drift.types";
+import { getNiceTickValues } from "recharts-scale";
 
 const getMetricCohortsData = async ({
   params,
@@ -19,9 +20,8 @@ const getMetricCohortsData = async ({
   params: Params<string>;
 }): Promise<WaterfallChartProps> => {
   const typedParams = assertParamsHasNeededProperties(params);
-  const result = await getMetricCohorts(typedParams);
-  const metricMetadata =
-    result.data.cohortsMetricsMetadata[typedParams.timegrainValue];
+  const result = await getMetricReport(typedParams);
+  const metricMetadata = result.data[typedParams.timegrainValue];
   const { data } = getWaterfallChartPropsFromMetadata(metricMetadata);
   return { data };
 };
@@ -31,34 +31,51 @@ type Mutable<T> = {
 };
 
 const getWaterfallChartPropsFromMetadata = (
-  cohortMetric: CohortMetric
+  cohortMetric: PeriodReport
 ): WaterfallChartProps => {
   console.log(cohortMetric);
-  let latestValue = parseFloat(cohortMetric.InitialValue);
+  // let latestValue = parseFloat(cohortMetric.InitialValue);
 
   const data = [] as Mutable<WaterfallChartProps["data"]>;
-  Object.keys(cohortMetric.RelativeHistory).forEach((cohortKey) => {
-    const aberanteValue =
-      parseFloat(cohortMetric.RelativeHistory[cohortKey].RelativeValue) > 100;
-    if (aberanteValue) {
-      return;
-    }
-    const newValue =
-      parseFloat(cohortMetric.RelativeHistory[cohortKey].RelativeValue) *
-      parseFloat(cohortMetric.InitialValue);
 
-    if (newValue == latestValue) {
-      return;
-    }
-    const result = {
-      day: "05-04",
-      drift: [latestValue, newValue],
-      fill:
-        latestValue > newValue ? theme.colors.dataDown : theme.colors.dataUp,
-    } as const;
-    latestValue = newValue;
-    data.push(result);
+  const historyEntries = Object.entries(cohortMetric.History);
+  historyEntries.sort(([_aCommitSha, aHistory], [_bCommitSha, bHistory]) => {
+    return aHistory.CommitTimestamp - bHistory.CommitTimestamp;
   });
+  historyEntries.forEach(([_commitSha, commit], index) => {
+    const commitDate = new Date(commit.CommitTimestamp * 1000);
+    const formatedDate = `${String(commitDate.getMonth() + 1).padStart(
+      2,
+      "0"
+    )}-${String(commitDate.getDate()).padStart(2, "0")}`;
+    if (index === 0) {
+      const yMin = Math.min(
+        ...historyEntries.map(([_sha, commit]) => parseFloat(commit.KPI))
+      );
+      const yMax = Math.max(
+        ...historyEntries.map(([_sha, commit]) => parseFloat(commit.KPI))
+      );
+      const niceTicks = getNiceTickValues([yMin, yMax], 5);
+      data.push({
+        day: formatedDate,
+        drift: [niceTicks[0], parseFloat(commit.KPI)],
+        fill: theme.colors.text,
+      });
+    } else {
+      const latestValue = parseFloat(historyEntries[index - 1][1].KPI);
+      const newValue = parseFloat(commit.KPI);
+      if (latestValue === newValue) {
+        return;
+      }
+      data.push({
+        day: formatedDate,
+        drift: [latestValue, newValue],
+        fill:
+          latestValue > newValue ? theme.colors.dataDown : theme.colors.dataUp,
+      });
+    }
+  });
+
   return { data };
 };
 
