@@ -123,13 +123,13 @@ func OrderDataAndCreateChart(KPIName string, periodId common.PeriodKey, unsorted
 
 	chartUrl := createChart(diff, labels, colors, KPIName, minOfChart)
 	kpi1 := common.KPIReport{
-		KPIName:        KPIName,
-		PeriodId:       periodId,
-		DimensionValue: dimensionValue,
-		GraphQLURL:     chartUrl,
-		InitialValue:   initialValue,
-		LatestValue:    latestValue,
-		Events:         events,
+		KPIName:           KPIName,
+		PeriodId:          periodId,
+		DimensionValue:    dimensionValue,
+		WaterfallChartUrl: chartUrl,
+		InitialValue:      initialValue,
+		LatestValue:       latestValue,
+		Events:            events,
 	}
 	return kpi1
 }
