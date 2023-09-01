@@ -35,7 +35,7 @@ export const WaterfallChart = ({ data }: WaterfallChartProps) => {
       margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
     >
       <XAxis dataKey="day" />
-      <YAxis type="number" domain={["auto", "auto"]} />
+      <YAxis type="number" domain={["auto", "auto"]} tickCount={5} />
       <Tooltip
         contentStyle={{ backgroundColor: theme.colors.background }}
         formatter={formatToolTipValueTick}

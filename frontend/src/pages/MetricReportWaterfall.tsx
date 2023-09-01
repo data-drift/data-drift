@@ -12,6 +12,7 @@ import {
   getMetricReport,
   getTimegrainFromString,
 } from "../services/data-drift";
+import { getNiceTickValues } from "recharts-scale";
 
 const getMetricCohortsData = async ({
   params,
@@ -41,17 +42,23 @@ const getWaterfallChartPropsFromMetadata = (
   historyEntries.sort(([_aCommitSha, aHistory], [_bCommitSha, bHistory]) => {
     return aHistory.CommitTimestamp - bHistory.CommitTimestamp;
   });
-  historyEntries.forEach(([commitSha, commit], index) => {
-    console.log(commitSha, commit, index);
+  historyEntries.forEach(([_commitSha, commit], index) => {
     const commitDate = new Date(commit.CommitTimestamp * 1000);
     const formatedDate = `${String(commitDate.getMonth() + 1).padStart(
       2,
       "0"
     )}-${String(commitDate.getDate()).padStart(2, "0")}`;
     if (index === 0) {
+      const yMin = Math.min(
+        ...historyEntries.map(([_sha, commit]) => parseFloat(commit.KPI))
+      );
+      const yMax = Math.max(
+        ...historyEntries.map(([_sha, commit]) => parseFloat(commit.KPI))
+      );
+      const niceTicks = getNiceTickValues([yMin, yMax], 5);
       data.push({
         day: formatedDate,
-        drift: [parseFloat(commit.KPI) * 0.9, parseFloat(commit.KPI)],
+        drift: [niceTicks[0], parseFloat(commit.KPI)],
         fill: theme.colors.text,
       });
     } else {
