@@ -870,7 +870,7 @@ func buildDriftParagraph(KPIInfo common.KPIReport) notion.ParagraphBlock {
 
 func buildEmberChartBlock(KPIInfo common.KPIReport) notion.EmbedBlock {
 	return notion.EmbedBlock{
-		URL: KPIInfo.GraphQLURL,
+		URL: KPIInfo.WaterfallChartUrl,
 	}
 }
 

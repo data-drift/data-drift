@@ -1,14 +1,11 @@
 package reducers
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"net/http"
 	"strings"
-	"time"
 
 	"github.com/data-drift/data-drift/common"
+	"github.com/data-drift/data-drift/urlgen"
 	"github.com/shopspring/decimal"
 )
 
@@ -17,7 +14,7 @@ type ChartResponse struct {
 	URL     string `json:"url"`
 }
 
-func ProcessMetricHistory(historyFilepath common.MetricStorageKey, metric common.MetricConfig) []common.KPIReport {
+func ProcessMetricHistory(historyFilepath common.MetricStorageKey, metric common.MetricConfig, githubInstallationId common.GithubInstallationId) []common.KPIReport {
 
 	data, err := common.ReadMetricKPI(historyFilepath)
 	if err != nil {
@@ -31,14 +28,14 @@ func ProcessMetricHistory(historyFilepath common.MetricStorageKey, metric common
 		// Access the value associated with the key: data[key]
 		// Additional logic for processing the value
 		// ...
-		kpi := OrderDataAndCreateChart(metric.MetricName+" "+key, datum.Period, datum.History, datum.DimensionValue)
+		kpi := OrderDataAndCreateChart(metric.MetricName+" "+key, datum.Period, datum.History, datum.DimensionValue, githubInstallationId, metric.MetricName)
 		kpiInfos = append(kpiInfos, kpi)
 	}
 
 	return kpiInfos
 }
 
-func OrderDataAndCreateChart(KPIName string, periodId common.PeriodKey, unsortedResults common.MetricHistory, dimensionValue common.DimensionValue) common.KPIReport {
+func OrderDataAndCreateChart(KPIName string, periodId common.PeriodKey, unsortedResults common.MetricHistory, dimensionValue common.DimensionValue, githubInstallationId common.GithubInstallationId, metricName string) common.KPIReport {
 	// Extract the values from the map into a slice of struct objects
 	var dataSortableArray []common.CommitData
 
@@ -59,31 +56,17 @@ func OrderDataAndCreateChart(KPIName string, periodId common.PeriodKey, unsorted
 		return common.KPIReport{}
 	}
 
-	var diff []interface{}
-	var labels []interface{}
-	var colors []interface{}
-	initialcolor := "rgb(151 154 155)"
-	upcolor := "rgb(82 156 202)"
-	downcolor := "rgb(255 163 68)"
 	var prevKPI decimal.Decimal
 	initialValue := sortedAndFilteredArray[0].KPI
 	latestValue := sortedAndFilteredArray[len(sortedAndFilteredArray)-1].KPI
 	var events []common.EventObject
-	minOfChart := 0
 
 	for _, v := range sortedAndFilteredArray {
 		roundedKPI := v.KPI
 		// TODO
-		roundedMin := 32000
 		timestamp := int64(v.CommitTimestamp) // Unix timestamp for May 26, 2022 12:00:00 AM UTC
-		timeObj := time.Unix(timestamp, 0)    // Convert the Unix timestamp to a time.Time object
-		dateStr := timeObj.Format("2006-01-02")
 		if prevKPI.IsZero() {
 			prevKPI = v.KPI
-			minOfChart = roundedMin
-			labels = append(labels, dateStr)
-			diff = append(diff, roundedKPI)
-			colors = append(colors, initialcolor)
 			event := common.EventObject{
 				CommitTimestamp: timestamp,
 				Diff:            0,
@@ -98,14 +81,7 @@ func OrderDataAndCreateChart(KPIName string, periodId common.PeriodKey, unsorted
 
 			} else {
 				// Maybe diff does not work with float
-				diff = append(diff, []decimal.Decimal{prevKPI, roundedKPI})
-				labels = append(labels, dateStr)
-				if prevKPI.LessThan(roundedKPI) {
-					colors = append(colors, upcolor)
-				} else {
-					colors = append(colors, downcolor)
-					minOfChart = roundedMin
-				}
+
 				diff, _ := d.Float64()
 				event := common.EventObject{
 					CommitTimestamp: timestamp,
@@ -119,108 +95,18 @@ func OrderDataAndCreateChart(KPIName string, periodId common.PeriodKey, unsorted
 			prevKPI = roundedKPI
 		}
 	}
-	fmt.Println(diff)
 
-	chartUrl := createChart(diff, labels, colors, KPIName, minOfChart)
+	waterfallChartUrl := urlgen.MetricReportUrl(githubInstallationId, metricName, periodId)
 	kpi1 := common.KPIReport{
-		KPIName:        KPIName,
-		PeriodId:       periodId,
-		DimensionValue: dimensionValue,
-		GraphQLURL:     chartUrl,
-		InitialValue:   initialValue,
-		LatestValue:    latestValue,
-		Events:         events,
+		KPIName:           KPIName,
+		PeriodId:          periodId,
+		DimensionValue:    dimensionValue,
+		WaterfallChartUrl: waterfallChartUrl,
+		InitialValue:      initialValue,
+		LatestValue:       latestValue,
+		Events:            events,
 	}
 	return kpi1
-}
-
-func createChart(diff []interface{}, labels []interface{}, colors []interface{}, KPIDate string, minOfChart int) string {
-	url := "https://quickchart.io/chart/create"
-	jsonBody := map[string]interface{}{
-		"version":          "4",
-		"backgroundColor":  "transparent",
-		"width":            250,
-		"height":           150,
-		"devicePixelRatio": 2.0,
-		"format":           "svg",
-		"chart": map[string]interface{}{
-			"type": "bar",
-			"data": map[string]interface{}{
-				"labels": labels,
-
-				"datasets": []map[string]interface{}{
-					{
-						"backgroundColor": colors,
-						"label":           KPIDate,
-						"data":            diff,
-					},
-				},
-			},
-			"options": map[string]interface{}{
-				"scales": map[string]interface{}{
-					"y": map[string]interface{}{
-						"min": minOfChart,
-						"ticks": map[string]interface{}{
-							"font": map[string]interface{}{
-								"size":   8,
-								"family": "Sans-Serif Workhorse",
-							},
-						},
-					},
-					"x": map[string]interface{}{
-						"ticks": map[string]interface{}{
-							"font": map[string]interface{}{
-								"size":   8,
-								"family": "Sans-Serif Workhorse",
-							},
-						},
-					},
-				},
-				"legend": map[string]interface{}{
-					"display": false,
-				},
-				"plugins": map[string]interface{}{
-					"legend": map[string]interface{}{
-						"display": false,
-					},
-				},
-			},
-		},
-	}
-
-	newData, _ := json.Marshal(jsonBody)
-
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(newData))
-	if err != nil {
-		panic(err)
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		panic(err)
-	}
-	defer resp.Body.Close()
-
-	fmt.Println("Response Status:", resp.Status)
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(resp.Body)
-	fmt.Println(buf.String())
-
-	var chartResponse ChartResponse
-	jsonUnmarshalError := json.Unmarshal(buf.Bytes(), &chartResponse)
-	if jsonUnmarshalError != nil {
-		fmt.Println("Error parsing JSON:", err.Error())
-		return "" // Return an empty string or handle the error as needed
-	}
-
-	interactiveUrl := convertToChartMakerURL(chartResponse.URL)
-	fmt.Println("Interactive URL:", interactiveUrl)
-
-	// Return only the URL
-	return interactiveUrl
 }
 
 func convertToChartMakerURL(url string) string {
