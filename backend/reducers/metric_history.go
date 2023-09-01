@@ -28,14 +28,14 @@ func ProcessMetricHistory(historyFilepath common.MetricStorageKey, metric common
 		// Access the value associated with the key: data[key]
 		// Additional logic for processing the value
 		// ...
-		kpi := OrderDataAndCreateChart(metric.MetricName+" "+key, datum.Period, datum.History, datum.DimensionValue, githubInstallationId)
+		kpi := OrderDataAndCreateChart(metric.MetricName+" "+key, datum.Period, datum.History, datum.DimensionValue, githubInstallationId, metric.MetricName)
 		kpiInfos = append(kpiInfos, kpi)
 	}
 
 	return kpiInfos
 }
 
-func OrderDataAndCreateChart(KPIName string, periodId common.PeriodKey, unsortedResults common.MetricHistory, dimensionValue common.DimensionValue, githubInstallationId common.GithubInstallationId) common.KPIReport {
+func OrderDataAndCreateChart(KPIName string, periodId common.PeriodKey, unsortedResults common.MetricHistory, dimensionValue common.DimensionValue, githubInstallationId common.GithubInstallationId, metricName string) common.KPIReport {
 	// Extract the values from the map into a slice of struct objects
 	var dataSortableArray []common.CommitData
 
@@ -96,7 +96,7 @@ func OrderDataAndCreateChart(KPIName string, periodId common.PeriodKey, unsorted
 		}
 	}
 
-	waterfallChartUrl := urlgen.MetricReportUrl(githubInstallationId, KPIName, periodId)
+	waterfallChartUrl := urlgen.MetricReportUrl(githubInstallationId, metricName, periodId)
 	kpi1 := common.KPIReport{
 		KPIName:           KPIName,
 		PeriodId:          periodId,
