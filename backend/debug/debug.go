@@ -65,7 +65,7 @@ func DebugFunction() {
 	// 	panic("Stop execution here")
 	// }
 
-	chartResults := reducers.ProcessMetricHistory(filepath, common.MetricConfig{MetricName: "Default metric name"})
+	chartResults := reducers.ProcessMetricHistory(filepath, common.MetricConfig{MetricName: "Default metric name"}, common.GithubInstallationId(githubApplicationId))
 
 	for _, chartResult := range chartResults {
 		err := reports.CreateReport(notionSyncConfig, chartResult)

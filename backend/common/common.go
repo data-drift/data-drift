@@ -97,3 +97,5 @@ type MetricConfig struct {
 	TimeGrains     []TimeGrain `json:"timeGrains"`
 	Dimensions     []string    `json:"dimensions"`
 }
+
+type GithubInstallationId string
