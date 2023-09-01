@@ -21,7 +21,7 @@ const formatToolTipValueTick: Formatter = (
   if (item.payload?.isInitial) return `${tickValue[1]}`;
   const drift = tickValue[1] - tickValue[0];
   const signedDrift = drift > 0 ? `+${drift}` : drift;
-  return `${tickValue[1]} (${signedDrift})`;
+  return `${signedDrift} => ${tickValue[1]}`;
 };
 
 export type WaterfallChartProps = { data: readonly DataItem[] };
