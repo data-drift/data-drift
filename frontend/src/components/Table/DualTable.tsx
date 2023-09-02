@@ -17,6 +17,11 @@ const TableContainer = styled.div`
   }
 `;
 
+const DualTableContainer = styled.div`
+  height: 90vh;
+  width: 100%;
+`;
+
 export interface DualTableProps {
   /**
    * Properties for the left table
@@ -51,13 +56,13 @@ export const DualTable = ({ tableProps1, tableProps2 }: DualTableProps) => {
   };
 
   return (
-    <div style={{ height: "90vh" }}>
+    <DualTableContainer>
       <TableContainer ref={table1Ref} onScroll={handleScrollLeft}>
         <Table {...tableProps1} />
       </TableContainer>
       <TableContainer ref={table2Ref} onScroll={handleScrollRight}>
         <Table {...tableProps2} />
       </TableContainer>
-    </div>
+    </DualTableContainer>
   );
 };
