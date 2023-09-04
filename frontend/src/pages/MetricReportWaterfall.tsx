@@ -35,14 +35,14 @@ const getWaterfallChartPropsFromMetadata = (
 ): WaterfallChartProps => {
   const data = [] as Mutable<WaterfallChartProps["data"]>;
 
-  const historyEntries = Object.entries(cohortMetric.History);
+  const historyEntries = Object.entries(cohortMetric.History).filter(
+    ([_commitSha, commit]) => commit.IsAfterPeriod
+  );
   historyEntries.sort(([_aCommitSha, aHistory], [_bCommitSha, bHistory]) => {
     return aHistory.CommitTimestamp - bHistory.CommitTimestamp;
   });
+
   historyEntries.forEach(([_commitSha, commit], index) => {
-    if (commit.IsAfterPeriod === false) {
-      return;
-    }
     const commitDate = new Date(commit.CommitTimestamp * 1000);
     const formatedDate = `${String(commitDate.getMonth() + 1).padStart(
       2,
