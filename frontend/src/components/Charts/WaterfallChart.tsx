@@ -20,7 +20,7 @@ const formatToolTipValueTick: Formatter = (
 ) => {
   if (item.payload?.isInitial) return `${tickValue[1]}`;
   const drift = tickValue[1] - tickValue[0];
-  const signedDrift = drift > 0 ? `+${drift}` : drift;
+  const signedDrift = drift > 0 ? `+${drift.toFixed(2)}` : drift.toFixed(2);
   return `${signedDrift} => ${tickValue[1]}`;
 };
 
