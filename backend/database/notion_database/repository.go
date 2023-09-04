@@ -738,8 +738,8 @@ func createMissingEvents(client *notion.Client, ctx context.Context, databaseID 
 }
 
 func displayEventTitle(event common.EventObject) string {
-	if event.Diff == 0 {
-		return "Initial Value"
+	if event.EventType == common.EventTypeCreate {
+		return fmt.Sprintf("Initial Value %s", event.Current.String())
 	}
 	return "New Drift " + displayDiff(decimal.NewFromFloat(event.Diff))
 }
