@@ -60,7 +60,7 @@ func HandleWebhook(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "Webhook processed", "configIsValie": config, "installationId": InstallationId})
 
 		// Call functions from charts.go and reports.go
-		go processWebhookInTheBackground(config, c, int(InstallationId), client, ownerName, repoName)
+		go processWebhookInTheBackground(config, int(InstallationId), client, ownerName, repoName)
 
 	case *github.InstallationEvent:
 		fmt.Println("Installation ID: ", event.Installation.ID)
@@ -94,7 +94,7 @@ func HandleWebhook(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "Webhook processed", "configIsValie": config, "installationId": InstallationId})
 
 		// Call functions from charts.go and reports.go
-		go processWebhookInTheBackground(config, c, int(InstallationId), client, ownerName, repoName)
+		go processWebhookInTheBackground(config, int(InstallationId), client, ownerName, repoName)
 		return
 
 	case *github.PullRequestEvent:
@@ -112,7 +112,7 @@ func HandleWebhook(c *gin.Context) {
 
 }
 
-func processWebhookInTheBackground(config common.Config, c *gin.Context, InstallationId int, client *github.Client, ownerName string, repoName string) bool {
+func processWebhookInTheBackground(config common.Config, InstallationId int, client *github.Client, ownerName string, repoName string) bool {
 
 	fmt.Println("starting sync")
 
