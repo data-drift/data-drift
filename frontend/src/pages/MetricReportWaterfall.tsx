@@ -60,6 +60,7 @@ const getWaterfallChartPropsFromMetadata = (
         day: formatedDate,
         drift: [niceTicks[0], parseFloat(commit.KPI)],
         fill: theme.colors.text,
+        isInitial: true,
       });
     } else {
       const latestValue = parseFloat(historyEntries[index - 1][1].KPI);
