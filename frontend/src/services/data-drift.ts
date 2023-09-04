@@ -127,6 +127,8 @@ interface History {
   Lines: number;
   KPI: string;
   CommitTimestamp: number;
+  CommitDate: string;
+  IsAfterPeriod: boolean;
   CommitUrl: string;
   CommitComments: CommitComment[] | null;
 }
