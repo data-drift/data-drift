@@ -50,6 +50,8 @@ type CommitData struct {
 	Lines           int
 	KPI             decimal.Decimal
 	CommitTimestamp int64
+	CommitDate      string
+	IsAfterPeriod   bool
 	CommitUrl       string
 	CommitComments  []CommitComments
 }

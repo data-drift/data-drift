@@ -29,10 +29,14 @@ func FilterAndSortByCommitTimestamp[T ObjectWithDate](dataSortableArray []T, dri
 	return filteredArray
 }
 
-func getFirstDateOfPeriod(periodKeyParam common.PeriodKey) time.Time {
-	timegrain, _ := reports.GetTimeGrain(periodKeyParam)
+func GetFirstDateOfPeriod(periodKeyParam common.PeriodKey) (time.Time, error) {
+	timegrain, timeGrainError := reports.GetTimeGrain(periodKeyParam)
 	periodKey := string(periodKeyParam)
 	var lastDay time.Time
+	if timeGrainError != nil {
+		fmt.Println("Error:", timeGrainError.Error())
+		return lastDay, timeGrainError
+	}
 	switch timegrain {
 	case common.Day:
 		lastDay, _ = time.Parse("2006-01-02", periodKey)
@@ -52,7 +56,8 @@ func getFirstDateOfPeriod(periodKeyParam common.PeriodKey) time.Time {
 		lastDay = time.Date(periodTime.Year(), 12, 31, 23, 59, 59, 0, time.UTC)
 	default:
 		fmt.Printf("Invalid time grain: %s", timegrain)
+		return lastDay, fmt.Errorf("invalid time grain: %s", timegrain)
 	}
-	return lastDay
+	return lastDay, nil
 
 }
