@@ -67,13 +67,13 @@ func OrderDataAndCreateChart(KPIName string, periodId common.PeriodKey, unsorted
 
 	for _, v := range sortedAndFilteredArray {
 		roundedKPI := v.KPI
-		// TODO
 		timestamp := int64(v.CommitTimestamp) // Unix timestamp for May 26, 2022 12:00:00 AM UTC
 		if prevKPI.IsZero() {
 			prevKPI = v.KPI
 			event := common.EventObject{
 				CommitTimestamp: timestamp,
 				Diff:            0,
+				Current:         v.KPI,
 				EventType:       common.EventTypeCreate,
 				CommitUrl:       v.CommitUrl,
 				CommitComments:  v.CommitComments,
@@ -84,12 +84,12 @@ func OrderDataAndCreateChart(KPIName string, periodId common.PeriodKey, unsorted
 			if d.IsZero() {
 
 			} else {
-				// Maybe diff does not work with float
 
 				diff, _ := d.Float64()
 				event := common.EventObject{
 					CommitTimestamp: timestamp,
 					Diff:            diff,
+					Current:         v.KPI,
 					EventType:       common.EventTypeUpdate,
 					CommitUrl:       v.CommitUrl,
 					CommitComments:  v.CommitComments,
