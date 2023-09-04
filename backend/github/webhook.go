@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
+	"time"
 
 	"github.com/data-drift/data-drift/common"
 	"github.com/data-drift/data-drift/database/notion_database"
@@ -59,8 +61,7 @@ func HandleWebhook(c *gin.Context) {
 		fmt.Println("config", config)
 		c.JSON(http.StatusOK, gin.H{"message": "Webhook processed", "configIsValie": config, "installationId": InstallationId})
 
-		// Call functions from charts.go and reports.go
-		go processWebhookInTheBackground(config, c, int(InstallationId), client, ownerName, repoName)
+		webhookChannel <- WebhookToProcess{config: config, InstallationId: int(InstallationId), client: client, ownerName: ownerName, repoName: repoName}
 
 	case *github.InstallationEvent:
 		fmt.Println("Installation ID: ", event.Installation.ID)
@@ -93,8 +94,7 @@ func HandleWebhook(c *gin.Context) {
 		fmt.Println("config", config)
 		c.JSON(http.StatusOK, gin.H{"message": "Webhook processed", "configIsValie": config, "installationId": InstallationId})
 
-		// Call functions from charts.go and reports.go
-		go processWebhookInTheBackground(config, c, int(InstallationId), client, ownerName, repoName)
+		webhookChannel <- WebhookToProcess{config: config, InstallationId: int(InstallationId), client: client, ownerName: ownerName, repoName: repoName}
 		return
 
 	case *github.PullRequestEvent:
@@ -112,7 +112,29 @@ func HandleWebhook(c *gin.Context) {
 
 }
 
-func processWebhookInTheBackground(config common.Config, c *gin.Context, InstallationId int, client *github.Client, ownerName string, repoName string) bool {
+// Define a type for the webhook data.
+type WebhookToProcess struct {
+	config         common.Config
+	InstallationId int
+	client         *github.Client
+	ownerName      string
+	repoName       string
+}
+
+var webhookChannel = make(chan WebhookToProcess, 100)
+
+func ProcessWebhooks() {
+	log.Println("Starting to consume the channel")
+	for {
+		webhookData := <-webhookChannel
+
+		log.Println("Consuming the channel", webhookData.InstallationId, webhookData.client, webhookData.ownerName, webhookData.repoName)
+		processWebhookInTheBackground(webhookData.config, webhookData.InstallationId, webhookData.client, webhookData.ownerName, webhookData.repoName)
+		time.Sleep(10 * time.Second)
+	}
+}
+
+func processWebhookInTheBackground(config common.Config, InstallationId int, client *github.Client, ownerName string, repoName string) bool {
 
 	fmt.Println("starting sync")
 

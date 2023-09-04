@@ -47,6 +47,7 @@ require (
 	github.com/dstotijn/go-notion v0.11.0
 	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-gonic/gin v1.9.0
+	github.com/go-playground/assert/v2 v2.2.0
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/google/go-querystring v1.1.0 // indirect

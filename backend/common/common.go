@@ -30,6 +30,7 @@ type EventObject struct {
 	CommitTimestamp int64            `json:"commitTimestamp"`
 	CommitUrl       string           `json:"commitUrl"`
 	Diff            float64          `json:"diff"`
+	Current         decimal.Decimal  `json:"current"`
 	EventType       EventType        `json:"eventType"`
 	CommitComments  []CommitComments `json:"commitComments"`
 }

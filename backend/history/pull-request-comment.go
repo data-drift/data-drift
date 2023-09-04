@@ -13,7 +13,6 @@ func GetCommitComments(client *github.Client, ctx context.Context, RepoOwner str
 		return []*github.IssueComment{}
 	}
 	if len(pullRequests) == 0 {
-		println("No pull request found")
 		return []*github.IssueComment{}
 	}
 	comments, _, err := client.Issues.ListComments(ctx, RepoOwner, RepoName, pullRequests[0].GetNumber(), nil)

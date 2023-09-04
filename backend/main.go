@@ -32,6 +32,8 @@ func main() {
 
 	port := defaultIfEmpty(os.Getenv("PORT"), "8080")
 
+	go github.ProcessWebhooks()
+
 	router := gin.New()
 
 	// Add CORS middleware
@@ -57,6 +59,7 @@ func main() {
 	router.POST("validate-config", github.ValidateConfigHandler)
 
 	router.Run(":" + port)
+
 }
 
 func HealthCheck(c *gin.Context) {

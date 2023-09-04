@@ -559,7 +559,7 @@ func createEventInNotionReport(event common.EventObject, client *notion.Client, 
 				Title: []notion.RichText{
 					{
 						Text: &notion.Text{
-							Content: displayEventTitle(event.Diff),
+							Content: displayEventTitle(event),
 						},
 					},
 				},
@@ -737,11 +737,11 @@ func createMissingEvents(client *notion.Client, ctx context.Context, databaseID 
 	return nil
 }
 
-func displayEventTitle(diff float64) string {
-	if diff == 0 {
-		return "Initial Value"
+func displayEventTitle(event common.EventObject) string {
+	if event.EventType == common.EventTypeCreate {
+		return fmt.Sprintf("Initial Value %s", event.Current.String())
 	}
-	return "New Drift " + displayDiff(decimal.NewFromFloat(diff))
+	return "New Drift " + displayDiff(decimal.NewFromFloat(event.Diff))
 }
 
 func displayDiff(diff decimal.Decimal) string {
