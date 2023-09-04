@@ -33,9 +33,6 @@ type Mutable<T> = {
 const getWaterfallChartPropsFromMetadata = (
   cohortMetric: PeriodReport
 ): WaterfallChartProps => {
-  console.log(cohortMetric);
-  // let latestValue = parseFloat(cohortMetric.InitialValue);
-
   const data = [] as Mutable<WaterfallChartProps["data"]>;
 
   const historyEntries = Object.entries(cohortMetric.History);
@@ -43,6 +40,9 @@ const getWaterfallChartPropsFromMetadata = (
     return aHistory.CommitTimestamp - bHistory.CommitTimestamp;
   });
   historyEntries.forEach(([_commitSha, commit], index) => {
+    if (commit.IsAfterPeriod === false) {
+      return;
+    }
     const commitDate = new Date(commit.CommitTimestamp * 1000);
     const formatedDate = `${String(commitDate.getMonth() + 1).padStart(
       2,
