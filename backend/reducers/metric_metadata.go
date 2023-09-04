@@ -63,7 +63,10 @@ func ProcessMetricMetadata(metricConfig common.MetricConfig, metrics common.Metr
 }
 
 func GetMetadataOfMetric(metric common.Metric) (MetricMetadata, error) {
-	firstDateOfPeriod := getFirstDateOfPeriod(metric.Period)
+	firstDateOfPeriod, firstDateOfPeriodErr := GetFirstDateOfPeriod(metric.Period)
+	if firstDateOfPeriodErr != nil {
+		return MetricMetadata{}, firstDateOfPeriodErr
+	}
 	var dataSortableArray []common.CommitData
 
 	for _, stats := range metric.History {

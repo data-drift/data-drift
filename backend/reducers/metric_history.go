@@ -49,8 +49,12 @@ func OrderDataAndCreateChart(KPIName string, periodId common.PeriodKey, unsorted
 			CommitComments:  stats.CommitComments,
 		})
 	}
-
-	sortedAndFilteredArray := FilterAndSortByCommitTimestamp(dataSortableArray, getFirstDateOfPeriod(periodId))
+	firstDateOfPeriod, firstDateOfPeriodErr := GetFirstDateOfPeriod(periodId)
+	if firstDateOfPeriodErr != nil {
+		fmt.Println("Error:", firstDateOfPeriodErr.Error())
+		return common.KPIReport{}
+	}
+	sortedAndFilteredArray := FilterAndSortByCommitTimestamp(dataSortableArray, firstDateOfPeriod)
 
 	if len(sortedAndFilteredArray) == 0 {
 		return common.KPIReport{}

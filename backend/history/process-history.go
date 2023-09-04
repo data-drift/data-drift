@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/data-drift/data-drift/common"
+	"github.com/data-drift/data-drift/reducers"
 	"github.com/data-drift/data-drift/urlgen"
 	"github.com/google/go-github/v42/github"
 	"github.com/shopspring/decimal"
@@ -203,10 +204,15 @@ func updateMetric(lineCountAndKPIByDateByVersion common.Metrics, periodAndDimens
 	newLineCount := lineCountAndKPIByDateByVersion[periodAndDimensionKey].History[commitSha].Lines + 1
 	newKPI := kpi.Add(lineCountAndKPIByDateByVersion[periodAndDimensionKey].History[commitSha].KPI)
 
+	firstDateOfPeriod, _ := reducers.GetFirstDateOfPeriod(periodKey)
+	isAfterPeriod := time.Unix(commitTimestamp, 0).After(firstDateOfPeriod)
+
 	lineCountAndKPIByDateByVersion[periodAndDimensionKey].History[commitSha] = common.CommitData{
 		Lines:           newLineCount,
 		KPI:             newKPI,
 		CommitTimestamp: commitTimestamp,
+		CommitDate:      time.Unix(commitTimestamp, 0).Format("2006-01-02"),
+		IsAfterPeriod:   isAfterPeriod,
 		CommitUrl:       urlgen.BuildReportDiffUrl(reportBaseUrl, string(commitSha)),
 		CommitComments:  commitMessages,
 	}
