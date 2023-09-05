@@ -609,6 +609,8 @@ func UpdateChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo com
 	}
 	client := notion.NewClient(apiKey, notion.WithHTTPClient(httpClient))
 
+	updatePageProperties(ctx, KPIInfo, client, reportNotionPageId)
+
 	pageContent, err := client.FindBlockChildrenByID(ctx, reportNotionPageId, &notion.PaginationQuery{PageSize: 100})
 	if err != nil {
 		return err
