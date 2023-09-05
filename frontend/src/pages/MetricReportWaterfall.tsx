@@ -13,6 +13,7 @@ import {
   getTimegrainFromString,
 } from "../services/data-drift";
 import { getNiceTickValues } from "recharts-scale";
+import styled from "@emotion/styled";
 
 const getMetricCohortsData = async ({
   params,
@@ -96,10 +97,18 @@ function assertParamsHasNeededProperties(params: Params<string>): {
   return { installationId, metricName, timegrain, timegrainValue };
 }
 
+const ScrollableContainer = styled.div`
+  overflow-y: scroll;
+`;
+
 const MetricReportWaterfall = () => {
   const { data } = useLoaderData() as WaterfallChartProps;
 
-  return <WaterfallChart data={data} />;
+  return (
+    <ScrollableContainer>
+      <WaterfallChart data={data} />
+    </ScrollableContainer>
+  );
 };
 
 MetricReportWaterfall.loader = getMetricCohortsData;
