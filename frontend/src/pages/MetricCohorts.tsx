@@ -6,6 +6,7 @@ import {
   getMetricCohorts,
 } from "../services/data-drift";
 import { mapCohortsMetricsMetadataToStepChartProps } from "../services/data-drift.mappers";
+import styled from "@emotion/styled";
 
 const getMetricCohortsData = async ({
   params,
@@ -34,9 +35,17 @@ function assertParamsHasNeededProperties(params: Params<string>): {
   return { installationId, metricName, timegrain };
 }
 
+const ScrollableContainer = styled.div`
+  overflow-y: scroll;
+`;
+
 const MetricCohort = () => {
   const { metricNames, data } = useLoaderData() as StepChartProps;
-  return <StepChart metricNames={metricNames} data={data} />;
+  return (
+    <ScrollableContainer>
+      <StepChart metricNames={metricNames} data={data} />
+    </ScrollableContainer>
+  );
 };
 
 MetricCohort.loader = getMetricCohortsData;
