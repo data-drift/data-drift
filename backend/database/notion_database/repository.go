@@ -445,32 +445,29 @@ func InitChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo commo
 		},
 	}
 
-	createPageParams := notion.CreatePageParams{
-
-		Children: []notion.Block{
-			notion.Heading1Block{
-				RichText: []notion.RichText{
-					{
-						Text: &notion.Text{
-							Content: "Overview",
-						},
+	createPageChildren := []notion.Block{
+		notion.Heading1Block{
+			RichText: []notion.RichText{
+				{
+					Text: &notion.Text{
+						Content: "Overview",
 					},
 				},
 			},
-			buildInitialValueParagraph(KPIInfo),
-			buildCurrentValueParagraph(KPIInfo),
-			buildDriftParagraph(KPIInfo),
-			notion.Heading1Block{
-				RichText: []notion.RichText{
-					{
-						Text: &notion.Text{
-							Content: "Timeline",
-						},
-					},
-				},
-			},
-			buildEmberChartBlock(KPIInfo),
 		},
+		buildInitialValueParagraph(KPIInfo),
+		buildCurrentValueParagraph(KPIInfo),
+		buildDriftParagraph(KPIInfo),
+		notion.Heading1Block{
+			RichText: []notion.RichText{
+				{
+					Text: &notion.Text{
+						Content: "Timeline",
+					},
+				},
+			},
+		},
+		buildEmberChartBlock(KPIInfo),
 	}
 
 	_, updateErr := client.UpdatePage(ctx, reportNotionPageId, notion.UpdatePageParams{DatabasePageProperties: updatePageProperties})
@@ -478,7 +475,7 @@ func InitChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo commo
 		fmt.Println("[DATADRIFT_ERROR]: err during update", reportNotionPageId, updateErr.Error())
 	}
 
-	_, err := client.AppendBlockChildren(ctx, reportNotionPageId, createPageParams.Children)
+	_, err := client.AppendBlockChildren(ctx, reportNotionPageId, createPageChildren)
 	if err != nil {
 		fmt.Println("[DATADRIFT_ERROR]: err during append", err.Error())
 	}
