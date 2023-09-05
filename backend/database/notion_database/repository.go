@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -504,12 +505,12 @@ func InitChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo commo
 			},
 		},
 	}
-	fmt.Println("\n Creating ChangeLog database...", reportChangeLogCreateDatabaseParams)
+	log.Println("Creating ChangeLog database...", reportChangeLogCreateDatabaseParams)
 	changeLogDatabase, err := client.CreateDatabase(ctx, *reportChangeLogCreateDatabaseParams)
 	if err != nil {
 		fmt.Println("[DATADRIFT_ERROR]: err during changelog db creation", err.Error())
 	}
-	fmt.Println("\n ChangeLog Database created", changeLogDatabase.ID)
+	log.Println("ChangeLog Database created", changeLogDatabase.ID)
 	// Add all the change log to the report
 	for _, event := range KPIInfo.Events {
 		err := createEventInNotionReport(event, client, ctx, changeLogDatabase.ID)
@@ -538,7 +539,7 @@ func updatePageProperties(ctx context.Context, KPIInfo common.KPIReport, client 
 
 func createEventInNotionReport(event common.EventObject, client *notion.Client, ctx context.Context, changeLogDatabaseId string) error {
 	eventEmoji := getEventEmoji(event.Diff)
-	fmt.Println("\n Adding changeLog to report", event.CommitTimestamp, eventEmoji)
+	log.Println("Adding changeLog to report", event.CommitTimestamp, eventEmoji)
 	_, err := client.CreatePage(ctx, notion.CreatePageParams{
 		ParentID:   changeLogDatabaseId,
 		ParentType: notion.ParentTypeDatabase,
@@ -632,23 +633,23 @@ func UpdateChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo com
 				break
 			}
 		case *notion.EmbedBlock:
-			fmt.Println("\n block is an embed block", strings.HasPrefix(b.URL, "https://quickchart.io"), b.URL)
+			log.Println("block is an embed block", strings.HasPrefix(b.URL, "https://quickchart.io"), b.URL)
 			if strings.HasPrefix(b.URL, "https://quickchart.io") {
 				embedChartBlock = b
 			}
 		case *notion.ChildDatabaseBlock:
-			fmt.Println("\n block is a child database block", b.ID())
+			log.Println("block is a child database block", b.ID())
 			changeLogDatabaseId = b.ID()
 		default:
-			fmt.Println("\n block is not a known block type")
+			log.Println("block is not a known block type")
 		}
 	}
 	if changeLogDatabaseId != "" {
-		fmt.Println("\n Adding missing events in ChangeLog database...", changeLogDatabaseId)
+		log.Println("Adding missing events in ChangeLog database...", changeLogDatabaseId)
 		createMissingEvents(client, ctx, changeLogDatabaseId, KPIInfo)
 	}
 	if driftBlock != nil {
-		fmt.Println("\n  Updating driftBlock: ", driftBlock.ID())
+		log.Println("Updating driftBlock: ", driftBlock.ID())
 		blockID := driftBlock.ID()
 		newContent := buildDriftParagraph(KPIInfo)
 
@@ -659,7 +660,7 @@ func UpdateChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo com
 	}
 
 	if currentValueBlock != nil {
-		fmt.Println("\n  Updating currentValueBlock: ", currentValueBlock.ID())
+		log.Println("Updating currentValueBlock: ", currentValueBlock.ID())
 		blockID := currentValueBlock.ID()
 		newContent := buildCurrentValueParagraph(KPIInfo)
 
@@ -669,7 +670,7 @@ func UpdateChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo com
 		}
 	}
 	if embedChartBlock != nil {
-		fmt.Println("\n  Updating embedChartBlock: ", embedChartBlock.ID())
+		log.Println("Updating embedChartBlock: ", embedChartBlock.ID())
 		blockID := embedChartBlock.ID()
 		newContent := buildEmberChartBlock(KPIInfo)
 
@@ -691,7 +692,7 @@ func createMissingEvents(client *notion.Client, ctx context.Context, databaseID 
 
 	eventsToCreate := make(map[string]bool)
 	for _, event := range KPIInfo.Events {
-		fmt.Println("\n Adding event to create  ", event.CommitTimestamp)
+		log.Println("Adding event to create  ", event.CommitTimestamp)
 		eventsToCreate[generateEventId(event)] = true
 	}
 
@@ -729,13 +730,13 @@ func createMissingEvents(client *notion.Client, ctx context.Context, databaseID 
 	fmt.Println(eventsToCreate)
 	for _, event := range KPIInfo.Events {
 		if eventsToCreate[generateEventId(event)] {
-			fmt.Println("\n Creating the event: ", generateEventId(event))
+			log.Println("Creating the event: ", generateEventId(event))
 			err := createEventInNotionReport(event, client, ctx, databaseID)
 			if err != nil {
 				fmt.Println("[DATADRIFT_ERROR]: err during create page", err.Error())
 			}
 		} else {
-			fmt.Println("\n Event already exist: ", generateEventId(event))
+			log.Println("Event already exist: ", generateEventId(event))
 		}
 	}
 
