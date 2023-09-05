@@ -439,12 +439,14 @@ func InitChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo commo
 
 	driftAmount, _ := KPIInfo.LatestValue.Sub(KPIInfo.InitialValue).Float64()
 
-	createPageParams := notion.CreatePageParams{
-		DatabasePageProperties: &notion.DatabasePageProperties{
-			PROPERTY_DATADRIFT_DRIFT_VALUE: notion.DatabasePageProperty{
-				Number: &driftAmount,
-			},
+	updatePageProperties := notion.DatabasePageProperties{
+		PROPERTY_DATADRIFT_DRIFT_VALUE: notion.DatabasePageProperty{
+			Number: &driftAmount,
 		},
+	}
+
+	createPageParams := notion.CreatePageParams{
+
 		Children: []notion.Block{
 			notion.Heading1Block{
 				RichText: []notion.RichText{
@@ -471,7 +473,7 @@ func InitChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo commo
 		},
 	}
 
-	_, updateErr := client.UpdatePage(ctx, reportNotionPageId, notion.UpdatePageParams{DatabasePageProperties: *createPageParams.DatabasePageProperties})
+	_, updateErr := client.UpdatePage(ctx, reportNotionPageId, notion.UpdatePageParams{DatabasePageProperties: updatePageProperties})
 	if updateErr != nil {
 		fmt.Println("[DATADRIFT_ERROR]: err during update", reportNotionPageId, updateErr.Error())
 	}
