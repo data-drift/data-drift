@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -29,7 +30,7 @@ func FindOrCreateReportPageId(apiKey string, databaseId string, reportName strin
 		return "", false, err
 	}
 	if existingReportId == "" {
-		fmt.Println("No existing report found, creating new one")
+		log.Println("No existing report found, creating new one")
 		newReportId, err := CreateEmptyReport(apiKey, databaseId, reportName, period, timeGrain, dimensionValue)
 		return newReportId, true, err
 	}
@@ -42,7 +43,7 @@ func FindOrCreateSummaryReportPage(apiKey string, databaseId string, reportName 
 		return "", err
 	}
 	if existingReportId == "" {
-		fmt.Println("No existing report found, creating new one")
+		log.Println("No existing report found, creating new one")
 		newReportId, err := CreateEmptySummaryReport(apiKey, databaseId, reportName)
 		return newReportId, err
 	}
@@ -80,13 +81,13 @@ func QueryDatabaseWithReportId(apiKey string, databaseId string, reportId string
 	}
 	switch len(existingReport.Results) {
 	case 0:
-		fmt.Println("No result, should create one, report ID: " + reportId)
+		log.Println("No result, should create one, report ID: " + reportId)
 		return "", nil
 	case 1:
-		fmt.Println("Result found, report ID: " + reportId)
+		log.Println("Result found, report ID: " + reportId)
 		return existingReport.Results[0].ID, nil
 	default:
-		fmt.Println("Warning: too many report with same id, returning first one, report ID: " + reportId)
+		log.Println("Warning: too many report with same id, returning first one, report ID: " + reportId)
 		return existingReport.Results[0].ID, nil
 	}
 }
@@ -261,7 +262,7 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 	propertiesToDelete := []string{}
 
 	for _, property := range database.Properties {
-		fmt.Println("Property:", property.Name)
+		log.Println("Property:", property.Name)
 		if property.Name == PROPERTY_DATADRIFT_ID {
 			shouldCreateDatadriftPropertyId = false
 		}
@@ -286,7 +287,7 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 		}
 
 	}
-	fmt.Println("hasDatadriftProperty:", shouldCreateDatadriftPropertyId)
+	log.Println("hasDatadriftProperty:", shouldCreateDatadriftPropertyId)
 	shouldCreateProperties := shouldCreateDatadriftPropertyId || shouldCreateDatadriftPropertyPeriod || shouldCreateDatadriftPropertyTimeGrain || shouldCreateDatadriftPropertyDriftValue || shouldCreateDatadriftPropertyDimension
 	if shouldCreateProperties {
 		params := notion.UpdateDatabaseParams{
@@ -342,12 +343,12 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 			}
 		}
 
-		fmt.Println("Creating property", params)
+		log.Println("Creating property", params)
 		_, err := client.UpdateDatabase(ctx, databaseID, params)
 		if err != nil {
 			return err
 		}
-		fmt.Println("Clean empty item in database")
+		log.Println("Clean empty item in database")
 		queryParams := &notion.DatabaseQuery{
 			Filter: &notion.DatabaseQueryFilter{
 				Property: PROPERTY_DATADRIFT_ID,
@@ -364,7 +365,7 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 		}
 		archive := true
 		for _, item := range emptyDatabaseItems.Results {
-			fmt.Println("Archiving item", item.ID)
+			log.Println("Archiving item", item.ID)
 			client.UpdatePage(ctx, item.ID, notion.UpdatePageParams{
 				Archived: &archive,
 			})
@@ -376,11 +377,11 @@ func AssertDatabaseHasDatadriftProperties(databaseID, apiKey string) error {
 
 func UpdateMetadataReport(apiKey string, reportNotionPageId string, children []notion.Block, pageProperties *notion.DatabasePageProperties) error {
 	if reportNotionPageId == "" {
-		fmt.Println("No report page id provided")
+		log.Println("No report page id provided")
 		return nil
 	}
 
-	fmt.Println("Updating report", reportNotionPageId)
+	log.Println("Updating report", reportNotionPageId)
 	buf := &bytes.Buffer{}
 	ctx := context.Background()
 
@@ -392,23 +393,23 @@ func UpdateMetadataReport(apiKey string, reportNotionPageId string, children []n
 
 	_, updateErr := client.UpdatePage(ctx, reportNotionPageId, notion.UpdatePageParams{DatabasePageProperties: *pageProperties})
 	if updateErr != nil {
-		fmt.Println("[DATADRIFT_ERROR]: err during update", reportNotionPageId, updateErr.Error())
+		log.Println("[DATADRIFT_ERROR]: err during update", reportNotionPageId, updateErr.Error())
 	}
 	existingReport, err := client.FindBlockChildrenByID(ctx, reportNotionPageId, &notion.PaginationQuery{PageSize: 100})
 	if err != nil {
-		fmt.Println("[DATADRIFT_ERROR]: err during find block", reportNotionPageId, err.Error())
+		log.Println("[DATADRIFT_ERROR]: err during find block", reportNotionPageId, err.Error())
 		return err
 	}
-	fmt.Println("Deleting children blocks:", len(existingReport.Results))
+	log.Println("Deleting children blocks:", len(existingReport.Results))
 
 	blocks := existingReport.Results
 
 	// Iterate over each block in existingReport.Results
 	for _, block := range blocks {
-		fmt.Println("Deleting block", block.ID())
+		log.Println("Deleting block", block.ID())
 		_, err := client.DeleteBlock(ctx, block.ID())
 		if err != nil {
-			fmt.Println("[DATADRIFT_ERROR]: deleting block", block.ID(), err.Error())
+			log.Println("[DATADRIFT_ERROR]: deleting block", block.ID(), err.Error())
 		}
 		time.Sleep(100 * time.Millisecond)
 
@@ -416,18 +417,18 @@ func UpdateMetadataReport(apiKey string, reportNotionPageId string, children []n
 
 	_, err = client.AppendBlockChildren(ctx, reportNotionPageId, children)
 	if err != nil {
-		fmt.Println("[DATADRIFT_ERROR]: err during append", err.Error())
+		log.Println("[DATADRIFT_ERROR]: err during append", err.Error())
 	}
 	return err
 }
 
 func InitChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo common.KPIReport) error {
 	if reportNotionPageId == "" {
-		fmt.Println("No report page id provided")
+		log.Println("No report page id provided")
 		return nil
 	}
 
-	fmt.Println("Updating report", reportNotionPageId)
+	log.Println("Updating report", reportNotionPageId)
 	buf := &bytes.Buffer{}
 	ctx := context.Background()
 
@@ -437,48 +438,36 @@ func InitChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo commo
 	}
 	client := notion.NewClient(apiKey, notion.WithHTTPClient(httpClient))
 
-	driftAmount, _ := KPIInfo.LatestValue.Sub(KPIInfo.InitialValue).Float64()
+	updatePageProperties(ctx, KPIInfo, client, reportNotionPageId)
 
-	createPageParams := notion.CreatePageParams{
-		DatabasePageProperties: &notion.DatabasePageProperties{
-			PROPERTY_DATADRIFT_DRIFT_VALUE: notion.DatabasePageProperty{
-				Number: &driftAmount,
-			},
-		},
-		Children: []notion.Block{
-			notion.Heading1Block{
-				RichText: []notion.RichText{
-					{
-						Text: &notion.Text{
-							Content: "Overview",
-						},
+	createPageChildren := []notion.Block{
+		notion.Heading1Block{
+			RichText: []notion.RichText{
+				{
+					Text: &notion.Text{
+						Content: "Overview",
 					},
 				},
 			},
-			buildInitialValueParagraph(KPIInfo),
-			buildCurrentValueParagraph(KPIInfo),
-			buildDriftParagraph(KPIInfo),
-			notion.Heading1Block{
-				RichText: []notion.RichText{
-					{
-						Text: &notion.Text{
-							Content: "Timeline",
-						},
+		},
+		buildInitialValueParagraph(KPIInfo),
+		buildCurrentValueParagraph(KPIInfo),
+		buildDriftParagraph(KPIInfo),
+		notion.Heading1Block{
+			RichText: []notion.RichText{
+				{
+					Text: &notion.Text{
+						Content: "Timeline",
 					},
 				},
 			},
-			buildEmberChartBlock(KPIInfo),
 		},
+		buildEmberChartBlock(KPIInfo),
 	}
 
-	_, updateErr := client.UpdatePage(ctx, reportNotionPageId, notion.UpdatePageParams{DatabasePageProperties: *createPageParams.DatabasePageProperties})
-	if updateErr != nil {
-		fmt.Println("[DATADRIFT_ERROR]: err during update", reportNotionPageId, updateErr.Error())
-	}
-
-	_, err := client.AppendBlockChildren(ctx, reportNotionPageId, createPageParams.Children)
+	_, err := client.AppendBlockChildren(ctx, reportNotionPageId, createPageChildren)
 	if err != nil {
-		fmt.Println("[DATADRIFT_ERROR]: err during append", err.Error())
+		log.Println("[DATADRIFT_ERROR]: err during append", err.Error())
 	}
 
 	reportChangeLogCreateDatabaseParams := &notion.CreateDatabaseParams{
@@ -516,26 +505,41 @@ func InitChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo commo
 			},
 		},
 	}
-	fmt.Println("\n Creating ChangeLog database...", reportChangeLogCreateDatabaseParams)
+	log.Println("Creating ChangeLog database...", reportChangeLogCreateDatabaseParams)
 	changeLogDatabase, err := client.CreateDatabase(ctx, *reportChangeLogCreateDatabaseParams)
 	if err != nil {
-		fmt.Println("[DATADRIFT_ERROR]: err during changelog db creation", err.Error())
+		log.Println("[DATADRIFT_ERROR]: err during changelog db creation", err.Error())
 	}
-	fmt.Println("\n ChangeLog Database created", changeLogDatabase.ID)
+	log.Println("ChangeLog Database created", changeLogDatabase.ID)
 	// Add all the change log to the report
 	for _, event := range KPIInfo.Events {
 		err := createEventInNotionReport(event, client, ctx, changeLogDatabase.ID)
 		if err != nil {
-			fmt.Println("[DATADRIFT_ERROR]: err during create page", err.Error())
+			log.Println("[DATADRIFT_ERROR]: err during create page", err.Error())
 		}
 	}
 
 	return err
 }
 
+func updatePageProperties(ctx context.Context, KPIInfo common.KPIReport, client *notion.Client, reportNotionPageId string) {
+	driftAmount, _ := KPIInfo.LatestValue.Sub(KPIInfo.InitialValue).Float64()
+
+	updatePageProperties := notion.DatabasePageProperties{
+		PROPERTY_DATADRIFT_DRIFT_VALUE: notion.DatabasePageProperty{
+			Number: &driftAmount,
+		},
+	}
+
+	_, updateErr := client.UpdatePage(ctx, reportNotionPageId, notion.UpdatePageParams{DatabasePageProperties: updatePageProperties})
+	if updateErr != nil {
+		log.Println("[DATADRIFT_ERROR]: err during update", reportNotionPageId, updateErr.Error())
+	}
+}
+
 func createEventInNotionReport(event common.EventObject, client *notion.Client, ctx context.Context, changeLogDatabaseId string) error {
 	eventEmoji := getEventEmoji(event.Diff)
-	fmt.Println("\n Adding changeLog to report", event.CommitTimestamp, eventEmoji)
+	log.Println("Adding changeLog to report", event.CommitTimestamp, eventEmoji)
 	_, err := client.CreatePage(ctx, notion.CreatePageParams{
 		ParentID:   changeLogDatabaseId,
 		ParentType: notion.ParentTypeDatabase,
@@ -592,11 +596,11 @@ func createEventInNotionReport(event common.EventObject, client *notion.Client, 
 
 func UpdateChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo common.KPIReport) error {
 	if reportNotionPageId == "" {
-		fmt.Println("No report page id provided")
+		log.Println("No report page id provided")
 		return nil
 	}
 
-	fmt.Println("Updating report", reportNotionPageId)
+	log.Println("Updating report", reportNotionPageId)
 	buf := &bytes.Buffer{}
 	ctx := context.Background()
 
@@ -605,6 +609,8 @@ func UpdateChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo com
 		Transport: &httpTransport{w: buf},
 	}
 	client := notion.NewClient(apiKey, notion.WithHTTPClient(httpClient))
+
+	updatePageProperties(ctx, KPIInfo, client, reportNotionPageId)
 
 	pageContent, err := client.FindBlockChildrenByID(ctx, reportNotionPageId, &notion.PaginationQuery{PageSize: 100})
 	if err != nil {
@@ -627,50 +633,50 @@ func UpdateChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo com
 				break
 			}
 		case *notion.EmbedBlock:
-			fmt.Println("\n block is an embed block", strings.HasPrefix(b.URL, "https://quickchart.io"), b.URL)
-			if strings.HasPrefix(b.URL, "https://quickchart.io") {
+			log.Println("block is an embed block", strings.HasPrefix(b.URL, "https://app.data-drift.io/report"), b.URL)
+			if strings.HasPrefix(b.URL, "https://app.data-drift.io/report") {
 				embedChartBlock = b
 			}
 		case *notion.ChildDatabaseBlock:
-			fmt.Println("\n block is a child database block", b.ID())
+			log.Println("block is a child database block", b.ID())
 			changeLogDatabaseId = b.ID()
 		default:
-			fmt.Println("\n block is not a known block type")
+			log.Println("block is not a known block type")
 		}
 	}
 	if changeLogDatabaseId != "" {
-		fmt.Println("\n Adding missing events in ChangeLog database...", changeLogDatabaseId)
+		log.Println("Adding missing events in ChangeLog database...", changeLogDatabaseId)
 		createMissingEvents(client, ctx, changeLogDatabaseId, KPIInfo)
 	}
 	if driftBlock != nil {
-		fmt.Println("\n  Updating driftBlock: ", driftBlock.ID())
+		log.Println("Updating driftBlock: ", driftBlock.ID())
 		blockID := driftBlock.ID()
 		newContent := buildDriftParagraph(KPIInfo)
 
 		_, err := client.UpdateBlock(ctx, blockID, newContent)
 		if err != nil {
-			fmt.Println(err.Error())
+			log.Println("Error updating driftBlock: ", err.Error())
 		}
 	}
 
 	if currentValueBlock != nil {
-		fmt.Println("\n  Updating currentValueBlock: ", currentValueBlock.ID())
+		log.Println("Updating currentValueBlock: ", currentValueBlock.ID())
 		blockID := currentValueBlock.ID()
 		newContent := buildCurrentValueParagraph(KPIInfo)
 
 		_, err := client.UpdateBlock(ctx, blockID, newContent)
 		if err != nil {
-			fmt.Println(err.Error())
+			log.Println("Error updating currentValueBlock: ", err.Error())
 		}
 	}
 	if embedChartBlock != nil {
-		fmt.Println("\n  Updating embedChartBlock: ", embedChartBlock.ID())
+		log.Println("Updating embedChartBlock: ", embedChartBlock.ID())
 		blockID := embedChartBlock.ID()
 		newContent := buildEmberChartBlock(KPIInfo)
 
 		_, err := client.UpdateBlock(ctx, blockID, newContent)
 		if err != nil {
-			fmt.Println(err.Error())
+			log.Println("Error updating embedChartBlock: ", err.Error())
 		}
 	}
 
@@ -686,7 +692,7 @@ func createMissingEvents(client *notion.Client, ctx context.Context, databaseID 
 
 	eventsToCreate := make(map[string]bool)
 	for _, event := range KPIInfo.Events {
-		fmt.Println("\n Adding event to create  ", event.CommitTimestamp)
+		log.Println("Adding event to create  ", event.CommitTimestamp)
 		eventsToCreate[generateEventId(event)] = true
 	}
 
@@ -711,7 +717,7 @@ func createMissingEvents(client *notion.Client, ctx context.Context, databaseID 
 
 		var propertiesMap ChangeLogProperties
 		if err := json.Unmarshal(jsonProperties, &propertiesMap); err != nil {
-			fmt.Println(err.Error())
+			log.Println(err.Error())
 		}
 
 		// Access the "Commit" property
@@ -721,16 +727,16 @@ func createMissingEvents(client *notion.Client, ctx context.Context, databaseID 
 
 	}
 
-	fmt.Println(eventsToCreate)
+	log.Println(eventsToCreate)
 	for _, event := range KPIInfo.Events {
 		if eventsToCreate[generateEventId(event)] {
-			fmt.Println("\n Creating the event: ", generateEventId(event))
+			log.Println("Creating the event: ", generateEventId(event))
 			err := createEventInNotionReport(event, client, ctx, databaseID)
 			if err != nil {
-				fmt.Println("[DATADRIFT_ERROR]: err during create page", err.Error())
+				log.Println("[DATADRIFT_ERROR]: err during create page", err.Error())
 			}
 		} else {
-			fmt.Println("\n Event already exist: ", generateEventId(event))
+			log.Println("Event already exist: ", generateEventId(event))
 		}
 	}
 

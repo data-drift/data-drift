@@ -36,7 +36,8 @@ function assertParamsHasNeededProperties(params: Params<string>): {
 }
 
 const ScrollableContainer = styled.div`
-  overflow-y: scroll;
+  overflow-x: scroll;
+  height: 260px;
 `;
 
 const MetricCohort = () => {
