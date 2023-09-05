@@ -445,6 +445,11 @@ func InitChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo commo
 		},
 	}
 
+	_, updateErr := client.UpdatePage(ctx, reportNotionPageId, notion.UpdatePageParams{DatabasePageProperties: updatePageProperties})
+	if updateErr != nil {
+		fmt.Println("[DATADRIFT_ERROR]: err during update", reportNotionPageId, updateErr.Error())
+	}
+
 	createPageChildren := []notion.Block{
 		notion.Heading1Block{
 			RichText: []notion.RichText{
@@ -468,11 +473,6 @@ func InitChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo commo
 			},
 		},
 		buildEmberChartBlock(KPIInfo),
-	}
-
-	_, updateErr := client.UpdatePage(ctx, reportNotionPageId, notion.UpdatePageParams{DatabasePageProperties: updatePageProperties})
-	if updateErr != nil {
-		fmt.Println("[DATADRIFT_ERROR]: err during update", reportNotionPageId, updateErr.Error())
 	}
 
 	_, err := client.AppendBlockChildren(ctx, reportNotionPageId, createPageChildren)
