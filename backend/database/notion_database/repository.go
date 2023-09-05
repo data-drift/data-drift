@@ -437,18 +437,7 @@ func InitChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo commo
 	}
 	client := notion.NewClient(apiKey, notion.WithHTTPClient(httpClient))
 
-	driftAmount, _ := KPIInfo.LatestValue.Sub(KPIInfo.InitialValue).Float64()
-
-	updatePageProperties := notion.DatabasePageProperties{
-		PROPERTY_DATADRIFT_DRIFT_VALUE: notion.DatabasePageProperty{
-			Number: &driftAmount,
-		},
-	}
-
-	_, updateErr := client.UpdatePage(ctx, reportNotionPageId, notion.UpdatePageParams{DatabasePageProperties: updatePageProperties})
-	if updateErr != nil {
-		fmt.Println("[DATADRIFT_ERROR]: err during update", reportNotionPageId, updateErr.Error())
-	}
+	updatePageProperties(ctx, KPIInfo, client, reportNotionPageId)
 
 	createPageChildren := []notion.Block{
 		notion.Heading1Block{
@@ -530,6 +519,21 @@ func InitChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo commo
 	}
 
 	return err
+}
+
+func updatePageProperties(ctx context.Context, KPIInfo common.KPIReport, client *notion.Client, reportNotionPageId string) {
+	driftAmount, _ := KPIInfo.LatestValue.Sub(KPIInfo.InitialValue).Float64()
+
+	updatePageProperties := notion.DatabasePageProperties{
+		PROPERTY_DATADRIFT_DRIFT_VALUE: notion.DatabasePageProperty{
+			Number: &driftAmount,
+		},
+	}
+
+	_, updateErr := client.UpdatePage(ctx, reportNotionPageId, notion.UpdatePageParams{DatabasePageProperties: updatePageProperties})
+	if updateErr != nil {
+		fmt.Println("[DATADRIFT_ERROR]: err during update", reportNotionPageId, updateErr.Error())
+	}
 }
 
 func createEventInNotionReport(event common.EventObject, client *notion.Client, ctx context.Context, changeLogDatabaseId string) error {
