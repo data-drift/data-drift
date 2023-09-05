@@ -42,12 +42,7 @@ export const StepChart = ({ data, metricNames }: StepChartProps) => {
   );
 
   return (
-    <LineChart
-      width={1000}
-      height={600}
-      data={data}
-      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-    >
+    <LineChart width={750} height={250} data={data}>
       <CartesianGrid
         fill={theme.colors.background2}
         vertical={false}
