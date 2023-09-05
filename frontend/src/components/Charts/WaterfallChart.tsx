@@ -28,7 +28,12 @@ export type WaterfallChartProps = { data: readonly DataItem[] };
 
 export const WaterfallChart = ({ data }: WaterfallChartProps) => {
   return (
-    <BarChart width={750} height={250} data={[...data]}>
+    <BarChart
+      width={750}
+      height={250}
+      data={[...data]}
+      margin={{ right: 8, left: 8 }}
+    >
       <XAxis dataKey="day" />
       <YAxis type="number" domain={["auto", "auto"]} tickCount={5} />
       <Tooltip
