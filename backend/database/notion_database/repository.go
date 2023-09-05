@@ -633,8 +633,8 @@ func UpdateChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo com
 				break
 			}
 		case *notion.EmbedBlock:
-			log.Println("block is an embed block", strings.HasPrefix(b.URL, "https://quickchart.io"), b.URL)
-			if strings.HasPrefix(b.URL, "https://quickchart.io") {
+			log.Println("block is an embed block", strings.HasPrefix(b.URL, "https://app.data-drift.io/report"), b.URL)
+			if strings.HasPrefix(b.URL, "https://app.data-drift.io/report") {
 				embedChartBlock = b
 			}
 		case *notion.ChildDatabaseBlock:
