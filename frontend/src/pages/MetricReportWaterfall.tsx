@@ -23,6 +23,10 @@ const getMetricCohortsData = async ({
   const typedParams = assertParamsHasNeededProperties(params);
   const result = await getMetricReport(typedParams);
   const metricMetadata = result.data[typedParams.timegrainValue];
+  if (!metricMetadata)
+    throw new Error(
+      `Could not find metric metadata for ${typedParams.metricName} ${typedParams.timegrainValue}`
+    );
   const { data } = getWaterfallChartPropsFromMetadata(metricMetadata);
   return { data };
 };
