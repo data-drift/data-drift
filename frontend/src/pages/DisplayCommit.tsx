@@ -1,8 +1,9 @@
 import { getCommitFiles, getCsvHeaders } from "../services/github";
-import { DualTable, DualTableProps } from "../components/Table/DualTable";
+import { DualTable } from "../components/Table/DualTable";
 import { parsePatch } from "../services/patch.mapper";
 import { Params, useLoaderData } from "react-router";
 import { getPatchAndHeader } from "../services/data-drift";
+import styled from "@emotion/styled";
 
 export interface CommitParam {
   owner: string;
@@ -69,22 +70,23 @@ type LoaderData = Awaited<
   ReturnType<typeof getCommitDiffFromGithub | typeof getCommitDiffFromDataDrift>
 >;
 
+const StyledSpan = styled.span`
+  padding: 8px;
+`;
+
 function DisplayCommit() {
   const results = useLoaderData() as LoaderData;
 
   return (
     <>
       {results && "commitInfo" in results && (
-        <>
-          <span>
-            <b>
-              {results.commitInfo.filename}{" "}
-              {results.commitInfo.date.toLocaleDateString()}{" "}
-            </b>
-            <a href={results.commitInfo.commitLink}>commit</a>
-          </span>
-          <br />
-        </>
+        <StyledSpan>
+          <b>
+            {results.commitInfo.filename}{" "}
+            {results.commitInfo.date.toLocaleDateString()}{" "}
+          </b>
+          <a href={results.commitInfo.commitLink}>commit</a>
+        </StyledSpan>
       )}
       {results && <DualTable {...results} />}
     </>
