@@ -2,8 +2,7 @@ import axios from "axios";
 import { CommitParam } from "../pages/DisplayCommit";
 import { MetricCohortsResults } from "./data-drift.types";
 
-const DATA_DRIFT_API_URL = "http://localhost:8081";
-// const DATA_DRIFT_API_URL = "https://data-drift.herokuapp.com";
+const DATA_DRIFT_API_URL = "https://data-drift.herokuapp.com";
 
 export const getPatchAndHeader = async (
   params: CommitParam & { installationId: string }
