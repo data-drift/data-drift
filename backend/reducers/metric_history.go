@@ -65,10 +65,10 @@ func OrderDataAndCreateChart(KPIName string, periodId common.PeriodKey, unsorted
 	latestValue := sortedAndFilteredArray[len(sortedAndFilteredArray)-1].KPI
 	var events []common.EventObject
 
-	for _, v := range sortedAndFilteredArray {
+	for index, v := range sortedAndFilteredArray {
 		roundedKPI := v.KPI
 		timestamp := int64(v.CommitTimestamp) // Unix timestamp for May 26, 2022 12:00:00 AM UTC
-		if prevKPI.IsZero() {
+		if index == 0 {
 			prevKPI = v.KPI
 			event := common.EventObject{
 				CommitTimestamp: timestamp,
