@@ -4,13 +4,13 @@ import { parsePatch } from "../services/patch.mapper";
 import { Params, useLoaderData } from "react-router";
 import { getPatchAndHeader } from "../services/data-drift";
 
-export interface CommitInfo {
+export interface CommitParam {
   owner: string;
   repo: string;
   commitSHA: string;
 }
 
-function assertParamsIsCommitInfo(params: Params<string>): CommitInfo {
+function assertParamsIsCommitInfo(params: Params<string>): CommitParam {
   const { owner, repo, commitSHA } = params;
   if (!owner || !repo || !commitSHA) {
     throw new Error("Invalid params");
@@ -20,7 +20,7 @@ function assertParamsIsCommitInfo(params: Params<string>): CommitInfo {
 
 function assertParamsHasInstallationIs(
   params: Params<string>
-): CommitInfo & { installationId: string } {
+): CommitParam & { installationId: string } {
   const { installationId, owner, repo, commitSHA } = params;
   if (!installationId || !owner || !repo || !commitSHA) {
     throw new Error("Invalid params");
