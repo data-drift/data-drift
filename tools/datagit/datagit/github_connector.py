@@ -15,9 +15,10 @@ def store_metric(
     dataframe: pd.DataFrame,
     filepath: str,
     assignees: Optional[List[str]] = None,
-    branch: Optional[str] = None,
     store_json: bool = True,
-    drift_evaluator: Callable[[Dict[str, pd.DataFrame]], Dict] = default_drift_evaluator,
+    drift_evaluator: Callable[
+        [Dict[str, pd.DataFrame]], Dict
+    ] = default_drift_evaluator,
 ) -> None:
     """
     Store metrics into a specific repository file on GitHub.
@@ -52,7 +53,7 @@ def store_metric(
 
     print("Storing metric...")
     repo_orga, repo_name, file_path = filepath.split("/", 2)
-    branch = branch or get_valid_branch_name(file_path)
+    drift_branch = get_valid_branch_name(file_path)
 
     repo = ghClient.get_repo(repo_orga + "/" + repo_name)
     dataframe = sort_dataframe_on_first_column_and_assert_is_unique(dataframe)
@@ -61,7 +62,7 @@ def store_metric(
         dataframe,
         assignees,
         repo.default_branch,
-        branch,
+        drift_branch,
         store_json,
         file_path,
         repo,
@@ -72,24 +73,24 @@ def store_metric(
 def push_metric(
     dataframe,
     assignees,
-    reported_branch,
-    computed_branch,
+    default_branch,
+    drift_branch,
     store_json,
     file_path,
     repo,
     drift_evaluator,
 ):
     dataframe = dataframe.astype("string")
-    contents = assert_file_exists(repo, file_path, ref=reported_branch)
+    contents = assert_file_exists(repo, file_path, ref=default_branch)
     if contents is None:
-        print("Metric not found, creating it on branch: " + reported_branch)
+        print("Metric not found, creating it on branch: " + default_branch)
         create_file_on_branch(
-            file_path, repo, reported_branch, dataframe, assignees, store_json
+            file_path, repo, default_branch, dataframe, assignees, store_json
         )
         print("Metric stored")
         pass
     else:
-        print("Metric found, updating it on branch: " + reported_branch)
+        print("Metric found, updating it on branch: " + default_branch)
         date_column = find_date_column(dataframe)
         if contents.content is not None and date_column is not None:
             # Compare the contents of the file with the new contents and assert if it need 2 commits
@@ -118,12 +119,12 @@ def push_metric(
                 push_new_lines(
                     file_path,
                     repo,
-                    reported_branch,
+                    default_branch,
                     old_data_with_freshdata,
                     store_json,
                 )
 
-            checkout_branch_from_default_branch(repo, computed_branch)
+            checkout_branch_from_default_branch(repo, drift_branch)
             should_push_drift = True
             try:
                 difference_between_old_and_new = copy_and_compare_dataframes(
@@ -160,20 +161,20 @@ def push_metric(
                 print("Drift evaluation: " + str(drift_evaluation))
                 if drift_evaluation["should_alert"]:
                     push_drift_lines(
-                        file_path, repo, computed_branch, dataframe, store_json
+                        file_path, repo, drift_branch, dataframe, store_json
                     )
                     print("Drift pushed")
                     print("Creating pull request")
                     description_body = drift_evaluation["message"]
                     create_pullrequest(
-                        repo, computed_branch, assignees, file_path, description_body
+                        repo, drift_branch, assignees, file_path, description_body
                     )
                 else:
                     print("No alert needed, pushing on reported branch")
                     push_drift_lines(
                         file_path,
                         repo,
-                        reported_branch,
+                        default_branch,
                         dataframe,
                         store_json,
                         drift_evaluation["message"],
