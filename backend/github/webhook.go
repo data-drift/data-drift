@@ -173,7 +173,18 @@ func processWebhookInTheBackground(config common.Config, InstallationId int, cli
 
 func VerifyConfigFile(client *github.Client, RepoOwner string, RepoName string, ctx context.Context) (common.Config, error) {
 
-	commit, _, _ := client.Repositories.GetCommit(ctx, RepoOwner, RepoName, "main", nil)
+	repository, _, getRepoError := client.Repositories.Get(ctx, RepoOwner, RepoName)
+	if getRepoError != nil {
+		fmt.Println("[DATADRIFT_ERROR]", getRepoError.Error())
+
+		return common.Config{}, getRepoError
+	}
+	commit, _, getCommitError := client.Repositories.GetCommit(ctx, RepoOwner, RepoName, *repository.DefaultBranch, nil)
+
+	if getCommitError != nil {
+		fmt.Println("[DATADRIFT_ERROR]", getCommitError.Error())
+		return common.Config{}, getCommitError
+	}
 
 	file, _, _, err := client.Repositories.GetContents(ctx, RepoOwner, RepoName, configFilePath, &github.RepositoryContentGetOptions{
 		Ref: *commit.SHA,
