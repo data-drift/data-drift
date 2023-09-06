@@ -35,19 +35,17 @@ class TestStoreMetric(unittest.TestCase):
 
     def test_store_metric(self):
         with patch("pandas.read_csv", side_effect=mocked_read_csv):
-
             store_metric(
                 self.ghClient,
                 self.dataframe,
                 self.filepath,
                 ["jerome"],
-                "production",
                 False,
             )
             self.repo.get_contents.assert_has_calls(
                 [
                     call("path/to/file.csv", ref=self.repo.default_branch),
-                    call("path/to/file.csv", ref="production"),
+                    call("path/to/file.csv", ref="metric/path-to-file-csv"),
                 ]
             )
 
@@ -61,27 +59,24 @@ class TestStoreMetric(unittest.TestCase):
                 self.dataframe,
                 self.filepath,
                 ["jerome"],
-                "production",
                 False,
             )
 
             self.repo.get_contents.assert_has_calls(
                 [
                     call("path/to/file.csv", ref=self.repo.default_branch),
-                    call("path/to/file.csv", ref="production"),
+                    call("path/to/file.csv", ref="metric/path-to-file-csv"),
                 ]
             )
 
     def test_store_metric_with_no_assignee(self):
         with patch("pandas.read_csv", side_effect=mocked_read_csv):
-            store_metric(
-                self.ghClient, self.dataframe, self.filepath, [], "production", False
-            )
+            store_metric(self.ghClient, self.dataframe, self.filepath, [], False)
 
             self.repo.get_contents.assert_has_calls(
                 [
                     call("path/to/file.csv", ref=self.repo.default_branch),
-                    call("path/to/file.csv", ref="production"),
+                    call("path/to/file.csv", ref="metric/path-to-file-csv"),
                 ]
             )
 
