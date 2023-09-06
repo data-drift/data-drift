@@ -54,21 +54,41 @@ const getCommitDiffFromDataDrift = async ({
   const { installationId, owner, repo, commitSHA } =
     assertParamsHasInstallationIs(params);
 
-  const { patch, headers } = await getPatchAndHeader({
+  const { patch, headers, ...commitInfo } = await getPatchAndHeader({
     installationId,
     owner,
     repo,
     commitSHA,
   });
+
   const { oldData, newData } = parsePatch(patch, headers);
-  return { tableProps1: oldData, tableProps2: newData };
+  return { tableProps1: oldData, tableProps2: newData, commitInfo };
 };
 
-function DisplayCommit() {
-  const results = useLoaderData() as DualTableProps;
-  console.log("results", results);
+type LoaderData = Awaited<
+  ReturnType<typeof getCommitDiffFromGithub | typeof getCommitDiffFromDataDrift>
+>;
 
-  return <>{results && <DualTable {...results} />}</>;
+function DisplayCommit() {
+  const results = useLoaderData() as LoaderData;
+
+  return (
+    <>
+      {results && "commitInfo" in results && (
+        <>
+          <span>
+            <b>
+              {results.commitInfo.filename}{" "}
+              {results.commitInfo.date.toLocaleDateString()}{" "}
+            </b>
+            <a href={results.commitInfo.commitLink}>commit</a>
+          </span>
+          <br />
+        </>
+      )}
+      {results && <DualTable {...results} />}
+    </>
+  );
 }
 
 DisplayCommit.githubLoader = getCommitDiffFromGithub;

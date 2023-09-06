@@ -1,19 +1,29 @@
 import axios from "axios";
-import { CommitInfo } from "../pages/DisplayCommit";
+import { CommitParam } from "../pages/DisplayCommit";
 import { MetricCohortsResults } from "./data-drift.types";
 
-const DATA_DRIFT_API_URL = "https://data-drift.herokuapp.com";
+const DATA_DRIFT_API_URL = "http://localhost:8081";
+// const DATA_DRIFT_API_URL = "https://data-drift.herokuapp.com";
 
 export const getPatchAndHeader = async (
-  params: CommitInfo & { installationId: string }
+  params: CommitParam & { installationId: string }
 ) => {
-  const result = await axios.get<{ patch: string; headers: string[] }>(
+  const result = await axios.get<{
+    patch: string;
+    headers: string[];
+    commitLink: string;
+    date: string;
+    filename: string;
+  }>(
     `${DATA_DRIFT_API_URL}/gh/${params.owner}/${params.repo}/commit/${params.commitSHA}`,
     { headers: { "Installation-Id": params.installationId } }
   );
   return {
     patch: result.data.patch,
     headers: result.data.headers,
+    commitLink: result.data.commitLink,
+    date: new Date(result.data.date),
+    filename: result.data.filename,
   };
 };
 
