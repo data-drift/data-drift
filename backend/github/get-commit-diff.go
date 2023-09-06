@@ -73,7 +73,8 @@ func GetCommitDiff(c *gin.Context) {
 	firstRecord := records[0]
 
 	patch := csvFile.GetPatch()
-	jsonData, err := json.Marshal(gin.H{"patch": patch, "headers": firstRecord})
+
+	jsonData, err := json.Marshal(gin.H{"patch": patch, "headers": firstRecord, "filename": csvFile.GetFilename(), "date": commit.GetCommit().GetCommitter().GetDate(), "commitLink": commit.GetHTMLURL()})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "error marshaling JSON"})
 		return
