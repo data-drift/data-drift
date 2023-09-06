@@ -102,6 +102,7 @@ function assertParamsHasNeededProperties(params: Params<string>): {
 }
 
 const ScrollableContainer = styled.div`
+  width: 100%;
   overflow-x: scroll;
   height: 260px;
 `;
