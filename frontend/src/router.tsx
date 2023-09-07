@@ -3,8 +3,13 @@ import GithubForm from "./pages/GithubForm";
 import DisplayCommit from "./pages/DisplayCommit";
 import MetricCohort from "./pages/MetricCohorts";
 import MetricReportWaterfall from "./pages/MetricReportWaterfall";
+import { HomePage } from "./pages/HomePage";
 
 export const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <HomePage />,
+  },
   {
     path: "/ghform",
     element: <GithubForm />,
