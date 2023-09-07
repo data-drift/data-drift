@@ -4,6 +4,7 @@ import DisplayCommit from "./pages/DisplayCommit";
 import MetricCohort from "./pages/MetricCohorts";
 import MetricReportWaterfall from "./pages/MetricReportWaterfall";
 import { HomePage } from "./pages/HomePage";
+import { DriftListPage } from "./pages/DriftList";
 
 export const router = createBrowserRouter([
   {
@@ -33,5 +34,9 @@ export const router = createBrowserRouter([
     path: "report/:installationId/metrics/:metricName/report/:timegrainValue",
     element: <MetricReportWaterfall />,
     loader: MetricReportWaterfall.loader,
+  },
+  {
+    path: "/drifts",
+    element: <DriftListPage />,
   },
 ]);
