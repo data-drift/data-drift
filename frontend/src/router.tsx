@@ -6,7 +6,7 @@ import MetricReportWaterfall from "./pages/MetricReportWaterfall";
 
 export const router = createBrowserRouter([
   {
-    path: "/",
+    path: "/ghform",
     element: <GithubForm />,
   },
   {
