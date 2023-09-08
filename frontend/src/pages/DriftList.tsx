@@ -1,5 +1,6 @@
 import { Params, useLoaderData } from "react-router";
 import { getCommitList } from "../services/data-drift";
+import { CommitListItem } from "../components/Commits/CommitListItem";
 
 function assertParamsIsDefined(
   params: Params<"installationId" | "owner" | "repo">
@@ -34,10 +35,19 @@ const DriftListPage = () => {
   const data = useLoaderData() as LoaderData;
   return (
     <div>
-      Drift List Page
       {data.map((commit) => {
+        const isDrift = commit.commit.message.includes("Drift");
         return (
-          <pre key={commit.sha}>{JSON.stringify(commit.commit.message)}</pre>
+          <CommitListItem
+            type={isDrift ? "Drift" : "New Data"}
+            date={
+              commit.commit.author?.date
+                ? new Date(commit.commit.author?.date)
+                : null
+            }
+            name={commit.commit.message}
+            commitUrl={commit.html_url}
+          />
         );
       })}
     </div>

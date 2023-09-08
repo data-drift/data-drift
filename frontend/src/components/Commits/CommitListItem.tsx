@@ -1,6 +1,8 @@
+import { theme } from "../../theme";
+
 type CommitListItemProps = {
   type: "Drift" | "New Data";
-  date: Date;
+  date: Date | null;
   name: string;
   commitUrl: string;
 };
@@ -18,13 +20,25 @@ export const CommitListItem = ({
         padding: "16px",
         borderRadius: "0",
         marginBottom: "16px",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-start",
       }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          width: "100%",
+        }}
+      >
         <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
           <span
             style={{
-              backgroundColor: type === "Drift" ? "#e0e0e0" : "#a5d6a7",
+              backgroundColor:
+                type === "Drift"
+                  ? theme.colors.primary
+                  : theme.colors.background,
               color: type === "Drift" ? "#000" : "#fff",
               borderRadius: "0",
               padding: "4px 8px",
@@ -34,7 +48,7 @@ export const CommitListItem = ({
             {type}
           </span>
         </div>
-        <span style={{ color: "#888" }}>{date.toLocaleString()}</span>
+        {date && <span style={{ color: "#888" }}>{date.toLocaleString()}</span>}
       </div>
       <div style={{ marginTop: "8px" }}>
         <p
