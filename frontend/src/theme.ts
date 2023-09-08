@@ -26,6 +26,7 @@ export const theme = {
     },
     dataUp: "#006DCC",
     dataDown: "#E35300",
+    primary: "#8FFF00",
   },
   spacing: (multiplicator: number) => `${multiplicator * 4}px`,
   text: {

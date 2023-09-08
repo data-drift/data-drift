@@ -1,6 +1,7 @@
 import axios from "axios";
 import { CommitParam } from "../pages/DisplayCommit";
 import { MetricCohortsResults } from "./data-drift.types";
+import { Endpoints } from "@octokit/types";
 
 const DATA_DRIFT_API_URL = "https://data-drift.herokuapp.com";
 
@@ -39,6 +40,19 @@ export const getMetricCohorts = async ({
     `${DATA_DRIFT_API_URL}/metrics/${metricName}/cohorts/${timegrain}`,
     { headers: { "Installation-Id": installationId } }
   );
+  return result;
+};
+
+export const getCommitList = async (params: {
+  installationId: string;
+  owner: string;
+  repo: string;
+}) => {
+  const result = await axios.get<
+    Endpoints["GET /repos/{owner}/{repo}/commits"]["response"]["data"]
+  >(`${DATA_DRIFT_API_URL}/gh/${params.owner}/${params.repo}/commits`, {
+    headers: { "Installation-Id": params.installationId },
+  });
   return result;
 };
 
