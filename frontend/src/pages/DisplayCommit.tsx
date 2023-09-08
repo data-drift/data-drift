@@ -43,7 +43,7 @@ const getCommitDiffFromGithub = async ({
   if (file && file.patch) {
     const headers = await getCsvHeaders(file.contents_url);
     const { oldData, newData } = parsePatch(file.patch, headers);
-    return { tableProps1: oldData, tableProps2: newData };
+    return { data: { tableProps1: oldData, tableProps2: newData }, params };
   }
 };
 
@@ -63,7 +63,10 @@ const getCommitDiffFromDataDrift = async ({
   });
 
   const { oldData, newData } = parsePatch(patch, headers);
-  return { tableProps1: oldData, tableProps2: newData, commitInfo };
+  return {
+    data: { tableProps1: oldData, tableProps2: newData, commitInfo },
+    params,
+  };
 };
 
 type LoaderData = Awaited<
@@ -74,21 +77,29 @@ const StyledSpan = styled.span`
   padding: 8px;
 `;
 
+const ddCommitListUrlFactory = (params: {
+  installationId: string;
+  owner: string;
+  repo: string;
+}) => {
+  return `/report/${params.installationId}/${params.owner}/${params.repo}/commits}`;
+};
+
 function DisplayCommit() {
   const results = useLoaderData() as LoaderData;
 
   return (
     <>
-      {results && "commitInfo" in results && (
+      {results && "commitInfo" in results.data && (
         <StyledSpan>
           <b>
-            {results.commitInfo.filename}{" "}
-            {results.commitInfo.date.toLocaleDateString()}{" "}
+            {results.data.commitInfo.filename}{" "}
+            {results.data.commitInfo.date.toLocaleDateString()}{" "}
           </b>
-          <a href={results.commitInfo.commitLink}>commit</a>
+          <a href={results.data.commitInfo.commitLink}>github</a>
         </StyledSpan>
       )}
-      {results && <DualTable {...results} />}
+      {results && <DualTable {...results.data} />}
     </>
   );
 }
