@@ -26,17 +26,30 @@ const loader = async ({
   assertParamsIsDefined(params);
   console.log(params);
   const result = await getCommitList(params);
-  return result.data;
+  return { data: result.data, params };
 };
 
 type LoaderData = Awaited<ReturnType<typeof loader>>;
 
+const ddCommitDiffUrlFactory = (params: {
+  installationId: string;
+  owner: string;
+  repo: string;
+  commitSha: string;
+}) => {
+  return `/report/${params.installationId}/${params.owner}/${params.repo}/commit/${params.commitSha}`;
+};
+
 const DriftListPage = () => {
-  const data = useLoaderData() as LoaderData;
+  const { data, params } = useLoaderData() as LoaderData;
   return (
     <div>
       {data.map((commit) => {
         const isDrift = commit.commit.message.includes("Drift");
+        const commitUrl = ddCommitDiffUrlFactory({
+          ...params,
+          commitSha: commit.sha,
+        });
         return (
           <CommitListItem
             type={isDrift ? "Drift" : "New Data"}
@@ -46,7 +59,7 @@ const DriftListPage = () => {
                 : null
             }
             name={commit.commit.message}
-            commitUrl={commit.html_url}
+            commitUrl={commitUrl}
           />
         );
       })}
