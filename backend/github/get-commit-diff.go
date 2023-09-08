@@ -103,7 +103,7 @@ func GetCommitList(c *gin.Context) {
 		return
 	}
 
-	jsonData, err := json.Marshal(gin.H{"commits": commits})
+	jsonData, err := json.Marshal(commits)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "error marshaling JSON"})
 		return
