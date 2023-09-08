@@ -43,7 +43,10 @@ const getCommitDiffFromGithub = async ({
   if (file && file.patch) {
     const headers = await getCsvHeaders(file.contents_url);
     const { oldData, newData } = parsePatch(file.patch, headers);
-    return { data: { tableProps1: oldData, tableProps2: newData }, params };
+    return {
+      data: { tableProps1: oldData, tableProps2: newData },
+      params: { owner, repo, commitSHA },
+    };
   }
 };
 
@@ -65,7 +68,7 @@ const getCommitDiffFromDataDrift = async ({
   const { oldData, newData } = parsePatch(patch, headers);
   return {
     data: { tableProps1: oldData, tableProps2: newData, commitInfo },
-    params,
+    params: { owner, repo, commitSHA, installationId },
   };
 };
 
@@ -82,7 +85,7 @@ const ddCommitListUrlFactory = (params: {
   owner: string;
   repo: string;
 }) => {
-  return `/report/${params.installationId}/${params.owner}/${params.repo}/commits}`;
+  return `/report/${params.installationId}/${params.owner}/${params.repo}/commits`;
 };
 
 function DisplayCommit() {
@@ -97,6 +100,23 @@ function DisplayCommit() {
             {results.data.commitInfo.date.toLocaleDateString()}{" "}
           </b>
           <a href={results.data.commitInfo.commitLink}>github</a>
+          {"installationId" in results.params && (
+            <a href={ddCommitListUrlFactory(results.params)}>
+              {" "}
+              <button
+                style={{
+                  padding: "8px 16px",
+                  backgroundColor: "#333",
+                  color: "#fff",
+                  borderRadius: "0px",
+                  border: "2px solid #fff",
+                  fontFamily: "monospace",
+                }}
+              >
+                View list of commits
+              </button>
+            </a>
+          )}
         </StyledSpan>
       )}
       {results && <DualTable {...results.data} />}
