@@ -82,3 +82,32 @@ func GetCommitDiff(c *gin.Context) {
 
 	c.Data(http.StatusOK, "application/json", jsonData)
 }
+
+func GetCommitList(c *gin.Context) {
+	InstallationId, err := strconv.ParseInt(c.Request.Header.Get("Installation-Id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "error parsing Installation-Id header"})
+		return
+	}
+	owner := c.Param("owner")
+	repo := c.Param("repo")
+
+	client, err := CreateClientFromGithubApp(int64(InstallationId))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err})
+		return
+	}
+
+	commits, _, err := client.Repositories.ListCommits(c, owner, repo, nil)
+	if err != nil {
+		return
+	}
+
+	jsonData, err := json.Marshal(gin.H{"commits": commits})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "error marshaling JSON"})
+		return
+	}
+
+	c.Data(http.StatusOK, "application/json", jsonData)
+}

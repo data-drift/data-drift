@@ -52,6 +52,7 @@ func main() {
 
 	router.POST("webhooks/github", github.HandleWebhook)
 	router.GET("gh/:owner/:repo/commit/:commit-sha", github.GetCommitDiff)
+	router.GET("gh/:owner/:repo/commits", github.GetCommitList)
 
 	router.GET("metrics/:metric-name/cohorts/:timegrain", metrics.GetMetricCohort)
 	router.GET("metrics/:metric-name/reports", metrics.GetMetricReport)
