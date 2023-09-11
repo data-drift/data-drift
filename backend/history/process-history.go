@@ -1,11 +1,11 @@
 package history
 
 import (
-	"bytes"
 	"context"
 	"encoding/csv"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"time"
 
@@ -65,13 +65,12 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 			commitMessages = append(commitMessages, common.CommitComments{CommentBody: *comment.Body, CommentAuthor: *comment.User.Login})
 		}
 		commitTimestamp := commitDate.Unix()
-		fileContents, err := getFileContentsForCommit(client, repoOwner, repoName, csvFilePath, *commit.SHA)
+		records, err := getFileContentsForCommit(client, repoOwner, repoName, csvFilePath, *commit.SHA)
 		if err != nil {
 			log.Printf("Error getting file contents for commit %s: %v", *commit.SHA, err.Error())
 			continue
 		}
-		r := csv.NewReader(bytes.NewReader(fileContents))
-		records, err := r.ReadAll()
+
 		if err != nil {
 			log.Printf("Error parsing CSV file for commit %s: %v", *commit.SHA, err.Error())
 			continue
@@ -218,20 +217,26 @@ func updateMetric(lineCountAndKPIByDateByVersion common.Metrics, periodAndDimens
 	}
 }
 
-func getFileContentsForCommit(client *github.Client, owner, name, path, sha string) ([]byte, error) {
+func getFileContentsForCommit(client *github.Client, owner, name, path, sha string) ([][]string, error) {
 	opts := &github.RepositoryContentGetOptions{Ref: sha}
-	fileContents, _, resp, err := client.Repositories.GetContents(context.Background(), owner, name, path, opts)
+	fileContents, _, ghresp, err := client.Repositories.GetContents(context.Background(), owner, name, path, opts)
 	if err != nil {
+		return nil, err
+	}
+	downloadableUrl := fileContents.GetDownloadURL()
+
+	resp, err := http.Get(downloadableUrl)
+	if err != nil {
+		fmt.Println("Error:", err)
 		return nil, err
 	}
 	defer resp.Body.Close()
+	defer ghresp.Body.Close()
 
-	content, err := fileContents.GetContent()
-	if err != nil {
-		return nil, err
-	}
+	csvReader := csv.NewReader(resp.Body)
+	records, err := csvReader.ReadAll()
 
-	return []byte(content), nil
+	return records, nil
 }
 
 func GetDefaultTimeGrains(timeGrains []common.TimeGrain) []common.TimeGrain {
