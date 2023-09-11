@@ -24,7 +24,7 @@ func GetCommitDiff(c *gin.Context) {
 
 	client, err := CreateClientFromGithubApp(int64(InstallationId))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -53,15 +53,22 @@ func GetCommitDiff(c *gin.Context) {
 
 	content, _, _, err := client.Repositories.GetContents(c, owner, repo, csvFile.GetFilename(), &github.RepositoryContentGetOptions{Ref: commitSha})
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	stringContent, _ := content.GetContent()
-	contentReader := strings.NewReader(stringContent)
-	csvReader := csv.NewReader(contentReader)
+	stringContentUrl := content.GetDownloadURL()
+
+	resp, err := http.Get(stringContentUrl)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	csvReader := csv.NewReader(resp.Body)
 	records, err := csvReader.ReadAll()
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -94,7 +101,7 @@ func GetCommitList(c *gin.Context) {
 
 	client, err := CreateClientFromGithubApp(int64(InstallationId))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
