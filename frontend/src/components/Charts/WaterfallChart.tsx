@@ -21,9 +21,7 @@ const formatToolTipValueTick: Formatter = (
   if (item.payload?.isInitial) return `${tickValue[1].toLocaleString()}`;
   const drift = tickValue[1] - tickValue[0];
   const signedDrift =
-    drift > 0
-      ? `+${drift.toFixed(2).toLocaleString()}`
-      : drift.toFixed(2).toLocaleString();
+    drift > 0 ? `+${drift.toLocaleString()}` : drift.toLocaleString();
   return `${signedDrift} => ${tickValue[1].toLocaleString()}`;
 };
 
