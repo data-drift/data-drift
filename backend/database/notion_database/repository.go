@@ -619,14 +619,19 @@ func UpdateChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo com
 	}
 
 	var driftBlock *notion.ParagraphBlock
+	var initialValueBlock *notion.ParagraphBlock
 	var currentValueBlock *notion.ParagraphBlock
 	var embedChartBlock *notion.EmbedBlock
 	var changeLogDatabaseId string
 	for _, block := range pageContent.Results {
 		switch b := block.(type) {
 		case *notion.ParagraphBlock:
-			if len(b.RichText) > 0 && b.RichText[0].Text.Content == summaryTextInitialValueWas {
+			if len(b.RichText) > 0 && b.RichText[0].Text.Content == summaryTextDriftValue {
 				driftBlock = b
+				break
+			}
+			if len(b.RichText) > 1 && b.RichText[1].Text.Content == summaryInitialValueWas {
+				initialValueBlock = b
 				break
 			}
 			if len(b.RichText) > 1 && b.RichText[1].Text.Content == summaryTextCurrentValueIs {
@@ -657,6 +662,17 @@ func UpdateChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo com
 		_, err := client.UpdateBlock(ctx, blockID, newContent)
 		if err != nil {
 			log.Println("Error updating driftBlock: ", err.Error())
+		}
+	}
+
+	if initialValueBlock != nil {
+		log.Println("Updating initialValueBlock: ", initialValueBlock.ID())
+		blockID := initialValueBlock.ID()
+		newContent := buildInitialValueParagraph(KPIInfo)
+
+		_, err := client.UpdateBlock(ctx, blockID, newContent)
+		if err != nil {
+			log.Println("Error updating initialValueBlock: ", err.Error())
 		}
 	}
 
@@ -795,7 +811,8 @@ func getEventEmoji(diff float64) string {
 	return "🔶"
 }
 
-const summaryTextInitialValueWas = "Total drift since initial value: "
+const summaryTextDriftValue = "Total drift since initial value: "
+const summaryInitialValueWas = " initial value was: "
 const summaryTextCurrentValueIs = " current value is: "
 
 func buildCurrentValueParagraph(KPIInfo common.KPIReport) notion.ParagraphBlock {
@@ -839,7 +856,7 @@ func buildInitialValueParagraph(KPIInfo common.KPIReport) notion.ParagraphBlock 
 			},
 			{
 				Text: &notion.Text{
-					Content: " initial value was: ",
+					Content: summaryInitialValueWas,
 				},
 			},
 			{
@@ -859,7 +876,7 @@ func buildDriftParagraph(KPIInfo common.KPIReport) notion.ParagraphBlock {
 		RichText: []notion.RichText{
 			{
 				Text: &notion.Text{
-					Content: summaryTextInitialValueWas,
+					Content: summaryTextDriftValue,
 				},
 			},
 			{
