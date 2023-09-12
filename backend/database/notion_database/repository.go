@@ -796,6 +796,7 @@ func getEventEmoji(diff float64) string {
 }
 
 const summaryTextDriftValue = "Total drift since initial value: "
+const summaryInitialValueWas = " initial value was: "
 const summaryTextCurrentValueIs = " current value is: "
 
 func buildCurrentValueParagraph(KPIInfo common.KPIReport) notion.ParagraphBlock {
@@ -839,7 +840,7 @@ func buildInitialValueParagraph(KPIInfo common.KPIReport) notion.ParagraphBlock 
 			},
 			{
 				Text: &notion.Text{
-					Content: " initial value was: ",
+					Content: summaryInitialValueWas,
 				},
 			},
 			{
