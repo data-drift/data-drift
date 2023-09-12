@@ -746,16 +746,16 @@ func createMissingEvents(client *notion.Client, ctx context.Context, databaseID 
 
 func displayEventTitle(event common.EventObject) string {
 	if event.EventType == common.EventTypeCreate {
-		return fmt.Sprintf("Initial Value %s", event.Current.String())
+		return fmt.Sprintf("Initial Value %s", helpers.FormatWithSeparator(event.Current))
 	}
 	return "New Drift " + displayDiff(decimal.NewFromFloat(event.Diff))
 }
 
 func displayDiff(diff decimal.Decimal) string {
 	if diff.IsPositive() {
-		return "+" + diff.String()
+		return "+" + helpers.FormatWithSeparator(diff)
 	}
-	return diff.String()
+	return helpers.FormatWithSeparator(diff)
 }
 
 func displayDiffColor(diff decimal.Decimal) notion.Color {
