@@ -14,14 +14,14 @@ func TestDisplayEventTitle(t *testing.T) {
 		EventType: common.EventTypeCreate,
 		Current:   decimal.NewFromFloat(10.1),
 	}
-	assert.Equal(t, "Initial Value 10.1", displayEventTitle(createEvent))
+	assert.Equal(t, "Initial Value 10.10", displayEventTitle(createEvent))
 
 	// Test the "update" event type
 	updateEvent := common.EventObject{
 		EventType: common.EventTypeUpdate,
 		Diff:      2.5,
 	}
-	assert.Equal(t, "New Drift +2.5", displayEventTitle(updateEvent))
+	assert.Equal(t, "New Drift +2.50", displayEventTitle(updateEvent))
 
 	// Test the "delete" event type
 	deleteEvent := common.EventObject{
