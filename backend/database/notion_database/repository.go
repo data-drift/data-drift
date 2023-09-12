@@ -619,6 +619,7 @@ func UpdateChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo com
 	}
 
 	var driftBlock *notion.ParagraphBlock
+	var initialValueBlock *notion.ParagraphBlock
 	var currentValueBlock *notion.ParagraphBlock
 	var embedChartBlock *notion.EmbedBlock
 	var changeLogDatabaseId string
@@ -627,6 +628,10 @@ func UpdateChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo com
 		case *notion.ParagraphBlock:
 			if len(b.RichText) > 0 && b.RichText[0].Text.Content == summaryTextDriftValue {
 				driftBlock = b
+				break
+			}
+			if len(b.RichText) > 1 && b.RichText[1].Text.Content == summaryInitialValueWas {
+				initialValueBlock = b
 				break
 			}
 			if len(b.RichText) > 1 && b.RichText[1].Text.Content == summaryTextCurrentValueIs {
@@ -657,6 +662,17 @@ func UpdateChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo com
 		_, err := client.UpdateBlock(ctx, blockID, newContent)
 		if err != nil {
 			log.Println("Error updating driftBlock: ", err.Error())
+		}
+	}
+
+	if initialValueBlock != nil {
+		log.Println("Updating initialValueBlock: ", initialValueBlock.ID())
+		blockID := initialValueBlock.ID()
+		newContent := buildInitialValueParagraph(KPIInfo)
+
+		_, err := client.UpdateBlock(ctx, blockID, newContent)
+		if err != nil {
+			log.Println("Error updating initialValueBlock: ", err.Error())
 		}
 	}
 
