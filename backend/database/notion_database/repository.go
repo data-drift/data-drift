@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/data-drift/data-drift/common"
+	"github.com/data-drift/data-drift/helpers"
 	"github.com/dstotijn/go-notion"
 	"github.com/shopspring/decimal"
 )
@@ -815,7 +816,7 @@ func buildCurrentValueParagraph(KPIInfo common.KPIReport) notion.ParagraphBlock 
 			},
 			{
 				Text: &notion.Text{
-					Content: KPIInfo.LatestValue.String(),
+					Content: helpers.FormatWithSeparator(KPIInfo.LatestValue),
 				},
 				Annotations: &notion.Annotations{
 					Bold: true,
@@ -843,7 +844,7 @@ func buildInitialValueParagraph(KPIInfo common.KPIReport) notion.ParagraphBlock 
 			},
 			{
 				Text: &notion.Text{
-					Content: KPIInfo.InitialValue.String(),
+					Content: helpers.FormatWithSeparator(KPIInfo.InitialValue),
 				},
 				Annotations: &notion.Annotations{
 					Bold: true,
