@@ -14,6 +14,7 @@ func TestFormatWithSeparator(t *testing.T) {
 		{decimal.NewFromFloat(1234567.89), "1,234,567.89"},
 		{decimal.NewFromFloat(0), "0"},
 		{decimal.NewFromFloat(-1234567.89), "-1,234,567.89"},
+		{decimal.NewFromFloat(-1234567.8), "-1,234,567.80"},
 		{decimal.NewFromFloat(0.123456789), "0.123456789"},
 		{decimal.NewFromFloat(0.000000001), "0.000000001"},
 	}

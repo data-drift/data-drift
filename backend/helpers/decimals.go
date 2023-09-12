@@ -32,7 +32,11 @@ func FormatWithSeparator(d decimal.Decimal) string {
 
 	if !frac.IsZero() {
 		sb.WriteRune('.')
-		sb.WriteString(frac.String()[2:])
+		stringDecimalPart := frac.String()[2:]
+		if len(stringDecimalPart) == 1 {
+			stringDecimalPart = stringDecimalPart + "0"
+		}
+		sb.WriteString(stringDecimalPart)
 	}
 
 	return sb.String()
