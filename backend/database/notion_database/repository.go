@@ -625,7 +625,7 @@ func UpdateChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo com
 	for _, block := range pageContent.Results {
 		switch b := block.(type) {
 		case *notion.ParagraphBlock:
-			if len(b.RichText) > 0 && b.RichText[0].Text.Content == summaryTextInitialValueWas {
+			if len(b.RichText) > 0 && b.RichText[0].Text.Content == summaryTextDriftValue {
 				driftBlock = b
 				break
 			}
@@ -795,7 +795,7 @@ func getEventEmoji(diff float64) string {
 	return "🔶"
 }
 
-const summaryTextInitialValueWas = "Total drift since initial value: "
+const summaryTextDriftValue = "Total drift since initial value: "
 const summaryTextCurrentValueIs = " current value is: "
 
 func buildCurrentValueParagraph(KPIInfo common.KPIReport) notion.ParagraphBlock {
@@ -859,7 +859,7 @@ func buildDriftParagraph(KPIInfo common.KPIReport) notion.ParagraphBlock {
 		RichText: []notion.RichText{
 			{
 				Text: &notion.Text{
-					Content: summaryTextInitialValueWas,
+					Content: summaryTextDriftValue,
 				},
 			},
 			{
