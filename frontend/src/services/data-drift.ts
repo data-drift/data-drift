@@ -1,5 +1,5 @@
 import axios from "axios";
-import { CommitParam } from "../pages/DisplayCommit";
+import { CommitParam } from "../pages/DisplayCommit/DisplayCommit";
 import { MetricCohortsResults } from "./data-drift.types";
 import { Endpoints } from "@octokit/types";
 

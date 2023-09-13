@@ -1,10 +1,10 @@
-import { getCommitFiles, getCsvHeaders } from "../services/github";
-import { DualTable } from "../components/Table/DualTable";
-import { parsePatch } from "../services/patch.mapper";
+import { getCommitFiles, getCsvHeaders } from "../../services/github";
+import { DualTable } from "../../components/Table/DualTable";
+import { parsePatch } from "../../services/patch.mapper";
 import { Params, useLoaderData } from "react-router";
-import { getPatchAndHeader } from "../services/data-drift";
+import { getPatchAndHeader } from "../../services/data-drift";
 import styled from "@emotion/styled";
-import DualTableHeader from "../components/Table/DualTableHeader";
+import DualTableHeader from "../../components/Table/DualTableHeader";
 
 export interface CommitParam {
   owner: string;
