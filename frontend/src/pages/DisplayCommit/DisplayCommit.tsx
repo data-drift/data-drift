@@ -1,15 +1,23 @@
-import { getCommitFiles, getCsvHeaders } from "../services/github";
-import { DualTable } from "../components/Table/DualTable";
-import { parsePatch } from "../services/patch.mapper";
+import { getCommitFiles, getCsvHeaders } from "../../services/github";
+import { parsePatch } from "../../services/patch.mapper";
 import { Params, useLoaderData } from "react-router";
-import { getPatchAndHeader } from "../services/data-drift";
+import { getPatchAndHeader } from "../../services/data-drift";
 import styled from "@emotion/styled";
+import { DiffTable } from "./DiffTable";
 
 export interface CommitParam {
   owner: string;
   repo: string;
   commitSHA: string;
 }
+
+const StyledButton = styled.button`
+  padding: 4px 16px;
+  color: ${(props) => props.theme.colors.text};
+  border-radius: 0px;
+  background-color: ${(props) => props.theme.colors.background2};
+  border: 1px solid ${(props) => props.theme.colors.text};
+`;
 
 function assertParamsIsCommitInfo(params: Params<string>): CommitParam {
   const { owner, repo, commitSHA } = params;
@@ -78,6 +86,16 @@ type LoaderData = Awaited<
 
 const StyledSpan = styled.span`
   padding: 8px;
+  align-self: flex-start;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+`;
+
+const StyledIcon = styled.img`
+  filter: invert(1);
+  height: 24px;
+  vertical-align: middle;
 `;
 
 const ddCommitListUrlFactory = (params: {
@@ -95,31 +113,22 @@ function DisplayCommit() {
     <>
       {results && "commitInfo" in results.data && (
         <StyledSpan>
-          <b>
-            {results.data.commitInfo.filename}{" "}
-            {results.data.commitInfo.date.toLocaleDateString()}{" "}
-          </b>
-          <a href={results.data.commitInfo.commitLink}>github</a>
+          <b>{results.data.commitInfo.filename}</b> -{" "}
+          <b>{results.data.commitInfo.date.toLocaleDateString()}</b>
+          <a href={results.data.commitInfo.commitLink}>
+            <StyledIcon
+              src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+              alt="GitHub"
+            />
+          </a>
           {"installationId" in results.params && (
             <a href={ddCommitListUrlFactory(results.params)}>
-              {" "}
-              <button
-                style={{
-                  padding: "8px 16px",
-                  backgroundColor: "#333",
-                  color: "#fff",
-                  borderRadius: "0px",
-                  border: "2px solid #fff",
-                  fontFamily: "monospace",
-                }}
-              >
-                View list of commits
-              </button>
+              <StyledButton>View list of commits</StyledButton>
             </a>
           )}
         </StyledSpan>
       )}
-      {results && <DualTable {...results.data} />}
+      {results && results.data && <DiffTable dualTableProps={results.data} />}
     </>
   );
 }

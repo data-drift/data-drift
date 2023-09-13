@@ -1,6 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 import GithubForm from "./pages/GithubForm";
-import DisplayCommit from "./pages/DisplayCommit";
+import DisplayCommit from "./pages/DisplayCommit/DisplayCommit";
 import MetricCohort from "./pages/MetricCohorts";
 import MetricReportWaterfall from "./pages/MetricReportWaterfall";
 import { HomePage } from "./pages/HomePage";
