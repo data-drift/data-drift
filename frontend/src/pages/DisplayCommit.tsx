@@ -12,6 +12,14 @@ export interface CommitParam {
   commitSHA: string;
 }
 
+const StyledButton = styled.button`
+  padding: 8px 16px;
+  background-color: #333;
+  color: #fff;
+  border-radius: 0px;
+  border: 2px solid #fff;
+`;
+
 function assertParamsIsCommitInfo(params: Params<string>): CommitParam {
   const { owner, repo, commitSHA } = params;
   if (!owner || !repo || !commitSHA) {
@@ -104,18 +112,7 @@ function DisplayCommit() {
           {"installationId" in results.params && (
             <a href={ddCommitListUrlFactory(results.params)}>
               {" "}
-              <button
-                style={{
-                  padding: "8px 16px",
-                  backgroundColor: "#333",
-                  color: "#fff",
-                  borderRadius: "0px",
-                  border: "2px solid #fff",
-                  fontFamily: "monospace",
-                }}
-              >
-                View list of commits
-              </button>
+              <StyledButton>View list of commits</StyledButton>
             </a>
           )}
         </StyledSpan>
