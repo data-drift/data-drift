@@ -8,11 +8,12 @@ const StyledDivider = styled.span`
 const StyledDatePicker = styled.div`
   display: flex;
   align-items: center;
+  align-self: flex-start;
 `;
 
 const StyledDateInput = styled.input`
-  background-color: #444;
-  border: 2px solid #fff;
+  background-color: ${(props) => props.theme.colors.background2};
+  border: 1px solid ${(props) => props.theme.colors.text};
   color: #fff;
   padding: 8px;
   margin: 8px;
