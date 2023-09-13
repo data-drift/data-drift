@@ -5,6 +5,7 @@ import { Params, useLoaderData } from "react-router";
 import { getPatchAndHeader } from "../../services/data-drift";
 import styled from "@emotion/styled";
 import DualTableHeader from "../../components/Table/DualTableHeader";
+import { DiffTable } from "./DiffTable";
 
 export interface CommitParam {
   owner: string;
@@ -99,7 +100,6 @@ const ddCommitListUrlFactory = (params: {
 
 function DisplayCommit() {
   const results = useLoaderData() as LoaderData;
-  const dualTableHeaderState = DualTableHeader.useState();
 
   return (
     <>
@@ -118,12 +118,7 @@ function DisplayCommit() {
           )}
         </StyledSpan>
       )}
-      <DualTableHeader state={dualTableHeaderState} />
-      {results && (
-        <>
-          <DualTable {...results.data} />
-        </>
-      )}
+      {results && results.data && <DiffTable data={results.data} />}
     </>
   );
 }
