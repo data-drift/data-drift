@@ -15,10 +15,11 @@ func MetricReportUrl(installationId common.GithubInstallationId, metricName stri
 }
 
 func BuildReportDiffBaseUrl(installationId, repoOwner, repoName string) string {
-	reportBaseUrl := fmt.Sprintf("https://app.data-drift.io/report/%s/%s/%s/commit/", installationId, repoOwner, repoName)
+	reportBaseUrl := fmt.Sprintf("https://app.data-drift.io/report/%s/%s/%s/commit", installationId, repoOwner, repoName)
 	return reportBaseUrl
 }
 
-func BuildReportDiffUrl(reportBaseUrl string, commitSha string) string {
-	return reportBaseUrl + commitSha + "/"
+func BuildReportDiffUrl(reportBaseUrl, commitSha, queryString string) string {
+	url := fmt.Sprintf("%s/%s?%s", reportBaseUrl, commitSha, queryString)
+	return url
 }

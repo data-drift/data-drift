@@ -20,7 +20,7 @@ func handlePullRequestOpened(event *github.PullRequestEvent) error {
 	log.Printf("Pull request opened: owner=%s, repo=%s, installation_id=%d, number=%d, title=%s, url=%s", event.Repo.Owner.GetLogin(), event.Repo.GetName(), event.Installation.GetID(), event.PullRequest.GetNumber(), event.PullRequest.GetTitle(), event.PullRequest.GetHTMLURL())
 	// Get the pull request number from the event.
 
-	commitDiffUrl := urlgen.BuildReportDiffUrl(urlgen.BuildReportDiffBaseUrl(fmt.Sprint(installationId), owner, repo), *event.PullRequest.Head.SHA)
+	commitDiffUrl := urlgen.BuildReportDiffUrl(urlgen.BuildReportDiffBaseUrl(fmt.Sprint(installationId), owner, repo), *event.PullRequest.Head.SHA, "")
 	log.Printf("commitDiffUrl: %s", commitDiffUrl)
 	// Create a comment on the pull request.
 	comment := &github.IssueComment{

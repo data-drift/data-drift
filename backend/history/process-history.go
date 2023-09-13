@@ -212,7 +212,7 @@ func updateMetric(lineCountAndKPIByDateByVersion common.Metrics, periodAndDimens
 		CommitTimestamp: commitTimestamp,
 		CommitDate:      time.Unix(commitTimestamp, 0).Format("2006-01-02"),
 		IsAfterPeriod:   isAfterPeriod,
-		CommitUrl:       urlgen.BuildReportDiffUrl(reportBaseUrl, string(commitSha)),
+		CommitUrl:       urlgen.BuildReportDiffUrl(reportBaseUrl, string(commitSha), ""),
 		CommitComments:  commitMessages,
 	}
 }
