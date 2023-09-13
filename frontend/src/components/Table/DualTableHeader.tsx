@@ -19,8 +19,8 @@ const StyledDateInput = styled.input`
 `;
 
 const useDualTableHeader = () => {
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [startDate, setStartDate] = useState("2023-06-01");
+  const [endDate, setEndDate] = useState("2023-07-01");
 
   const handleStartDateChange: ChangeEventHandler<HTMLInputElement> = (e) => {
     setStartDate(e.target.value);
@@ -49,12 +49,14 @@ const DualTableHeader = ({ state }: { state: DualTableHeaderState }) => {
         type="date"
         value={startDate}
         onChange={handleStartDateChange}
+        title="Start date included"
       />
       <StyledDivider>to</StyledDivider>
       <StyledDateInput
         type="date"
         value={endDate}
         onChange={handleEndDateChange}
+        title="End date excluded"
       />
     </StyledDatePicker>
   );

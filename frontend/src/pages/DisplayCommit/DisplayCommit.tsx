@@ -118,7 +118,7 @@ function DisplayCommit() {
           )}
         </StyledSpan>
       )}
-      {results && results.data && <DiffTable data={results.data} />}
+      {results && results.data && <DiffTable dualTableProps={results.data} />}
     </>
   );
 }
