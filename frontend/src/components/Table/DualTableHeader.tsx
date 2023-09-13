@@ -18,7 +18,7 @@ const StyledDateInput = styled.input`
   margin: 8px;
 `;
 
-export const useDualTableHeader = () => {
+const useDualTableHeader = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
