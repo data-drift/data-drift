@@ -19,16 +19,31 @@ const StyledDateInput = styled.input`
 `;
 
 const useDualTableHeader = () => {
-  const [startDate, setStartDate] = useState("2023-06-01");
-  const [endDate, setEndDate] = useState("2023-07-01");
+  const searchParams = new URLSearchParams(window.location.search);
+  const urlStartDate = searchParams.get("startDate");
+  const urlEndDate = searchParams.get("endDate");
+  const [startDate, setStartDate] = useState(urlStartDate || "");
+  const [endDate, setEndDate] = useState(urlEndDate || "");
 
   const handleStartDateChange: ChangeEventHandler<HTMLInputElement> = (e) => {
-    setStartDate(e.target.value);
+    const newStartDate = e.target.value;
+    const searchParams = new URLSearchParams(window.location.search);
+    searchParams.set("startDate", newStartDate);
+    const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
+    window.history.pushState({ path: newUrl }, "", newUrl);
+    setStartDate(newStartDate);
   };
 
   const handleEndDateChange: ChangeEventHandler<HTMLInputElement> = (e) => {
-    setEndDate(e.target.value);
+    const newEndDate = e.target.value;
+    const searchParams = new URLSearchParams(window.location.search);
+    searchParams.set("endDate", newEndDate);
+    const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
+    console.log(newUrl);
+    window.history.pushState({ path: newUrl }, "", newUrl);
+    setEndDate(newEndDate);
   };
+
   return {
     startDate,
     endDate,
