@@ -4,6 +4,7 @@ import { parsePatch } from "../services/patch.mapper";
 import { Params, useLoaderData } from "react-router";
 import { getPatchAndHeader } from "../services/data-drift";
 import styled from "@emotion/styled";
+import { DualTableHeader } from "../components/Table/DualTableHeader";
 
 export interface CommitParam {
   owner: string;
@@ -119,7 +120,12 @@ function DisplayCommit() {
           )}
         </StyledSpan>
       )}
-      {results && <DualTable {...results.data} />}
+      <DualTableHeader />
+      {results && (
+        <>
+          <DualTable {...results.data} />
+        </>
+      )}
     </>
   );
 }
