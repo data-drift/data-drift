@@ -18,7 +18,7 @@ const StyledDateInput = styled.input`
   margin: 8px;
 `;
 
-export const DualTableHeader = () => {
+export const useDualTableHeader = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
@@ -29,6 +29,20 @@ export const DualTableHeader = () => {
   const handleEndDateChange: ChangeEventHandler<HTMLInputElement> = (e) => {
     setEndDate(e.target.value);
   };
+  return {
+    startDate,
+    endDate,
+    handleStartDateChange,
+    handleEndDateChange,
+  };
+};
+
+type DualTableHeaderState = ReturnType<typeof useDualTableHeader>;
+
+const DualTableHeader = ({ state }: { state: DualTableHeaderState }) => {
+  const { startDate, endDate, handleStartDateChange, handleEndDateChange } =
+    state;
+
   return (
     <StyledDatePicker>
       <StyledDateInput
@@ -45,3 +59,7 @@ export const DualTableHeader = () => {
     </StyledDatePicker>
   );
 };
+
+DualTableHeader.useState = useDualTableHeader;
+
+export default DualTableHeader;
