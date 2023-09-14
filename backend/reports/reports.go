@@ -10,6 +10,7 @@ import (
 	"github.com/data-drift/data-drift/database/notion_database"
 	"github.com/data-drift/data-drift/urlgen"
 	"github.com/dstotijn/go-notion"
+	"github.com/snabb/isoweek"
 )
 
 func CreateReport(syncConfig common.SyncConfig, KPIInfo common.KPIReport) error {
@@ -124,6 +125,26 @@ func ParseYearWeek(yearWeek string) (time.Time, error) {
 	return firstDay, nil
 }
 
+func GetFirstDateOfYearISOWeek(yearWeek string) (time.Time, error) {
+	if len(yearWeek) != 8 {
+		return time.Time{}, fmt.Errorf("invalid year week format: %s", yearWeek)
+	}
+	year, err := strconv.Atoi(yearWeek[0:4])
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	week, err := strconv.Atoi(yearWeek[6:])
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	// Get the first day of the week (Monday)
+	t := isoweek.StartTime(year, week, time.UTC)
+
+	return t, nil
+}
+
 func ParseQuarterDate(s string) (time.Time, error) {
 	parts := strings.Split(s, "-")
 	if len(parts) != 2 {
@@ -143,6 +164,30 @@ func ParseQuarterDate(s string) (time.Time, error) {
 		return time.Date(year, time.September, 30, 0, 0, 0, 0, time.UTC), nil
 	case "Q4":
 		return time.Date(year, time.December, 31, 0, 0, 0, 0, time.UTC), nil
+	default:
+		return time.Time{}, fmt.Errorf("invalid quarter format in quarter date: %s", s)
+	}
+}
+
+func GetFirstDayOfQuarter(s string) (time.Time, error) {
+	parts := strings.Split(s, "-")
+	if len(parts) != 2 {
+		return time.Time{}, fmt.Errorf("invalid quarter date format: %s", s)
+	}
+	year, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return time.Time{}, fmt.Errorf("invalid year format in quarter date: %s", s)
+	}
+	quarter := parts[1]
+	switch quarter {
+	case "Q1":
+		return time.Date(year, time.January, 1, 0, 0, 0, 0, time.UTC), nil
+	case "Q2":
+		return time.Date(year, time.April, 1, 0, 0, 0, 0, time.UTC), nil
+	case "Q3":
+		return time.Date(year, time.July, 1, 0, 0, 0, 0, time.UTC), nil
+	case "Q4":
+		return time.Date(year, time.October, 1, 0, 0, 0, 0, time.UTC), nil
 	default:
 		return time.Time{}, fmt.Errorf("invalid quarter format in quarter date: %s", s)
 	}

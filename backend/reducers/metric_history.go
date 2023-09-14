@@ -49,7 +49,7 @@ func OrderDataAndCreateChart(KPIName string, periodId common.PeriodKey, unsorted
 			CommitComments:  stats.CommitComments,
 		})
 	}
-	firstDateOfPeriod, firstDateOfPeriodErr := GetFirstDateOfPeriod(periodId)
+	firstDateOfPeriod, firstDateOfPeriodErr := LegacyGetFirstComputationDateOfPeriod(periodId)
 	if firstDateOfPeriodErr != nil {
 		fmt.Println("Error:", firstDateOfPeriodErr.Error())
 		return common.KPIReport{}

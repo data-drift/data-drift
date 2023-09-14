@@ -122,7 +122,7 @@ func TestGetMetadataOfMetric(t *testing.T) {
 		1493*time.Hour + 49*time.Minute + 14*time.Second: {getDecimalFromString("100.44869295561106").Sub(decimal.NewFromInt(100)), getDecimalFromString("62.242523148148145"), 1683006553},
 		1541*time.Hour + 21*time.Minute + 32*time.Second: {getDecimalFromString("100.44869295561106").Sub(decimal.NewFromInt(100)), getDecimalFromString("64.22328703703704"), 1683177691},
 	}
-	firstDate, _ := GetFirstDateOfPeriod("2023-02")
+	firstDate, _ := LegacyGetFirstComputationDateOfPeriod("2023-02")
 	expected := MetricMetadata{
 		TimeGrain:       "month",
 		PeriodKey:       "2023-02",

@@ -132,7 +132,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 					periodKey = common.PeriodKey(periodTime.Format("2006-01-02"))
 				case common.Week:
 					_, week := periodTime.ISOWeek()
-					periodKey = common.PeriodKey(fmt.Sprintf("%d-W%d", periodTime.Year(), week))
+					periodKey = common.PeriodKey(fmt.Sprintf("%d-W%02d", periodTime.Year(), week))
 				case common.Month:
 					periodKey = common.PeriodKey(periodTime.Format("2006-01"))
 				case common.Quarter:
@@ -203,8 +203,9 @@ func updateMetric(lineCountAndKPIByDateByVersion common.Metrics, periodAndDimens
 	newLineCount := lineCountAndKPIByDateByVersion[periodAndDimensionKey].History[commitSha].Lines + 1
 	newKPI := kpi.Add(lineCountAndKPIByDateByVersion[periodAndDimensionKey].History[commitSha].KPI)
 
-	firstDateOfPeriod, _ := reducers.GetFirstDateOfPeriod(periodKey)
+	firstDateOfPeriod, _ := reducers.LegacyGetFirstComputationDateOfPeriod(periodKey)
 	isAfterPeriod := time.Unix(commitTimestamp, 0).After(firstDateOfPeriod)
+	urlQueryStringForCommitUrl, _ := reducers.GetQueryStringFiltersForPeriod(periodKey, dimension, dimensionValue)
 
 	lineCountAndKPIByDateByVersion[periodAndDimensionKey].History[commitSha] = common.CommitData{
 		Lines:           newLineCount,
@@ -212,7 +213,7 @@ func updateMetric(lineCountAndKPIByDateByVersion common.Metrics, periodAndDimens
 		CommitTimestamp: commitTimestamp,
 		CommitDate:      time.Unix(commitTimestamp, 0).Format("2006-01-02"),
 		IsAfterPeriod:   isAfterPeriod,
-		CommitUrl:       urlgen.BuildReportDiffUrl(reportBaseUrl, string(commitSha)),
+		CommitUrl:       urlgen.BuildReportDiffUrl(reportBaseUrl, string(commitSha), urlQueryStringForCommitUrl),
 		CommitComments:  commitMessages,
 	}
 }
