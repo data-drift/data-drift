@@ -506,7 +506,7 @@ func InitChangeLogReport(apiKey string, reportNotionPageId string, KPIInfo commo
 			},
 		},
 	}
-	log.Println("Creating ChangeLog database...", reportChangeLogCreateDatabaseParams)
+	log.Println("Creating ChangeLog database...")
 	changeLogDatabase, err := client.CreateDatabase(ctx, *reportChangeLogCreateDatabaseParams)
 	if err != nil {
 		log.Println("[DATADRIFT_ERROR]: err during changelog db creation", err.Error())
