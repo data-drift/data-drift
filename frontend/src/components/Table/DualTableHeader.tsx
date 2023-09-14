@@ -19,6 +19,13 @@ const StyledDateInput = styled.input`
   margin: 8px;
 `;
 
+const StyledClearFilters = styled.span`
+  text-decoration: underline;
+  color: ${(props) => props.theme.colors.text};
+  cursor: pointer;
+  margin-left: 16px;
+`;
+
 const useDualTableHeader = () => {
   const searchParams = new URLSearchParams(window.location.search);
   const urlStartDate = searchParams.get("startDate");
@@ -45,11 +52,22 @@ const useDualTableHeader = () => {
     setEndDate(newEndDate);
   };
 
+  const clearFilters = () => {
+    const searchParams = new URLSearchParams(window.location.search);
+    searchParams.delete("startDate");
+    searchParams.delete("endDate");
+    const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
+    window.history.pushState({ path: newUrl }, "", newUrl);
+    setStartDate("");
+    setEndDate("");
+  };
+
   return {
     startDate,
     endDate,
     handleStartDateChange,
     handleEndDateChange,
+    clearFilters,
   };
 };
 
@@ -74,6 +92,11 @@ const DualTableHeader = ({ state }: { state: DualTableHeaderState }) => {
         onChange={handleEndDateChange}
         title="End date excluded"
       />
+      {(startDate != "" || endDate != "") && (
+        <StyledClearFilters onClick={state.clearFilters}>
+          Clear Filters
+        </StyledClearFilters>
+      )}
     </StyledDatePicker>
   );
 };

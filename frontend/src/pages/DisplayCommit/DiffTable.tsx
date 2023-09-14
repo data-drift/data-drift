@@ -7,8 +7,6 @@ const filterDualTablePropsData = (
   startDate: string,
   endDate: string
 ): DualTableProps => {
-  console.log(dualTableProps);
-  console.log(startDate, endDate);
   const firstOccurence = dualTableProps.tableProps1.data.findIndex(
     (row, index) => {
       const row2 = dualTableProps.tableProps2.data[index];
