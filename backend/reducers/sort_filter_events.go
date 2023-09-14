@@ -62,11 +62,11 @@ func LegacyGetFirstComputationDateOfPeriod(periodKeyParam common.PeriodKey) (tim
 
 }
 
-func GetNextPeriod(periodKey common.PeriodKey) (common.PeriodKey, error) {
+func GetStartDateEndDateAndNextPeriod(periodKey common.PeriodKey) (time.Time, time.Time, common.PeriodKey, error) {
 	timegrain, timeGrainError := reports.GetTimeGrain(periodKey)
 	if timeGrainError != nil {
 		fmt.Println("Error:", timeGrainError.Error())
-		return "", timeGrainError
+		return time.Now(), time.Now(), "", timeGrainError
 	}
 	periodKeyString := string(periodKey)
 	switch timegrain {
@@ -74,7 +74,7 @@ func GetNextPeriod(periodKey common.PeriodKey) (common.PeriodKey, error) {
 		startDate, err := time.Parse("2006-01-02", periodKeyString)
 		nextStartDate := startDate.AddDate(0, 0, 1)
 		nextPeriodKey := common.PeriodKey(nextStartDate.Format("2006-01-02"))
-		return nextPeriodKey, err
+		return startDate, nextStartDate, nextPeriodKey, err
 
 	case common.Week:
 		startDate, err := reports.GetFirstDateOfYearISOWeek(periodKeyString)
@@ -82,38 +82,25 @@ func GetNextPeriod(periodKey common.PeriodKey) (common.PeriodKey, error) {
 		year, week := nextStartDate.ISOWeek()
 
 		nextPeriodKey := common.PeriodKey(fmt.Sprintf("%d-W%02d", year, week))
-		return nextPeriodKey, err
+		return startDate, nextStartDate, nextPeriodKey, err
 	case common.Month:
 		startDate, err := time.Parse("2006-01", periodKeyString)
 		nextStartDate := startDate.AddDate(0, 1, 0)
 		nextPeriodKey := common.PeriodKey(nextStartDate.Format("2006-01"))
-		return nextPeriodKey, err
+		return startDate, nextStartDate, nextPeriodKey, err
 	case common.Quarter:
 		startDate, err := reports.GetFirstDayOfQuarter(periodKeyString)
 		nextStartDate := startDate.AddDate(0, 3, 0)
 		nextPeriodKey := common.PeriodKey(fmt.Sprintf("%d-Q%d", nextStartDate.Year(), (nextStartDate.Month()-1)/3+1))
-		return nextPeriodKey, err
+		return startDate, nextStartDate, nextPeriodKey, err
 	case common.Year:
-		periodTime, err := time.Parse("2006", periodKeyString)
-		nextStartDate := periodTime.AddDate(1, 0, 0)
+		startDate, err := time.Parse("2006", periodKeyString)
+		nextStartDate := startDate.AddDate(1, 0, 0)
 		nextPeriodKey := common.PeriodKey(nextStartDate.Format("2006"))
-		return nextPeriodKey, err
+		return startDate, nextStartDate, nextPeriodKey, err
 
 	default:
 		fmt.Printf("Invalid time grain: %s", timegrain)
-		return periodKey, fmt.Errorf("invalid time grain: %s", timegrain)
+		return time.Now(), time.Now(), periodKey, fmt.Errorf("invalid time grain: %s", timegrain)
 	}
-}
-
-func GetFirstDateOfPeriodAndFirstDateOfNextPeriod(periodKey common.PeriodKey) (time.Time, time.Time, error) {
-	firstDate, err := LegacyGetFirstComputationDateOfPeriod(periodKey)
-	if err != nil {
-		return firstDate, time.Now(), err
-	}
-	nextPeriod, err := GetNextPeriod(periodKey)
-	if err != nil {
-		return firstDate, time.Now(), err
-	}
-	nextFirstDate, err := LegacyGetFirstComputationDateOfPeriod(nextPeriod)
-	return firstDate, nextFirstDate, err
 }
