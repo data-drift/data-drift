@@ -203,7 +203,7 @@ func updateMetric(lineCountAndKPIByDateByVersion common.Metrics, periodAndDimens
 	newLineCount := lineCountAndKPIByDateByVersion[periodAndDimensionKey].History[commitSha].Lines + 1
 	newKPI := kpi.Add(lineCountAndKPIByDateByVersion[periodAndDimensionKey].History[commitSha].KPI)
 
-	firstDateOfPeriod, _ := reducers.GetFirstDateOfPeriod(periodKey)
+	firstDateOfPeriod, _ := reducers.LegacyGetFirstComputationDateOfPeriod(periodKey)
 	isAfterPeriod := time.Unix(commitTimestamp, 0).After(firstDateOfPeriod)
 
 	lineCountAndKPIByDateByVersion[periodAndDimensionKey].History[commitSha] = common.CommitData{

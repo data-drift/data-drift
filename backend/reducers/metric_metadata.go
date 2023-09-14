@@ -63,7 +63,7 @@ func ProcessMetricMetadata(metricConfig common.MetricConfig, metrics common.Metr
 }
 
 func GetMetadataOfMetric(metric common.Metric) (MetricMetadata, error) {
-	firstDateOfPeriod, firstDateOfPeriodErr := GetFirstDateOfPeriod(metric.Period)
+	firstDateOfPeriod, firstDateOfPeriodErr := LegacyGetFirstComputationDateOfPeriod(metric.Period)
 	if firstDateOfPeriodErr != nil {
 		return MetricMetadata{}, firstDateOfPeriodErr
 	}

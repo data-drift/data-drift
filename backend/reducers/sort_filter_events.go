@@ -13,11 +13,11 @@ type ObjectWithDate interface {
 	Timestamp() int64
 }
 
-func FilterAndSortByCommitTimestamp[T ObjectWithDate](dataSortableArray []T, driftDay time.Time) []T {
+func FilterAndSortByCommitTimestamp[T ObjectWithDate](dataSortableArray []T, startDate time.Time) []T {
 	filteredArray := make([]T, 0, len(dataSortableArray))
 	for i := range dataSortableArray {
 		timestamp := time.Unix(dataSortableArray[i].Timestamp(), 0)
-		if timestamp.After(driftDay) {
+		if timestamp.After(startDate) {
 			filteredArray = append(filteredArray, dataSortableArray[i])
 		}
 	}
@@ -29,7 +29,7 @@ func FilterAndSortByCommitTimestamp[T ObjectWithDate](dataSortableArray []T, dri
 	return filteredArray
 }
 
-func GetFirstDateOfPeriod(periodKeyParam common.PeriodKey) (time.Time, error) {
+func LegacyGetFirstComputationDateOfPeriod(periodKeyParam common.PeriodKey) (time.Time, error) {
 	timegrain, timeGrainError := reports.GetTimeGrain(periodKeyParam)
 	periodKey := string(periodKeyParam)
 	var firstDate time.Time
@@ -103,4 +103,17 @@ func GetNextPeriod(periodKey common.PeriodKey) (common.PeriodKey, error) {
 		fmt.Printf("Invalid time grain: %s", timegrain)
 		return periodKey, fmt.Errorf("invalid time grain: %s", timegrain)
 	}
+}
+
+func GetFirstDateOfPeriodAndFirstDateOfNextPeriod(periodKey common.PeriodKey) (time.Time, time.Time, error) {
+	firstDate, err := LegacyGetFirstComputationDateOfPeriod(periodKey)
+	if err != nil {
+		return firstDate, time.Now(), err
+	}
+	nextPeriod, err := GetNextPeriod(periodKey)
+	if err != nil {
+		return firstDate, time.Now(), err
+	}
+	nextFirstDate, err := LegacyGetFirstComputationDateOfPeriod(nextPeriod)
+	return firstDate, nextFirstDate, err
 }
