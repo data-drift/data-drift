@@ -205,6 +205,7 @@ func updateMetric(lineCountAndKPIByDateByVersion common.Metrics, periodAndDimens
 
 	firstDateOfPeriod, _ := reducers.LegacyGetFirstComputationDateOfPeriod(periodKey)
 	isAfterPeriod := time.Unix(commitTimestamp, 0).After(firstDateOfPeriod)
+	urlQueryStringForCommitUrl, _ := reducers.GetQueryStringFiltersForPeriod(periodKey)
 
 	lineCountAndKPIByDateByVersion[periodAndDimensionKey].History[commitSha] = common.CommitData{
 		Lines:           newLineCount,
@@ -212,7 +213,7 @@ func updateMetric(lineCountAndKPIByDateByVersion common.Metrics, periodAndDimens
 		CommitTimestamp: commitTimestamp,
 		CommitDate:      time.Unix(commitTimestamp, 0).Format("2006-01-02"),
 		IsAfterPeriod:   isAfterPeriod,
-		CommitUrl:       urlgen.BuildReportDiffUrl(reportBaseUrl, string(commitSha), ""),
+		CommitUrl:       urlgen.BuildReportDiffUrl(reportBaseUrl, string(commitSha), urlQueryStringForCommitUrl),
 		CommitComments:  commitMessages,
 	}
 }

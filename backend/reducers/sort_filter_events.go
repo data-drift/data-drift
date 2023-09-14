@@ -104,3 +104,13 @@ func GetStartDateEndDateAndNextPeriod(periodKey common.PeriodKey) (time.Time, ti
 		return time.Now(), time.Now(), periodKey, fmt.Errorf("invalid time grain: %s", timegrain)
 	}
 }
+
+func GetQueryStringFiltersForPeriod(periodKey common.PeriodKey) (string, error) {
+	start, end, _, err := GetStartDateEndDateAndNextPeriod(periodKey)
+	if err != nil {
+		return "", err
+	}
+	startDateString := start.Format("2006-01-02")
+	endDateString := end.Format("2006-01-02")
+	return fmt.Sprintf("startDate=%s&endDate=%s", startDateString, endDateString), nil
+}
