@@ -105,12 +105,12 @@ func GetStartDateEndDateAndNextPeriod(periodKey common.PeriodKey) (time.Time, ti
 	}
 }
 
-func GetQueryStringFiltersForPeriod(periodKey common.PeriodKey) (string, error) {
+func GetQueryStringFiltersForPeriod(periodKey common.PeriodKey, periodAndDimensionKey common.PeriodAndDimensionKey) (string, error) {
 	start, end, _, err := GetStartDateEndDateAndNextPeriod(periodKey)
 	if err != nil {
 		return "", err
 	}
 	startDateString := start.Format("2006-01-02")
 	endDateString := end.Format("2006-01-02")
-	return fmt.Sprintf("startDate=%s&endDate=%s", startDateString, endDateString), nil
+	return fmt.Sprintf("startDate=%s&endDate=%s&periodAndDimensionKey=%s&periodKey=%s", startDateString, endDateString, periodAndDimensionKey, periodKey), nil
 }

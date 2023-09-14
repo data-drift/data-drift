@@ -205,7 +205,7 @@ func updateMetric(lineCountAndKPIByDateByVersion common.Metrics, periodAndDimens
 
 	firstDateOfPeriod, _ := reducers.LegacyGetFirstComputationDateOfPeriod(periodKey)
 	isAfterPeriod := time.Unix(commitTimestamp, 0).After(firstDateOfPeriod)
-	urlQueryStringForCommitUrl, _ := reducers.GetQueryStringFiltersForPeriod(periodKey)
+	urlQueryStringForCommitUrl, _ := reducers.GetQueryStringFiltersForPeriod(periodKey, periodAndDimensionKey)
 
 	lineCountAndKPIByDateByVersion[periodAndDimensionKey].History[commitSha] = common.CommitData{
 		Lines:           newLineCount,
