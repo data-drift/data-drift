@@ -2,6 +2,7 @@ package reducers
 
 import (
 	"fmt"
+	"net/url"
 	"sort"
 	"time"
 
@@ -105,12 +106,20 @@ func GetStartDateEndDateAndNextPeriod(periodKey common.PeriodKey) (time.Time, ti
 	}
 }
 
-func GetQueryStringFiltersForPeriod(periodKey common.PeriodKey, periodAndDimensionKey common.PeriodAndDimensionKey) (string, error) {
+func GetQueryStringFiltersForPeriod(periodKey common.PeriodKey, dimension common.Dimension, dimensionValue common.DimensionValue) (url.Values, error) {
+	query := url.Values{}
 	start, end, _, err := GetStartDateEndDateAndNextPeriod(periodKey)
 	if err != nil {
-		return "", err
+		return query, err
 	}
 	startDateString := start.Format("2006-01-02")
 	endDateString := end.Format("2006-01-02")
-	return fmt.Sprintf("startDate=%s&endDate=%s&periodAndDimensionKey=%s&periodKey=%s", startDateString, endDateString, periodAndDimensionKey, periodKey), nil
+	query.Set("startDate", startDateString)
+	query.Set("endDate", endDateString)
+	query.Set("periodKey", string(periodKey))
+	if dimension != "none" {
+		query.Set("dimension", string(dimension))
+		query.Set("dimensionValue", string(dimensionValue))
+	}
+	return query, nil
 }

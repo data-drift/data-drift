@@ -2,6 +2,7 @@ package urlgen
 
 import (
 	"fmt"
+	"net/url"
 
 	"github.com/data-drift/data-drift/common"
 )
@@ -19,7 +20,7 @@ func BuildReportDiffBaseUrl(installationId, repoOwner, repoName string) string {
 	return reportBaseUrl
 }
 
-func BuildReportDiffUrl(reportBaseUrl, commitSha, queryString string) string {
-	url := fmt.Sprintf("%s/%s?%s", reportBaseUrl, commitSha, queryString)
+func BuildReportDiffUrl(reportBaseUrl, commitSha string, queryString url.Values) string {
+	url := fmt.Sprintf("%s/%s?%s", reportBaseUrl, commitSha, queryString.Encode())
 	return url
 }
