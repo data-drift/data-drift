@@ -52,6 +52,7 @@ require (
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/shopspring/decimal v1.3.1
+	github.com/snabb/isoweek v1.0.3
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/oauth2 v0.7.0
 )

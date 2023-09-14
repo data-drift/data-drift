@@ -77,7 +77,7 @@ func GetNextPeriod(periodKey common.PeriodKey) (common.PeriodKey, error) {
 		return nextPeriodKey, err
 
 	case common.Week:
-		startDate, err := reports.ParseYearWeek(periodKeyString)
+		startDate, err := reports.GetFirstDateOfYearISOWeek(periodKeyString)
 		nextStartDate := startDate.AddDate(0, 0, 7)
 		year, week := nextStartDate.ISOWeek()
 
