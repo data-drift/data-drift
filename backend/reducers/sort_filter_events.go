@@ -61,3 +61,49 @@ func GetFirstDateOfPeriod(periodKeyParam common.PeriodKey) (time.Time, error) {
 	return firstDate, nil
 
 }
+
+func GetNextPeriod(periodKey common.PeriodKey) (common.PeriodKey, error) {
+	timegrain, timeGrainError := reports.GetTimeGrain(periodKey)
+	if timeGrainError != nil {
+		fmt.Println("Error:", timeGrainError.Error())
+		return "", timeGrainError
+	}
+	periodKeyString := string(periodKey)
+	switch timegrain {
+	case common.Day:
+		startDate, err := time.Parse("2006-01-02", periodKeyString)
+		nextStartDate := startDate.AddDate(0, 0, 1)
+		nextPeriodKey := common.PeriodKey(nextStartDate.Format("2006-01-02"))
+		return nextPeriodKey, err
+
+	case common.Week:
+		startDate, err := reports.ParseYearWeek(periodKeyString)
+		nextStartDate := startDate.AddDate(0, 0, 7)
+		year, week := nextStartDate.ISOWeek()
+
+		nextPeriodKey := common.PeriodKey(fmt.Sprintf("%d-W%02d", year, week))
+		return nextPeriodKey, err
+	case common.Month:
+		startDate, err := time.Parse("2006-01", periodKeyString)
+		nextStartDate := startDate.AddDate(0, 1, 0)
+		nextPeriodKey := common.PeriodKey(nextStartDate.Format("2006-01"))
+		return nextPeriodKey, err
+	case common.Quarter:
+		startDate, err := reports.ParseQuarterDate(periodKeyString)
+		// Take the first day of the month before adding 3 months, to avoid skiping a month on bisextil years
+		startDate = time.Date(startDate.Year(), startDate.Month(), 1, 0, 0, 0, 0, startDate.Location())
+		nextStartDate := startDate.AddDate(0, 3, 0)
+
+		nextPeriodKey := common.PeriodKey(fmt.Sprintf("%d-Q%d", nextStartDate.Year(), (nextStartDate.Month()-1)/3+1))
+		return nextPeriodKey, err
+	case common.Year:
+		periodTime, err := time.Parse("2006", periodKeyString)
+		nextStartDate := periodTime.AddDate(1, 0, 0)
+		nextPeriodKey := common.PeriodKey(nextStartDate.Format("2006"))
+		return nextPeriodKey, err
+
+	default:
+		fmt.Printf("Invalid time grain: %s", timegrain)
+		return periodKey, fmt.Errorf("invalid time grain: %s", timegrain)
+	}
+}

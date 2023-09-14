@@ -147,3 +147,27 @@ func ParseQuarterDate(s string) (time.Time, error) {
 		return time.Time{}, fmt.Errorf("invalid quarter format in quarter date: %s", s)
 	}
 }
+
+func GetFirstDayOfQuarter(s string) (time.Time, error) {
+	parts := strings.Split(s, "-")
+	if len(parts) != 2 {
+		return time.Time{}, fmt.Errorf("invalid quarter date format: %s", s)
+	}
+	year, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return time.Time{}, fmt.Errorf("invalid year format in quarter date: %s", s)
+	}
+	quarter := parts[1]
+	switch quarter {
+	case "Q1":
+		return time.Date(year, time.January, 1, 0, 0, 0, 0, time.UTC), nil
+	case "Q2":
+		return time.Date(year, time.April, 1, 0, 0, 0, 0, time.UTC), nil
+	case "Q3":
+		return time.Date(year, time.July, 1, 0, 0, 0, 0, time.UTC), nil
+	case "Q4":
+		return time.Date(year, time.October, 1, 0, 0, 0, 0, time.UTC), nil
+	default:
+		return time.Time{}, fmt.Errorf("invalid quarter format in quarter date: %s", s)
+	}
+}
