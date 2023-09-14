@@ -89,11 +89,8 @@ func GetNextPeriod(periodKey common.PeriodKey) (common.PeriodKey, error) {
 		nextPeriodKey := common.PeriodKey(nextStartDate.Format("2006-01"))
 		return nextPeriodKey, err
 	case common.Quarter:
-		startDate, err := reports.ParseQuarterDate(periodKeyString)
-		// Take the first day of the month before adding 3 months, to avoid skiping a month on bisextil years
-		startDate = time.Date(startDate.Year(), startDate.Month(), 1, 0, 0, 0, 0, startDate.Location())
+		startDate, err := reports.GetFirstDayOfQuarter(periodKeyString)
 		nextStartDate := startDate.AddDate(0, 3, 0)
-
 		nextPeriodKey := common.PeriodKey(fmt.Sprintf("%d-Q%d", nextStartDate.Year(), (nextStartDate.Month()-1)/3+1))
 		return nextPeriodKey, err
 	case common.Year:
