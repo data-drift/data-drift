@@ -7,28 +7,51 @@ const filterDualTablePropsData = (
   startDate: string,
   endDate: string
 ): DualTableProps => {
-  const firstOccurence = dualTableProps.tableProps1.data.findIndex((row) => {
-    return row.data.length > 0 && row.data[1].value >= startDate;
-  });
+  console.log(dualTableProps);
+  console.log(startDate, endDate);
+  const firstOccurence = dualTableProps.tableProps1.data.findIndex(
+    (row, index) => {
+      const row2 = dualTableProps.tableProps2.data[index];
 
-  const lastOccurence =
-    dualTableProps.tableProps1.data.findIndex((row) => {
-      return row.data.length > 0 && row.data[1].value >= endDate;
-    }) - 1;
+      return (
+        (row.data.length > 0 && row.data[1].value >= startDate) ||
+        (row2.data.length > 0 && row2.data[1].value >= startDate)
+      );
+    }
+  );
+
+  const lastOccurence = dualTableProps.tableProps1.data.findIndex(
+    (row, index) => {
+      const row2 = dualTableProps.tableProps2.data[index];
+      return (
+        (row.data.length > 0 &&
+          row.data[1].value != "_" &&
+          row.data[1].value >= endDate) ||
+        (row2.data.length > 0 &&
+          row2.data[1].value != "_" &&
+          row2.data[1].value >= endDate)
+      );
+    }
+  );
+
+  const lastOccurenceWithoutLastLine =
+    lastOccurence === -1 ? -1 : lastOccurence - 1;
+
+  console.log("firstOccurence", firstOccurence, "lastOccurence", lastOccurence);
 
   return {
     tableProps1: {
       ...dualTableProps.tableProps1,
       data: dualTableProps.tableProps1.data.slice(
         firstOccurence,
-        lastOccurence
+        lastOccurenceWithoutLastLine
       ),
     },
     tableProps2: {
       ...dualTableProps.tableProps2,
       data: dualTableProps.tableProps2.data.slice(
         firstOccurence,
-        lastOccurence
+        lastOccurenceWithoutLastLine
       ),
     },
   };
