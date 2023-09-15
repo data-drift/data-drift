@@ -68,16 +68,26 @@ Unlock targeted use-cases with specific tools on top of our versioning and diffi
 Here are some examples of how users leverage Datadrift.
 
 ## 🔔 Monitoring drift with custom alerting
-Become aware of unknown unknowns in your data quality with data or metric drift alerting. 
+  <a href="https://www.data-drift.io">
+    <img src="./datadrift-new-drift-alert.png" alt="DataDrift " width="800px"/>
+  </a>
 
 > How can you expect a data analyst to detect a data quality issue when all they see is a number that is slightly higher or lower on each report?
 
-Monitor the [quality and consistency of your reporting](https://www.data-drift.io/blog/why-data-consumers-do-not-trust-your-reporting-and-you-might-not-even-know-it) and metrics over time.
+Become aware of unknown unknowns in your data quality with data or metric drift alerting. Monitor the [quality and consistency of your reporting](https://www.data-drift.io/blog/why-data-consumers-do-not-trust-your-reporting-and-you-might-not-even-know-it) and metrics over time.
 
 ## 🔬 Troobleshooting & data reconciliation
+  <a href="https://www.data-drift.io">
+    <img src="./datadrift-changelog.png" alt="DataDrift " width="800px"/>
+  </a>
+
 Operationalize your monitoring and solve your underlying data quality issue with drill-down across historical data to understand the root cause of the problem.
 
 ## 🔄 Safe database/ERP/CRM migrations
+  <a href="https://www.data-drift.io">
+    <img src="./datadrift-diff-compare.png" alt="DataDrift " width="800px"/>
+  </a>
+
 Migrate without hassle and safely between tools with comparison and diff-checks before/after and within/across databases.
 
 ## 🧠 And much more
