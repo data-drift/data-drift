@@ -60,10 +60,12 @@ describe("parsePatch", () => {
     ]);
     expect(oldData.data[0].data[3]).toStrictEqual({
       value: "25",
+      type: "number",
       isEmphasized: true,
     });
     expect(newData.data[0].data[3]).toStrictEqual({
       value: "26",
+      type: "number",
       isEmphasized: true,
     });
   });

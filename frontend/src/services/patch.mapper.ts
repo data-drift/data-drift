@@ -116,7 +116,10 @@ const emptyRow = (csvColumnsLength: number): Row => ({
 
 const csvStringLineToRowData = (line: string, isEmphasized = false): Row => {
   return {
-    data: line.split(",").map((value) => ({ value })),
+    data: line.split(",").map((value) => ({
+      value,
+      type: Number.isNaN(Number(value)) ? "string" : "number",
+    })),
     isEmphasized,
   };
 };

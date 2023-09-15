@@ -47,10 +47,12 @@ const EllispsisTd = styled.td`
   background-color: ${(props) => props.theme.colors.background2};
 `;
 
+type DataType = "string" | "number" | "boolean";
+
 const StyledTd = styled.td<{
   diffType: TableProps["diffType"];
   isEmphasized: "cell" | "row" | undefined;
-  isUniqueKey?: boolean;
+  dataType: DataType;
 }>`
   // layout
   width: 100%;
@@ -58,7 +60,7 @@ const StyledTd = styled.td<{
   padding: var(--vertical-padding) var(--horizontal-padding);
   --vertical-padding: ${({ theme }) => theme.spacing(2)};
   --horizontal-padding: ${({ theme }) => theme.spacing(6)};
-  text-align: ${({ isUniqueKey }) => (isUniqueKey ? "left" : "center")};
+  text-align: ${({ dataType }) => (dataType === "number" ? "right" : "center")};
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -84,6 +86,8 @@ const StyledTd = styled.td<{
 export interface Datum {
   isEmphasized?: boolean;
   value: string;
+  type?: DataType;
+  diffValue?: number;
 }
 
 export interface Row {
@@ -129,7 +133,7 @@ export const Table: React.FC<TableProps> = ({ data, headers, diffType }) => (
               <StyledTd
                 key={`cell-${diffType}-${i}-${j}`}
                 diffType={diffType}
-                isUniqueKey={j === 0}
+                dataType={cell.type || "string"}
                 isEmphasized={
                   cell.isEmphasized
                     ? "cell"
