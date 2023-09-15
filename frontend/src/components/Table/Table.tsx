@@ -106,6 +106,24 @@ export interface TableProps {
   headers: string[];
 }
 
+const Difference = ({ diffValue }: { diffValue: number }) => (
+  <span>
+    (
+    {diffValue > 0 ? (
+      <>
+        <span style={{ color: "#0B6E99" }}>↑</span>
+        {diffValue.toLocaleString()}
+      </>
+    ) : (
+      <>
+        <span style={{ color: "#D9730D" }}>↓</span>
+        {-diffValue.toLocaleString()}
+      </>
+    )}
+    ){" "}
+  </span>
+);
+
 export const Table: React.FC<TableProps> = ({ data, headers, diffType }) => (
   <StyledTable>
     <colgroup>
@@ -143,6 +161,7 @@ export const Table: React.FC<TableProps> = ({ data, headers, diffType }) => (
                 }
                 title={cell.value}
               >
+                {cell.diffValue && <Difference diffValue={cell.diffValue} />}
                 {cell.value}
               </StyledTd>
             ))
