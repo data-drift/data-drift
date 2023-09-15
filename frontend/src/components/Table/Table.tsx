@@ -115,7 +115,7 @@ const Difference = ({
   diffType: "removed" | "added";
 }) => {
   const opacity = diffType === "removed" ? 0 : 1;
-  const color = diffValue > 0 ? "#0B6E99" : "#D9730D";
+  const color = diffValue > 0 ? "#0B6E99" : "#FFA344";
   return (
     <span style={{ opacity, color }}>
       (
