@@ -48,9 +48,9 @@ Tools, databases and warehouses have a hard time tracking and displaying histori
 DataDrift makes handling data history easy with modern and open-source version control tools for data. 
 
 ### Simple & ligthweight techno for all
-- **Easy to implement (<15min)**: Historize changes in 1 click. Intuitive to use for both technical and non-technical users
+- **Easy to implement (<15min)**: Add 1 line of code in your pipeline to historize data. Use the one-click install on your CRM, spreadsheet or any data source (coming soon, open an [issue](https://github.com/data-drift/data-drift/issues) to request a specific connector, or contribute to the community building it directly 😇)
 
-- **Cost efficient**: Reduce your storage and optimize your warehouse bill with our ligthweight storage for data history
+- **Free**: Reduce your storage and optimize your warehouse bill with our ligthweight storage for data history. Storage is done in a dedicated git repository, no additional cost if you use Github.
 
 ### Open-source, Open Architecture
 
