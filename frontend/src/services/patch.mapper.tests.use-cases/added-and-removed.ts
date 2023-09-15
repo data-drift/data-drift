@@ -50,7 +50,7 @@ export const expectedOldData: Row[] = [
       { value: "2023-02-Didier", type: "string" },
       { value: "Didier", type: "string" },
       { value: "2023-02", type: "string" },
-      { value: "40", type: "number", isEmphasized: true },
+      { value: "40", type: "number", isEmphasized: true, diffValue: -3 },
     ],
   },
   {

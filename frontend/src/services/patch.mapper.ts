@@ -112,6 +112,9 @@ export const parsePatch = (patch: string, headers: string[]) => {
               getOldIndexFromNewIndex(oldHeaders, headers)(cellIndex)
             ].value
           );
+        oldData.data[index].data[
+          getOldIndexFromNewIndex(oldHeaders, headers)(cellIndex)
+        ].diffValue = -cell.diffValue;
       }
     });
   });

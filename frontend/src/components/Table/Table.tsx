@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { theme } from "../../theme";
 
 const StyledTable = styled.table`
   background-color: ${(props) => props.theme.colors.background};
@@ -106,23 +107,37 @@ export interface TableProps {
   headers: string[];
 }
 
-const Difference = ({ diffValue }: { diffValue: number }) => (
-  <span>
-    (
-    {diffValue > 0 ? (
-      <>
-        <span style={{ color: "#0B6E99" }}>↑</span>
-        {diffValue.toLocaleString()}
-      </>
-    ) : (
-      <>
-        <span style={{ color: "#D9730D" }}>↓</span>
-        {-diffValue.toLocaleString()}
-      </>
-    )}
-    ){" "}
-  </span>
-);
+const Difference = ({
+  diffValue,
+  diffType,
+}: {
+  diffValue: number;
+  diffType: "removed" | "added";
+}) => {
+  const opacity = diffType === "removed" ? 0 : 1;
+  const color = diffValue > 0 ? "#0B6E99" : "#D9730D";
+  return (
+    <span style={{ opacity, color }}>
+      (
+      {diffValue > 0 ? (
+        <>
+          ↑{" "}
+          <span style={{ color: theme.colors.text }}>
+            {diffValue.toLocaleString()}
+          </span>
+        </>
+      ) : (
+        <>
+          ↓{" "}
+          <span style={{ color: theme.colors.text }}>
+            {-diffValue.toLocaleString()}
+          </span>
+        </>
+      )}
+      ){" "}
+    </span>
+  );
+};
 
 export const Table: React.FC<TableProps> = ({ data, headers, diffType }) => (
   <StyledTable>
@@ -161,7 +176,9 @@ export const Table: React.FC<TableProps> = ({ data, headers, diffType }) => (
                 }
                 title={cell.value}
               >
-                {cell.diffValue && <Difference diffValue={cell.diffValue} />}
+                {cell.diffValue && (
+                  <Difference diffValue={cell.diffValue} diffType={diffType} />
+                )}
                 {cell.value}
               </StyledTd>
             ))

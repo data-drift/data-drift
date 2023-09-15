@@ -358,6 +358,7 @@ exports[`parsePatch should handle large datasets 1`] = `
             "value": "1993-10-25",
           },
           {
+            "diffValue": -4.63,
             "isEmphasized": true,
             "type": "number",
             "value": "2.59",
@@ -634,6 +635,7 @@ exports[`parsePatch should handle when headers are in patch 1`] = `
             "value": "date_month",
           },
           {
+            "diffValue": NaN,
             "type": "string",
             "value": "country",
           },
@@ -738,26 +740,31 @@ exports[`parsePatch should handle when headers change 1`] = `
             "value": "FR",
           },
           {
+            "diffValue": -11.11,
             "isEmphasized": true,
             "type": "number",
             "value": "11.11",
           },
           {
+            "diffValue": 33,
             "isEmphasized": true,
             "type": "number",
             "value": "11.0",
           },
           {
+            "diffValue": 11,
             "isEmphasized": true,
             "type": "number",
             "value": "-11.0",
           },
           {
+            "diffValue": 11,
             "isEmphasized": true,
             "type": "number",
             "value": "-11.0",
           },
           {
+            "diffValue": -33.22,
             "isEmphasized": true,
             "type": "number",
             "value": "-11.0",
@@ -840,6 +847,7 @@ exports[`parsePatch should handle when headers reverse order 1`] = `
             "value": "FR",
           },
           {
+            "diffValue": -11.11,
             "isEmphasized": true,
             "type": "number",
             "value": "11.11",

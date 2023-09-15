@@ -62,6 +62,7 @@ describe("parsePatch", () => {
       value: "25",
       type: "number",
       isEmphasized: true,
+      diffValue: -1,
     });
     expect(newData.data[0].data[3]).toStrictEqual({
       value: "26",
