@@ -116,7 +116,7 @@ function DisplayCommit() {
           <b>{results.data.commitInfo.filename}</b> -{" "}
           <b>{results.data.commitInfo.date.toLocaleDateString()}</b>
           <a href={results.data.commitInfo.commitLink}>
-            <StyledIcon src="/src/assets/github-mark.svg" alt="GitHub" />
+            <StyledIcon src="/github-mark.svg" alt="GitHub" />
           </a>
           {"installationId" in results.params && (
             <a href={ddCommitListUrlFactory(results.params)}>
