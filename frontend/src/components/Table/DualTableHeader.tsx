@@ -19,7 +19,7 @@ const StyledDateInput = styled.input`
   margin: 8px;
 `;
 
-const StyledClearFilters = styled.span`
+const StyledUderlineButton = styled.span`
   text-decoration: underline;
   color: ${(props) => props.theme.colors.text};
   cursor: pointer;
@@ -73,7 +73,13 @@ const useDualTableHeader = () => {
 
 type DualTableHeaderState = ReturnType<typeof useDualTableHeader>;
 
-const DualTableHeader = ({ state }: { state: DualTableHeaderState }) => {
+const DualTableHeader = ({
+  state,
+  copyAction,
+}: {
+  state: DualTableHeaderState;
+  copyAction: () => void;
+}) => {
   const { startDate, endDate, handleStartDateChange, handleEndDateChange } =
     state;
 
@@ -93,10 +99,13 @@ const DualTableHeader = ({ state }: { state: DualTableHeaderState }) => {
         title="End date excluded"
       />
       {(startDate != "" || endDate != "") && (
-        <StyledClearFilters onClick={state.clearFilters}>
+        <StyledUderlineButton onClick={state.clearFilters}>
           Clear Filters
-        </StyledClearFilters>
+        </StyledUderlineButton>
       )}
+      <StyledUderlineButton onClick={() => copyAction()}>
+        Copy Table to Clipboard
+      </StyledUderlineButton>
     </StyledDatePicker>
   );
 };

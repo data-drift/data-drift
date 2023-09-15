@@ -117,23 +117,25 @@ const Difference = ({
   const opacity = diffType === "removed" ? 0 : 1;
   const color = diffValue > 0 ? "#0B6E99" : "#FFA344";
   return (
-    <span style={{ opacity, color }}>
+    <span style={{ opacity }}>
       (
-      {diffValue > 0 ? (
-        <>
-          ↑{" "}
-          <span style={{ color: theme.colors.text }}>
-            {diffValue.toLocaleString()}
-          </span>
-        </>
-      ) : (
-        <>
-          ↓{" "}
-          <span style={{ color: theme.colors.text }}>
-            {-diffValue.toLocaleString()}
-          </span>
-        </>
-      )}
+      <span style={{ color }}>
+        {diffValue > 0 ? (
+          <>
+            ▲{" "}
+            <span style={{ color: theme.colors.text }}>
+              {diffValue.toLocaleString()}
+            </span>
+          </>
+        ) : (
+          <>
+            ▼{" "}
+            <span style={{ color: theme.colors.text }}>
+              {diffValue.toLocaleString()}
+            </span>
+          </>
+        )}
+      </span>
       ){" "}
     </span>
   );

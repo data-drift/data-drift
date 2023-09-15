@@ -1,6 +1,7 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { DualTable, DualTableProps } from "../../components/Table/DualTable";
 import DualTableHeader from "../../components/Table/DualTableHeader";
+import { toTsv } from "../../services/tsv";
 
 const filterDualTablePropsData = (
   dualTableProps: DualTableProps,
@@ -76,11 +77,26 @@ export const DiffTable = ({
     ]
   );
 
-  console.log("filteredDualTableProps", filteredDualTableProps);
+  const copyInClipboard = useCallback(() => {
+    const tsvString = toTsv(dualTableProps);
+    // Copy to clipboard
+    navigator.clipboard
+      .writeText(tsvString)
+      .then(function () {
+        alert("Table copied to clipboard");
+      })
+      .catch(function (error) {
+        alert("Could not copy table to clipboard");
+        console.error(error);
+      });
+  }, [dualTableProps]);
 
   return (
     <>
-      <DualTableHeader state={dualTableHeaderState} />
+      <DualTableHeader
+        state={dualTableHeaderState}
+        copyAction={copyInClipboard}
+      />
       <DualTable {...filteredDualTableProps} />
     </>
   );
