@@ -76,6 +76,8 @@ export const DiffTable = ({
     ]
   );
 
+  console.log("filteredDualTableProps", filteredDualTableProps);
+
   return (
     <>
       <DualTableHeader state={dualTableHeaderState} />

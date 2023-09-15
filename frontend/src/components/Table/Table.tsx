@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { theme } from "../../theme";
 
 const StyledTable = styled.table`
   background-color: ${(props) => props.theme.colors.background};
@@ -47,10 +48,12 @@ const EllispsisTd = styled.td`
   background-color: ${(props) => props.theme.colors.background2};
 `;
 
+type DataType = "string" | "number" | "boolean";
+
 const StyledTd = styled.td<{
   diffType: TableProps["diffType"];
   isEmphasized: "cell" | "row" | undefined;
-  isUniqueKey?: boolean;
+  dataType: DataType;
 }>`
   // layout
   width: 100%;
@@ -58,7 +61,7 @@ const StyledTd = styled.td<{
   padding: var(--vertical-padding) var(--horizontal-padding);
   --vertical-padding: ${({ theme }) => theme.spacing(2)};
   --horizontal-padding: ${({ theme }) => theme.spacing(6)};
-  text-align: ${({ isUniqueKey }) => (isUniqueKey ? "left" : "center")};
+  text-align: ${({ dataType }) => (dataType === "number" ? "right" : "center")};
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -84,6 +87,8 @@ const StyledTd = styled.td<{
 export interface Datum {
   isEmphasized?: boolean;
   value: string;
+  type?: DataType;
+  diffValue?: number;
 }
 
 export interface Row {
@@ -101,6 +106,38 @@ export interface TableProps {
   // What are the headers
   headers: string[];
 }
+
+const Difference = ({
+  diffValue,
+  diffType,
+}: {
+  diffValue: number;
+  diffType: "removed" | "added";
+}) => {
+  const opacity = diffType === "removed" ? 0 : 1;
+  const color = diffValue > 0 ? "#0B6E99" : "#FFA344";
+  return (
+    <span style={{ opacity, color }}>
+      (
+      {diffValue > 0 ? (
+        <>
+          ↑{" "}
+          <span style={{ color: theme.colors.text }}>
+            {diffValue.toLocaleString()}
+          </span>
+        </>
+      ) : (
+        <>
+          ↓{" "}
+          <span style={{ color: theme.colors.text }}>
+            {-diffValue.toLocaleString()}
+          </span>
+        </>
+      )}
+      ){" "}
+    </span>
+  );
+};
 
 export const Table: React.FC<TableProps> = ({ data, headers, diffType }) => (
   <StyledTable>
@@ -129,7 +166,7 @@ export const Table: React.FC<TableProps> = ({ data, headers, diffType }) => (
               <StyledTd
                 key={`cell-${diffType}-${i}-${j}`}
                 diffType={diffType}
-                isUniqueKey={j === 0}
+                dataType={cell.type || "string"}
                 isEmphasized={
                   cell.isEmphasized
                     ? "cell"
@@ -139,6 +176,9 @@ export const Table: React.FC<TableProps> = ({ data, headers, diffType }) => (
                 }
                 title={cell.value}
               >
+                {cell.diffValue && (
+                  <Difference diffValue={cell.diffValue} diffType={diffType} />
+                )}
                 {cell.value}
               </StyledTd>
             ))

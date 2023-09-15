@@ -102,6 +102,23 @@ export const parsePatch = (patch: string, headers: string[]) => {
     }
   }
 
+  newData.data.forEach((row, index) => {
+    row.data.forEach((cell, cellIndex) => {
+      if (cell.isEmphasized && cell.type === "number") {
+        cell.diffValue =
+          Number(cell.value) -
+          Number(
+            oldData.data[index].data[
+              getOldIndexFromNewIndex(oldHeaders, headers)(cellIndex)
+            ].value
+          );
+        oldData.data[index].data[
+          getOldIndexFromNewIndex(oldHeaders, headers)(cellIndex)
+        ].diffValue = -cell.diffValue;
+      }
+    });
+  });
+
   return { oldData, newData };
 };
 
@@ -116,7 +133,10 @@ const emptyRow = (csvColumnsLength: number): Row => ({
 
 const csvStringLineToRowData = (line: string, isEmphasized = false): Row => {
   return {
-    data: line.split(",").map((value) => ({ value })),
+    data: line.split(",").map((value) => ({
+      value,
+      type: Number.isNaN(Number(value)) ? "string" : "number",
+    })),
     isEmphasized,
   };
 };
