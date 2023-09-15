@@ -21,87 +21,77 @@
   </a>
 </p>
 
-<h1 align="center" >The Context Layer for your Metrics</h1>
-<p align="center">Supercharge your semantic layer with context for your data consumers.
-Build actionnable and trusted metrics with changelog, monitoring and centralized interpretation.
+<h1 align="center" >Data versioning and diffing</h1>
+
+<p align="center"> Datadrift is an agnostic and lightweight storage and version-control technology to track changes to mutable data sources
 </p>
 
-<p align="center"><a href="https://data-drift.io">Website</a> · <a href="https://www.data-drift.io/blog">Blog</a> · <a href="https://github.com/data-drift/data-drift/issues">Issues</p>
-</br>
+<p align="center"><a href="https://data-drift.io">Website</a> · <a href="https://www.data-drift.io/blog">Blog</a> · <a href="https://github.com/data-drift/data-drift/issues">Issues
+</p>
 
 <p align="center">
   <a href="https://www.data-drift.io">
-    <img src="./datadrift-new-drift.png" alt="DataDrift hero with metric volatility charts" />
+    <img src="./datadrift-storage-diff-schema.png" alt="DataDrift " />
   </a>
 </p>
-</br>
+
 
 # 👋 About
 
-## The Problem: Data consumers interact with raw metrics only. Context is key to make metrics trusted and actionable.
+## 🥵 Storing and handling data history is complex and expensive
+Tools, databases and warehouses have a hard time tracking and displaying historical changes.
+- For a very large majority of companies, there no access to historical state of their own data (ie. how data changes over time)
 
-</br>
-Most data consumers never query a data warehouse table, yet use data on a daily basis through the lens of metrics.
+- For a selected few, keeping track of historical changes is made at a great cost of data engineering and outdated modeling trade-offs
 
-To trust metrics and make decisions based on them, we need to guarante the quality of the metrics itself (not only the underlying tables) and give (a lot of) context around it.
+## 👉 Open-source versioned storage and dedicated tools to work with data history
+DataDrift makes handling data history easy with modern and open-source version control tools for data. 
 
-</br>
-Context is vital because is gives data consumers awareness of:
+### Simple & ligthweight techno for all
+- **Easy to implement (<15min)**: Historize changes in 1 click. Intuitive to use for both technical and non-technical users
 
-- **Computation**: how a metric was calculated and associated caveats
+- **Cost efficient**: Reduce your storage and optimize your warehouse bill with our ligthweight storage for data history
 
-- **Governance**: who computed the metric, who reviewed it and who acts on it
+### Open-source, Open Architecture
 
-- **Changelog**: when was the metric computed, when was it last updated and what was the impact of the change
+- **Secure**: Deploy on your own infra to keep 100% control over your data and access
 
-- **Historical trajectory**: what happened to the metric overtime to prevent misinterpretation (remember the reason of that single unexpected revenue drop last quarter?)
+- **Flexible**: compose your own Datadrift based on our building blocks
 
-</br>
-<p align="center">
-  <a href="https://www.data-drift.io">
-    <img src="./datadrift-repo-meme.png" alt="DataDrift hero with metric volatility charts" />
-  </a>
-</p>
-Data teams be like...(yes, providing context is hard)
+- **Integrated**: not another tool to manage in your stack, DataDrift is API-first and stays within your current tools
 
 </br>
 
-## The Solution: Datadrift, the open-source context layer for data-driven companies
+# ⚡️ Use cases
+Unlock targeted use-cases with specific tools on top of our versioning and diffing technology. 
 
-- Comprehensive **metadata** to certify a quality standard for metrics
+Here are some examples of how users leverage Datadrift.
 
-- Easy governance with **version control and historisation**
+## 🔔 Monitoring drift with custom alerting
+Become aware of unknown unknowns in your data quality with data or metric drift alerting. 
 
-- Usable **changelog and audit trail** of a metric lifecycle for data consumers
+> How can you expect a data analyst to detect a data quality issue when all they see is a number that is slightly higher or lower on each report?
 
-- Visibility and **centralized knowledge** of a metric’s historical trajectory
+Monitor the [quality and consistency of your reporting](https://www.data-drift.io/blog/why-data-consumers-do-not-trust-your-reporting-and-you-might-not-even-know-it) and metrics over time.
 
-</br>
+## 🔬 Troobleshooting & data reconciliation
+Operationalize your monitoring and solve your underlying data quality issue with drill-down across historical data to understand the root cause of the problem.
 
-**Open-source, Open Architecture:**
+## 🔄 Safe database/ERP/CRM migrations
+Migrate without hassle and safely between tools with comparison and diff-checks before/after and within/across databases.
 
-- **Flexible**: compose your own context layer based on our building blocks
-
-- **Secure**: deploy on your own infra to keep control over your data
-
-- **Integrated**: not another tool to manage in your stack, use datadrift directly from current tools (dbt, BI)
-
-</br>
-<p align="center">
-  <a href="https://www.data-drift.io">
-    <img src="./datadrift-stack-schema.png" alt="Headless context for your metrics, wherever they are" />
-  </a>
-</p>
+## 🧠 And much more
+We'd love to hear from you if you have any other use case. Just open a new [issue](https://github.com/data-drift/data-drift/issues) to tell us more about it and see how we could help!
 
 </br>
 
 # 🚀 Quickstart
 
-## Version-control your key metrics with Datagit
+## Install our versioning and diffing library
 
-[Install Datagit](https://github.com/data-drift/data-drift/tree/main/tools/datagit#datagit) to historise and diff-checks your metrics' underlying data.
+[Install Datagit](https://github.com/data-drift/data-drift/tree/main/tools/datagit#datagit) to historise and diff-checks the data you want.
 
-This is a mandatory step to generate context for your metrics. You can [learn more about Datagit in this article](https://www.data-drift.io/blog/git-for-your-data).
+This is a mandatory step to unlock any use cases on top i. You can [learn more about Datagit in this article](https://www.data-drift.io/blog/git-for-your-data).
 
 ## Deploy Datadrift locally
 
@@ -131,9 +121,7 @@ We 💚 contributions big and small. In priority order (although everything is 
 
 ## Coming later this year
 
-🗓 Sharing via Slack & emails
-
-🗓 Warehouse native integration
+🗓 Warehouse (BigQuery, Snowflake) & databases (Postgres, MongoDB) native integrations
 
 🗓 BI tools integration
 
