@@ -67,6 +67,7 @@ describe("parsePatch", () => {
       value: "26",
       type: "number",
       isEmphasized: true,
+      diffValue: 1,
     });
   });
 

@@ -102,6 +102,20 @@ export const parsePatch = (patch: string, headers: string[]) => {
     }
   }
 
+  newData.data.forEach((row, index) => {
+    row.data.forEach((cell, cellIndex) => {
+      if (cell.isEmphasized && cell.type === "number") {
+        cell.diffValue =
+          Number(cell.value) -
+          Number(
+            oldData.data[index].data[
+              getOldIndexFromNewIndex(oldHeaders, headers)(cellIndex)
+            ].value
+          );
+      }
+    });
+  });
+
   return { oldData, newData };
 };
 

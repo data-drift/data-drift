@@ -143,7 +143,7 @@ export const expectedNewData: Row[] = [
       { value: "2023-02-Didier", type: "string" },
       { value: "Didier", type: "string" },
       { value: "2023-02", type: "string" },
-      { value: "43", type: "number", isEmphasized: true },
+      { value: "43", type: "number", isEmphasized: true, diffValue: 3 },
     ],
   },
   {
