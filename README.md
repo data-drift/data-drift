@@ -76,7 +76,7 @@ Here are some examples of how users leverage Datadrift.
 
 Become aware of unknown unknowns in your data quality with data or metric drift alerting. Monitor the [quality and consistency of your reporting](https://www.data-drift.io/blog/why-data-consumers-do-not-trust-your-reporting-and-you-might-not-even-know-it) and metrics over time.
 
-## 🔬 Troobleshooting & data reconciliation
+## 🔬 Troubleshooting & data reconciliation
   <a href="https://www.data-drift.io">
     <img src="./datadrift-changelog-dark.png" alt="DataDrift metric drift changelog" width="800px"/>
   </a>
