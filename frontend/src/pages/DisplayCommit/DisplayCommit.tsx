@@ -1,7 +1,7 @@
 import { getCommitFiles, getCsvHeaders } from "../../services/github";
 import { parsePatch } from "../../services/patch.mapper";
 import { Params, useLoaderData } from "react-router";
-import { getPatchAndHeader } from "../../services/data-drift";
+import { getConfig, getPatchAndHeader } from "../../services/data-drift";
 import styled from "@emotion/styled";
 import { DiffTable } from "./DiffTable";
 
@@ -66,12 +66,15 @@ const getCommitDiffFromDataDrift = async ({
   const { installationId, owner, repo, commitSHA } =
     assertParamsHasInstallationIs(params);
 
-  const { patch, headers, ...commitInfo } = await getPatchAndHeader({
-    installationId,
-    owner,
-    repo,
-    commitSHA,
-  });
+  const [{ patch, headers, ...commitInfo }] = await Promise.all([
+    getPatchAndHeader({
+      installationId,
+      owner,
+      repo,
+      commitSHA,
+    }),
+    getConfig({ installationId, owner, repo }),
+  ]);
 
   const { oldData, newData } = parsePatch(patch, headers);
   return {
