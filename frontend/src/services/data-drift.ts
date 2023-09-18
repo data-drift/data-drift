@@ -190,8 +190,15 @@ const getConfigFromApi = async (params: {
   return result.data;
 };
 
-const getConfigFromSessionStorage = (): DDConfig | null => {
-  const config = sessionStorage.getItem("config");
+const configNameBuilder = (owner: string, repo: string) => {
+  return `config-${owner}/${repo}`;
+};
+
+const getConfigFromSessionStorage = (
+  owner: string,
+  repo: string
+): DDConfig | null => {
+  const config = sessionStorage.getItem(configNameBuilder(owner, repo));
   if (config) {
     return JSON.parse(config) as DDConfig;
   } else {
@@ -199,8 +206,15 @@ const getConfigFromSessionStorage = (): DDConfig | null => {
   }
 };
 
-const storeConfigInSessionStorage = (config: DDConfig) => {
-  sessionStorage.setItem("config", JSON.stringify(config));
+const storeConfigInSessionStorage = (
+  owner: string,
+  repo: string,
+  config: DDConfig
+) => {
+  sessionStorage.setItem(
+    configNameBuilder(owner, repo),
+    JSON.stringify(config)
+  );
 };
 
 export const getConfig = async (params: {
@@ -208,11 +222,14 @@ export const getConfig = async (params: {
   owner: string;
   repo: string;
 }) => {
-  const configFromStorage = getConfigFromSessionStorage();
+  const configFromStorage = getConfigFromSessionStorage(
+    params.owner,
+    params.repo
+  );
   if (configFromStorage) {
     return configFromStorage;
   }
   const configFromApi = await getConfigFromApi(params);
-  storeConfigInSessionStorage(configFromApi);
+  storeConfigInSessionStorage(params.owner, params.repo, configFromApi);
   return configFromApi;
 };
