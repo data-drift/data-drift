@@ -1,5 +1,5 @@
 import { Params, useLoaderData } from "react-router";
-import { getCommitList } from "../services/data-drift";
+import { getCommitList, getConfig } from "../services/data-drift";
 import { CommitList } from "../components/Commits/CommitList";
 
 function assertParamsIsDefined(
@@ -24,8 +24,11 @@ const loader = async ({
   params: Params<"installationId" | "owner" | "repo">;
 }) => {
   assertParamsIsDefined(params);
-  const result = await getCommitList(params);
-  return { data: result.data, params };
+  const [result, config] = await Promise.all([
+    getCommitList(params),
+    getConfig(params),
+  ]);
+  return { data: result.data, params, config };
 };
 
 type LoaderData = Awaited<ReturnType<typeof loader>>;
