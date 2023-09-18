@@ -169,3 +169,23 @@ export const ddCommitDiffUrlFactory = (params: {
 }) => {
   return `/report/${params.installationId}/${params.owner}/${params.repo}/commit/${params.commitSha}`;
 };
+
+type DDConfigMetric = {
+  parents: string[] | null;
+};
+
+type DDConfig = {
+  metrics: DDConfigMetric[];
+};
+
+export const getConfig = async (params: {
+  installationId: string;
+  owner: string;
+  repo: string;
+}) => {
+  const result = await axios.get<DDConfig>(
+    `${DATA_DRIFT_API_URL}/config/${params.owner}/${params.repo}`,
+    { headers: { "Installation-Id": params.installationId } }
+  );
+  return result.data;
+};
