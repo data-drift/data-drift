@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/data-drift/data-drift/common"
@@ -214,6 +215,32 @@ func VerifyConfigFile(client *github.Client, RepoOwner string, RepoName string, 
 		return common.Config{}, err
 	}
 	return config, nil
+}
+
+func GetConfigHandler(c *gin.Context) {
+	InstallationId, err := strconv.ParseInt(c.Request.Header.Get("Installation-Id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err})
+		return
+	}
+	owner := c.Param("owner")
+	repo := c.Param("repo")
+	client, err := CreateClientFromGithubApp(InstallationId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err})
+		return
+	}
+	ctx := context.Background()
+
+	config, err := VerifyConfigFile(client, owner, repo, ctx)
+	if err != nil {
+		log.Println(err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Could not get config"})
+		return
+	}
+	config.NotionAPIToken = ""
+	config.NotionDatabaseID = ""
+	c.JSON(http.StatusOK, gin.H{"config": config})
 }
 
 func ValidateConfigHandler(c *gin.Context) {
