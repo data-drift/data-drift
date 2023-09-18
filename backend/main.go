@@ -57,6 +57,7 @@ func main() {
 	router.GET("metrics/:metric-name/cohorts/:timegrain", metrics.GetMetricCohort)
 	router.GET("metrics/:metric-name/reports", metrics.GetMetricReport)
 
+	router.GET("config/:owner/:repo", github.GetConfigHandler)
 	router.POST("validate-config", github.ValidateConfigHandler)
 
 	router.Run(":" + port)
