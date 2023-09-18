@@ -101,16 +101,27 @@ const StyledIcon = styled.img`
   vertical-align: middle;
 `;
 
-const ddCommitListUrlFactory = (params: {
-  installationId: string;
-  owner: string;
-  repo: string;
-}) => {
-  return `/report/${params.installationId}/${params.owner}/${params.repo}/commits`;
+const ddCommitListUrlFactory = (
+  params: {
+    installationId: string;
+    owner: string;
+    repo: string;
+  },
+  queryParams?: { periodKey: string; fileName: string; driftDate: string }
+) => {
+  const url = `/report/${params.installationId}/${params.owner}/${params.repo}/commits`;
+  if (queryParams) {
+    const urlQueryParams = new URLSearchParams(queryParams).toString();
+    return url + "?" + urlQueryParams;
+  }
+  return url;
 };
 
 function DisplayCommit() {
   const results = useLoaderData() as LoaderData;
+
+  const searchParams = new URLSearchParams(window.location.search);
+  const periodKey = searchParams.get("periodKey") as string;
 
   return (
     <>
@@ -122,7 +133,13 @@ function DisplayCommit() {
             <StyledIcon src="/github-mark.svg" alt="GitHub" />
           </a>
           {"installationId" in results.params && (
-            <a href={ddCommitListUrlFactory(results.params)}>
+            <a
+              href={ddCommitListUrlFactory(results.params, {
+                periodKey,
+                fileName: results.data.commitInfo.filename,
+                driftDate: results.data.commitInfo.date.toISOString(),
+              })}
+            >
               <StyledButton>View list of commits</StyledButton>
             </a>
           )}
