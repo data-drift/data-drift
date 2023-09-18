@@ -24,6 +24,13 @@ export const DriftCard = ({
   parentData: string[];
 }) => {
   const [isChecked, setIsChecked] = useState(false);
+  const [childChecked, setChildChecked] = useState(parentData.map(() => false));
+
+  const handleChildChecked = (index: number) => {
+    const newChildChecked = [...childChecked];
+    newChildChecked[index] = !newChildChecked[index];
+    setChildChecked(newChildChecked);
+  };
 
   return (
     <DriftCardContainer>
@@ -46,8 +53,15 @@ export const DriftCard = ({
         <div style={{ display: "flex", flexDirection: "column" }}>
           <b style={{ alignSelf: "baseline" }}>Parent Data:</b>
           <ul>
-            {parentData.map((parent) => (
-              <li key={parent}>{parent}</li>
+            {parentData.map((parent, index) => (
+              <li key={parent}>
+                <input
+                  type="checkbox"
+                  checked={childChecked[index]}
+                  onChange={() => handleChildChecked(index)}
+                />
+                {parent}
+              </li>
             ))}
           </ul>
         </div>
