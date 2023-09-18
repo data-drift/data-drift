@@ -178,7 +178,7 @@ type DDConfig = {
   metrics: DDConfigMetric[];
 };
 
-export const getConfig = async (params: {
+const getConfigFromApi = async (params: {
   installationId: string;
   owner: string;
   repo: string;
@@ -188,4 +188,31 @@ export const getConfig = async (params: {
     { headers: { "Installation-Id": params.installationId } }
   );
   return result.data;
+};
+
+const getConfigFromSessionStorage = (): DDConfig | null => {
+  const config = sessionStorage.getItem("config");
+  if (config) {
+    return JSON.parse(config) as DDConfig;
+  } else {
+    return null;
+  }
+};
+
+const storeConfigInSessionStorage = (config: DDConfig) => {
+  sessionStorage.setItem("config", JSON.stringify(config));
+};
+
+export const getConfig = async (params: {
+  installationId: string;
+  owner: string;
+  repo: string;
+}) => {
+  const configFromStorage = getConfigFromSessionStorage();
+  if (configFromStorage) {
+    return configFromStorage;
+  }
+  const configFromApi = await getConfigFromApi(params);
+  storeConfigInSessionStorage(configFromApi);
+  return configFromApi;
 };
