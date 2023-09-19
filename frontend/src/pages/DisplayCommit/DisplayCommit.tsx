@@ -76,11 +76,21 @@ const getCommitDiffFromDataDrift = async ({
     getConfig({ installationId, owner, repo }),
   ]);
 
-  const { oldData, newData } = parsePatch(patch, headers);
-  return {
-    data: { tableProps1: oldData, tableProps2: newData, commitInfo },
-    params: { owner, repo, commitSHA, installationId },
-  };
+  try {
+    const { oldData, newData } = parsePatch(patch, headers);
+    return {
+      data: { tableProps1: oldData, tableProps2: newData, commitInfo },
+      params: { owner, repo, commitSHA, installationId },
+    };
+  } catch (e) {
+    return {
+      data: {
+        commitInfo,
+      },
+      error: e,
+      params: { owner, repo, commitSHA, installationId },
+    };
+  }
 };
 
 type LoaderData = Awaited<
@@ -145,7 +155,14 @@ function DisplayCommit() {
           )}
         </StyledSpan>
       )}
-      {results && results.data && <DiffTable dualTableProps={results.data} />}
+      {results && "error" in results && <div>{`${String(results.error)}`}</div>}
+      {results &&
+        results.data &&
+        "tableProps1" in results.data &&
+        results.data.tableProps1 &&
+        "tableProps2" in results.data && (
+          <DiffTable dualTableProps={results.data} />
+        )}
     </>
   );
 }
