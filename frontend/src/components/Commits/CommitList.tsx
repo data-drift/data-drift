@@ -44,7 +44,14 @@ export const CommitList = ({
           return hoursDiff <= 12;
         })
       : data;
-    return filteredData;
+
+    const dataWithIsParentData = filteredData.map((commit) => ({
+      ...commit,
+      isParentData: filters.parentData.parentData.some((parent) =>
+        commit.commit.message.includes(parent)
+      ),
+    }));
+    return dataWithIsParentData;
   }, [data, filters]);
   return (
     <div>
@@ -66,6 +73,7 @@ export const CommitList = ({
               }
               name={commit.commit.message}
               commitUrl={commitUrl}
+              isParentData={commit.isParentData}
             />
           );
         })

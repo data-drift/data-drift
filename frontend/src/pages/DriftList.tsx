@@ -44,7 +44,10 @@ const loader = async ({
   if (queryParamsAreDefined(urlParams)) {
     const urlParamsWithParent = {
       ...urlParams,
-      parentData: ["metrics/ride_daily_revenue.csv"],
+      parentData: [
+        "metrics/ride_daily_revenue.csv",
+        "data/act_entity_history_finance/organisation_bop_eop_client.csv",
+      ],
     };
     return {
       data: result.data,

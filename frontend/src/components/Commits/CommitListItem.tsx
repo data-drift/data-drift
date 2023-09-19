@@ -5,6 +5,7 @@ type CommitListItemProps = {
   date: Date | null;
   name: string;
   commitUrl: string;
+  isParentData: boolean;
 };
 
 export const CommitListItem = ({
@@ -12,6 +13,7 @@ export const CommitListItem = ({
   date,
   name,
   commitUrl,
+  isParentData,
 }: CommitListItemProps) => {
   return (
     <div
@@ -47,6 +49,18 @@ export const CommitListItem = ({
           >
             {type}
           </span>
+          {isParentData && (
+            <span
+              style={{
+                backgroundColor: theme.colors.secondary,
+                borderRadius: "0",
+                padding: "4px 8px",
+                fontWeight: "bold",
+              }}
+            >
+              Parent Data
+            </span>
+          )}
         </div>
         {date && <span style={{ color: "#888" }}>{date.toLocaleString()}</span>}
       </div>
