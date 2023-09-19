@@ -23,9 +23,9 @@ function assertParamsIsDefined(
 function extractParentsFromConfig(
   config: DDConfig,
   filepath: string
-): DDConfig["metrics"][number]["parents"] {
+): NonNullable<DDConfig["metrics"][number]["parents"]> {
   const metric = config.metrics.find((metric) => metric.filepath === filepath);
-  return metric ? metric.parents : [];
+  return metric ? metric.parents || [] : [];
 }
 
 function queryParamsAreDefined(params: Record<string, string>): params is {
@@ -52,10 +52,7 @@ const loader = async ({
   if (queryParamsAreDefined(urlParams)) {
     const urlParamsWithParent = {
       ...urlParams,
-      parentData: [
-        "metrics/ride_daily_revenue.csv",
-        "data/act_entity_history_finance/organisation_bop_eop_client.csv",
-      ],
+      parentData: extractParentsFromConfig(config, urlParams.filepath),
     };
     return {
       data: result.data,

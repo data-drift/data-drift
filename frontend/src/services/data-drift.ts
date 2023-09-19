@@ -172,7 +172,7 @@ export const ddCommitDiffUrlFactory = (params: {
 
 type DDConfigMetric = {
   filepath: string;
-  parents: string[] | null;
+  parents?: string[] | null;
 };
 
 export type DDConfig = {
@@ -184,11 +184,11 @@ const getConfigFromApi = async (params: {
   owner: string;
   repo: string;
 }) => {
-  const result = await axios.get<DDConfig>(
+  const result = await axios.get<{ config: DDConfig }>(
     `${DATA_DRIFT_API_URL}/config/${params.owner}/${params.repo}`,
     { headers: { "Installation-Id": params.installationId } }
   );
-  return result.data;
+  return result.data.config;
 };
 
 const configNameBuilder = (owner: string, repo: string) => {
