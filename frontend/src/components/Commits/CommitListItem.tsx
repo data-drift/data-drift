@@ -64,7 +64,7 @@ export const CommitListItem = ({
         </div>
         {date && <span style={{ color: "#888" }}>{date.toLocaleString()}</span>}
       </div>
-      <div style={{ marginTop: "8px" }}>
+      <div>
         <p
           dangerouslySetInnerHTML={{ __html: name.replace(/\n/g, "<br/>") }}
         ></p>

@@ -87,7 +87,6 @@ export const CommitList = ({
             display: "flex",
             flexDirection: "column",
             alignItems: "flex-start",
-            width: "100%",
           }}
         >
           No commits found

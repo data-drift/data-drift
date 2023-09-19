@@ -67,7 +67,13 @@ const DriftCard = (state: DriftCardState) => {
         {new Date(state.driftDate.driftDate).toLocaleString()}
       </div>
       {state.parentData.parentData.length > 0 && (
-        <div style={{ display: "flex", flexDirection: "column" }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            textAlign: "left",
+          }}
+        >
           <b style={{ alignSelf: "baseline" }}>Parent Data:</b>
           <ul>
             {state.parentData.parentData.map((parent, index) => (

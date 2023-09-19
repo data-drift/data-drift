@@ -171,10 +171,11 @@ export const ddCommitDiffUrlFactory = (params: {
 };
 
 type DDConfigMetric = {
+  filepath: string;
   parents: string[] | null;
 };
 
-type DDConfig = {
+export type DDConfig = {
   metrics: DDConfigMetric[];
 };
 

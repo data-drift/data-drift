@@ -1,5 +1,5 @@
 import { Params, useLoaderData } from "react-router";
-import { getCommitList, getConfig } from "../services/data-drift";
+import { DDConfig, getCommitList, getConfig } from "../services/data-drift";
 import { CommitList } from "../components/Commits/CommitList";
 import DriftCard from "../components/Commits/DriftCard";
 import styled from "@emotion/styled";
@@ -18,6 +18,14 @@ function assertParamsIsDefined(
     return;
   }
   throw new Error("Params is not defined");
+}
+
+function extractParentsFromConfig(
+  config: DDConfig,
+  filepath: string
+): DDConfig["metrics"][number]["parents"] {
+  const metric = config.metrics.find((metric) => metric.filepath === filepath);
+  return metric ? metric.parents : [];
 }
 
 function queryParamsAreDefined(params: Record<string, string>): params is {
@@ -73,8 +81,10 @@ type LoaderData = Awaited<ReturnType<typeof loader>>;
 
 const DriftListContainer = styled.div`
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   gap: 8px;
+  padding: 16px;
+  width: "100%";
 `;
 
 const DriftListPage = () => {
