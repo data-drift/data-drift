@@ -23,8 +23,8 @@ const useDriftCard = ({
   driftDate: string;
   parentData: string[];
 }) => {
-  const [isChecked, setIsChecked] = useState(false);
-  const [childChecked, setChildChecked] = useState(parentData.map(() => false));
+  const [isChecked, setIsChecked] = useState(true);
+  const [childChecked, setChildChecked] = useState(parentData.map(() => true));
 
   const handleChildChecked = (index: number) => {
     const newChildChecked = [...childChecked];
