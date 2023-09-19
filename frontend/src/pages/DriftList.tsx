@@ -23,9 +23,9 @@ function assertParamsIsDefined(
 function extractParentsFromConfig(
   config: DDConfig,
   filepath: string
-): NonNullable<DDConfig["metrics"][number]["parents"]> {
+): NonNullable<DDConfig["metrics"][number]["upstreamFiles"]> {
   const metric = config.metrics.find((metric) => metric.filepath === filepath);
-  return metric ? metric.parents || [] : [];
+  return metric ? metric.upstreamFiles || [] : [];
 }
 
 function queryParamsAreDefined(params: Record<string, string>): params is {

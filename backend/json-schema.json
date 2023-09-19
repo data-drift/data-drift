@@ -51,13 +51,13 @@
             },
             "description": "The dimensions used for the metric data"
           },
-          "parents": {
+          "upstreamFiles": {
             "type": "array",
             "items": {
               "type": "string",
-              "description": "The names of the parent metrics"
+              "description": "The names of the upstream table or file"
             },
-            "description": "The names of the parent metrics"
+            "description": "The names of the upstream tables or files"
           }
         },
         "required": [

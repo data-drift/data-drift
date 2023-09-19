@@ -74,7 +74,7 @@ const DriftCard = (state: DriftCardState) => {
             textAlign: "left",
           }}
         >
-          <b style={{ alignSelf: "baseline" }}>Parent Data:</b>
+          <b style={{ alignSelf: "baseline" }}>Upstream Files:</b>
           <ul>
             {state.parentData.parentData.map((parent, index) => (
               <li key={parent}>
