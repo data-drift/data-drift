@@ -51,7 +51,20 @@ export const CommitList = ({
         commit.commit.message.includes(parent)
       ),
     }));
-    return dataWithIsParentData;
+
+    const checkedParents = filters.parentData.parentData.filter(
+      (_, index) => filters.parentData.childChecked[index]
+    );
+
+    const filteredDataWithIsParentData =
+      checkedParents.length > 0
+        ? dataWithIsParentData.filter((commit) =>
+            checkedParents.some((parent) =>
+              commit.commit.message.includes(parent)
+            )
+          )
+        : dataWithIsParentData;
+    return filteredDataWithIsParentData;
   }, [data, filters]);
   return (
     <div>
