@@ -13,6 +13,7 @@ type Story = StoryObj<typeof meta>;
 export const DriftCase: Story = {
   args: {
     type: "Drift",
+    isParentData: true,
     date: new Date("2021-08-01T00:00:00Z"),
     commitUrl: "www.google.com",
     name: "New drift detected data/act_metrics_finance/bop_eop_mrr_monthly_by_country.csv (#76)\n\nDrift: data/act_metrics_finance/bop_eop_mrr_monthly_by_country.csv",
@@ -22,6 +23,7 @@ export const DriftCase: Story = {
 export const NewDataCase: Story = {
   args: {
     type: "New Data",
+    isParentData: false,
     date: new Date("2021-08-01T00:00:00Z"),
     commitUrl: "www.google.com",
     name: "New drift detected data/act_metrics_finance/bop_eop_mrr_monthly_by_country.csv (#76)\n\nDrift: data/act_metrics_finance/bop_eop_mrr_monthly_by_country.csv",
