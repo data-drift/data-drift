@@ -1,7 +1,7 @@
 import { Params, useLoaderData } from "react-router";
 import { getCommitList, getConfig } from "../services/data-drift";
 import { CommitList } from "../components/Commits/CommitList";
-import { DriftCard } from "../components/Commits/DriftCard";
+import DriftCard from "../components/Commits/DriftCard";
 import styled from "@emotion/styled";
 
 function assertParamsIsDefined(
@@ -22,10 +22,10 @@ function assertParamsIsDefined(
 
 function queryParamsAreDefined(params: Record<string, string>): params is {
   periodKey: string;
-  fileName: string;
+  filepath: string;
   driftDate: string;
 } {
-  return "periodKey" in params && "fileName" in params && "driftDate" in params;
+  return "periodKey" in params && "filepath" in params && "driftDate" in params;
 }
 
 const loader = async ({
@@ -45,7 +45,6 @@ const loader = async ({
     const urlParamsWithParent = {
       ...urlParams,
       parentData: ["metrics/ride_daily_revenue.csv"],
-      filepath: urlParams.fileName,
     };
     return {
       data: result.data,
@@ -54,7 +53,17 @@ const loader = async ({
       urlParams: urlParamsWithParent,
     };
   }
-  return { data: result.data, params, config };
+  return {
+    data: result.data,
+    params,
+    config,
+    urlParams: {
+      periodKey: "",
+      filepath: "",
+      driftDate: "",
+      parentData: [],
+    },
+  };
 };
 
 type LoaderData = Awaited<ReturnType<typeof loader>>;
@@ -67,10 +76,11 @@ const DriftListContainer = styled.div`
 
 const DriftListPage = () => {
   const { data, params, urlParams } = useLoaderData() as LoaderData;
+  const driftCardState = DriftCard.useState({ ...urlParams });
   return (
     <DriftListContainer>
-      {urlParams && (
-        <DriftCard {...urlParams} parentData={urlParams.parentData} />
+      {urlParams && urlParams.filepath.length > 1 && (
+        <DriftCard {...driftCardState} />
       )}
       <CommitList data={data} params={params} />
     </DriftListContainer>

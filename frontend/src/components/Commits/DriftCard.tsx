@@ -12,7 +12,7 @@ const DriftCardContainer = styled.div`
   align-items: start;
 `;
 
-export const DriftCard = ({
+const useDriftCard = ({
   filepath,
   periodKey,
   driftDate,
@@ -31,34 +31,51 @@ export const DriftCard = ({
     newChildChecked[index] = !newChildChecked[index];
     setChildChecked(newChildChecked);
   };
+  return {
+    filepath,
+    periodKey,
+    driftDate: { driftDate, isChecked, setIsChecked },
+    parentData: {
+      parentData,
+      childChecked,
+      setChildChecked,
+      handleChildChecked,
+    },
+  };
+};
 
+type DriftCardState = ReturnType<typeof useDriftCard>;
+
+const DriftCard = (state: DriftCardState) => {
   return (
     <DriftCardContainer>
       <div>
-        <b>Filepath:</b> {filepath}
+        <b>Filepath:</b> {state.filepath}
       </div>
       <div>
-        <b>Period:</b> {periodKey}
+        <b>Period:</b> {state.periodKey}
       </div>
       <div>
         <b>Drift Date:</b>
         <input
           type="checkbox"
-          checked={isChecked}
-          onChange={() => setIsChecked(!isChecked)}
+          checked={state.driftDate.isChecked}
+          onChange={() =>
+            state.driftDate.setIsChecked(!state.driftDate.isChecked)
+          }
         />
-        {new Date(driftDate).toLocaleString()}
+        {new Date(state.driftDate.driftDate).toLocaleString()}
       </div>
-      {parentData.length > 0 && (
+      {state.parentData.parentData.length > 0 && (
         <div style={{ display: "flex", flexDirection: "column" }}>
           <b style={{ alignSelf: "baseline" }}>Parent Data:</b>
           <ul>
-            {parentData.map((parent, index) => (
+            {state.parentData.parentData.map((parent, index) => (
               <li key={parent}>
                 <input
                   type="checkbox"
-                  checked={childChecked[index]}
-                  onChange={() => handleChildChecked(index)}
+                  checked={state.parentData.childChecked[index]}
+                  onChange={() => state.parentData.handleChildChecked(index)}
                 />
                 {parent}
               </li>
@@ -69,3 +86,7 @@ export const DriftCard = ({
     </DriftCardContainer>
   );
 };
+
+DriftCard.useState = useDriftCard;
+
+export default DriftCard;

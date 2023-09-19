@@ -107,7 +107,7 @@ const ddCommitListUrlFactory = (
     owner: string;
     repo: string;
   },
-  queryParams?: { periodKey: string; fileName: string; driftDate: string }
+  queryParams?: { periodKey: string; filepath: string; driftDate: string }
 ) => {
   const url = `/report/${params.installationId}/${params.owner}/${params.repo}/commits`;
   if (queryParams) {
@@ -136,7 +136,7 @@ function DisplayCommit() {
             <a
               href={ddCommitListUrlFactory(results.params, {
                 periodKey,
-                fileName: results.data.commitInfo.filename,
+                filepath: results.data.commitInfo.filename,
                 driftDate: results.data.commitInfo.date.toISOString(),
               })}
             >
