@@ -82,7 +82,7 @@ const DriftListPage = () => {
       {urlParams && urlParams.filepath.length > 1 && (
         <DriftCard {...driftCardState} />
       )}
-      <CommitList data={data} params={params} />
+      <CommitList data={data} params={params} filters={driftCardState} />
     </DriftListContainer>
   );
 };
