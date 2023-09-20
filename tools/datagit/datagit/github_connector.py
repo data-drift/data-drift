@@ -72,7 +72,7 @@ def store_metric(
     )
 
 
-def partition_and_store_metric(
+def partition_and_store_table(
     ghClient: Github,
     dataframe: pd.DataFrame,
     filepath: str,
@@ -85,15 +85,6 @@ def partition_and_store_metric(
       dataframe (pd.DataFrame): The dataframe containing the metrics to be stored.
       filepath (str): The full path to the target file in the format
         'organization/repository/path_to_file'.
-      assignees (List[str]): List of GitHub usernames to be assigned to the pull request.
-        Defaults to an empty list. If list is empty no alert will be raised, nor pull
-        request will be created.
-      branch (Optional[str]): The name of the branch where the metrics will be stored.
-        If None, a branch name will be generated f"metric/{filepath}". Defaults to None.
-      store_json (bool): If True, stores the dataframe in the .json format.
-        Defaults to True.
-      drift_evaluator (Callable): Function that evaluates context and return information
-        about how drift should be handled. See `drift_evaluator` module.
 
     Returns:
       None: This function does not return any value, but it performs a side effect of
