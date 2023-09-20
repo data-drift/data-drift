@@ -9,7 +9,7 @@
   </a>
 </p>
 
-**Datagit** is a git based metric store
+**Datagit** is a git based metric store library
 
 ```python
 >>> from datagit import github_connector
@@ -20,6 +20,15 @@
 '🎉 data/act_metrics_finance/mrr.csv Successfully stored!'
 '💩 Historical data change detected, Samox was assigned to it'
 ```
+
+# Purpose
+
+Non-moving data is a journey, in reality, the data moves, or drifts.
+The purpose of this library is
+
+- to parse, sort, sanitize a metric dataset
+- to convert it to CSV
+- then to store it in a Github repository with clean commits for new data, or drifting data.
 
 # Getting Started
 
@@ -54,7 +63,7 @@ That's it! With these steps, you can start using Datagit to store and track your
 >>> github_connector.store_metric(Github(githubToken), dataframe=dataframe, filename=githubRepo+"data/act_metrics_finance/mrr.csv")
 ```
 
-# Dataframe
+# Dataset
 
 Datagit is base on the standard dataframe format from [Pandas](https://pandas.pydata.org/docs/).
 One can use any library to get the data as long as the format fits the following requirements:
@@ -87,6 +96,21 @@ Datagit provides a simple query builder to store a table:
 ```
 
 More [examples here](tests/test_query_builder.py)
+
+# Large Dataset
+
+## Partitionning
+
+In case of more than 1M rows, partitionning is recomanded using the `partition_and_store_table` function.
+
+```python
+>>> from datagit import github_connector
+
+>>> very_large_dataframe = bigquery.Client().query(query).to_dataframe()
+{"unique_key": ['2022-01-01_FR', '2022-01-01_GB'...
+>>> github_connector.partition_and_store_table(Github("Token"), dataframe=very_large_dataframe, filepath="Samox/datagit/data/act_metrics_finance/mrr.csv")
+'🎁 Partitionning data/act_metrics_finance/mrr.csv...'
+```
 
 # Drift
 
