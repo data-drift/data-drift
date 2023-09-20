@@ -34,12 +34,16 @@ const filterDualTablePropsData = (
   );
 
   const lastOccurenceWithoutLastLine =
-    lastOccurence === -1
-      ? -1
-      : lastOccurence === 0
-      ? undefined
-      : lastOccurence - 1;
+    lastOccurence <= 0 ? undefined : lastOccurence - 1;
 
+  console.log(
+    "firstOccurence",
+    firstOccurence,
+    "lastOccurence",
+    lastOccurence,
+    "lastOccurenceWithoutLastLine",
+    lastOccurenceWithoutLastLine
+  );
   return {
     tableProps1: {
       ...dualTableProps.tableProps1,
