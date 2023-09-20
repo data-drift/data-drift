@@ -456,11 +456,19 @@ def checkout_branch_from_default_branch(repo: Repository.Repository, branch_name
     """
     # Get the default branch of the repository
     default_branch = repo.get_branch(repo.default_branch)
+    print(
+        "Checkout branch: " + branch_name, " from default branch:" + default_branch.name
+    )
 
     # Create a new reference to the default branch
-    ref = repo.create_git_ref(f"refs/heads/{branch_name}", default_branch.commit.sha)
 
-    return ref
+    try:
+        ref = repo.create_git_ref(
+            f"refs/heads/{branch_name}", default_branch.commit.sha
+        )
+    except GithubException:
+        pass
+    return
 
 
 def copy_and_compare_dataframes(initial_df1: pd.DataFrame, initial_df2: pd.DataFrame):
