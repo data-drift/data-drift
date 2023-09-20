@@ -8,6 +8,7 @@ from datagit.dataset_helpers import (
     sort_dataframe_on_first_column_and_assert_is_unique,
 )
 import re
+import os
 
 
 def store_metric(
@@ -437,3 +438,14 @@ def copy_and_compare_dataframes(initial_df1: pd.DataFrame, initial_df2: pd.DataF
         return comparison
     except Exception as e:
         print("Could not display drift", e)
+
+
+def get_monthly_file_path(file_path, month):
+    directory, file_name = os.path.split(file_path)
+    file_name, extension = os.path.splitext(file_name)
+
+    new_file_name = f"{file_name}/{month}{extension}"
+
+    new_file_path = os.path.join(directory, new_file_name)
+
+    return new_file_path
