@@ -76,9 +76,6 @@ def partition_and_store_metric(
     ghClient: Github,
     dataframe: pd.DataFrame,
     filepath: str,
-    assignees: Optional[List[str]] = None,
-    store_json: bool = False,
-    drift_evaluator: Callable[[Dict[str, pd.DataFrame]], Dict] = auto_merge_drift,
 ) -> None:
     """
     Store metrics into a specific repository file on GitHub.
@@ -118,10 +115,8 @@ def partition_and_store_metric(
     # Iterate over the groups and print the sub-dataframes
     for name, group in grouped:
         print(f"Storing metric for Month: {name}")
-        monthly_filepath = get_monthly_file_path(filepath, name.strftime("%Y-%m"))
-        store_metric(
-            ghClient, group, monthly_filepath, assignees, store_json, drift_evaluator
-        )
+        monthly_filepath = get_monthly_file_path(filepath, name.strftime("%Y-%m"))  # type: ignore
+        store_metric(ghClient, group, monthly_filepath, None, False, auto_merge_drift)
 
 
 def push_metric(
