@@ -15,7 +15,7 @@ def store_metric(
     dataframe: pd.DataFrame,
     filepath: str,
     assignees: Optional[List[str]] = None,
-    store_json: bool = True,
+    store_json: bool = False,
     drift_evaluator: Callable[
         [Dict[str, pd.DataFrame]], Dict
     ] = default_drift_evaluator,
