@@ -420,9 +420,10 @@ def get_valid_branch_name(filepath: str) -> str:
 
     # Convert to lowercase
     branch_name = branch_name.lower()
-
+    now = datetime.datetime.now()
+    datetime_str = now.strftime("%Y-%m-%d-%H-%M-%S")
     # Append a prefix
-    branch_name = f"metric/{branch_name}"
+    branch_name = f"drift/{datetime_str}/{branch_name}"
 
     # Truncate to 63 characters (the maximum allowed length for a Git branch name)
     branch_name = branch_name[:63]
