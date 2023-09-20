@@ -1,4 +1,5 @@
 import unittest
+from unittest import mock
 from unittest.mock import MagicMock, call
 import pandas as pd
 from github import GithubException
@@ -42,10 +43,11 @@ class TestStoreMetric(unittest.TestCase):
                 ["jerome"],
                 False,
             )
+
             self.repo.get_contents.assert_has_calls(
                 [
                     call("path/to/file.csv", ref=self.repo.default_branch),
-                    call("path/to/file.csv", ref="metric/path-to-file-csv"),
+                    call("path/to/file.csv", ref=mock.ANY),
                 ]
             )
 
@@ -65,7 +67,7 @@ class TestStoreMetric(unittest.TestCase):
             self.repo.get_contents.assert_has_calls(
                 [
                     call("path/to/file.csv", ref=self.repo.default_branch),
-                    call("path/to/file.csv", ref="metric/path-to-file-csv"),
+                    call("path/to/file.csv", ref=mock.ANY),
                 ]
             )
 
@@ -76,7 +78,7 @@ class TestStoreMetric(unittest.TestCase):
             self.repo.get_contents.assert_has_calls(
                 [
                     call("path/to/file.csv", ref=self.repo.default_branch),
-                    call("path/to/file.csv", ref="metric/path-to-file-csv"),
+                    call("path/to/file.csv", ref=mock.ANY),
                 ]
             )
 

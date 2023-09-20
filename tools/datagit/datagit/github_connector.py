@@ -2,12 +2,14 @@ import time
 from typing import Optional, List, Callable, Dict
 import pandas as pd
 from github import Github, Repository, ContentFile, GithubException
-from datagit.drift_evaluators import default_drift_evaluator
+from datagit.drift_evaluators import default_drift_evaluator, auto_merge_drift
 from datagit.dataset_helpers import (
     compare_dataframes,
     sort_dataframe_on_first_column_and_assert_is_unique,
 )
 import re
+import os
+import datetime
 
 
 def store_metric(
@@ -15,7 +17,7 @@ def store_metric(
     dataframe: pd.DataFrame,
     filepath: str,
     assignees: Optional[List[str]] = None,
-    store_json: bool = True,
+    store_json: bool = False,
     drift_evaluator: Callable[
         [Dict[str, pd.DataFrame]], Dict
     ] = default_drift_evaluator,
@@ -68,6 +70,44 @@ def store_metric(
         repo,
         drift_evaluator,
     )
+
+
+def partition_and_store_table(
+    ghClient: Github,
+    dataframe: pd.DataFrame,
+    filepath: str,
+) -> None:
+    """
+    Store metrics into a specific repository file on GitHub.
+
+    Parameters:
+      ghClient (Github): An instance of a GitHub client to interact with the GitHub API.
+      dataframe (pd.DataFrame): The dataframe containing the metrics to be stored.
+      filepath (str): The full path to the target file in the format
+        'organization/repository/path_to_file'.
+
+    Returns:
+      None: This function does not return any value, but it performs a side effect of
+      pushing the metric to GitHub.
+
+    Raises:
+      ValueError: If the dataframe does not have a unique first column or if the file
+        path does not have the format 'organization/repository/path_to_file'.
+      GithubException: If there is an error in interacting with the GitHub API, e.g.,
+        insufficient permissions, non-existent repo, etc.
+    """
+
+    print("Partitionning metric...")
+
+    dataframe["date"] = pd.to_datetime(dataframe["date"])
+
+    grouped = dataframe.groupby(pd.Grouper(key="date", freq="M"))
+
+    # Iterate over the groups and print the sub-dataframes
+    for name, group in grouped:
+        print(f"Storing metric for Month: {name}")
+        monthly_filepath = get_monthly_file_path(filepath, name.strftime("%Y-%m"))  # type: ignore
+        store_metric(ghClient, group, monthly_filepath, None, False, auto_merge_drift)
 
 
 def push_metric(
@@ -179,7 +219,7 @@ def push_metric(
                         store_json,
                         drift_evaluation["message"],
                     )
-                    print("Drift pushed on reported branch")
+                    print("Drift pushed on main branch")
 
             else:
                 print("No drift detected")
@@ -371,9 +411,10 @@ def get_valid_branch_name(filepath: str) -> str:
 
     # Convert to lowercase
     branch_name = branch_name.lower()
-
+    now = datetime.datetime.now()
+    datetime_str = now.strftime("%Y-%m-%d-%H-%M-%S")
     # Append a prefix
-    branch_name = f"metric/{branch_name}"
+    branch_name = f"drift/{datetime_str}/{branch_name}"
 
     # Truncate to 63 characters (the maximum allowed length for a Git branch name)
     branch_name = branch_name[:63]
@@ -415,11 +456,19 @@ def checkout_branch_from_default_branch(repo: Repository.Repository, branch_name
     """
     # Get the default branch of the repository
     default_branch = repo.get_branch(repo.default_branch)
+    print(
+        "Checkout branch: " + branch_name, " from default branch:" + default_branch.name
+    )
 
     # Create a new reference to the default branch
-    ref = repo.create_git_ref(f"refs/heads/{branch_name}", default_branch.commit.sha)
 
-    return ref
+    try:
+        ref = repo.create_git_ref(
+            f"refs/heads/{branch_name}", default_branch.commit.sha
+        )
+    except GithubException:
+        pass
+    return
 
 
 def copy_and_compare_dataframes(initial_df1: pd.DataFrame, initial_df2: pd.DataFrame):
@@ -437,3 +486,14 @@ def copy_and_compare_dataframes(initial_df1: pd.DataFrame, initial_df2: pd.DataF
         return comparison
     except Exception as e:
         print("Could not display drift", e)
+
+
+def get_monthly_file_path(file_path, month):
+    directory, file_name = os.path.split(file_path)
+    file_name, extension = os.path.splitext(file_name)
+
+    new_file_name = f"{file_name}/{month}{extension}"
+
+    new_file_path = os.path.join(directory, new_file_name)
+
+    return new_file_path
