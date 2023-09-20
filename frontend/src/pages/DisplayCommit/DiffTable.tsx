@@ -13,8 +13,12 @@ const filterDualTablePropsData = (
       const row2 = dualTableProps.tableProps2.data[index];
 
       return (
-        (row.data.length > 0 && row.data[1].value >= startDate) ||
-        (row2.data.length > 0 && row2.data[1].value >= startDate)
+        (row.data.length > 0 &&
+          row.data[1].value != "_" &&
+          row.data[1].value >= startDate) ||
+        (row2.data.length > 0 &&
+          row2.data[1].value != "_" &&
+          row2.data[1].value >= startDate)
       );
     }
   );
@@ -36,14 +40,6 @@ const filterDualTablePropsData = (
   const lastOccurenceWithoutLastLine =
     lastOccurence <= 0 ? undefined : lastOccurence - 1;
 
-  console.log(
-    "firstOccurence",
-    firstOccurence,
-    "lastOccurence",
-    lastOccurence,
-    "lastOccurenceWithoutLastLine",
-    lastOccurenceWithoutLastLine
-  );
   return {
     tableProps1: {
       ...dualTableProps.tableProps1,
