@@ -127,6 +127,11 @@ const ddCommitListUrlFactory = (
   return url;
 };
 
+const PageContainer = styled.div`
+  height: 100vh;
+  width: 100vw;
+`;
+
 function DisplayCommit() {
   const results = useLoaderData() as LoaderData;
 
@@ -134,7 +139,7 @@ function DisplayCommit() {
   const periodKey = searchParams.get("periodKey") as string;
 
   return (
-    <>
+    <PageContainer>
       {results && "commitInfo" in results.data && (
         <StyledSpan>
           <b>{results.data.commitInfo.filename}</b> -{" "}
@@ -163,7 +168,7 @@ function DisplayCommit() {
         "tableProps2" in results.data && (
           <DiffTable dualTableProps={results.data} />
         )}
-    </>
+    </PageContainer>
   );
 }
 

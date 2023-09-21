@@ -1,6 +1,9 @@
 import { Row, TableProps } from "../components/Table/Table";
 
 export const parsePatch = (patch: string, headers: string[]) => {
+  if (patch === "") {
+    throw new Error("Diff is too large to be displayed");
+  }
   let oldHeaders = headers;
   const lines = patch.split("\n");
   const headersLine = lines.shift();
