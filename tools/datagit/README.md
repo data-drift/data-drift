@@ -34,7 +34,7 @@ The purpose of this library is
 
 To get started with Datagit, follow these steps:
 
-1. Create a new repository on GitHub called `datagit` with a README file.
+1. Create a new repository on GitHub called `datagit` (or whatever other name you prefer) with a README file.
 2. Generate a personal access token on GitHub that has access to the `datagit` repository. You can do this by going to your GitHub settings, selecting "Developer settings", and then "Personal access tokens". Click "Generate new token" and give it the necessary permissions (content and pull requests).
 3. In your data pipelines, when relevant, call `store_metric` with the following parameters
    - a github client with your token Github("Token")
@@ -46,7 +46,7 @@ For instance
 
 ```python
 >>> from datagit import github_connector
->>> github_connector.store_metric(Github("Token"), dataframe=dataframe, filename="Samox/datagit/data/act_metrics_finance/mrr.csv", assignee=["Samox"])
+>>> github_connector.store_metric(Github("Token"), dataframe=dataframe, filepath="Samox/datagit/data/act_metrics_finance/mrr.csv", assignee=["Samox"])
 ```
 
 That's it! With these steps, you can start using Datagit to store and track your metrics over time.
@@ -57,10 +57,11 @@ That's it! With these steps, you can start using Datagit to store and track your
 >>> githubToken = "github_pat****"
 >>> githubRepo = "ReplaceOrgaName/ReplaceRepoName"
 >>> import pandas as pd
->>> dataframe = pd.DataFrame({'unique_key': ['a', 'b', 'c'], 'amount': [1001, 1002, 1003], 'is_active': [True, False, True]})
+>>> from datetime import datetime
+>>> dataframe = pd.DataFrame({'unique_key': ['a', 'b', 'c'], 'date': [datetime(2023,9,1), datetime(2023,9,1), datetime(2023,9,1)], 'amount': [1001, 1002, 1003], 'is_active': [True, False, True]})
 >>> from github import Github
 >>> from datagit import github_connector
->>> github_connector.store_metric(Github(githubToken), dataframe=dataframe, filename=githubRepo+"data/act_metrics_finance/mrr.csv")
+>>> github_connector.store_metric(Github(githubToken), dataframe=dataframe, filepath=githubRepo+"data/act_metrics_finance/mrr.csv")
 ```
 
 # Dataset
