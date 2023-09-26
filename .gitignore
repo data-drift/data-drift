@@ -29,3 +29,6 @@ vendor/
 # Pycharm internal config
 .idea
 
+
+# Rust
+**/target
