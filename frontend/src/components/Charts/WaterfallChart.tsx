@@ -33,7 +33,7 @@ export const WaterfallChart = ({ data }: WaterfallChartProps) => {
       width={750}
       height={250}
       data={[...data]}
-      margin={{ right: 8, left: 8 }}
+      margin={{ right: 8, left: 96 }}
     >
       <XAxis dataKey="day" />
       <YAxis
