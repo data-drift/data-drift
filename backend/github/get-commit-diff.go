@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/data-drift/data-drift/helpers"
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-github/v42/github"
 )
@@ -81,6 +82,14 @@ func GetCommitDiff(c *gin.Context) {
 
 	patch := csvFile.GetPatch()
 
+	if patch == "" {
+		patch, err = getPatchIfEmpty(client, c, owner, repo, commit, csvFile, records)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "error getting patch when patch is empty"})
+			return
+		}
+	}
+
 	jsonData, err := json.Marshal(gin.H{"patch": patch, "headers": firstRecord, "filename": csvFile.GetFilename(), "date": commit.GetCommit().GetCommitter().GetDate(), "commitLink": commit.GetHTMLURL()})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "error marshaling JSON"})
@@ -88,6 +97,31 @@ func GetCommitDiff(c *gin.Context) {
 	}
 
 	c.Data(http.StatusOK, "application/json", jsonData)
+}
+
+func getPatchIfEmpty(client *github.Client, ctx *gin.Context, owner string, repo string, commit *github.RepositoryCommit, file *github.CommitFile, currentRecord [][]string) (string, error) {
+	parentCommitSha := commit.Parents[0].GetSHA()
+	previousFileContent, _, _, err := client.Repositories.GetContents(ctx, owner, repo, *file.Filename, &github.RepositoryContentGetOptions{Ref: parentCommitSha})
+	if err != nil {
+		fmt.Println("Error getting github file content:", err)
+		return "", err
+	}
+	stringContentUrl := previousFileContent.GetDownloadURL()
+	resp, err := http.Get(stringContentUrl)
+	if err != nil {
+		fmt.Println("Error getting file from url:", err)
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	csvReader := csv.NewReader(resp.Body)
+	previousRecords, err := csvReader.ReadAll()
+	if err != nil {
+		fmt.Println("Error reading csv:", err)
+		return "", err
+	}
+	patch, err := helpers.GenerateCsvPatch(currentRecord[:10], previousRecords[:10])
+	return patch, err
 }
 
 func GetCommitList(c *gin.Context) {

@@ -51,6 +51,7 @@ require (
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/google/go-querystring v1.1.0 // indirect
+	github.com/sergi/go-diff v1.3.1
 	github.com/shopspring/decimal v1.3.1
 	github.com/snabb/isoweek v1.0.3
 	github.com/xeipuuv/gojsonschema v1.2.0
