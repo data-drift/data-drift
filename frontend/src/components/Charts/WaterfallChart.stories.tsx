@@ -20,23 +20,23 @@ export const SimpleCase: Story = {
     data: [
       {
         day: "05-01",
-        drift: [980, 1025],
+        drift: [98000000, 102500000],
         fill: theme.colors.text,
         isInitial: true,
       },
       {
         day: "05-02",
-        drift: [1025, 1050],
+        drift: [102500000, 105000000],
         fill: theme.colors.dataUp,
       },
       {
         day: "05-03",
-        drift: [1050, 1020],
+        drift: [105000000, 102000000],
         fill: theme.colors.dataDown,
       },
       {
         day: "05-04",
-        drift: [1020, 1010],
+        drift: [102000000, 101000000],
         fill: theme.colors.dataDown,
       },
     ],
