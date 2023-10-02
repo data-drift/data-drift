@@ -6,6 +6,12 @@
   align-items: center;
   flex-direction: column;
   font-family: "JetBrains Mono", monospace;
+
+  .Toastify__toast {
+    border-radius: 0;
+    background-color: #1e1e1e;
+    color: #f0f0f0;
+  }
 }
 
 .logo {
