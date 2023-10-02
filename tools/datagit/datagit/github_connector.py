@@ -16,6 +16,7 @@ def store_metric(
     ghClient: Github,
     dataframe: pd.DataFrame,
     filepath: str,
+    branch: Optional[str] = None,
     assignees: Optional[List[str]] = None,
     store_json: bool = False,
     drift_evaluator: Callable[
@@ -58,12 +59,13 @@ def store_metric(
     drift_branch = get_valid_branch_name(file_path)
 
     repo = ghClient.get_repo(repo_orga + "/" + repo_name)
+    working_branch = branch if branch is not None else repo.default_branch
     dataframe = sort_dataframe_on_first_column_and_assert_is_unique(dataframe)
 
     push_metric(
         dataframe,
         assignees,
-        repo.default_branch,
+        working_branch,
         drift_branch,
         store_json,
         file_path,
@@ -76,6 +78,7 @@ def partition_and_store_table(
     ghClient: Github,
     dataframe: pd.DataFrame,
     filepath: str,
+    branch: Optional[str] = None,
 ) -> None:
     """
     Store metrics into a specific repository file on GitHub.
@@ -111,6 +114,7 @@ def partition_and_store_table(
             ghClient=ghClient,
             dataframe=group,
             filepath=monthly_filepath,
+            branch=branch,
             assignees=None,
             store_json=False,
             drift_evaluator=auto_merge_drift,
