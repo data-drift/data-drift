@@ -107,7 +107,14 @@ def partition_and_store_table(
     for name, group in grouped:
         print(f"Storing metric for Month: {name}")
         monthly_filepath = get_monthly_file_path(filepath, name.strftime("%Y-%m"))  # type: ignore
-        store_metric(ghClient, group, monthly_filepath, None, False, auto_merge_drift)
+        store_metric(
+            ghClient=ghClient,
+            dataframe=group,
+            filepath=monthly_filepath,
+            assignees=None,
+            store_json=False,
+            drift_evaluator=auto_merge_drift,
+        )
 
 
 def push_metric(
