@@ -14,6 +14,7 @@ export const getPatchAndHeader = async (
     commitLink: string;
     date: string;
     filename: string;
+    patchToLarge: boolean;
   }>(
     `${DATA_DRIFT_API_URL}/gh/${params.owner}/${params.repo}/commit/${params.commitSHA}`,
     { headers: { "Installation-Id": params.installationId } }
@@ -24,6 +25,7 @@ export const getPatchAndHeader = async (
     commitLink: result.data.commitLink,
     date: new Date(result.data.date),
     filename: result.data.filename,
+    patchToLarge: result.data.patchToLarge,
   };
 };
 

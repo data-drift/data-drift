@@ -4,6 +4,7 @@ import { Params, useLoaderData } from "react-router";
 import { getConfig, getPatchAndHeader } from "../../services/data-drift";
 import styled from "@emotion/styled";
 import { DiffTable } from "./DiffTable";
+import { toast } from "react-toastify";
 
 export interface CommitParam {
   owner: string;
@@ -66,7 +67,7 @@ const getCommitDiffFromDataDrift = async ({
   const { installationId, owner, repo, commitSHA } =
     assertParamsHasInstallationIs(params);
 
-  const [{ patch, headers, ...commitInfo }] = await Promise.all([
+  const [{ patch, headers, patchToLarge, ...commitInfo }] = await Promise.all([
     getPatchAndHeader({
       installationId,
       owner,
@@ -75,6 +76,13 @@ const getCommitDiffFromDataDrift = async ({
     }),
     getConfig({ installationId, owner, repo }),
   ]);
+
+  if (patchToLarge) {
+    toast(
+      "Diff is too large to display. Only showing 10 lines. Display may be broken.",
+      { autoClose: false }
+    );
+  }
 
   try {
     const { oldData, newData } = parsePatch(patch, headers);
