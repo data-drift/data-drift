@@ -1,6 +1,7 @@
 import click
 import json
 import pandas as pd
+import os
 from datagit import github_connector
 from datagit.drift_evaluators import auto_merge_drift
 from github import Github
@@ -51,9 +52,12 @@ def run(token, repo):
         query = f'SELECT {node["config"]["meta"]["datadrift_unique_key"]} as unique_key,{node["config"]["meta"]["datadrift_date"]} as date, * FROM {node["relation_name"]}'
         with adapter.connection_named("default"):
             resp, table = adapter.execute(query, fetch=True)
-            table.to_csv("data.csv")
 
-            dataframe = pd.read_csv("data.csv")
+            #  TODO: Try to transform table in a dataframe without writing to a file
+            metric_file = "data.csv"
+            table.to_csv(metric_file)
+            dataframe = pd.read_csv(metric_file)
+
             github_connector.store_metric(
                 dataframe=dataframe,
                 ghClient=Github(token),
@@ -61,3 +65,5 @@ def run(token, repo):
                 filepath=repo + "/dbt-drift/metrics/" + node["name"] + ".csv",
                 drift_evaluator=auto_merge_drift,
             )
+
+            os.remove(metric_file)
