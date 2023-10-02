@@ -122,7 +122,7 @@ func getPatchIfEmpty(client *github.Client, ctx *gin.Context, owner string, repo
 		fmt.Println("Error reading csv:", err)
 		return "", err
 	}
-	patch, err := helpers.GenerateCsvPatch(currentRecord[:10], previousRecords[:10])
+	patch, err := helpers.GenerateCsvPatch(currentRecord[:30], previousRecords[:30])
 	return patch, err
 }
 
