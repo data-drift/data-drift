@@ -81,8 +81,10 @@ func GetCommitDiff(c *gin.Context) {
 	firstRecord := records[0]
 
 	patch := csvFile.GetPatch()
+	patchToLarge := false
 
 	if patch == "" {
+		patchToLarge = true
 		patch, err = getPatchIfEmpty(client, c, owner, repo, commit, csvFile, records)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "error getting patch when patch is empty"})
@@ -90,7 +92,7 @@ func GetCommitDiff(c *gin.Context) {
 		}
 	}
 
-	jsonData, err := json.Marshal(gin.H{"patch": patch, "headers": firstRecord, "filename": csvFile.GetFilename(), "date": commit.GetCommit().GetCommitter().GetDate(), "commitLink": commit.GetHTMLURL()})
+	jsonData, err := json.Marshal(gin.H{"patch": patch, "headers": firstRecord, "filename": csvFile.GetFilename(), "date": commit.GetCommit().GetCommitter().GetDate(), "commitLink": commit.GetHTMLURL(), "patchToLarge": patchToLarge})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "error marshaling JSON"})
 		return
