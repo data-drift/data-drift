@@ -10,8 +10,8 @@ import (
 )
 
 func GenerateCsvPatch(currentCsv [][]string, previousCsv [][]string) (string, error) {
-	file1 := "file1.txt"
-	file2 := "file2.txt"
+	file1 := "dist/file1.txt"
+	file2 := "dist/file2.txt"
 	previousCsvString := csvToString(previousCsv)
 	currentCsvString := csvToString(currentCsv)
 
