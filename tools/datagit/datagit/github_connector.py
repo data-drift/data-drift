@@ -13,6 +13,7 @@ import datetime
 
 
 def store_metric(
+    *,
     ghClient: Github,
     dataframe: pd.DataFrame,
     filepath: str,
@@ -75,6 +76,7 @@ def store_metric(
 
 
 def partition_and_store_table(
+    *,
     ghClient: Github,
     dataframe: pd.DataFrame,
     filepath: str,
