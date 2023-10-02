@@ -16,6 +16,7 @@ def store_metric(
     ghClient: Github,
     dataframe: pd.DataFrame,
     filepath: str,
+    branch: Optional[str] = None,
     assignees: Optional[List[str]] = None,
     store_json: bool = False,
     drift_evaluator: Callable[
@@ -26,17 +27,17 @@ def store_metric(
     Store metrics into a specific repository file on GitHub.
 
     Parameters:
-      ghClient (Github): An instance of a GitHub client to interact with the GitHub API.
+      ghClient (PyGithub.Github): An instance of a GitHub client to interact with the GitHub API.
       dataframe (pd.DataFrame): The dataframe containing the metrics to be stored.
       filepath (str): The full path to the target file in the format
         'organization/repository/path_to_file'.
-      assignees (List[str]): List of GitHub usernames to be assigned to the pull request.
-        Defaults to an empty list. If list is empty no alert will be raised, nor pull
+      assignees (Optional[List[str]]): List of GitHub usernames to be assigned to the pull request.
+        Defaults to None. If list is empty no alert will be raised, nor pull
         request will be created.
       branch (Optional[str]): The name of the branch where the metrics will be stored.
-        If None, a branch name will be generated f"metric/{filepath}". Defaults to None.
-      store_json (bool): If True, stores the dataframe in the .json format.
-        Defaults to True.
+        If None, the default branch will be used. Defaults to None.
+      store_json (bool): Deprecated. If True, stores the dataframe in the .json format.
+        Defaults to False.
       drift_evaluator (Callable): Function that evaluates context and return information
         about how drift should be handled. See `drift_evaluator` module.
 
@@ -58,12 +59,13 @@ def store_metric(
     drift_branch = get_valid_branch_name(file_path)
 
     repo = ghClient.get_repo(repo_orga + "/" + repo_name)
+    working_branch = branch if branch is not None else repo.default_branch
     dataframe = sort_dataframe_on_first_column_and_assert_is_unique(dataframe)
 
     push_metric(
         dataframe,
         assignees,
-        repo.default_branch,
+        working_branch,
         drift_branch,
         store_json,
         file_path,
@@ -76,6 +78,7 @@ def partition_and_store_table(
     ghClient: Github,
     dataframe: pd.DataFrame,
     filepath: str,
+    branch: Optional[str] = None,
 ) -> None:
     """
     Store metrics into a specific repository file on GitHub.
@@ -85,6 +88,8 @@ def partition_and_store_table(
       dataframe (pd.DataFrame): The dataframe containing the metrics to be stored.
       filepath (str): The full path to the target file in the format
         'organization/repository/path_to_file'.
+      branch (Optional[str]): The name of the branch where the metrics will be stored.
+        If None, the default branch will be used. Defaults to None.
 
     Returns:
       None: This function does not return any value, but it performs a side effect of
@@ -107,7 +112,15 @@ def partition_and_store_table(
     for name, group in grouped:
         print(f"Storing metric for Month: {name}")
         monthly_filepath = get_monthly_file_path(filepath, name.strftime("%Y-%m"))  # type: ignore
-        store_metric(ghClient, group, monthly_filepath, None, False, auto_merge_drift)
+        store_metric(
+            ghClient=ghClient,
+            dataframe=group,
+            filepath=monthly_filepath,
+            branch=branch,
+            assignees=None,
+            store_json=False,
+            drift_evaluator=auto_merge_drift,
+        )
 
 
 def push_metric(
