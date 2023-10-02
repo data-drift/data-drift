@@ -1,11 +1,14 @@
 package helpers
 
 import (
+	"os"
 	"strings"
 	"testing"
 )
 
 func TestGenerateCsvPatch(t *testing.T) {
+
+	os.Mkdir("dist", 0755)
 	// Define the test data
 	currentCsv := [][]string{
 		{"unique_key", "name", "date", "age"},

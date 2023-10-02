@@ -2,25 +2,33 @@ package helpers
 
 import (
 	"bytes"
+	"crypto/md5"
 	"encoding/csv"
-	"io/ioutil"
+	"encoding/hex"
+	"fmt"
 	"log"
+	"os"
 	"os/exec"
 	"strings"
 )
 
 func GenerateCsvPatch(currentCsv [][]string, previousCsv [][]string) (string, error) {
-	file1 := "dist/file1.txt"
-	file2 := "dist/file2.txt"
+	hash1 := md5.Sum([]byte(fmt.Sprintf("%v", previousCsv)))
+	hashName1 := hex.EncodeToString(hash1[:])
+	file1 := "dist/file-" + hashName1 + "-1.txt"
+	hash2 := md5.Sum([]byte(fmt.Sprintf("%v", currentCsv)))
+	hashName2 := hex.EncodeToString(hash2[:])
+	file2 := "dist/file-" + hashName2 + "-2.txt"
+
 	previousCsvString := csvToString(previousCsv)
 	currentCsvString := csvToString(currentCsv)
 
 	// Write the content to the files
-	err := ioutil.WriteFile(file1, []byte(previousCsvString), 0644)
+	err := os.WriteFile(file1, []byte(previousCsvString), 0644)
 	if err != nil {
 		log.Fatalf("Failed to write to %v: %v", file1, err)
 	}
-	err = ioutil.WriteFile(file2, []byte(currentCsvString), 0644)
+	err = os.WriteFile(file2, []byte(currentCsvString), 0644)
 	if err != nil {
 		log.Fatalf("Failed to write to %v: %v", file2, err)
 	}
