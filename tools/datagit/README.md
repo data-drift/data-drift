@@ -13,10 +13,11 @@
 
 ```python
 >>> from datagit import github_connector
+>>> from github import Github
 
 >>> dataframe = bigquery.Client().query(query).to_dataframe()
 {"unique_key": ['2022-01-01_FR', '2022-01-01_GB'...
->>> github_connector.store_metric(Github("Token"), dataframe=dataframe, filepath="Samox/datagit/data/act_metrics_finance/mrr.csv", assignees=["Samox"])
+>>> github_connector.store_metric(ghClient=Github("Token"), dataframe=dataframe, filepath="Samox/datagit/data/act_metrics_finance/mrr.csv", assignees=["Samox"])
 '🎉 data/act_metrics_finance/mrr.csv Successfully stored!'
 '💩 Historical data change detected, Samox was assigned to it'
 ```
@@ -46,7 +47,7 @@ For instance
 
 ```python
 >>> from datagit import github_connector
->>> github_connector.store_metric(Github("Token"), dataframe=dataframe, filepath="Samox/datagit/data/act_metrics_finance/mrr.csv", assignee=["Samox"])
+>>> github_connector.store_metric(ghClient=Github("Token"), dataframe=dataframe, filepath="Samox/datagit/data/act_metrics_finance/mrr.csv", assignee=["Samox"])
 ```
 
 That's it! With these steps, you can start using Datagit to store and track your metrics over time.
@@ -61,7 +62,7 @@ That's it! With these steps, you can start using Datagit to store and track your
 >>> dataframe = pd.DataFrame({'unique_key': ['a', 'b', 'c'], 'date': [datetime(2023,9,1), datetime(2023,9,1), datetime(2023,9,1)], 'amount': [1001, 1002, 1003], 'is_active': [True, False, True]})
 >>> from github import Github
 >>> from datagit import github_connector
->>> github_connector.store_metric(Github(githubToken), dataframe=dataframe, filepath=githubRepo+"data/act_metrics_finance/mrr.csv")
+>>> github_connector.store_metric(ghClient=Github(githubToken), dataframe=dataframe, filepath=githubRepo+"data/act_metrics_finance/mrr.csv")
 ```
 
 # Dataset
