@@ -24,6 +24,8 @@ func GenerateCsvPatch(currentCsv [][]string, previousCsv [][]string) (string, er
 	currentCsvString := csvToString(currentCsv)
 
 	// Write the content to the files
+	os.Mkdir("dist", 0755)
+
 	err := os.WriteFile(file1, []byte(previousCsvString), 0644)
 	if err != nil {
 		log.Fatalf("Failed to write to %v: %v", file1, err)
