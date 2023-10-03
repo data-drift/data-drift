@@ -18,8 +18,14 @@ def dbt():
 
 
 @dbt.command()
-@click.option("--token", prompt="Your token", help="Number of greetings.")
-@click.option("--repo", prompt="Your repo", help="The person to greet.")
+@click.option(
+    "--token",
+    prompt="Your token",
+    help="Token to access your repo. With PR and Content read and write rights",
+)
+@click.option(
+    "--repo", prompt="Your repo", help="The datagit repo in the form org/repo"
+)
 def run(token, repo):
     import dbt
     from dbt.cli.main import dbtRunner
