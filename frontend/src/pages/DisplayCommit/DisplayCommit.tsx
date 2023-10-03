@@ -79,7 +79,7 @@ const getCommitDiffFromDataDrift = async ({
 
   if (patchToLarge) {
     toast(
-      "Diff is too large to display. Only showing 30 lines. Display may be broken.",
+      "Diff is too large to display. Only showing partial diff. Display may be broken.",
       { autoClose: false }
     );
   }
