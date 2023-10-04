@@ -108,6 +108,14 @@ export const parsePatch = (patch: string, headers: string[]) => {
   newData.data.forEach((row, index) => {
     row.data.forEach((cell, cellIndex) => {
       if (cell.isEmphasized && cell.type === "number") {
+        if (
+          !oldData.data[index].data[
+            getOldIndexFromNewIndex(oldHeaders, headers)(cellIndex)
+          ]
+        ) {
+          return;
+        }
+
         cell.diffValue =
           Number(cell.value) -
           Number(
