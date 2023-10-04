@@ -7,10 +7,11 @@ def assert_dataset_has_unique_key(dataset: pd.DataFrame) -> None:
     if first_column != "unique_key":
         raise ValueError(f"The first column is not named 'unique_key'")
 
-    # Check if the first column is unique
-    values = dataset[first_column].tolist()
+
+def assert_dataset_column_is_unique(dataset: pd.DataFrame, column_name: str) -> None:
+    values = dataset[column_name].tolist()
     if len(values) != len(set(values)):
-        raise ValueError(f"The {first_column} column is not unique")
+        raise ValueError(f"The {column_name} column is not unique")
 
 
 def assert_dataset_has_date_column(dataset: pd.DataFrame) -> None:
@@ -31,8 +32,10 @@ def parse_date_column(dataset: pd.DataFrame) -> pd.DataFrame:
 def sort_dataframe_on_first_column_and_assert_is_unique(
     df: pd.DataFrame,
 ) -> pd.DataFrame:
-    df = rename_duplicates(df)
     assert_dataset_has_unique_key(df)
+    df["unique_key"] = df["unique_key"].astype(str)
+    df = rename_duplicates(df)
+    assert_dataset_column_is_unique(df, "unique_key")
     assert_dataset_has_date_column(df)
 
     df_with_parsed_dates = parse_date_column(df)
