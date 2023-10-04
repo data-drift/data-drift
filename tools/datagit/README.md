@@ -83,6 +83,30 @@ The granularity of the dataframe depends on every use case:
 
 The unique_key is used to detect a modification in historical data
 
+In case you have duplicated lines, datagit will automatically rename them with `-duplicate-n`
+
+```plaintext
+  unique_key  value
+0          A     10
+1          B     20
+2          C     30
+3          B     40
+4          C     50
+5          C     60
+6          D     70
+```
+
+```
+         unique_key  value
+0                A     10
+1                B     20
+2                C     30
+3    B-duplicate-1     40
+4    C-duplicate-1     50
+5    C-duplicate-2     60
+6                D     70
+```
+
 ## 2nd column: Date
 
 The date key is used to detect new historical data, or deleted historical data
@@ -110,7 +134,7 @@ In case of more than 1M rows, partitionning is recomanded using the `partition_a
 
 >>> very_large_dataframe = bigquery.Client().query(query).to_dataframe()
 {"unique_key": ['2022-01-01_FR', '2022-01-01_GB'...
->>> github_connector.partition_and_store_table(Github("Token"), dataframe=very_large_dataframe, filepath="Samox/datagit/data/act_metrics_finance/mrr.csv")
+>>> github_connector.partition_and_store_table(ghClient=Github("Token"), dataframe=very_large_dataframe, filepath="Samox/datagit/data/act_metrics_finance/mrr.csv")
 '🎁 Partitionning data/act_metrics_finance/mrr.csv...'
 ```
 
