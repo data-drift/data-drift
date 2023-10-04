@@ -35,15 +35,16 @@ export const CommitList = ({
   };
 }) => {
   const filteredData = useMemo(() => {
-    const filteredData = filters.driftDate.isChecked
-      ? data.filter((commit) => {
-          const date = new Date(commit.commit.author?.date || "");
-          const driftDate = new Date(filters.driftDate.driftDate);
-          const diff = Math.abs(date.getTime() - driftDate.getTime());
-          const hoursDiff = diff / (1000 * 60 * 60);
-          return hoursDiff <= 12;
-        })
-      : data;
+    const filteredData =
+      filters.driftDate.isChecked && filters.driftDate.driftDate
+        ? data.filter((commit) => {
+            const date = new Date(commit.commit.author?.date || "");
+            const driftDate = new Date(filters.driftDate.driftDate);
+            const diff = Math.abs(date.getTime() - driftDate.getTime());
+            const hoursDiff = diff / (1000 * 60 * 60);
+            return hoursDiff <= 12;
+          })
+        : data;
 
     const dataWithIsParentData = filteredData.map((commit) => ({
       ...commit,
@@ -64,6 +65,7 @@ export const CommitList = ({
             )
           )
         : dataWithIsParentData;
+
     return filteredDataWithIsParentData;
   }, [data, filters]);
   return (
