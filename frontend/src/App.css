@@ -10,6 +10,7 @@
   .Toastify__toast {
     border-radius: 0;
     background-color: #1e1e1e;
+    border: 1px solid #f0f0f0;
     color: #f0f0f0;
   }
 }
