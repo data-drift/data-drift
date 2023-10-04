@@ -61,6 +61,7 @@ def store_metric(
 
     repo = ghClient.get_repo(repo_orga + "/" + repo_name)
     working_branch = branch if branch is not None else repo.default_branch
+    assert_branch_exist(repo, working_branch)
     dataframe = sort_dataframe_on_first_column_and_assert_is_unique(dataframe)
 
     push_metric(

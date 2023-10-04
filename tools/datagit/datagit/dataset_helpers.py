@@ -31,6 +31,7 @@ def parse_date_column(dataset: pd.DataFrame) -> pd.DataFrame:
 def sort_dataframe_on_first_column_and_assert_is_unique(
     df: pd.DataFrame,
 ) -> pd.DataFrame:
+    df = rename_duplicates(df)
     assert_dataset_has_unique_key(df)
     assert_dataset_has_date_column(df)
 
@@ -38,6 +39,31 @@ def sort_dataframe_on_first_column_and_assert_is_unique(
 
     sorted_df = df_with_parsed_dates.sort_values(by=["unique_key"])
     return sorted_df
+
+
+def rename_duplicates(df):
+    """
+    Rename duplicate 'unique_key' values in the DataFrame.
+
+    Parameters:
+    - df: pandas DataFrame with a 'unique_key' column.
+
+    Returns:
+    - DataFrame with renamed duplicates.
+    """
+
+    # Find duplicated rows based on the 'unique_key' column
+    duplicates = df["unique_key"].duplicated(keep="first")
+
+    # Create a series with the same index as the dataframe for counting duplicates
+    counter = df[duplicates].groupby("unique_key").cumcount() + 1
+
+    # Format the 'unique_key' for duplicates
+    df.loc[duplicates, "unique_key"] = (
+        df["unique_key"][duplicates] + "-duplicate-" + counter.astype(str)
+    )
+
+    return df
 
 
 def compare_dataframes(
