@@ -20,11 +20,13 @@ def dbt():
 @dbt.command()
 @click.option(
     "--token",
-    prompt="Your token",
+    default=lambda: os.environ.get("DATADRIFT_GITHUB_TOKEN", ""),
     help="Token to access your repo. With PR and Content read and write rights",
 )
 @click.option(
-    "--repo", prompt="Your repo", help="The datagit repo in the form org/repo"
+    "--repo",
+    default=lambda: os.environ.get("DATADRIFT_GITHUB_REPO", ""),
+    help="The datagit repo in the form org/repo",
 )
 @click.option("--project-dir", default=".", help="The dbt project dir")
 def run(token, repo, project_dir):
@@ -32,8 +34,12 @@ def run(token, repo, project_dir):
     from dbt.config.runtime import load_profile, load_project, RuntimeConfig
     from dbt.adapters.factory import get_adapter
 
-    """Simple program that greets NAME for a total of COUNT times."""
-    click.echo(f"Repo is {repo}!")
+    if not repo:
+        repo = click.prompt("Your repo")
+
+    if not token:
+        token = click.prompt("Your token")
+    click.echo(f"Pushing to {repo}!")
 
     project_path = project_dir
     dbtRunner().invoke(["-q", "debug"], project_dir=str(project_path))
