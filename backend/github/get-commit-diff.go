@@ -124,8 +124,8 @@ func getPatchIfEmpty(client *github.Client, ctx *gin.Context, owner string, repo
 	}
 	patch, err := helpers.GenerateCsvPatch(currentRecord, previousRecords)
 	lines := strings.Split(patch, "\n")
-	if len(lines) > 100 {
-		lines = lines[:100]
+	if len(lines) > 10000 {
+		lines = lines[:10000]
 	}
 	patch = strings.Join(lines, "\n")
 	return patch, err
