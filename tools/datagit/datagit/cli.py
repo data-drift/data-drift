@@ -26,17 +26,16 @@ def dbt():
 @click.option(
     "--repo", prompt="Your repo", help="The datagit repo in the form org/repo"
 )
-def run(token, repo):
-    import dbt
+@click.option("--project-dir", default=".", help="The dbt project dir")
+def run(token, repo, project_dir):
     from dbt.cli.main import dbtRunner
     from dbt.config.runtime import load_profile, load_project, RuntimeConfig
-    import dbt.version
     from dbt.adapters.factory import get_adapter
 
     """Simple program that greets NAME for a total of COUNT times."""
     click.echo(f"Repo is {repo}!")
 
-    project_path = "."
+    project_path = project_dir
     dbtRunner().invoke(["-q", "debug"], project_dir=str(project_path))
     profile = load_profile(str(project_path), {})
     project = load_project(str(project_path), version_check=False, profile=profile)
