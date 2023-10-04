@@ -28,7 +28,6 @@ export const mapCohortsMetricsMetadataToStepChartProps = (
     RelativeHistory.forEach((cohortMetric) => {
       const currentKPI = parseFloat(cohortMetric.RelativeValue);
       if (latestKPI === undefined || currentKPI != latestKPI) {
-        console.log("days", parseFloat(cohortMetric.DaysFromHistorization));
         const datum = {
           [metricName]: currentKPI,
           daysSinceFirstReport: parseFloat(cohortMetric.DaysFromHistorization),
