@@ -20,6 +20,9 @@ func GenerateCsvPatch(currentCsv [][]string, previousCsv [][]string) (string, er
 	hashName2 := hex.EncodeToString(hash2[:])
 	file2 := "dist/file-" + hashName2 + "-2.txt"
 
+	// Add a space to the last column of the previous csv to make sure it will be present in the diff
+	previousCsv[0][len(previousCsv[0])-1] = previousCsv[0][len(previousCsv[0])-1] + " "
+
 	previousCsvString := csvToString(previousCsv)
 	currentCsvString := csvToString(currentCsv)
 
