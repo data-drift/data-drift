@@ -1,45 +1,39 @@
-import { useCallback } from "react";
-import ReactFlow, {
-  MiniMap,
-  Controls,
-  Background,
-  useNodesState,
-  useEdgesState,
-  addEdge,
-  OnConnect,
-} from "reactflow";
+import ReactFlow, { Node, Edge, Position } from "reactflow";
 
 import "reactflow/dist/style.css";
 
 const initialNodes = [
-  { id: "1", position: { x: 0, y: 0 }, data: { label: "1" } },
-  { id: "2", position: { x: 0, y: 100 }, data: { label: "2" } },
-];
+  {
+    id: "1",
+    type: "input",
+    data: { label: "FCT Order" },
+    position: { x: 50, y: 100 },
+    sourcePosition: Position.Right,
+  },
+  {
+    id: "2",
+    type: "output",
+    data: { label: "Statistic" },
+    position: { x: 250, y: 100 },
+    targetPosition: Position.Left,
+  },
+] satisfies Node[];
 
-const initialEdges = [{ id: "e1-2", source: "1", target: "2" }];
+const initialEdges = [
+  { id: "e1-2", source: "1", target: "2", animated: true, type: "straight" },
+] satisfies Edge[];
 
 function Flow() {
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-
-  const onConnect = useCallback(
-    (params) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges]
-  ) satisfies OnConnect;
-
   return (
     <div style={{ width: "1000px", height: "1000px" }}>
       <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-      >
-        <MiniMap />
-        <Controls />
-        <Background />
-      </ReactFlow>
+        draggable={false}
+        nodes={initialNodes}
+        edges={initialEdges}
+        style={{ width: "600px", height: "300px" }}
+        nodesDraggable={false}
+        edgesUpdatable={false}
+      />
     </div>
   );
 }
