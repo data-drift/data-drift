@@ -3,9 +3,6 @@ import { Endpoints } from "@octokit/types";
 
 export const LOCAL_STORAGE_GITHUB_TOKEN = "github_token";
 
-type CommitResponse =
-  Endpoints["GET /repos/{owner}/{repo}/commits/{ref}"]["response"];
-
 type ContentResponse =
   Endpoints["GET /repos/{owner}/{repo}/contents/{path}"]["response"];
 
@@ -18,22 +15,6 @@ const getRequestHeaders = () => {
   } else {
     return {};
   }
-};
-
-export const getCommitFiles = async (
-  owner: string,
-  repo: string,
-  commitSHA: string
-) => {
-  const headers = getRequestHeaders();
-  const response = await axios.get<CommitResponse["data"]>(
-    `https://api.github.com/repos/${owner}/${repo}/commits/${commitSHA}`,
-    { headers }
-  );
-  if (response.status !== 200) {
-    throw new Error("Error fetching commit content");
-  }
-  return response?.data?.files;
 };
 
 export const parseGithubUrl = (url: string) => {

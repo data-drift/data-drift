@@ -1,4 +1,3 @@
-import { getCommitFiles, getCsvHeaders } from "../../services/github";
 import { parsePatch } from "../../services/patch.mapper";
 import { Params, useLoaderData, defer } from "react-router";
 import { getConfig, getPatchAndHeader } from "../../services/data-drift";
