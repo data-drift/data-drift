@@ -69,10 +69,21 @@ def rename_duplicates(df):
     return df
 
 
+def convert_object_to_string(df):
+    # Check each column
+    for col in df.columns:
+        # If column data type is 'object', convert it to 'string'
+        if df[col].dtype == "object":
+            df[col] = df[col].astype("string")
+    return df
+
+
 def compare_dataframes(
     initial_df: pd.DataFrame, final_df: pd.DataFrame, unique_key: str
 ):
     try:
+        initial_df = convert_object_to_string(initial_df)
+        final_df = convert_object_to_string(final_df)
         # Get the unique keys for each dataframe
         initial_keys = set(initial_df[unique_key])
         final_keys = set(final_df[unique_key])
