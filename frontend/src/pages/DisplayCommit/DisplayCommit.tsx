@@ -1,15 +1,19 @@
 import { getCommitFiles, getCsvHeaders } from "../../services/github";
 import { parsePatch } from "../../services/patch.mapper";
-import { Params, useLoaderData } from "react-router";
+import { Params, useLoaderData, defer } from "react-router";
 import { getConfig, getPatchAndHeader } from "../../services/data-drift";
 import styled from "@emotion/styled";
 import { DiffTable } from "./DiffTable";
 import { toast } from "react-toastify";
+import Loader from "../../components/Common/Loader";
+import React from "react";
+import { Await } from "react-router-dom";
 
 export interface CommitParam {
   owner: string;
   repo: string;
   commitSHA: string;
+  installationId: string;
 }
 
 const StyledButton = styled.button`
@@ -19,14 +23,6 @@ const StyledButton = styled.button`
   background-color: ${(props) => props.theme.colors.background2};
   border: 1px solid ${(props) => props.theme.colors.text};
 `;
-
-function assertParamsIsCommitInfo(params: Params<string>): CommitParam {
-  const { owner, repo, commitSHA } = params;
-  if (!owner || !repo || !commitSHA) {
-    throw new Error("Invalid params");
-  }
-  return { owner, repo, commitSHA };
-}
 
 function assertParamsHasInstallationIs(
   params: Params<string>
@@ -38,35 +34,12 @@ function assertParamsHasInstallationIs(
   return { installationId, owner, repo, commitSHA };
 }
 
-const getCommitDiffFromGithub = async ({
-  params,
-}: {
-  params: Params<string>;
-}) => {
-  const { owner, repo, commitSHA } = assertParamsIsCommitInfo(params);
-  const files = await getCommitFiles(owner, repo, commitSHA);
-  if (!files) {
-    throw new Error("No files found");
-  }
-  const file = files[0];
-  if (file && file.patch) {
-    const headers = await getCsvHeaders(file.contents_url);
-    const { oldData, newData } = parsePatch(file.patch, headers);
-    return {
-      data: { tableProps1: oldData, tableProps2: newData },
-      params: { owner, repo, commitSHA },
-    };
-  }
-};
-
-const getCommitDiffFromDataDrift = async ({
-  params,
-}: {
-  params: Params<string>;
-}) => {
-  const { installationId, owner, repo, commitSHA } =
-    assertParamsHasInstallationIs(params);
-
+const getPatchFromApi = async ({
+  installationId,
+  owner,
+  repo,
+  commitSHA,
+}: CommitParam) => {
   const [{ patch, headers, patchToLarge, ...commitInfo }] = await Promise.all([
     getPatchAndHeader({
       installationId,
@@ -84,26 +57,28 @@ const getCommitDiffFromDataDrift = async ({
     );
   }
 
-  try {
-    const { oldData, newData } = parsePatch(patch, headers);
-    return {
-      data: { tableProps1: oldData, tableProps2: newData, commitInfo },
-      params: { owner, repo, commitSHA, installationId },
-    };
-  } catch (e) {
-    return {
-      data: {
-        commitInfo,
-      },
-      error: e,
-      params: { owner, repo, commitSHA, installationId },
-    };
-  }
+  const { oldData, newData } = parsePatch(patch, headers);
+  const data = { tableProps1: oldData, tableProps2: newData, commitInfo };
+  return data;
 };
 
-type LoaderData = Awaited<
-  ReturnType<typeof getCommitDiffFromGithub | typeof getCommitDiffFromDataDrift>
->;
+const getCommitDiffFromDataDrift = ({ params }: { params: Params<string> }) => {
+  const { installationId, owner, repo, commitSHA } =
+    assertParamsHasInstallationIs(params);
+
+  const data = getPatchFromApi({ installationId, owner, repo, commitSHA });
+
+  return defer({
+    data: data,
+    params: { owner, repo, commitSHA, installationId },
+  });
+};
+
+type PatchFromApi = Awaited<ReturnType<typeof getPatchFromApi>>;
+
+type LoaderData = ReturnType<typeof getCommitDiffFromDataDrift> & {
+  params: CommitParam;
+};
 
 const StyledSpan = styled.span`
   padding: 8px;
@@ -142,45 +117,44 @@ const PageContainer = styled.div`
 
 function DisplayCommit() {
   const results = useLoaderData() as LoaderData;
+  const resultsParam = results.params;
 
   const searchParams = new URLSearchParams(window.location.search);
   const periodKey = searchParams.get("periodKey") as string;
 
   return (
     <PageContainer>
-      {results && "commitInfo" in results.data && (
-        <StyledSpan>
-          <b>{results.data.commitInfo.filename}</b> -{" "}
-          <b>{results.data.commitInfo.date.toLocaleDateString()}</b>
-          <a href={results.data.commitInfo.commitLink}>
-            <StyledIcon src="/github-mark.svg" alt="GitHub" />
-          </a>
-          {"installationId" in results.params && (
-            <a
-              href={ddCommitListUrlFactory(results.params, {
-                periodKey,
-                filepath: results.data.commitInfo.filename,
-                driftDate: results.data.commitInfo.date.toISOString(),
-              })}
-            >
-              <StyledButton>View list of commits</StyledButton>
-            </a>
+      <React.Suspense fallback={<Loader />}>
+        <Await resolve={results.data}>
+          {(resultsData: PatchFromApi) => (
+            <>
+              <StyledSpan>
+                <b>{resultsData.commitInfo.filename}</b> -{" "}
+                <b>{resultsData.commitInfo.date.toLocaleDateString()}</b>
+                <a href={resultsData.commitInfo.commitLink}>
+                  <StyledIcon src="/github-mark.svg" alt="GitHub" />
+                </a>
+                {"installationId" in resultsParam && (
+                  <a
+                    href={ddCommitListUrlFactory(resultsParam, {
+                      periodKey,
+                      filepath: resultsData.commitInfo.filename,
+                      driftDate: resultsData.commitInfo.date.toISOString(),
+                    })}
+                  >
+                    <StyledButton>View list of commits</StyledButton>
+                  </a>
+                )}
+              </StyledSpan>
+              <DiffTable dualTableProps={resultsData} />
+            </>
           )}
-        </StyledSpan>
-      )}
-      {results && "error" in results && <div>{`${String(results.error)}`}</div>}
-      {results &&
-        results.data &&
-        "tableProps1" in results.data &&
-        results.data.tableProps1 &&
-        "tableProps2" in results.data && (
-          <DiffTable dualTableProps={results.data} />
-        )}
+        </Await>
+      </React.Suspense>
     </PageContainer>
   );
 }
 
-DisplayCommit.githubLoader = getCommitDiffFromGithub;
 DisplayCommit.dataDriftLoader = getCommitDiffFromDataDrift;
 
 export default DisplayCommit;
