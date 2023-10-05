@@ -88,10 +88,16 @@ func GetMetadataOfMetric(metric common.Metric) (MetricMetadata, error) {
 
 	relativeHistory := make(map[time.Duration]RelativeHistoricalEvent)
 	initialValue := sortedAndFilteredArray[0].KPI
+	nonZeroInitialValue := func() decimal.Decimal {
+		if initialValue.IsZero() {
+			return decimal.NewFromInt(1)
+		}
+		return initialValue
+	}()
 	for _, commitData := range sortedAndFilteredArray {
 		durationFromFirstComputation := getDuration(commitData.CommitTimestamp, firstDateOfPeriod)
 		relativeHistoricalEvent := RelativeHistoricalEvent{
-			RelativeValue:         commitData.KPI.Sub(initialValue).Div(initialValue).Mul(decimal.NewFromInt(100)),
+			RelativeValue:         commitData.KPI.Sub(initialValue).Div(nonZeroInitialValue).Mul(decimal.NewFromInt(100)),
 			DaysFromHistorization: decimal.NewFromFloat(durationFromFirstComputation.Hours() / 24),
 			ComputationTimetamp:   commitData.CommitTimestamp,
 		}
