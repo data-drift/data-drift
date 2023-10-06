@@ -3,17 +3,15 @@ import ReactFlow, { Node, Edge, Position, Handle, NodeProps } from "reactflow";
 
 import "reactflow/dist/style.css";
 import MetricNode from "./MetricNode";
+import type { LineageEvent } from "./MetricNode";
 
 const CustomMetricNode: ComponentType<
-  NodeProps<{ label: string; events: Event[] }>
+  NodeProps<{ label: string; events: LineageEvent[] }>
 > = ({ data, sourcePosition, targetPosition }) => {
   return (
     <>
       {targetPosition && <Handle type="target" position={targetPosition} />}
-      <MetricNode
-        metricName={data.label}
-        events={[{ type: "New Data" }, { type: "Drift" }]}
-      />
+      <MetricNode metricName={data.label} events={data.events} />
 
       {sourcePosition && <Handle type="source" position={sourcePosition} />}
     </>

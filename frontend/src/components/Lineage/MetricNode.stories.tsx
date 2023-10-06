@@ -13,6 +13,9 @@ type Story = StoryObj<typeof meta>;
 export const DefaultCase: Story = {
   args: {
     metricName: "FCT Order",
-    events: [{ type: "New Data" }, { type: "Drift" }],
+    events: [
+      { type: "New Data" },
+      { type: "Drift", subEvents: [{ name: "2023-09" }, { name: "2023-10" }] },
+    ],
   },
 };
