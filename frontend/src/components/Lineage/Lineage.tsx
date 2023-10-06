@@ -4,6 +4,7 @@ import ReactFlow, { Node, Edge, Handle, NodeProps } from "reactflow";
 import "reactflow/dist/style.css";
 import MetricNode from "./MetricNode";
 import type { LineageEvent } from "./MetricNode";
+import styled from "@emotion/styled";
 
 const CustomMetricNode: ComponentType<
   NodeProps<{ label: string; events: LineageEvent[] }>
@@ -23,13 +24,27 @@ type LineageProps = {
   edges: Edge[];
 };
 
+const StyledContainer = styled.div`
+  width: 100%;
+  height: 100%;
+  .react-flow__renderer,
+  .react-flow__renderer * {
+    cursor: default !important;
+  }
+`;
+
 function Lineage({ nodes, edges }: LineageProps) {
   const nodeTypes = useMemo(() => ({ metricNode: CustomMetricNode }), []);
 
   return (
-    <div style={{ width: "1000px", height: "1000px" }}>
+    <StyledContainer>
       <ReactFlow
         draggable={false}
+        zoomOnScroll={false}
+        zoomOnPinch={false}
+        zoomOnDoubleClick={false}
+        zoomActivationKeyCode={null}
+        panOnDrag={false}
         nodes={nodes}
         edges={edges}
         style={{ width: "600px", height: "300px" }}
@@ -37,7 +52,7 @@ function Lineage({ nodes, edges }: LineageProps) {
         edgesUpdatable={false}
         nodeTypes={nodeTypes}
       ></ReactFlow>
-    </div>
+    </StyledContainer>
   );
 }
 

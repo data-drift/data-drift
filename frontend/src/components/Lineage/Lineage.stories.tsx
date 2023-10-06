@@ -2,9 +2,28 @@ import { Meta, StoryObj } from "@storybook/react";
 import Lineage from "./Lineage";
 import { Position } from "reactflow";
 
+const containerStyles = {
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  height: "80vh",
+  width: "90vw",
+  overflow: "auto",
+  border: "1px solid #e0e0e0",
+  margin: "1em",
+  padding: "1em",
+};
+
 const meta = {
   title: "Lineage/Lineage",
   component: Lineage,
+  decorators: [
+    (Story) => (
+      <div style={containerStyles}>
+        <Story />
+      </div>
+    ),
+  ],
 } satisfies Meta<typeof Lineage>;
 
 export default meta;
