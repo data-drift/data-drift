@@ -92,7 +92,7 @@ export const MetricNode = ({
         setExpandedEvent(event.type);
       }
     } else {
-      alert(event);
+      alert(`Navigate to ${event.type}`);
     }
   };
 
@@ -113,7 +113,9 @@ export const MetricNode = ({
                 <ul>
                   {event.subEvents?.map((subEvent) => (
                     <li key={subEvent.name}>
-                      <SubEventChip onClick={() => alert(subEvent.name)}>
+                      <SubEventChip
+                        onClick={() => alert(`Navigate to ${subEvent.name}`)}
+                      >
                         {subEvent.name}
                       </SubEventChip>
                     </li>
