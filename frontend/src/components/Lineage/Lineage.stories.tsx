@@ -1,6 +1,6 @@
 import { Meta, StoryObj } from "@storybook/react";
 import Lineage from "./Lineage";
-import { Position, Edge, Node } from "reactflow";
+import { Position } from "reactflow";
 
 const meta = {
   title: "Lineage/Lineage",

@@ -1,5 +1,5 @@
 import { ComponentType, useMemo } from "react";
-import ReactFlow, { Node, Edge, Position, Handle, NodeProps } from "reactflow";
+import ReactFlow, { Node, Edge, Handle, NodeProps } from "reactflow";
 
 import "reactflow/dist/style.css";
 import MetricNode from "./MetricNode";
