@@ -23,7 +23,7 @@ type LineageProps = {
   edges: Edge[];
 };
 
-function Flow({ nodes, edges }: LineageProps) {
+function Lineage({ nodes, edges }: LineageProps) {
   const nodeTypes = useMemo(() => ({ metricNode: CustomMetricNode }), []);
 
   return (
@@ -41,4 +41,4 @@ function Flow({ nodes, edges }: LineageProps) {
   );
 }
 
-export default Flow;
+export default Lineage;
