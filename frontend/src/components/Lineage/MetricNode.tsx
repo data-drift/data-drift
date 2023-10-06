@@ -7,6 +7,7 @@ const StyledMetricNode = styled.div`
   border-radius: 0; /* Brutalist design prefers more angular, less rounded shapes. */
   min-width: 200px;
   background-color: ${(props) => props.theme.colors.text};
+  text-align: left;
   strong {
     display: block;
     margin-bottom: 8px;
