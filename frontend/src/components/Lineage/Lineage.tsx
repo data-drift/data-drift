@@ -18,42 +18,20 @@ const CustomMetricNode: ComponentType<
   );
 };
 
-const initialNodes = [
-  {
-    id: "1",
-    data: {
-      label: "organisation_bop_eop_mrr",
-    },
-    type: "metricNode",
-    position: { x: 50, y: 100 },
-    sourcePosition: Position.Right,
-    targetPosition: Position.Left,
-  },
-  {
-    id: "2",
-    type: "metricNode",
-    data: {
-      label: "bop_eop_mrr_monthly_by_country",
-    },
-    position: { x: 450, y: 100 },
-    sourcePosition: Position.Right,
-    targetPosition: Position.Left,
-  },
-] satisfies Node[];
+type LineageProps = {
+  nodes: Node[];
+  edges: Edge[];
+};
 
-const initialEdges = [
-  { id: "e1-2", source: "1", target: "2", animated: true },
-] satisfies Edge[];
-
-function Flow() {
+function Flow({ nodes, edges }: LineageProps) {
   const nodeTypes = useMemo(() => ({ metricNode: CustomMetricNode }), []);
 
   return (
     <div style={{ width: "1000px", height: "1000px" }}>
       <ReactFlow
         draggable={false}
-        nodes={initialNodes}
-        edges={initialEdges}
+        nodes={nodes}
+        edges={edges}
         style={{ width: "600px", height: "300px" }}
         nodesDraggable={false}
         edgesUpdatable={false}
