@@ -3,7 +3,7 @@ import Lineage from "../components/Lineage/Lineage";
 import { Position } from "reactflow";
 import DualTableHeader from "../components/Table/DualTableHeader";
 import { DualTable } from "../components/Table/DualTable";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 const Container = styled.div`
   width: 100%;
@@ -14,7 +14,8 @@ const StyledHeader = styled.header`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #ddd; // muted background color
+  background-color: ${(props) =>
+    props.theme.colors.background2}; // muted background color
   padding: 20px 40px;
   width: 100%;
   box-sizing: border-box;
@@ -23,7 +24,7 @@ const StyledHeader = styled.header`
 const StyledDate = styled.div`
   font-size: 32px;
   font-weight: bold;
-  color: #333;
+  color: ${(props) => props.theme.colors.text};
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -40,7 +41,7 @@ const StyledSelect = styled.select`
 
 const StyledDateButton = styled.button`
   background-color: transparent;
-  color: #333;
+  color: ${(props) => props.theme.colors.text2};
   border: 0;
   border-radius: 0;
   padding: 5px 10px;
@@ -52,7 +53,21 @@ const StyledDateButton = styled.button`
 `;
 
 const LineageContainer = styled.div`
-  height: 300px;
+  background-color: ${(props) => props.theme.colors.background2};
+  text-align: left;
+`;
+
+const StyledCollapsibleTitle = styled.button`
+  cursor: pointer;
+  padding: 10px;
+  border: none;
+  background-color: ${(props) => props.theme.colors.background2};
+`;
+
+const StyledCollapsibleContent = styled.div<{ isCollapsed: boolean }>`
+  height: ${(props) => (props.isCollapsed ? "0" : "300px")};
+
+  overflow: hidden;
 `;
 
 const DiffTableContainer = styled.div``;
@@ -95,22 +110,25 @@ export const Overview = () => {
   const availableMetrics = ["Metric1", "Metric2", "Metric3"];
   const [selectedMetric, setSelectedMetric] = useState(availableMetrics[0]);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
-  const incrementDate = () => {
+  const incrementDate = useCallback(() => {
     setCurrentDate(
       (prevDate) => new Date(prevDate.setDate(prevDate.getDate() + 1))
     );
-  };
+  }, []);
 
-  const decrementDate = () => {
+  const decrementDate = useCallback(() => {
     setCurrentDate(
       (prevDate) => new Date(prevDate.setDate(prevDate.getDate() - 1))
     );
-  };
+  }, []);
   return (
     <Container>
       <StyledHeader>
-        <div></div>
+        <StyledCollapsibleTitle onClick={() => setIsCollapsed(!isCollapsed)}>
+          {isCollapsed ? "▶" : "▼"} Lineage
+        </StyledCollapsibleTitle>
         <StyledDate>
           <StyledDateButton onClick={decrementDate}>{"<"}</StyledDateButton>
           {currentDate.toLocaleDateString()}
@@ -130,8 +148,11 @@ export const Overview = () => {
       </StyledHeader>
 
       <LineageContainer>
-        Lineage
-        <Lineage nodes={nodes} edges={edges} />
+        {!isCollapsed && (
+          <StyledCollapsibleContent isCollapsed={isCollapsed}>
+            <Lineage nodes={nodes} edges={edges} />
+          </StyledCollapsibleContent>
+        )}
       </LineageContainer>
 
       <DiffTableContainer>
