@@ -14,6 +14,9 @@ const StyledMetricNode = styled.div`
     color: ${(props) => props.theme.colors.background};
     text-transform: uppercase;
   }
+  small {
+    color: ${(props) => props.theme.colors.background2};
+  }
   ul {
     list-style-type: square; /* A more rugged list bullet. */
     padding-left: 20px;
@@ -95,29 +98,33 @@ export const MetricNode = ({
   return (
     <StyledMetricNode>
       <strong>{metricName}</strong>
-      <ul>
-        {events.map((event, index) => (
-          <li key={index}>
-            <EventChip
-              eventType={event.type}
-              onClick={() => handleEventClick(event)}
-            >
-              {event.type}
-            </EventChip>
-            {expandedEvent === event.type && (
-              <ul>
-                {event.subEvents?.map((subEvent) => (
-                  <li key={subEvent.name}>
-                    <SubEventChip onClick={() => alert(subEvent.name)}>
-                      {subEvent.name}
-                    </SubEventChip>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </li>
-        ))}
-      </ul>
+      {events.length > 0 ? (
+        <ul>
+          {events.map((event, index) => (
+            <li key={index}>
+              <EventChip
+                eventType={event.type}
+                onClick={() => handleEventClick(event)}
+              >
+                {event.type}
+              </EventChip>
+              {expandedEvent === event.type && (
+                <ul>
+                  {event.subEvents?.map((subEvent) => (
+                    <li key={subEvent.name}>
+                      <SubEventChip onClick={() => alert(subEvent.name)}>
+                        {subEvent.name}
+                      </SubEventChip>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <small>No Events</small>
+      )}
     </StyledMetricNode>
   );
 };

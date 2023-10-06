@@ -19,3 +19,10 @@ export const DefaultCase: Story = {
     ],
   },
 };
+
+export const NoEventCase: Story = {
+  args: {
+    metricName: "FCT Order",
+    events: [],
+  },
+};
