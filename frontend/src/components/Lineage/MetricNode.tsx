@@ -24,21 +24,25 @@ const StyledMetricNode = styled.div`
   }
 `;
 
+type Event = {
+  type: "New Data" | "Drift";
+};
+
 type MetricNodeProps = {
   metricName: string;
-  items?: string[];
+  events?: Event[];
 };
 
 export const MetricNode = ({
   metricName = "",
-  items = [],
+  events = [],
 }: MetricNodeProps) => {
   return (
     <StyledMetricNode>
       <strong>{metricName}</strong>
       <ul>
-        {items.map((item, index) => (
-          <li key={index}>{item}</li>
+        {events.map((event, index) => (
+          <li key={index}>{event.type}</li>
         ))}
       </ul>
     </StyledMetricNode>

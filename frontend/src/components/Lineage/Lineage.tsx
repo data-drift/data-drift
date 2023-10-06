@@ -5,14 +5,14 @@ import "reactflow/dist/style.css";
 import MetricNode from "./MetricNode";
 
 const CustomMetricNode: ComponentType<
-  NodeProps<{ label: string; drift: number; dataAdded: number }>
+  NodeProps<{ label: string; events: Event[] }>
 > = ({ data, sourcePosition, targetPosition }) => {
   return (
     <>
       {targetPosition && <Handle type="target" position={targetPosition} />}
       <MetricNode
         metricName={data.label}
-        items={[`Drift: ${data.drift}`, `Data Added: ${data.dataAdded}`]}
+        events={[{ type: "New Data" }, { type: "Drift" }]}
       />
 
       {sourcePosition && <Handle type="source" position={sourcePosition} />}
@@ -25,8 +25,6 @@ const initialNodes = [
     id: "1",
     data: {
       label: "organisation_bop_eop_mrr",
-      drift: 10,
-      dataAdded: 100,
     },
     type: "metricNode",
     position: { x: 50, y: 100 },
@@ -38,8 +36,6 @@ const initialNodes = [
     type: "metricNode",
     data: {
       label: "bop_eop_mrr_monthly_by_country",
-      drift: 5,
-      dataAdded: 50,
     },
     position: { x: 450, y: 100 },
     sourcePosition: Position.Right,
