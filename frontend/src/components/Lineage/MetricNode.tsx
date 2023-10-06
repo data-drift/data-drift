@@ -24,6 +24,25 @@ const StyledMetricNode = styled.div`
   }
 `;
 
+const EventChip = styled.div<{ eventType: Event["type"] }>`
+  background-color: ${(props) =>
+    props.eventType === "Drift"
+      ? props.theme.colors.primary
+      : props.theme.colors.background};
+  color: ${(props) => (props.eventType === "Drift" ? "#000" : "#fff")};
+  border-radius: 0;
+  padding: 4px 8px;
+  display: inline-block;
+  text-align: center;
+  margin-right: 5px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s; // For a smooth visual feedback
+  &:hover {
+    transform: scale(1.05); // Slightly enlarges the chip
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); // Adds a subtle shadow for depth
+  }
+`;
+
 type Event = {
   type: "New Data" | "Drift";
 };
@@ -42,7 +61,9 @@ export const MetricNode = ({
       <strong>{metricName}</strong>
       <ul>
         {events.map((event, index) => (
-          <li key={index}>{event.type}</li>
+          <li key={index}>
+            <EventChip eventType={event.type}>{event.type}</EventChip>
+          </li>
         ))}
       </ul>
     </StyledMetricNode>
