@@ -1,5 +1,4 @@
 import { Edge, Node, Position } from "reactflow";
-import { nodes, edges } from "./mocked-data";
 import { DDConfigMetric } from "../../services/data-drift";
 import { extractFileNameAndPath } from "../../services/string-helpers";
 
@@ -14,7 +13,7 @@ export const getNodesFromConfig = (
 ): { nodes: Node[]; edges: Edge[] } => {
   const metricNode: Node = {
     ...baseNode,
-    id: "2",
+    id: "metric",
     position: { x: 450, y: 10 },
     data: {
       label: extractFileNameAndPath(metric.filepath).fileName,
@@ -26,8 +25,8 @@ export const getNodesFromConfig = (
         console.log("upstreamMetric", upstreamMetric);
         return {
           ...baseNode,
-          position: { x: 50, y: 10 },
-          id: "1",
+          position: { x: 50, y: 10 + i * 100 },
+          id: `upstream-${i}`,
           data: {
             label: extractFileNameAndPath(upstreamMetric).fileName,
             events: [],
@@ -35,5 +34,12 @@ export const getNodesFromConfig = (
         } satisfies Node;
       })
     : [];
+
+  const edges = upstreamNodes.map((upstreamNode, i) => ({
+    id: `edge-${i}`,
+    source: upstreamNode.id,
+    target: metricNode.id,
+    animated: true,
+  }));
   return { nodes: [metricNode, ...upstreamNodes], edges };
 };
