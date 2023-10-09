@@ -1,8 +1,8 @@
 import styled from "@emotion/styled";
-import Lineage from "../components/Lineage/Lineage";
+import Lineage from "../../components/Lineage/Lineage";
 import { Position } from "reactflow";
-import DualTableHeader from "../components/Table/DualTableHeader";
-import { DualTable } from "../components/Table/DualTable";
+import DualTableHeader from "../../components/Table/DualTableHeader";
+import { DualTable } from "../../components/Table/DualTable";
 import { useCallback, useState } from "react";
 
 const Container = styled.div`

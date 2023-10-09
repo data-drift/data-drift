@@ -5,7 +5,7 @@ import MetricCohort from "./pages/MetricCohorts";
 import MetricReportWaterfall from "./pages/MetricReportWaterfall";
 import { HomePage } from "./pages/HomePage";
 import DriftListPage from "./pages/DriftList";
-import { Overview } from "./pages/Overview";
+import { Overview } from "./pages/Overview/Overview";
 
 export const router = createBrowserRouter([
   {
