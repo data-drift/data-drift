@@ -31,6 +31,7 @@ export const StyledSelect = styled.select`
   border: none;
   padding: 10px 20px;
   font-size: 16px;
+  max-width: 50vw;
   cursor: pointer;
 `;
 

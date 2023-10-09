@@ -13,8 +13,9 @@ import {
   StyledHeader,
   StyledSelect,
 } from "./components";
-import { nodes, edges, mockedDiffTable } from "./mocked-data";
+import { mockedDiffTable } from "./mocked-data";
 import { loader, useOverviewLoaderData } from "./loader";
+import { getNodesFromConfig } from "./flow-nodes";
 
 const Overview = () => {
   const config = useOverviewLoaderData();
@@ -38,6 +39,8 @@ const Overview = () => {
       (prevDate) => new Date(prevDate.setDate(prevDate.getDate() - 1))
     );
   }, []);
+
+  const { nodes, edges } = getNodesFromConfig(config.config.metrics[0]);
   return (
     <Container>
       <StyledHeader>

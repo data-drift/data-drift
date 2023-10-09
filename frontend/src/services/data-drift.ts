@@ -172,7 +172,7 @@ export const ddCommitDiffUrlFactory = (params: {
   return `/report/${params.installationId}/${params.owner}/${params.repo}/commit/${params.commitSha}`;
 };
 
-type DDConfigMetric = {
+export type DDConfigMetric = {
   filepath: string;
   upstreamFiles?: string[] | null;
   dateColumnName: string;
