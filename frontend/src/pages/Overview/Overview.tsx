@@ -15,7 +15,7 @@ import {
 } from "./components";
 import { nodes, edges, mockedDiffTable } from "./mocked-data";
 
-export const Overview = () => {
+const Overview = () => {
   const dualTableHeaderState = DualTableHeader.useState();
 
   const availableMetrics = ["Metric1", "Metric2", "Metric3"];
@@ -76,3 +76,5 @@ export const Overview = () => {
     </Container>
   );
 };
+
+export default Overview;
