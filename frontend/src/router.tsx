@@ -15,6 +15,7 @@ export const router = createBrowserRouter([
   {
     path: "/:installationId/:owner/:repo/overview",
     element: <Overview />,
+    loader: Overview.loader,
   },
   {
     path: "/ghform",

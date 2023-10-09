@@ -175,6 +175,11 @@ export const ddCommitDiffUrlFactory = (params: {
 type DDConfigMetric = {
   filepath: string;
   upstreamFiles?: string[] | null;
+  dateColumnName: string;
+  KPIColumnName: string;
+  metricName: string;
+  timeGrains: string[];
+  dimensions: string[];
 };
 
 export type DDConfig = {

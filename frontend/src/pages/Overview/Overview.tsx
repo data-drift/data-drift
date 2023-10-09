@@ -14,11 +14,15 @@ import {
   StyledSelect,
 } from "./components";
 import { nodes, edges, mockedDiffTable } from "./mocked-data";
+import { loader, useOverviewLoaderData } from "./loader";
 
 const Overview = () => {
+  const config = useOverviewLoaderData();
   const dualTableHeaderState = DualTableHeader.useState();
 
-  const availableMetrics = ["Metric1", "Metric2", "Metric3"];
+  const availableMetrics = config.config.metrics.map(
+    (metric) => metric.filepath
+  );
   const [selectedMetric, setSelectedMetric] = useState(availableMetrics[0]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -76,5 +80,7 @@ const Overview = () => {
     </Container>
   );
 };
+
+Overview.loader = loader;
 
 export default Overview;
