@@ -39,6 +39,7 @@ function Lineage({ nodes, edges }: LineageProps) {
   return (
     <StyledContainer>
       <ReactFlow
+        preventScrolling={false}
         draggable={false}
         zoomOnScroll={false}
         zoomOnPinch={false}
