@@ -48,12 +48,12 @@ We know providing actionnable and trusted metrics is hard. Here is how Datadrift
 
 ## dbt installation (beta)
 
-[Check the video](https://app.claap.io/sammyt/demo-beta-integration-dbt-c-ApwBh9kt4p-Qp4wXE2MfCzG)
-
 ```shell
 pip install datagit
 datagit dbt run
 ```
+
+[Check the video](https://app.claap.io/sammyt/demo-beta-integration-dbt-c-ApwBh9kt4p-Qp4wXE2MfCzG)
 
 ## Python installation
 
@@ -67,7 +67,7 @@ Put the probe in your pipeline.
 
 For a step-by-step guide on the python installation, see the [docs](https://pypi.org/project/datagit/).
 
-[Fill the form on our website](https://www.data-drift.io/), we are in beta, contact us for installation (2\*30min meetings).
+We are in development and we would love to do the installation with you. [Fill the form on our website](https://www.data-drift.io/) so we can do a 15min demo. If the tool solves your problem then the installation require 2\*30 min meeting.
 
 </br>
 
