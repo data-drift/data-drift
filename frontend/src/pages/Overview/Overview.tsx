@@ -21,10 +21,9 @@ const Overview = () => {
   const config = useOverviewLoaderData();
   const dualTableHeaderState = DualTableHeader.useState();
 
-  const availableMetrics = config.config.metrics.map(
-    (metric) => metric.filepath
+  const [selectedMetric, setSelectedMetric] = useState(
+    config.config.metrics[0]
   );
-  const [selectedMetric, setSelectedMetric] = useState(availableMetrics[0]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -40,7 +39,7 @@ const Overview = () => {
     );
   }, []);
 
-  const { nodes, edges } = getNodesFromConfig(config.config.metrics[0]);
+  const { nodes, edges } = getNodesFromConfig(selectedMetric);
   return (
     <Container>
       <StyledHeader>
@@ -54,12 +53,17 @@ const Overview = () => {
         </StyledDate>
 
         <StyledSelect
-          value={selectedMetric}
-          onChange={(e) => setSelectedMetric(e.target.value)}
+          value={selectedMetric.filepath}
+          onChange={(e) => {
+            const selectedMetric = config.config.metrics.find(
+              (metric) => metric.filepath === e.target.value
+            );
+            selectedMetric && setSelectedMetric(selectedMetric);
+          }}
         >
-          {availableMetrics.map((metric) => (
-            <option key={metric} value={metric}>
-              {metric}
+          {config.config.metrics.map((metric) => (
+            <option key={metric.filepath} value={metric.filepath}>
+              {metric.filepath}
             </option>
           ))}
         </StyledSelect>

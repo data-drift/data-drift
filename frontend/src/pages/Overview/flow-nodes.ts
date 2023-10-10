@@ -14,7 +14,7 @@ export const getNodesFromConfig = (
   const metricNode: Node = {
     ...baseNode,
     id: "metric",
-    position: { x: 450, y: 10 },
+    position: { x: 650, y: 10 },
     data: {
       label: extractFileNameAndPath(metric.filepath).fileName,
       events: [],
