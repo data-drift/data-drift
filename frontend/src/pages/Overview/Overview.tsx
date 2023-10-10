@@ -19,25 +19,41 @@ import { getNodesFromConfig } from "./flow-nodes";
 
 const Overview = () => {
   const config = useOverviewLoaderData();
+
   const dualTableHeaderState = DualTableHeader.useState();
 
   const [selectedMetric, setSelectedMetric] = useState(
     config.config.metrics[0]
   );
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const searchParams = new URLSearchParams(window.location.search);
+  const initialSnapshotDate = searchParams.get("snapshotDate")
+    ? new Date(searchParams.get("snapshotDate") as string)
+    : new Date();
+  const [currentDate, setCurrentDate] = useState(initialSnapshotDate);
+  const handleSetCurrentDate = useCallback(
+    (newDate: Date) => {
+      const searchParams = new URLSearchParams(window.location.search);
+      searchParams.set(
+        "snapshotDate",
+        currentDate.toISOString().substring(0, 10)
+      );
+      const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
+      window.history.pushState({ path: newUrl }, "", newUrl);
+      setCurrentDate(newDate);
+    },
+    [currentDate]
+  );
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const incrementDate = useCallback(() => {
-    setCurrentDate(
-      (prevDate) => new Date(prevDate.setDate(prevDate.getDate() + 1))
-    );
-  }, []);
+    const newDate = new Date(currentDate.setDate(currentDate.getDate() + 1));
+    handleSetCurrentDate(newDate);
+  }, [handleSetCurrentDate, currentDate]);
 
   const decrementDate = useCallback(() => {
-    setCurrentDate(
-      (prevDate) => new Date(prevDate.setDate(prevDate.getDate() - 1))
-    );
-  }, []);
+    const newDate = new Date(currentDate.setDate(currentDate.getDate() - 1));
+    handleSetCurrentDate(newDate);
+  }, [handleSetCurrentDate, currentDate]);
 
   const { nodes, edges } = getNodesFromConfig(selectedMetric);
   return (
