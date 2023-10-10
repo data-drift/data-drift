@@ -1,6 +1,5 @@
 import Lineage from "../../components/Lineage/Lineage";
-import DualTableHeader from "../../components/Table/DualTableHeader";
-import { DualTable } from "../../components/Table/DualTable";
+import { DualTableProps } from "../../components/Table/DualTable";
 import { useCallback, useEffect, useState } from "react";
 import { Edge, Node } from "reactflow";
 
@@ -15,17 +14,18 @@ import {
   StyledHeader,
   StyledSelect,
 } from "./components";
-import { mockedDiffTable } from "./mocked-data";
 import { loader, useOverviewLoaderData } from "./loader";
 import { getNodesFromConfig } from "./flow-nodes";
-import { getCommitList } from "../../services/data-drift";
+import { getCommitList, getPatchAndHeader } from "../../services/data-drift";
 import { Endpoints } from "@octokit/types";
+import { DiffTable } from "../DisplayCommit/DiffTable";
+import { parsePatch } from "../../services/patch.mapper";
+import Loader from "../../components/Common/Loader";
 
 const Overview = () => {
   const config = useOverviewLoaderData();
   const searchParams = new URLSearchParams(window.location.search);
 
-  const dualTableHeaderState = DualTableHeader.useState();
   const initialSelectedMetric = Number(searchParams.get("metric")) || 0;
   const [selectedMetric, setSelectedMetric] = useState(
     config.config.metrics[initialSelectedMetric]
@@ -77,6 +77,33 @@ const Overview = () => {
   }, []);
 
   console.log(selectedCommit);
+  const [dualTableData, setDualTableData] = useState({
+    dualTableProps: undefined as undefined | DualTableProps,
+    loading: false,
+  });
+  useEffect(() => {
+    const fetchPatchData = async () => {
+      if (!selectedCommit) return;
+      setDualTableData({ dualTableProps: undefined, loading: true });
+      const patchAndHeader = await getPatchAndHeader({
+        installationId: config.params.installationId,
+        owner: config.params.owner,
+        repo: config.params.repo,
+        commitSHA: selectedCommit,
+      });
+      console.log(patchAndHeader);
+      const { oldData, newData } = parsePatch(
+        patchAndHeader.patch,
+        patchAndHeader.headers
+      );
+      const dualTableProps = {
+        tableProps1: oldData,
+        tableProps2: newData,
+      };
+      setDualTableData({ dualTableProps, loading: false });
+    };
+    void fetchPatchData();
+  }, [selectedCommit, config.params]);
 
   useEffect(() => {
     const fetchCommit = async () => {
@@ -149,11 +176,13 @@ const Overview = () => {
       </LineageContainer>
 
       <DiffTableContainer>
-        <DualTableHeader
-          state={dualTableHeaderState}
-          copyAction={console.log}
-        />
-        <DualTable {...mockedDiffTable} />
+        {dualTableData.loading ? (
+          <Loader />
+        ) : (
+          dualTableData.dualTableProps && (
+            <DiffTable dualTableProps={dualTableData.dualTableProps} />
+          )
+        )}
       </DiffTableContainer>
     </Container>
   );

@@ -63,7 +63,7 @@ const SubEventChip = styled.div`
 
 type SubEvent = {
   name: string;
-  onClick: () => void;
+  onClick?: () => void;
 };
 
 export type LineageEvent = {
