@@ -1,7 +1,9 @@
 import Lineage from "../../components/Lineage/Lineage";
 import DualTableHeader from "../../components/Table/DualTableHeader";
 import { DualTable } from "../../components/Table/DualTable";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { Edge, Node } from "reactflow";
+
 import {
   Container,
   DiffTableContainer,
@@ -16,6 +18,7 @@ import {
 import { mockedDiffTable } from "./mocked-data";
 import { loader, useOverviewLoaderData } from "./loader";
 import { getNodesFromConfig } from "./flow-nodes";
+import { getCommitList } from "../../services/data-drift";
 
 const Overview = () => {
   const config = useOverviewLoaderData();
@@ -43,6 +46,26 @@ const Overview = () => {
     },
     [currentDate]
   );
+
+  const [commitListData, setCommitListData] = useState({
+    data: [] as Awaited<ReturnType<typeof getCommitList>>["data"],
+    loading: true,
+    nodes: [] as Node[],
+    edges: [] as Edge[],
+  });
+
+  useEffect(() => {
+    const fetchCommit = async () => {
+      const result = await getCommitList(
+        config.params,
+        currentDate.toISOString().substring(0, 10)
+      );
+      const { nodes, edges } = getNodesFromConfig(selectedMetric, result.data);
+      setCommitListData({ data: result.data, loading: false, nodes, edges });
+    };
+    void fetchCommit();
+  }, [currentDate, config.params, selectedMetric]);
+
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const incrementDate = useCallback(() => {
@@ -55,7 +78,6 @@ const Overview = () => {
     handleSetCurrentDate(newDate);
   }, [handleSetCurrentDate, currentDate]);
 
-  const { nodes, edges } = getNodesFromConfig(selectedMetric);
   return (
     <Container>
       <StyledHeader>
@@ -88,7 +110,10 @@ const Overview = () => {
       <LineageContainer>
         {!isCollapsed && (
           <StyledCollapsibleContent isCollapsed={isCollapsed}>
-            <Lineage nodes={nodes} edges={edges} />
+            <Lineage
+              nodes={commitListData.nodes}
+              edges={commitListData.edges}
+            />
           </StyledCollapsibleContent>
         )}
       </LineageContainer>

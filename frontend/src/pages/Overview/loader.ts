@@ -22,9 +22,12 @@ export const loader = async ({
 }: {
   params: Params<"installationId" | "owner" | "repo">;
 }) => {
+  const searchParams = new URLSearchParams(window.location.search);
+  const snapshotDate = searchParams.get("snapshotDate") || undefined;
+
   assertParamsIsDefined(params);
   const [result, config] = await Promise.all([
-    getCommitList(params),
+    getCommitList(params, snapshotDate),
     getConfig(params),
   ]);
 
