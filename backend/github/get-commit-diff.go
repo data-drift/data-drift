@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/data-drift/data-drift/helpers"
 	"github.com/gin-gonic/gin"
@@ -146,7 +147,21 @@ func GetCommitList(c *gin.Context) {
 		return
 	}
 
-	commits, _, err := client.Repositories.ListCommits(c, owner, repo, nil)
+	opt := &github.CommitsListOptions{
+		ListOptions: github.ListOptions{
+			PerPage: 100,
+		},
+	}
+
+	date := c.Query("date")
+	if date != "" {
+		start, _ := time.Parse(time.RFC3339, date+"T00:00:00Z")
+		end, _ := time.Parse(time.RFC3339, date+"T23:59:59Z")
+		opt.Since = start
+		opt.Until = end
+	}
+
+	commits, _, err := client.Repositories.ListCommits(c, owner, repo, opt)
 	if err != nil {
 		return
 	}

@@ -1,9 +1,11 @@
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import { CommitParam } from "../pages/DisplayCommit/DisplayCommit";
 import { MetricCohortsResults } from "./data-drift.types";
 import { Endpoints } from "@octokit/types";
 
-const DATA_DRIFT_API_URL = "https://data-drift.herokuapp.com";
+const DATA_DRIFT_API_URL =
+  String(import.meta.env.VITE_DATADRIFT_SERVER_URL) ||
+  "https://data-drift.herokuapp.com";
 
 export const getPatchAndHeader = async (
   params: CommitParam & { installationId: string }
@@ -45,16 +47,39 @@ export const getMetricCohorts = async ({
   return result;
 };
 
-export const getCommitList = async (params: {
-  installationId: string;
-  owner: string;
-  repo: string;
-}) => {
+const commitListCache = new Map<
+  string,
+  AxiosResponse<
+    Endpoints["GET /repos/{owner}/{repo}/commits"]["response"]["data"]
+  >
+>();
+
+export const getCommitList = async (
+  params: {
+    installationId: string;
+    owner: string;
+    repo: string;
+  },
+  date?: string
+) => {
+  const cacheKey = `${params.owner}-${params.repo}-${params.installationId}-${
+    date || "no-date"
+  }`;
+
+  if (commitListCache.has(cacheKey)) {
+    const cachedResult = commitListCache.get(cacheKey);
+    if (cachedResult) {
+      return cachedResult;
+    }
+  }
   const result = await axios.get<
     Endpoints["GET /repos/{owner}/{repo}/commits"]["response"]["data"]
   >(`${DATA_DRIFT_API_URL}/gh/${params.owner}/${params.repo}/commits`, {
     headers: { "Installation-Id": params.installationId },
+    params: { date },
   });
+
+  commitListCache.set(cacheKey, result);
   return result;
 };
 
@@ -172,9 +197,14 @@ export const ddCommitDiffUrlFactory = (params: {
   return `/report/${params.installationId}/${params.owner}/${params.repo}/commit/${params.commitSha}`;
 };
 
-type DDConfigMetric = {
+export type DDConfigMetric = {
   filepath: string;
   upstreamFiles?: string[] | null;
+  dateColumnName: string;
+  KPIColumnName: string;
+  metricName: string;
+  timeGrains: string[];
+  dimensions: string[];
 };
 
 export type DDConfig = {

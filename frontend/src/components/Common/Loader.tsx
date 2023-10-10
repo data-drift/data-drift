@@ -10,7 +10,7 @@ const spin = keyframes`
 `;
 
 const LoaderWrapper = styled.div`
-  background-color: #121212;
+  background-color: ${(props) => props.theme.colors.background2};
   display: flex;
   align-items: center;
   justify-content: center;

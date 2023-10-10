@@ -63,11 +63,13 @@ const SubEventChip = styled.div`
 
 type SubEvent = {
   name: string;
+  onClick?: () => void;
 };
 
 export type LineageEvent = {
   type: "New Data" | "Drift";
   subEvents?: SubEvent[];
+  onClick?: () => void;
 };
 
 type MetricNodeProps = {
@@ -92,7 +94,7 @@ export const MetricNode = ({
         setExpandedEvent(event.type);
       }
     } else {
-      alert(`Navigate to ${event.type}`);
+      event.onClick && event.onClick();
     }
   };
 
@@ -114,7 +116,7 @@ export const MetricNode = ({
                   {event.subEvents?.map((subEvent) => (
                     <li key={subEvent.name}>
                       <SubEventChip
-                        onClick={() => alert(`Navigate to ${subEvent.name}`)}
+                        onClick={() => subEvent.onClick && subEvent.onClick()}
                       >
                         {subEvent.name}
                       </SubEventChip>
