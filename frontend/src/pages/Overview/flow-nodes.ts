@@ -11,7 +11,8 @@ const baseNode = {
 
 const getFileCommits = (
   commitList: Awaited<ReturnType<typeof getCommitList>>["data"],
-  filepath: DDConfigMetric["filepath"]
+  filepath: DDConfigMetric["filepath"],
+  selectCommit: (commit: string) => void
 ): LineageEvent[] => {
   const metricCommits = commitList.filter((commit) => {
     return commit.commit.message.includes(filepath);
@@ -19,16 +20,24 @@ const getFileCommits = (
   const metricEvents = metricCommits.map((commit) => {
     const isDrift = commit.commit.message.includes("Drift");
 
-    return { type: isDrift ? "Drift" : "New Data" };
+    return {
+      type: isDrift ? "Drift" : "New Data",
+      onClick: () => selectCommit(commit.sha),
+    };
   }) satisfies LineageEvent[];
   return metricEvents;
 };
 
 export const getNodesFromConfig = (
   metric: DDConfigMetric,
-  commitList: Awaited<ReturnType<typeof getCommitList>>["data"]
+  commitList: Awaited<ReturnType<typeof getCommitList>>["data"],
+  selectCommit: (commit: string) => void
 ): { nodes: Node[]; edges: Edge[] } => {
-  const metricEvents = getFileCommits(commitList, metric.filepath);
+  const metricEvents = getFileCommits(
+    commitList,
+    metric.filepath,
+    selectCommit
+  );
   const metricNode: Node = {
     ...baseNode,
     id: "metric",
@@ -40,7 +49,11 @@ export const getNodesFromConfig = (
   } satisfies Node;
   const upstreamNodes = metric.upstreamFiles
     ? metric.upstreamFiles.map((upstreamMetric, i) => {
-        const upstreamEvents = getFileCommits(commitList, upstreamMetric);
+        const upstreamEvents = getFileCommits(
+          commitList,
+          upstreamMetric,
+          selectCommit
+        );
         return {
           ...baseNode,
           position: { x: 50, y: 10 + i * 100 },

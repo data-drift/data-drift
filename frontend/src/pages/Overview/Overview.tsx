@@ -66,17 +66,33 @@ const Overview = () => {
     edges: [] as Edge[],
   });
 
+  const initialCommitSha = searchParams.get("commitSha");
+  const [selectedCommit, setSelectedCommit] = useState(initialCommitSha);
+  const handleSetSelectedCommit = useCallback((newCommitSha: string) => {
+    const searchParams = new URLSearchParams(window.location.search);
+    searchParams.set("commitSha", newCommitSha);
+    const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
+    window.history.pushState({ path: newUrl }, "", newUrl);
+    setSelectedCommit(newCommitSha);
+  }, []);
+
+  console.log(selectedCommit);
+
   useEffect(() => {
     const fetchCommit = async () => {
       const result = await getCommitList(
         config.params,
         currentDate.toISOString().substring(0, 10)
       );
-      const { nodes, edges } = getNodesFromConfig(selectedMetric, result.data);
+      const { nodes, edges } = getNodesFromConfig(
+        selectedMetric,
+        result.data,
+        handleSetSelectedCommit
+      );
       setCommitListData({ data: result.data, loading: false, nodes, edges });
     };
     void fetchCommit();
-  }, [currentDate, config.params, selectedMetric]);
+  }, [currentDate, config.params, selectedMetric, handleSetSelectedCommit]);
 
   const [isCollapsed, setIsCollapsed] = useState(false);
 
