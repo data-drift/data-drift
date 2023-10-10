@@ -19,6 +19,7 @@ import { mockedDiffTable } from "./mocked-data";
 import { loader, useOverviewLoaderData } from "./loader";
 import { getNodesFromConfig } from "./flow-nodes";
 import { getCommitList } from "../../services/data-drift";
+import { Endpoints } from "@octokit/types";
 
 const Overview = () => {
   const config = useOverviewLoaderData();
@@ -59,7 +60,7 @@ const Overview = () => {
   );
 
   const [commitListData, setCommitListData] = useState({
-    data: [] as Awaited<ReturnType<typeof getCommitList>>["data"],
+    data: [] as Endpoints["GET /repos/{owner}/{repo}/commits"]["response"]["data"],
     loading: true,
     nodes: [] as Node[],
     edges: [] as Edge[],

@@ -67,7 +67,10 @@ export const getCommitList = async (
   }`;
 
   if (commitListCache.has(cacheKey)) {
-    return commitListCache.get(cacheKey);
+    const cachedResult = commitListCache.get(cacheKey);
+    if (cachedResult) {
+      return cachedResult;
+    }
   }
   const result = await axios.get<
     Endpoints["GET /repos/{owner}/{repo}/commits"]["response"]["data"]
