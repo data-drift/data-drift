@@ -22,13 +22,24 @@ import { getCommitList } from "../../services/data-drift";
 
 const Overview = () => {
   const config = useOverviewLoaderData();
+  const searchParams = new URLSearchParams(window.location.search);
 
   const dualTableHeaderState = DualTableHeader.useState();
-
+  const initialSelectedMetric = Number(searchParams.get("metric")) || 0;
   const [selectedMetric, setSelectedMetric] = useState(
-    config.config.metrics[0]
+    config.config.metrics[initialSelectedMetric]
   );
-  const searchParams = new URLSearchParams(window.location.search);
+  const handleSetSelectedMetric = useCallback(
+    (newMetricIndex: number) => {
+      const searchParams = new URLSearchParams(window.location.search);
+      searchParams.set("metric", newMetricIndex.toString());
+      const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
+      window.history.pushState({ path: newUrl }, "", newUrl);
+      setSelectedMetric(config.config.metrics[newMetricIndex]);
+    },
+    [config.config.metrics]
+  );
+
   const initialSnapshotDate = searchParams.get("snapshotDate")
     ? new Date(searchParams.get("snapshotDate") as string)
     : new Date();
@@ -93,10 +104,12 @@ const Overview = () => {
         <StyledSelect
           value={selectedMetric.filepath}
           onChange={(e) => {
-            const selectedMetric = config.config.metrics.find(
+            const selectedMetric = config.config.metrics.findIndex(
               (metric) => metric.filepath === e.target.value
             );
-            selectedMetric && setSelectedMetric(selectedMetric);
+            if (typeof selectedMetric === "number" && !isNaN(selectedMetric)) {
+              handleSetSelectedMetric(selectedMetric);
+            }
           }}
         >
           {config.config.metrics.map((metric) => (

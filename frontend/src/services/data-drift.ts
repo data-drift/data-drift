@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import { CommitParam } from "../pages/DisplayCommit/DisplayCommit";
 import { MetricCohortsResults } from "./data-drift.types";
 import { Endpoints } from "@octokit/types";
@@ -47,6 +47,13 @@ export const getMetricCohorts = async ({
   return result;
 };
 
+const commitListCache = new Map<
+  string,
+  AxiosResponse<
+    Endpoints["GET /repos/{owner}/{repo}/commits"]["response"]["data"]
+  >
+>();
+
 export const getCommitList = async (
   params: {
     installationId: string;
@@ -55,12 +62,21 @@ export const getCommitList = async (
   },
   date?: string
 ) => {
+  const cacheKey = `${params.owner}-${params.repo}-${params.installationId}-${
+    date || "no-date"
+  }`;
+
+  if (commitListCache.has(cacheKey)) {
+    return commitListCache.get(cacheKey);
+  }
   const result = await axios.get<
     Endpoints["GET /repos/{owner}/{repo}/commits"]["response"]["data"]
   >(`${DATA_DRIFT_API_URL}/gh/${params.owner}/${params.repo}/commits`, {
     headers: { "Installation-Id": params.installationId },
     params: { date },
   });
+
+  commitListCache.set(cacheKey, result);
   return result;
 };
 
