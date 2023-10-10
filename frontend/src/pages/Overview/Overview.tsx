@@ -54,7 +54,11 @@ const Overview = () => {
       );
       const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
       window.history.pushState({ path: newUrl }, "", newUrl);
+
       setCurrentDate(newDate);
+      handleSetSelectedCommit("");
+      setCommitListData((prev) => ({ ...prev, loading: true }));
+      setDualTableData({ dualTableProps: undefined, loading: false });
     },
     [currentDate]
   );
@@ -76,7 +80,6 @@ const Overview = () => {
     setSelectedCommit(newCommitSha);
   }, []);
 
-  console.log(selectedCommit);
   const [dualTableData, setDualTableData] = useState({
     dualTableProps: undefined as undefined | DualTableProps,
     loading: false,
@@ -91,7 +94,6 @@ const Overview = () => {
         repo: config.params.repo,
         commitSHA: selectedCommit,
       });
-      console.log(patchAndHeader);
       const { oldData, newData } = parsePatch(
         patchAndHeader.patch,
         patchAndHeader.headers
@@ -175,15 +177,17 @@ const Overview = () => {
         )}
       </LineageContainer>
 
-      <DiffTableContainer>
-        {dualTableData.loading ? (
-          <Loader />
-        ) : (
-          dualTableData.dualTableProps && (
-            <DiffTable dualTableProps={dualTableData.dualTableProps} />
-          )
-        )}
-      </DiffTableContainer>
+      {selectedCommit && (
+        <DiffTableContainer>
+          {dualTableData.loading ? (
+            <Loader />
+          ) : (
+            dualTableData.dualTableProps && (
+              <DiffTable dualTableProps={dualTableData.dualTableProps} />
+            )
+          )}
+        </DiffTableContainer>
+      )}
     </Container>
   );
 };
