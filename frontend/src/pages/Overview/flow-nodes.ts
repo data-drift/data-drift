@@ -27,19 +27,17 @@ export const getFileCommits = (
         .split("/")
         .pop()
         ?.split(".")[0] as string;
+      const subEvent = {
+        name: partitionName,
+        onClick: () => selectCommit(commit.sha),
+      } satisfies NonNullable<LineageEvent["subEvents"]>[0];
       const existingEvent = acc.find((event) => event.type === type);
       if (existingEvent) {
-        existingEvent.subEvents?.push({
-          name: partitionName,
-        });
+        existingEvent.subEvents?.push(subEvent);
       } else {
         acc.push({
           type,
-          subEvents: [
-            {
-              name: partitionName,
-            },
-          ],
+          subEvents: [subEvent],
         });
       }
       return acc;

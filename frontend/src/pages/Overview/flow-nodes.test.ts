@@ -1,3 +1,4 @@
+import { LineageEvent } from "../../components/Lineage/MetricNode";
 import { getCommitList } from "../../services/data-drift";
 import { getFileCommits } from "./flow-nodes";
 
@@ -39,11 +40,11 @@ describe("getFileCommits", () => {
 
   it("should return an array of lineage events for a file", () => {
     const filepath = "path/to/file";
-    const selectCommit = jest.fn();
+    const selectCommit = jest.fn<(commitSha: string) => void, [string]>();
     const expectedEvents = [
-      { type: "Drift", onClick: expect.any(Function) },
-      { type: "New Data", onClick: expect.any(Function) },
-    ];
+      { type: "Drift", onClick: expect.any(Function) as () => void },
+      { type: "New Data", onClick: expect.any(Function) as () => void },
+    ] satisfies LineageEvent[];
 
     const events = getFileCommits(commitList, filepath, selectCommit);
 
@@ -68,9 +69,9 @@ describe("getFileCommits", () => {
         type: "New Data",
         onClick: undefined,
         subEvents: [
-          { name: "2022-08" },
-          { name: "2022-09" },
-          { name: "2022-10" },
+          { name: "2022-08", onClick: expect.any(Function) as () => void },
+          { name: "2022-09", onClick: expect.any(Function) as () => void },
+          { name: "2022-10", onClick: expect.any(Function) as () => void },
         ],
       },
     ];
@@ -86,12 +87,17 @@ describe("getFileCommits", () => {
       {
         type: "New Data",
         onClick: undefined,
-        subEvents: [{ name: "2022-08" }, { name: "2022-09" }],
+        subEvents: [
+          { name: "2022-08", onClick: expect.any(Function) as () => void },
+          { name: "2022-09", onClick: expect.any(Function) as () => void },
+        ],
       },
       {
         type: "Drift",
         onClick: undefined,
-        subEvents: [{ name: "2022-10" }],
+        subEvents: [
+          { name: "2022-10", onClick: expect.any(Function) as () => void },
+        ],
       },
     ];
 
