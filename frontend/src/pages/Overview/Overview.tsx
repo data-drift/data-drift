@@ -177,7 +177,7 @@ const Overview = () => {
         )}
       </LineageContainer>
 
-      {selectedCommit && (
+      {selectedCommit ? (
         <DiffTableContainer>
           {dualTableData.loading ? (
             <Loader />
@@ -187,6 +187,8 @@ const Overview = () => {
             )
           )}
         </DiffTableContainer>
+      ) : (
+        "No drift selected"
       )}
     </Container>
   );
