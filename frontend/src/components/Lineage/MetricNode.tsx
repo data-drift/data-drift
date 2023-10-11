@@ -8,6 +8,8 @@ const StyledMetricNode = styled.div`
   min-width: 200px;
   background-color: ${(props) => props.theme.colors.text};
   text-align: left;
+  max-height: 250px;
+  overflow-y: scroll;
   strong {
     display: block;
     margin-bottom: 8px;

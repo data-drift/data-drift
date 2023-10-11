@@ -9,7 +9,7 @@ const baseNode = {
   targetPosition: Position.Left,
 };
 
-const getFileCommits = (
+export const getFileCommits = (
   commitList: Awaited<ReturnType<typeof getCommitList>>["data"],
   filepath: DDConfigMetric["filepath"],
   selectCommit: (commit: string) => void
@@ -17,14 +17,38 @@ const getFileCommits = (
   const metricCommits = commitList.filter((commit) => {
     return commit.commit.message.includes(filepath);
   });
-  const metricEvents = metricCommits.map((commit) => {
+  const metricEvents = metricCommits.reduce((acc, commit) => {
+    console.log(acc);
     const isDrift = commit.commit.message.includes("Drift");
-
-    return {
-      type: isDrift ? "Drift" : "New Data",
-      onClick: () => selectCommit(commit.sha),
-    };
-  }) satisfies LineageEvent[];
+    const type = isDrift ? "Drift" : "New Data";
+    const isPartition = commit.commit.message.includes(filepath + "/");
+    if (isPartition) {
+      const partitionName = commit.commit.message
+        .split("/")
+        .pop()
+        ?.split(".")[0] as string;
+      const subEvent = {
+        name: partitionName,
+        onClick: () => selectCommit(commit.sha),
+      } satisfies NonNullable<LineageEvent["subEvents"]>[0];
+      const existingEvent = acc.find((event) => event.type === type);
+      if (existingEvent) {
+        existingEvent.subEvents?.push(subEvent);
+      } else {
+        acc.push({
+          type,
+          subEvents: [subEvent],
+        });
+      }
+      return acc;
+    } else {
+      acc.push({
+        type,
+        onClick: () => selectCommit(commit.sha),
+      });
+      return acc;
+    }
+  }, [] as LineageEvent[]) satisfies LineageEvent[];
   return metricEvents;
 };
 
