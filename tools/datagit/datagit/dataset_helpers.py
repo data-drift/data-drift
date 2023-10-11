@@ -82,29 +82,9 @@ def compare_dataframes(
     initial_df: pd.DataFrame, final_df: pd.DataFrame, unique_key: str
 ):
     try:
-        initial_df = convert_object_to_string(initial_df)
-        final_df = convert_object_to_string(final_df)
-        # Get the unique keys for each dataframe
-        initial_keys = set(initial_df[unique_key])
-        final_keys = set(final_df[unique_key])
-
-        intersection_keys = initial_keys.intersection(final_keys)
-
-        # Calculate the additions, modifications, and deletions
-        additions = len(final_keys - intersection_keys)
-        deletions = len(initial_keys - intersection_keys)
-
-        # Get the intersection of the unique keys
-
-        # Filter the rows in df1 and df2 that match the intersection of the unique keys
-        df1_intersection = initial_df[
-            initial_df[unique_key].isin(intersection_keys)
-        ].reset_index(drop=True)
-        df2_intersection = final_df[
-            final_df[unique_key].isin(intersection_keys)
-        ].reset_index(drop=True)
-
-        diff = df1_intersection.compare(df2_intersection)
+        additions, deletions, diff = get_addition_deletion_and_diff(
+            initial_df, final_df, unique_key
+        )
 
         modifications = diff.__len__()
 
@@ -128,3 +108,30 @@ def compare_dataframes(
         return result.strip()
     except Exception as e:
         return f"Could not generate drift description: {e}"
+
+
+def get_addition_deletion_and_diff(initial_df, final_df, unique_key):
+    initial_df = convert_object_to_string(initial_df)
+    final_df = convert_object_to_string(final_df)
+    # Get the unique keys for each dataframe
+    initial_keys = set(initial_df[unique_key])
+    final_keys = set(final_df[unique_key])
+
+    intersection_keys = initial_keys.intersection(final_keys)
+
+    # Calculate the additions, modifications, and deletions
+    additions = len(final_keys - intersection_keys)
+    deletions = len(initial_keys - intersection_keys)
+
+    # Get the intersection of the unique keys
+
+    # Filter the rows in df1 and df2 that match the intersection of the unique keys
+    df1_intersection = initial_df[
+        initial_df[unique_key].isin(intersection_keys)
+    ].reset_index(drop=True)
+    df2_intersection = final_df[
+        final_df[unique_key].isin(intersection_keys)
+    ].reset_index(drop=True)
+
+    diff = df1_intersection.compare(df2_intersection)
+    return additions, deletions, diff
