@@ -15,9 +15,6 @@ const colorSelector = (year: string) => {
 
 export const getMetricColor = (yearMonthString: YearMonthString) => {
   const [year, month] = yearMonthString.split("-");
-  console.log(year, month);
   const scale = scaleLinear([0, 11], colorSelector(year));
-
-  console.log(scale(parseInt(month, 10)));
   return scale(parseInt(month, 10));
 };

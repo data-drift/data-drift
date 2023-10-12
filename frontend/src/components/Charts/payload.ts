@@ -362,6 +362,39 @@ const payload = {
   ],
 };
 
+const payload2 = {
+  datasets: [
+    {
+      data: [
+        { x: 0, y: 0 },
+        { x: 382.230462962963, y: -0.03636452131842 },
+      ],
+      label: "2022-02",
+    },
+    {
+      data: [
+        { x: 0, y: 0 },
+        { x: 368.223287037037, y: 0 },
+      ],
+      label: "2022-04",
+    },
+    {
+      data: [
+        { x: 0, y: 0 },
+        { x: 57.243946759259266, y: 0.44869295561106 },
+      ],
+      label: "2023-02",
+    },
+    {
+      data: [
+        { x: 0, y: 0 },
+        { x: 410.230462962963, y: 0.03263395504281 },
+      ],
+      label: "2022-01",
+    },
+  ],
+};
+
 const mapPayloadToArgs = (data: typeof payload) => {
   const result = data.datasets.reduce(
     (
@@ -393,3 +426,4 @@ const mapPayloadToArgs = (data: typeof payload) => {
 };
 
 export const args = mapPayloadToArgs(payload);
+export const argsWithOnePoint = mapPayloadToArgs(payload2);

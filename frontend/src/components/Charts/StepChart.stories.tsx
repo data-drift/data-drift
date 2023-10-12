@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 
 import { StepChart } from "./StepChart";
 
-import { args } from "./payload";
+import { args, argsWithOnePoint } from "./payload";
 
 const meta = {
   title: "Charts/StepChart",
@@ -52,4 +52,8 @@ export const SingleMetric: Story = {
 
 export const MultipleMetrics: Story = {
   args: args,
+};
+
+export const NoDataPoint: Story = {
+  args: argsWithOnePoint,
 };

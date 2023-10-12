@@ -12,18 +12,17 @@ export const mapCohortsMetricsMetadataToStepChartProps = (
   for (const metricName of Object.keys(
     cohortMetricMetadata
   ) as YearMonthString[]) {
-    // if (metricName !== "2023-02") continue;
     const cohort = cohortMetricMetadata[metricName];
     const RelativeHistory = sortRelativeHistory(cohort.RelativeHistory);
-    console.log(cohort.RelativeHistory);
-    if (RelativeHistory.length < 2) {
-      continue;
-    }
+
     metricNames.push(metricName);
     let latestKPI = undefined as number | undefined;
-    console.log(RelativeHistory);
     RelativeHistory.sort();
-    console.log(RelativeHistory);
+
+    data.push({
+      daysSinceFirstReport: 0,
+      [metricName]: 0,
+    });
 
     RelativeHistory.forEach((cohortMetric) => {
       const currentKPI = parseFloat(cohortMetric.RelativeValue);
@@ -37,7 +36,6 @@ export const mapCohortsMetricsMetadataToStepChartProps = (
       }
     });
   }
-  console.log(data);
 
   return { data, metricNames };
 };
