@@ -1,3 +1,4 @@
+import traceback
 from typing import Callable, Dict
 from github import Github
 
@@ -35,6 +36,10 @@ def run_drift_evaluator(
         "reported_dataframe": old_dataframe,
         "computed_dataframe": new_dataframe,
     }
-    drift_evaluation = drift_evaluator(data_drift_context)
-    #  return result
-    return drift_evaluation
+    try:
+        drift_evaluation = drift_evaluator(data_drift_context)
+        #  return result
+        return drift_evaluation
+    except Exception as e:
+        print("Drift evaluator failed: " + str(e))
+        traceback.print_exc()
