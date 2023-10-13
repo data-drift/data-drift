@@ -20,14 +20,7 @@ def dataframe_update_breakdown(
         ~final_dataframe["date"].isin(initial_dataframe["date"])
     ]
     step2 = pd.concat([step1, new_data[step1.columns]], axis=0)
-    step3 = step2.copy()
 
-    # 3. Update data
-    update_data = final_dataframe.loc[
-        final_dataframe["date"].isin(initial_dataframe["date"])
-    ]
-    step3.update(update_data[step1.columns])
-    step3 = step2[step2["date"].isin(final_dataframe["date"])]
     step3 = final_dataframe.drop(columns=columns_added)
 
     # 4. Add new columns
