@@ -1,4 +1,5 @@
 import time
+import traceback
 from typing import Optional, List, Callable, Dict
 import pandas as pd
 from github import Github, Repository, ContentFile, GithubException
@@ -206,6 +207,7 @@ def push_metric(
                     )
                 except Exception as e:
                     print("Drift evaluator failed: " + str(e))
+                    traceback.print_exc()
                     print("Using default drift evaluator")
                     alert_message = f"Drift detected:\n" + compare_dataframes(
                         old_data_with_freshdata,
