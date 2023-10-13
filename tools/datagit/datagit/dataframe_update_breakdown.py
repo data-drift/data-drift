@@ -31,7 +31,7 @@ def dataframe_update_breakdown(
     step3 = final_dataframe.drop(columns=columns_added)
 
     # 4. Add new columns
-    step4 = pd.concat([step3, final_dataframe[columns_added]], axis=1)
+    step4 = final_dataframe
 
     return {
         "MIGRATION Column Deleted": step1,
