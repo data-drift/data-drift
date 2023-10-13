@@ -17,5 +17,5 @@ setup(
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.6",
-    install_requires=["pandas", "PyGithub", "click"],
+    install_requires=["pandas", "PyGithub", "click", "GitPython"],
 )

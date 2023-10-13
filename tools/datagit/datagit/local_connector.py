@@ -1,0 +1,44 @@
+import os
+from .dataframe_update_breakdown import dataframe_update_breakdown
+import pandas as pd
+from git import Repo
+
+home_dir = os.path.expanduser("~")
+# Create a subdirectory named .datadrift in the user's home directory
+datadrift_dir = os.path.join(home_dir, ".datadrift")
+os.makedirs(datadrift_dir, exist_ok=True)
+
+
+# * 8870d3c - (53 seconds ago) step4_new_columns_added New data: mrr2 - Sammy Teillet (HEAD -> main)
+# * c098517 - (53 seconds ago) step3_data_updated New data: mrr2 - Sammy Teillet
+# * d361538 - (53 seconds ago) step2_new_data_added New data: mrr2 - Sammy Teillet
+# * b66cb25 - (53 seconds ago) step1_removed_columns New data: mrr2 - Sammy Teillet
+
+
+def store_metric(*, store_name="default", metric_name: str, metric_value: pd.DataFrame):
+    store_dir = os.path.join(datadrift_dir, store_name)
+    os.makedirs(store_dir, exist_ok=True)
+    print(f"Storing metric {metric_name} in db {store_dir}")
+
+    repo = Repo.init(store_dir)
+    metric_file_name = f"{metric_name}.csv"
+    metric_file_path = os.path.join(store_dir, metric_file_name)
+
+    if not os.path.isfile(metric_file_path):
+        metric_value.to_csv(metric_file_path, index=False)
+        add_file = [metric_file_name]
+        repo.index.add(add_file)
+        repo.index.commit(f"New data: {metric_name}")
+        return
+
+    initial_dataframe = pd.read_csv(metric_file_path)
+    update_breakdown = dataframe_update_breakdown(initial_dataframe, metric_value)
+    for key, value in update_breakdown.items():
+        value.to_csv(metric_file_path)
+        add_file = [metric_file_name]
+        repo.index.add(add_file)
+        if repo.index.diff("HEAD"):
+            repo.index.commit(f"{key} New data: {metric_name}")
+        else:
+            print("No changes to commit.")
+    pass
