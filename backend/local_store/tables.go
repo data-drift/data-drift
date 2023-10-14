@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os/user"
 	"path/filepath"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"gopkg.in/src-d/go-git.v4"
@@ -42,7 +43,11 @@ func getListOfFilesFromStore(store string) []string {
 	fileNames := []string{}
 
 	for _, file := range files {
-		fileNames = append(fileNames, file.Name())
+		fileName := file.Name()
+		if strings.HasSuffix(fileName, ".csv") {
+			fileNameWithoutExt := strings.TrimSuffix(fileName, ".csv")
+			fileNames = append(fileNames, fileNameWithoutExt)
+		}
 	}
 
 	return fileNames
