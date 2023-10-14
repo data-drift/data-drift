@@ -3,12 +3,12 @@ package local_store
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"os/user"
 	"path/filepath"
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"gopkg.in/src-d/go-git.v4"
 )
 
 func TablesHandler(c *gin.Context) {
@@ -24,30 +24,26 @@ func getListOfFilesFromStore(store string) []string {
 		return nil
 	}
 
-	repo, err := git.PlainOpen(repoDir)
-	if err != nil {
-		fmt.Println("Error opening repo:", err)
-		return nil
-	}
-
-	worktree, err := repo.Worktree()
-	if err != nil {
-		fmt.Println("Error getting worktree:", err)
-		return nil
-	}
-	files, err := worktree.Filesystem.ReadDir(".")
-	if err != nil {
-		fmt.Println("Error getting files:", err)
-		return nil
-	}
 	fileNames := []string{}
 
-	for _, file := range files {
-		fileName := file.Name()
-		if strings.HasSuffix(fileName, ".csv") {
-			fileNameWithoutExt := strings.TrimSuffix(fileName, ".csv")
-			fileNames = append(fileNames, fileNameWithoutExt)
+	// Walk the directory tree and get all the files that end with ".csv"
+	err = filepath.Walk(repoDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
 		}
+		if !info.IsDir() && strings.HasSuffix(info.Name(), ".csv") {
+			relPath, err := filepath.Rel(repoDir, path)
+			relPathWithoutExt := strings.TrimSuffix(relPath, ".csv")
+			if err != nil {
+				return err
+			}
+			fileNames = append(fileNames, relPathWithoutExt)
+		}
+		return nil
+	})
+	if err != nil {
+		fmt.Println("Error:", err)
+		return nil
 	}
 
 	return fileNames
