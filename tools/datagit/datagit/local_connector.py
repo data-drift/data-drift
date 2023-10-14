@@ -21,6 +21,8 @@ def store_metric(*, store_name="default", metric_name: str, metric_value: pd.Dat
     metric_file_path = os.path.join(store_dir, metric_file_name)
 
     if not os.path.isfile(metric_file_path):
+        metric_file_dir = os.path.dirname(metric_file_path)
+        os.makedirs(metric_file_dir, exist_ok=True)
         metric_value.to_csv(metric_file_path, index=False)
         add_file = [metric_file_name]
         repo.index.add(add_file)
