@@ -3,6 +3,7 @@ package local_store
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -14,7 +15,24 @@ import (
 func TablesHandler(c *gin.Context) {
 	store := c.Param("store")
 	tables := getListOfFilesFromStore(store)
-	c.JSON(http.StatusOK, tables)
+
+	acceptHeader := c.GetHeader("Accept")
+	if strings.Contains(acceptHeader, "text/html") {
+		html := "<ul>"
+		for _, table := range tables {
+			encodedTable := url.PathEscape(table)
+			url := "./tables/" + encodedTable
+			html += "<li><a href=\"" + url + "\">" + table + "</a></li>"
+		}
+		html += "</ul>"
+
+		c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
+	} else {
+		c.JSON(http.StatusOK, gin.H{
+			"store":  store,
+			"tables": tables,
+		})
+	}
 }
 
 func getListOfFilesFromStore(store string) []string {
@@ -26,7 +44,6 @@ func getListOfFilesFromStore(store string) []string {
 
 	fileNames := []string{}
 
-	// Walk the directory tree and get all the files that end with ".csv"
 	err = filepath.Walk(repoDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
