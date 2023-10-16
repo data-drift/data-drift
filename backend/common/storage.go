@@ -2,6 +2,7 @@ package common
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"net/url"
@@ -22,6 +23,8 @@ func getRedisClient() (*redis.Client, error) {
 	}
 	var redisURL = os.Getenv("REDIS_URL")
 	redisOpt, redisErr := redis.ParseURL(redisURL)
+	redisOpt.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
 	if redisErr != nil {
 		return nil, redisErr
 	}
