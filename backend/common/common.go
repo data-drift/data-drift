@@ -57,15 +57,19 @@ type CommitData struct {
 	CommitComments  []CommitComments
 }
 
-type MetricHistoryEvent struct {
-	Lines           int
-	KPI             decimal.Decimal
-	CommitTimestamp int64
-	CommitDate      string
-	IsAfterPeriod   bool
-	CommitUrl       string
-	CommitComments  []CommitComments
-	CommitSha       string
+type MeasurementMetaData struct {
+	MeasurementTimestamp int64
+	MeasurementDate      string
+	MeasurementDateTime  string
+	MeasurementComments  []CommitComments
+	IsMeasureAfterPeriod bool
+	MeasurementId        string
+}
+
+type MetricMeasurement struct {
+	LineCount           int
+	Metric              decimal.Decimal
+	MeasurementMetaData MeasurementMetaData
 }
 
 func (c CommitData) Timestamp() int64 {

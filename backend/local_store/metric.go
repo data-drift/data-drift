@@ -42,7 +42,7 @@ func MetricHandler(c *gin.Context) {
 	})
 }
 
-func getMetricHistory(store string, table string, metricName string, periodKey common.PeriodKey) ([]common.MetricHistoryEvent, error) {
+func getMetricHistory(store string, table string, metricName string, periodKey common.PeriodKey) ([]common.MetricMeasurement, error) {
 	repoDir, err := getStoreDir(store)
 	filePath := table + ".csv"
 	if err != nil {
@@ -66,7 +66,7 @@ func getMetricHistory(store string, table string, metricName string, periodKey c
 		return nil, err
 	}
 
-	var history []common.MetricHistoryEvent
+	var history []common.MetricMeasurement
 
 	err = commitIter.ForEach(func(commit *object.Commit) error {
 		file, _ := commit.File(filePath)
@@ -91,9 +91,9 @@ func getMetricHistory(store string, table string, metricName string, periodKey c
 
 		if len(history) == 0 {
 			history = append(history, metricEvent)
-		} else if !history[len(history)-1].KPI.Equal(metricEvent.KPI) {
+		} else if !history[len(history)-1].Metric.Equal(metricEvent.Metric) {
 			history = append(history, metricEvent)
-		} else if history[len(history)-1].KPI.Equal(metricEvent.KPI) {
+		} else if history[len(history)-1].Metric.Equal(metricEvent.Metric) {
 			history[len(history)-1] = metricEvent
 		}
 
@@ -114,7 +114,7 @@ func findMetricIndex(headers []string, metricName string) int {
 	return -1
 }
 
-func computeMetricHistoryEvent(records [][]string, metricName string, periodKey common.PeriodKey, measureDate time.Time, commitComments []common.CommitComments) common.MetricHistoryEvent {
+func computeMetricHistoryEvent(records [][]string, metricName string, periodKey common.PeriodKey, measureDate time.Time, commitComments []common.CommitComments) common.MetricMeasurement {
 	headers := records[0]
 	metricIndex := findMetricIndex(headers, metricName)
 	dateIndex := findMetricIndex(headers, "date")
@@ -122,11 +122,17 @@ func computeMetricHistoryEvent(records [][]string, metricName string, periodKey 
 	firstDateOfPeriod, firstDateOfNextPeriod, _, _ := reducers.GetStartDateEndDateAndNextPeriod(periodKey)
 
 	isAfterPeriod := measureDate.After(firstDateOfNextPeriod) || measureDate.Equal(firstDateOfNextPeriod)
-	var historyEvent = common.MetricHistoryEvent{
-		IsAfterPeriod:   isAfterPeriod,
-		CommitTimestamp: measureDate.Unix(),
-		CommitDate:      measureDate.Format("2006-01-02"),
-		CommitComments:  commitComments,
+
+	measurementMetaData := common.MeasurementMetaData{
+		IsMeasureAfterPeriod: isAfterPeriod,
+		MeasurementTimestamp: measureDate.Unix(),
+		MeasurementDate:      measureDate.Format("2006-01-02"),
+		MeasurementDateTime:  measureDate.Format("2006-01-02 15:04:05"),
+		MeasurementComments:  commitComments,
+	}
+
+	var historyEvent = common.MetricMeasurement{
+		MeasurementMetaData: measurementMetaData,
 	}
 
 	for i := 1; i < len(records); i++ {
@@ -145,10 +151,10 @@ func computeMetricHistoryEvent(records [][]string, metricName string, periodKey 
 		kpiStr := record[metricIndex]
 		kpi, _ := decimal.NewFromString(kpiStr)
 
-		newLineCount := historyEvent.Lines + 1
-		newKPI := kpi.Add(historyEvent.KPI)
-		historyEvent.KPI = newKPI
-		historyEvent.Lines = newLineCount
+		newLineCount := historyEvent.LineCount + 1
+		newKPI := kpi.Add(historyEvent.Metric)
+		historyEvent.Metric = newKPI
+		historyEvent.LineCount = newLineCount
 
 	}
 
