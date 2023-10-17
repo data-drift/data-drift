@@ -8,6 +8,7 @@ import (
 
 	"github.com/data-drift/data-drift/debug"
 	"github.com/data-drift/data-drift/github"
+	"github.com/data-drift/data-drift/local_store"
 	"github.com/data-drift/data-drift/metrics"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -56,6 +57,8 @@ func main() {
 
 	router.GET("metrics/:metric-name/cohorts/:timegrain", metrics.GetMetricCohort)
 	router.GET("metrics/:metric-name/reports", metrics.GetMetricReport)
+	router.GET("stores/:store/tables", local_store.TablesHandler)
+	router.GET("stores/:store/tables/:table", local_store.TableHandler)
 
 	router.GET("config/:owner/:repo", github.GetConfigHandler)
 	router.POST("validate-config", github.ValidateConfigHandler)
