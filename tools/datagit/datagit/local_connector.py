@@ -26,7 +26,7 @@ def store_metric(*, store_name="default", metric_name: str, metric_value: pd.Dat
         metric_value.to_csv(metric_file_path, index=False)
         add_file = [metric_file_name]
         repo.index.add(add_file)
-        repo.index.commit(f"New data: {metric_name}")
+        repo.index.commit(f"NEW DATA: {metric_name}")
         return
 
     initial_dataframe = pd.read_csv(metric_file_path)
@@ -36,7 +36,7 @@ def store_metric(*, store_name="default", metric_name: str, metric_value: pd.Dat
         add_file = [metric_file_name]
         repo.index.add(add_file)
         if repo.index.diff("HEAD"):
-            repo.index.commit(f"{key} New data: {metric_name}")
+            repo.index.commit(f"{key}: {metric_name}")
         else:
             pass
     pass
