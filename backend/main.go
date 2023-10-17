@@ -59,7 +59,7 @@ func main() {
 	router.GET("metrics/:metric-name/reports", metrics.GetMetricReport)
 	router.GET("stores/:store/tables", local_store.TablesHandler)
 	router.GET("stores/:store/tables/:table", local_store.TableHandler)
-	router.POST("stores/:store/tables/:table/metric", local_store.MetricHandler)
+	router.POST("stores/:store/tables/:table/metrics", local_store.MetricHandler)
 
 	router.GET("config/:owner/:repo", github.GetConfigHandler)
 	router.POST("validate-config", github.ValidateConfigHandler)
