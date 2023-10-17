@@ -3,6 +3,7 @@ package local_store
 import (
 	"encoding/csv"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -12,6 +13,12 @@ import (
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
+
+type CommitInfo struct {
+	Message string
+	Date    time.Time
+	Sha     string
+}
 
 func TableHandler(c *gin.Context) {
 	store := c.Param("store")
@@ -30,18 +37,14 @@ func TableHandler(c *gin.Context) {
 		})
 		return
 	}
-	print(commits)
+
 	c.JSON(http.StatusOK, gin.H{
 		"store":        store,
 		"table":        table,
 		"tableColumns": tableColumns,
 		"commits":      commits,
 	})
-}
 
-type CommitInfo struct {
-	Message string
-	Date    time.Time
 }
 
 func getListOfColumnsFromTable(store string, table string) ([]string, error) {
@@ -81,40 +84,36 @@ func getCommitsForFile(store string, filePath string) ([]CommitInfo, error) {
 	}
 
 	// Get the HEAD reference
-	ref, err := repo.Head()
 	if err != nil {
 		print("Error getting HEAD reference")
 		return nil, err
 	}
 
 	// Get the commit history for the file
-	commitIter, err := repo.Log(&git.LogOptions{From: ref.Hash()})
+	commitIter, err := repo.Log(&git.LogOptions{FileName: &filePath})
 	if err != nil {
 		print("Error getting commit history")
 		return nil, err
 	}
 
 	// Filter the commit history to only include commits that modified the file
+
 	var commits []CommitInfo
+
 	err = commitIter.ForEach(func(commit *object.Commit) error {
-		// Check if the commit modified the file
-		tree, err := commit.Tree()
-		if err != nil {
-			print("Error getting tree")
-			return err
-		}
-		_, err = tree.File(filePath)
-		if err == nil {
-			commits = append(commits, CommitInfo{
-				Message: commit.Message,
-				Date:    commit.Author.When,
-			})
-		}
+
+		log.Println(commit.Hash.String())
+		commits = append(commits, CommitInfo{
+			Message: commit.Message,
+			Date:    commit.Author.When,
+			Sha:     commit.Hash.String(),
+		})
+		log.Println("it worked")
 
 		return nil
 	})
-	if err != nil {
-		print("Error iterating commits")
+	if err != nil && err.Error() != "EOF" {
+		print("Error iterating commits", err.Error())
 		return nil, err
 	}
 
