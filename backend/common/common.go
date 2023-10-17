@@ -57,6 +57,8 @@ type CommitData struct {
 	CommitComments  []CommitComments
 }
 
+type MetricHistoryEvent = CommitData
+
 func (c CommitData) Timestamp() int64 {
 	return c.CommitTimestamp
 }
