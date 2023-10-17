@@ -63,6 +63,7 @@ func LegacyGetFirstComputationDateOfPeriod(periodKeyParam common.PeriodKey) (tim
 
 }
 
+// Return StartDate, EndDate, NextPeriodKey and error
 func GetStartDateEndDateAndNextPeriod(periodKey common.PeriodKey) (time.Time, time.Time, common.PeriodKey, error) {
 	timegrain, timeGrainError := reports.GetTimeGrain(periodKey)
 	if timeGrainError != nil {
