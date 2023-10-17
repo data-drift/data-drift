@@ -5,10 +5,8 @@ def dataframe_update_breakdown(
     initial_dataframe: pd.DataFrame, final_dataframe: pd.DataFrame
 ) -> dict:
     # Ensure the dataframes have the same index
-    initial_dataframe = initial_dataframe.set_index(
-        list(set(initial_dataframe.columns))[0]
-    )
-    final_dataframe = final_dataframe.set_index(list(set(final_dataframe.columns))[0])
+    initial_dataframe = initial_dataframe.set_index(initial_dataframe.columns[0])
+    final_dataframe = final_dataframe.set_index(final_dataframe.columns[0])
 
     # Find columns added and removed
     columns_added = set(final_dataframe.columns) - set(initial_dataframe.columns)
