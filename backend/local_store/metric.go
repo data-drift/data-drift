@@ -3,7 +3,6 @@ package local_store
 import (
 	"bufio"
 	"encoding/csv"
-	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -94,6 +93,8 @@ func getMetricHistory(store string, table string, metricName string, periodKey c
 			history = append(history, metricEvent)
 		} else if !history[len(history)-1].KPI.Equal(metricEvent.KPI) {
 			history = append(history, metricEvent)
+		} else if history[len(history)-1].KPI.Equal(metricEvent.KPI) {
+			history[len(history)-1] = metricEvent
 		}
 
 		return nil
@@ -119,10 +120,8 @@ func computeMetricHistoryEvent(records [][]string, metricName string, periodKey 
 	dateIndex := findMetricIndex(headers, "date")
 
 	firstDateOfPeriod, firstDateOfNextPeriod, _, _ := reducers.GetStartDateEndDateAndNextPeriod(periodKey)
-	log.Println(firstDateOfPeriod)
-	log.Println(firstDateOfNextPeriod)
 
-	isAfterPeriod := measureDate.After(firstDateOfPeriod)
+	isAfterPeriod := measureDate.After(firstDateOfNextPeriod) || measureDate.Equal(firstDateOfNextPeriod)
 	var historyEvent = common.MetricHistoryEvent{
 		IsAfterPeriod:   isAfterPeriod,
 		CommitTimestamp: measureDate.Unix(),
