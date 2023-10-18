@@ -6,7 +6,6 @@ import numpy as np
 
 def generate_dataframe(num_rows=10):
     fake = Faker()
-    num_rows = 100
     ids = [fake.uuid4() for _ in range(num_rows)]
     dates = [
         fake.date_between(start_date="-1y", end_date="-1m").strftime("%Y-%m-%d")
