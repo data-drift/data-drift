@@ -282,10 +282,43 @@ export const getTable = async (tableName: string) => {
       Date: string;
       Sha: string;
     }[];
-
     store: string;
     table: string;
     tableColumns: string[];
   }>(`${DATA_DRIFT_API_URL}/stores/default/tables/${tableName}`);
+  return result;
+};
+
+export const getMetricHistory = async (params: {
+  store: string;
+  table: string;
+  metric: string;
+  periodKey: string;
+}) => {
+  const { store, table, metric, periodKey } = params;
+  const result = await axios.post<{
+    metricHistory: {
+      LineCount: number;
+      Metric: string;
+      MeasurementMetaData: {
+        MeasurementTimestamp: number;
+        MeasurementDate: string;
+        MeasurementDateTime: string;
+        MeasurementComments: {
+          CommentAuthor: string;
+          CommentBody: string;
+        }[];
+
+        IsMeasureAfterPeriod: boolean;
+        MeasurementId: string;
+      };
+    }[];
+    periodKey: string;
+    store: string;
+    table: string;
+  }>(`${DATA_DRIFT_API_URL}/stores/${store}/tables/${table}/metrics`, {
+    metric,
+    period: periodKey,
+  });
   return result;
 };
