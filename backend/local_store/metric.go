@@ -87,7 +87,7 @@ func getMetricHistory(store string, table string, metricName string, periodKey c
 				CommentBody:   commit.Message,
 			},
 		}
-		metricEvent := computeMetricHistoryEvent(records, metricName, periodKey, time.Unix(commit.Author.When.Unix(), 0), commitComments)
+		metricEvent := computeMetricHistoryEvent(records, metricName, periodKey, time.Unix(commit.Author.When.Unix(), 0), commitComments, commit.Hash.String())
 
 		if len(history) == 0 {
 			history = append(history, metricEvent)
@@ -114,7 +114,7 @@ func findMetricIndex(headers []string, metricName string) int {
 	return -1
 }
 
-func computeMetricHistoryEvent(records [][]string, metricName string, periodKey common.PeriodKey, measureDate time.Time, commitComments []common.CommitComments) common.MetricMeasurement {
+func computeMetricHistoryEvent(records [][]string, metricName string, periodKey common.PeriodKey, measureDate time.Time, commitComments []common.CommitComments, measurementId string) common.MetricMeasurement {
 	headers := records[0]
 	metricIndex := findMetricIndex(headers, metricName)
 	dateIndex := findMetricIndex(headers, "date")
@@ -129,6 +129,7 @@ func computeMetricHistoryEvent(records [][]string, metricName string, periodKey 
 		MeasurementDate:      measureDate.Format("2006-01-02"),
 		MeasurementDateTime:  measureDate.Format("2006-01-02 15:04:05"),
 		MeasurementComments:  commitComments,
+		MeasurementId:        measurementId,
 	}
 
 	var historyEvent = common.MetricMeasurement{
