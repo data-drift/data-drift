@@ -7,6 +7,7 @@ import { HomePage } from "./pages/HomePage";
 import DriftListPage from "./pages/DriftList";
 import Overview from "./pages/Overview/Overview";
 import TableList from "./pages/TableList";
+import TablePage from "./pages/TablePage";
 
 export const router = createBrowserRouter([
   {
@@ -46,5 +47,10 @@ export const router = createBrowserRouter([
     path: "tables",
     element: <TableList />,
     loader: TableList.loader,
+  },
+  {
+    path: "tables/:tableName",
+    element: <TablePage />,
+    loader: TablePage.loader,
   },
 ]);

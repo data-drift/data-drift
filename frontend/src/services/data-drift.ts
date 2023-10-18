@@ -274,3 +274,18 @@ export const getTableList = async () => {
   }>(`${DATA_DRIFT_API_URL}/stores/default/tables`);
   return result;
 };
+
+export const getTable = async (tableName: string) => {
+  const result = await axios.get<{
+    commits: {
+      Message: string;
+      Date: string;
+      Sha: string;
+    }[];
+
+    store: string;
+    table: string;
+    tableColumns: string[];
+  }>(`${DATA_DRIFT_API_URL}/stores/default/tables/${tableName}`);
+  return result;
+};

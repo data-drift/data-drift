@@ -68,7 +68,14 @@ func getListOfColumnsFromTable(store string, table string) ([]string, error) {
 	}
 	headers := records[0]
 
-	return headers, nil
+	var columns []string
+
+	for _, header := range headers {
+		if header != "date" && header != "unique_key" {
+			columns = append(columns, header)
+		}
+	}
+	return columns, nil
 }
 
 func getCommitsForFile(store string, filePath string) ([]CommitInfo, error) {
