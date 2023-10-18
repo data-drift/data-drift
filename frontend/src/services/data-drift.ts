@@ -266,3 +266,11 @@ export const getConfig = async (params: {
   storeConfigInSessionStorage(params.owner, params.repo, configFromApi);
   return configFromApi;
 };
+
+export const getTableList = async () => {
+  const result = await axios.get<{
+    store: string;
+    tables: string[];
+  }>(`${DATA_DRIFT_API_URL}/stores/default/tables`);
+  return result;
+};

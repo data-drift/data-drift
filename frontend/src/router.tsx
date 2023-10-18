@@ -6,6 +6,7 @@ import MetricReportWaterfall from "./pages/MetricReportWaterfall";
 import { HomePage } from "./pages/HomePage";
 import DriftListPage from "./pages/DriftList";
 import Overview from "./pages/Overview/Overview";
+import TableList from "./pages/TableList";
 
 export const router = createBrowserRouter([
   {
@@ -40,5 +41,10 @@ export const router = createBrowserRouter([
     path: "report/:installationId/:owner/:repo/commits",
     element: <DriftListPage />,
     loader: DriftListPage.loader,
+  },
+  {
+    path: "tables",
+    element: <TableList />,
+    loader: TableList.loader,
   },
 ]);
