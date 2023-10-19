@@ -1,3 +1,4 @@
+import sys
 import click
 import json
 import pandas as pd
@@ -5,6 +6,10 @@ import os
 from datagit import github_connector
 from datagit.drift_evaluators import auto_merge_drift
 from github import Github
+import subprocess
+import platform
+
+import pkg_resources
 
 
 @click.group()
@@ -78,3 +83,34 @@ def run(token, repo, project_dir):
             )
 
             os.remove(metric_file)
+
+
+@cli_entrypoint.command()
+def start():
+    click.echo("Starting the application...")
+
+    if platform.system() == "Darwin":
+        if platform.machine().startswith("arm"):
+            binary_path = pkg_resources.resource_filename(
+                "datagit", "bin/data-drift-mac-m1"
+            )
+        else:
+            binary_path = pkg_resources.resource_filename(
+                "datagit", "bin/data-drift-mac-intel"
+            )
+    else:
+        binary_path = pkg_resources.resource_filename(
+            "datagit", "bin/data-drift-mac-m1"
+        )
+
+    server_process = subprocess.Popen(
+        [binary_path],
+    )
+
+    try:
+        # Wait for both processes to complete (they won't unless manually stopped)
+        server_process.wait()
+    except KeyboardInterrupt:
+        # Handle keyboard interrupt, terminate both servers
+        server_process.terminate()
+        sys.exit()

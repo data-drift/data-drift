@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="datagit",
-    version="0.18.6",
+    version="0.19.0-alpha8",
     packages=find_packages(),
     author="Sammy Teillet",
     author_email="sammy.teillet@gmail.com",
@@ -16,6 +16,9 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
+    package_data={
+        "datagit": ["bin/data-drift-mac-m1", "bin/data-drift-mac-intel"],
+    },
     python_requires=">=3.6",
     install_requires=["pandas", "PyGithub", "click", "GitPython"],
 )
