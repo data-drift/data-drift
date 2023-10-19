@@ -145,7 +145,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 
 				periodAndDimensionKey := common.PeriodAndDimensionKey(string(periodKey))
 				dimension := common.Dimension("none")
-				dimensionValue := common.DimensionValue("No dimension")
+				dimensionValue := common.DimensionValue(common.NoDimensionValue)
 
 				updateMetric(lineCountAndKPIByDateByVersion, periodAndDimensionKey, timegrain, periodKey, dimension, dimensionValue, record, kpiColumn, commitSha, commitTimestamp, commit, commitMessages, reportBaseUrl)
 

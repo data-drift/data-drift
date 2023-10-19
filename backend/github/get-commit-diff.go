@@ -103,24 +103,10 @@ func GetCommitDiff(c *gin.Context) {
 }
 
 func getPatchIfEmpty(client *github.Client, ctx *gin.Context, owner string, repo string, commit *github.RepositoryCommit, file *github.CommitFile, currentRecord [][]string) (string, error) {
-	parentCommitSha := commit.Parents[0].GetSHA()
-	previousFileContent, _, _, err := client.Repositories.GetContents(ctx, owner, repo, *file.Filename, &github.RepositoryContentGetOptions{Ref: parentCommitSha})
-	if err != nil {
-		fmt.Println("Error getting github file content:", err)
-		return "", err
-	}
-	stringContentUrl := previousFileContent.GetDownloadURL()
-	resp, err := http.Get(stringContentUrl)
-	if err != nil {
-		fmt.Println("Error getting file from url:", err)
-		return "", err
-	}
-	defer resp.Body.Close()
+	previousRecords, err := getPreviousRecords(commit, client, ctx, owner, repo, file)
 
-	csvReader := csv.NewReader(resp.Body)
-	previousRecords, err := csvReader.ReadAll()
 	if err != nil {
-		fmt.Println("Error reading csv:", err)
+		fmt.Println("Error getting PreviousRecords:", err)
 		return "", err
 	}
 	patch, err := helpers.GenerateCsvPatch(currentRecord, previousRecords)
@@ -130,6 +116,34 @@ func getPatchIfEmpty(client *github.Client, ctx *gin.Context, owner string, repo
 	}
 	patch = strings.Join(lines, "\n")
 	return patch, err
+}
+
+func getPreviousRecords(commit *github.RepositoryCommit, client *github.Client, ctx *gin.Context, owner string, repo string, file *github.CommitFile) ([][]string, error) {
+	parentCommitSha := commit.Parents[0].GetSHA()
+	previousFileContent, _, _, err := client.Repositories.GetContents(ctx, owner, repo, *file.Filename, &github.RepositoryContentGetOptions{Ref: parentCommitSha})
+	if err != nil {
+		fmt.Println("Error getting github file content:", err)
+		if errResp, ok := err.(*github.ErrorResponse); ok && errResp.Response.StatusCode == http.StatusNotFound {
+			fmt.Println("File not found")
+			return [][]string{{"No file"}}, nil
+		}
+		return nil, err
+	}
+	stringContentUrl := previousFileContent.GetDownloadURL()
+	resp, err := http.Get(stringContentUrl)
+	if err != nil {
+		fmt.Println("Error getting file from url:", err)
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	csvReader := csv.NewReader(resp.Body)
+	previousRecords, err := csvReader.ReadAll()
+	if err != nil {
+		fmt.Println("Error reading csv:", err)
+		return nil, err
+	}
+	return previousRecords, nil
 }
 
 func GetCommitList(c *gin.Context) {

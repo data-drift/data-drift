@@ -11,8 +11,12 @@ func MetricCohortUrl(installationId string, metricName string, timegrain common.
 	return fmt.Sprintf("https://app.data-drift.io/report/%s/metrics/%s/cohorts/%s", installationId, metricName, timegrain)
 }
 
-func MetricReportUrl(installationId common.GithubInstallationId, metricName string, period common.PeriodKey) string {
-	return fmt.Sprintf("https://app.data-drift.io/report/%s/metrics/%s/report/%s", string(installationId), metricName, string(period))
+func MetricReportUrl(installationId common.GithubInstallationId, metricName string, period common.PeriodKey, dimensionValue string) string {
+	url := fmt.Sprintf("https://app.data-drift.io/report/%s/metrics/%s/report/%s", string(installationId), metricName, string(period))
+	if dimensionValue != "" {
+		url += fmt.Sprintf("?dimensionValue=%s", dimensionValue)
+	}
+	return url
 }
 
 func BuildReportDiffBaseUrl(installationId, repoOwner, repoName string) string {

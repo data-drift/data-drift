@@ -81,6 +81,9 @@ type PeriodKey string
 type PeriodAndDimensionKey string
 type Dimension string
 type DimensionValue string
+
+const NoDimensionValue DimensionValue = "No dimension"
+
 type MetricHistory map[CommitSha]CommitData
 type Metric struct {
 	TimeGrain      TimeGrain
