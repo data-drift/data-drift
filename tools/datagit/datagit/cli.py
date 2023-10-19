@@ -1,4 +1,5 @@
 import sys
+import threading
 import click
 import json
 import pandas as pd
@@ -10,6 +11,8 @@ import subprocess
 import platform
 
 import pkg_resources
+import http.server
+import socketserver
 
 
 @click.group()
@@ -99,9 +102,8 @@ def start():
                 "datagit", "bin/data-drift-mac-intel"
             )
     else:
-        binary_path = pkg_resources.resource_filename(
-            "datagit", "bin/data-drift-mac-m1"
-        )
+        # TODO: Update this path for other platforms (Linux, Windows, etc.)
+        raise ValueError("Unsupported platform")
 
     # Get a copy of the current environment variables
     env = os.environ.copy()
@@ -114,10 +116,25 @@ def start():
         env=env,
     )
 
+    PORT = 9741
+    DIRECTORY = (
+        "bin/frontend/dist/"  # You can change this to the path of your desired folder
+    )
+
+    class Handler(http.server.SimpleHTTPRequestHandler):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, directory=DIRECTORY, **kwargs)
+
+    httpd = socketserver.TCPServer(("", PORT), Handler)
+
     try:
-        # Wait for both processes to complete (they won't unless manually stopped)
+        print(f"Serving directory '{DIRECTORY}' on port {PORT}")
+        httpd.serve_forever()
         server_process.wait()
     except KeyboardInterrupt:
-        # Handle keyboard interrupt, terminate both servers
+        click.echo("Shutting down servers...")
+        httpd.shutdown()
+        click.echo("Httpd shut down")
         server_process.terminate()
+        click.echo("Server down")
         sys.exit()
