@@ -196,7 +196,7 @@ def create(table, row_number):
 def update(table, row_number):
     if not table:
         tables = local_connector.get_metrics()
-        table = select_from_list("Please select a table", tables)
+        table = select_from_list("Please enter table number", tables)
 
     click.echo("Updating seed file...")
     dataframe = local_connector.get_metric(metric_name=table)
