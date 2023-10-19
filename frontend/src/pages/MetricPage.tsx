@@ -23,6 +23,7 @@ const getWaterfallChartPropsFromMetricHistory = (
   metricMeasurements: {
     LineCount: number;
     Metric: string;
+    IsMeasureAfterPeriod: boolean;
     MeasurementMetaData: {
       MeasurementTimestamp: number;
       MeasurementDate: string;
@@ -31,8 +32,6 @@ const getWaterfallChartPropsFromMetricHistory = (
         CommentAuthor: string;
         CommentBody: string;
       }[];
-
-      IsMeasureAfterPeriod: boolean;
       MeasurementId: string;
     };
   }[]
