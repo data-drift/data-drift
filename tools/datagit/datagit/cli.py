@@ -204,6 +204,56 @@ def update(table, row_number):
     local_connector.store_metric(metric_name=table, metric_value=drifted_dataset)
 
 
+@seed.command()
+@click.argument("csvpathfile")
+@click.option(
+    "--table",
+    help="name of your table",
+)
+@click.option(
+    "--unique-key-column",
+    help="name of your unique key column",
+)
+@click.option(
+    "--date-column",
+    help="name of your date column",
+)
+def load_csv(csvpathfile, table, unique_key_column, date_column):
+    if not table:
+        tables = local_connector.get_metrics()
+        table = click.prompt(
+            "Please enter table name (exising or not)", type=click.Choice(tables)
+        )
+
+    click.echo(f"Loading CSV file {csvpathfile}...")
+    assert os.path.exists(csvpathfile), f"CSV file {csvpathfile} does not exist"
+    dataframe = pd.read_csv(csvpathfile)
+
+    if "unique_key" not in dataframe.columns:
+        if not unique_key_column:
+            unique_key_column = click.prompt(
+                "Please enter unique key column name",
+                type=click.Choice(dataframe.columns),
+            )
+
+        assert (
+            unique_key_column in dataframe.columns
+        ), f"Column {unique_key_column} does not exist in CSV file"
+        dataframe.insert(0, "unique_key", dataframe[unique_key_column])
+
+    if "date" not in dataframe.columns:
+        if not date_column:
+            date_column = click.prompt(
+                "Please enter date column name", type=click.Choice(dataframe.columns)
+            )
+        assert (
+            date_column in dataframe.columns
+        ), f"Column {date_column} does not exist in CSV file"
+        dataframe.insert(1, "date", dataframe[date_column])
+
+    local_connector.store_metric(metric_name=table, metric_value=dataframe)
+
+
 def select_from_list(prompt, choices):
     for idx, item in enumerate(choices, 1):
         click.echo(f"{idx}: {item}")
