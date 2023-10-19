@@ -2,9 +2,11 @@ import sys
 import threading
 import click
 import json
+from datagit.dataset import generate_dataframe, insert_drift
 import pandas as pd
 import os
 from datagit import github_connector
+from datagit import local_connector
 from datagit.drift_evaluators import auto_merge_drift
 from github import Github
 import subprocess
@@ -149,3 +151,47 @@ def start():
         server_process.terminate()
         click.echo("Server down")
         sys.exit()
+
+
+@cli_entrypoint.group()
+def seed():
+    pass
+
+
+@seed.command()
+@click.option(
+    "--table",
+    help="name of your table",
+)
+@click.option(
+    "--row-number",
+    default=10000,
+    help="Number of line to generate",
+)
+def create(table, row_number):
+    if not table:
+        table = click.prompt("Table name")
+    click.echo("Creating seed file...")
+    dataframe = generate_dataframe(row_number)
+    click.echo(dataframe)
+    local_connector.store_metric(metric_name=table, metric_value=dataframe)
+    click.echo("Creating seed created...")
+
+
+@seed.command()
+@click.option(
+    "--table",
+    help="name of your table",
+)
+@click.option(
+    "--row-number",
+    default=100,
+    help="Number of line to update",
+)
+def update(table, row_number):
+    if not table:
+        table = click.prompt("Table name")
+    click.echo("Updating seed file...")
+    dataframe = local_connector.get_metric(metric_name=table)
+    drifted_dataset = insert_drift(dataframe, row_number)
+    local_connector.store_metric(metric_name=table, metric_value=drifted_dataset)

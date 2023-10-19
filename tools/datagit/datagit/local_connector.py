@@ -40,3 +40,9 @@ def store_metric(*, store_name="default", metric_name: str, metric_value: pd.Dat
         else:
             pass
     pass
+
+
+def get_metric(*, store_name="default", metric_name: str) -> pd.DataFrame:
+    store_dir = os.path.join(datadrift_dir, store_name)
+    metric_file_name = f"{metric_name}.csv"
+    return pd.read_csv(os.path.join(store_dir, metric_file_name))
