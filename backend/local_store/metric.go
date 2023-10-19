@@ -124,7 +124,7 @@ func computeMetricHistoryEvent(records [][]string, metricName string, periodKey 
 	isAfterPeriod := measureDate.After(firstDateOfNextPeriod) || measureDate.Equal(firstDateOfNextPeriod)
 
 	measurementMetaData := common.MeasurementMetaData{
-		IsMeasureAfterPeriod: isAfterPeriod,
+
 		MeasurementTimestamp: measureDate.Unix(),
 		MeasurementDate:      measureDate.Format("2006-01-02"),
 		MeasurementDateTime:  measureDate.Format("2006-01-02 15:04:05"),
@@ -133,7 +133,8 @@ func computeMetricHistoryEvent(records [][]string, metricName string, periodKey 
 	}
 
 	var historyEvent = common.MetricMeasurement{
-		MeasurementMetaData: measurementMetaData,
+		IsMeasureAfterPeriod: isAfterPeriod,
+		MeasurementMetaData:  measurementMetaData,
 	}
 
 	for i := 1; i < len(records); i++ {

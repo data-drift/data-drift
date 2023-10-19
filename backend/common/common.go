@@ -62,14 +62,15 @@ type MeasurementMetaData struct {
 	MeasurementDate      string
 	MeasurementDateTime  string
 	MeasurementComments  []CommitComments
-	IsMeasureAfterPeriod bool
 	MeasurementId        string
 }
 
 type MetricMeasurement struct {
-	LineCount           int
-	Metric              decimal.Decimal
-	MeasurementMetaData MeasurementMetaData
+	LineCount            int
+	Metric               decimal.Decimal
+	PeriodKey            PeriodKey
+	IsMeasureAfterPeriod bool
+	MeasurementMetaData  MeasurementMetaData
 }
 
 func (c CommitData) Timestamp() int64 {

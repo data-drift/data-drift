@@ -305,6 +305,7 @@ export const getMetricHistory = async (params: {
     metricHistory: {
       LineCount: number;
       Metric: string;
+      IsMeasureAfterPeriod: boolean;
       MeasurementMetaData: {
         MeasurementTimestamp: number;
         MeasurementDate: string;
@@ -314,7 +315,6 @@ export const getMetricHistory = async (params: {
           CommentBody: string;
         }[];
 
-        IsMeasureAfterPeriod: boolean;
         MeasurementId: string;
       };
     }[];
