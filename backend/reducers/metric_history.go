@@ -99,8 +99,11 @@ func OrderDataAndCreateChart(KPIName string, periodId common.PeriodKey, unsorted
 			prevKPI = roundedKPI
 		}
 	}
-
-	waterfallChartUrl := urlgen.MetricReportUrl(githubInstallationId, metricName, periodId)
+	dimensionValueForUrl := ""
+	if dimensionValue != common.NoDimensionValue {
+		dimensionValueForUrl = string(dimensionValue)
+	}
+	waterfallChartUrl := urlgen.MetricReportUrl(githubInstallationId, metricName, periodId, dimensionValueForUrl)
 	kpi1 := common.KPIReport{
 		KPIName:           KPIName,
 		PeriodId:          periodId,
