@@ -7,6 +7,7 @@ import { theme } from "../theme";
 import {
   PeriodReport,
   Timegrain,
+  TimegrainAndDimensionString,
   TimegrainString,
   assertStringIsTimgrainString,
   getMetricReport,
@@ -22,7 +23,13 @@ const getMetricCohortsData = async ({
 }): Promise<WaterfallChartProps> => {
   const typedParams = assertParamsHasNeededProperties(params);
   const result = await getMetricReport(typedParams);
-  const metricMetadata = result.data[typedParams.timegrainValue];
+
+  const searchParams = new URLSearchParams(location.search);
+  const dimensionValue = searchParams.get("dimensionValue");
+  const resultKey = dimensionValue
+    ? (`${typedParams.timegrainValue} ${dimensionValue}` as TimegrainAndDimensionString)
+    : typedParams.timegrainValue;
+  const metricMetadata = result.data[resultKey];
   if (!metricMetadata)
     throw new Error(
       `Could not find metric metadata for ${typedParams.metricName} ${typedParams.timegrainValue}`
