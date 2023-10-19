@@ -195,8 +195,17 @@ def create(table, row_number):
 )
 def update(table, row_number):
     if not table:
-        table = click.prompt("Table name")
+        tables = local_connector.get_metrics()
+        table = select_from_list("Please select a table", tables)
+
     click.echo("Updating seed file...")
     dataframe = local_connector.get_metric(metric_name=table)
     drifted_dataset = insert_drift(dataframe, row_number)
     local_connector.store_metric(metric_name=table, metric_value=drifted_dataset)
+
+
+def select_from_list(prompt, choices):
+    for idx, item in enumerate(choices, 1):
+        click.echo(f"{idx}: {item}")
+    selection = click.prompt(prompt, type=click.IntRange(1, len(choices)))
+    return choices[selection - 1]
