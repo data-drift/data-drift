@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="driftdb",
-    version="0.0.1-alpha2",
+    version="0.0.1-alpha5",
     packages=find_packages(),
     author="Sammy Teillet",
     author_email="sammy.teillet@gmail.com",
@@ -24,5 +24,5 @@ setup(
         ],
     },
     python_requires=">=3.6",
-    install_requires=["pandas", "PyGithub", "click", "GitPython"],
+    install_requires=["pandas", "PyGithub", "click", "GitPython", "Faker"],
 )

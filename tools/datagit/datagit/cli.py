@@ -1,5 +1,6 @@
 import sys
 import threading
+import webbrowser
 import click
 import json
 from datagit.dataset import generate_dataframe, insert_drift
@@ -142,8 +143,12 @@ def start():
 
     try:
         print(f"Serving directory '{DIRECTORY}' on port {PORT}")
+        url = f"http://localhost:{PORT}/tables"
+        print("Opening browser...", url)
+        webbrowser.open(url)
         httpd.serve_forever()
         server_process.wait()
+
     except KeyboardInterrupt:
         click.echo("Shutting down servers...")
         httpd.shutdown()
