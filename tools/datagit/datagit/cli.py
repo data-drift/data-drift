@@ -117,13 +117,24 @@ def start():
     )
 
     PORT = 9741
-    DIRECTORY = (
-        "bin/frontend/dist/"  # You can change this to the path of your desired folder
-    )
+
+    SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+    DIRECTORY = os.path.join(SCRIPT_DIR, "bin/frontend/dist")
 
     class Handler(http.server.SimpleHTTPRequestHandler):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, directory=DIRECTORY, **kwargs)
+
+        def do_GET(self):
+            print(f"Request path: {self.path}")
+            # If the requested URL maps to an existing file, serve that.
+            if os.path.exists(self.translate_path(self.path)):
+                super().do_GET()
+                return
+
+            # Otherwise, serve the main index.html file.
+            self.path = "index.html"
+            super().do_GET()
 
     httpd = socketserver.TCPServer(("", PORT), Handler)
 

@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="datagit",
-    version="0.19.0-alpha8",
+    version="0.19.0-alpha12",
     packages=find_packages(),
     author="Sammy Teillet",
     author_email="sammy.teillet@gmail.com",
@@ -17,7 +17,11 @@ setup(
         "Operating System :: OS Independent",
     ],
     package_data={
-        "datagit": ["bin/data-drift-mac-m1", "bin/data-drift-mac-intel"],
+        "datagit": [
+            "bin/data-drift-mac-m1",
+            "bin/data-drift-mac-intel",
+            "bin/frontend/dist/**",
+        ],
     },
     python_requires=">=3.6",
     install_requires=["pandas", "PyGithub", "click", "GitPython"],
