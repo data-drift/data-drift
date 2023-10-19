@@ -103,8 +103,15 @@ def start():
             "datagit", "bin/data-drift-mac-m1"
         )
 
+    # Get a copy of the current environment variables
+    env = os.environ.copy()
+
+    # Set the PORT environment variable
+    env["PORT"] = "9740"
+
     server_process = subprocess.Popen(
         [binary_path],
+        env=env,
     )
 
     try:
