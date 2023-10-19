@@ -1,8 +1,11 @@
 package local_store
 
 import (
+	"bufio"
+	"encoding/csv"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/data-drift/data-drift/common"
 	"github.com/gin-gonic/gin"
@@ -48,6 +51,10 @@ func MeasurementHandler(c *gin.Context) {
 		},
 	}
 
+	file, _ := commit.File(table + ".csv")
+	content, _ := file.Contents()
+	getMetricByTimeGrain(req, content)
+
 	c.JSON(http.StatusOK, gin.H{"MeasurementMetaData": measurementMetaData})
 
 }
@@ -80,4 +87,14 @@ func getMeasurement(store string, table string, commitSha string) (*object.Commi
 		return nil, fmt.Errorf("file not present in measurement")
 	}
 	return commit, err
+}
+
+func getMetricByTimeGrain(measurementRequest MeasurementRequest, fileContent string) error {
+	reader := csv.NewReader(bufio.NewReader(strings.NewReader(fileContent)))
+	records, err := reader.ReadAll()
+	if err != nil {
+		return err
+	}
+	fmt.Println(records[0])
+	return nil
 }
