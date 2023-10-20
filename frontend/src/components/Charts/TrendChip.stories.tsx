@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { theme } from "../../theme";
 import TrendChip from "./TrendChip";
 
 const meta = {
