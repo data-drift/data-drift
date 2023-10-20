@@ -88,7 +88,7 @@ const DriftOverviewPage = () => {
           <TansparentContainer>4 month impacted</TansparentContainer>
           <BlackContainer>
             Total drift:<strong>48.9</strong>{" "}
-            <span style={{ marginLeft: "auto" }}>
+            <span style={{ marginLeft: "auto", paddingLeft: "8px" }}>
               <TrendChip trend="up" absoluteValue={2} />
             </span>
           </BlackContainer>

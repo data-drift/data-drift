@@ -21,7 +21,11 @@ const ChipContainer = styled.div<{ trend: Props["trend"] }>`
 
 const TrendChip = ({ trend, absoluteValue }: Props) => {
   console.log(trend, absoluteValue);
-  return <ChipContainer trend={trend}>{absoluteValue}%</ChipContainer>;
+  return (
+    <ChipContainer trend={trend}>
+      <strong>{absoluteValue}%</strong>
+    </ChipContainer>
+  );
 };
 
 export default TrendChip;
