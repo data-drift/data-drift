@@ -83,6 +83,9 @@ const DriftOverviewPage = () => {
             </span>
           </BlackContainer>
         </MetadataContainer>
+        <MetadataContainer>
+          <strong>Owner</strong>
+        </MetadataContainer>
       </DriftDetailContainer>
     </PageContainer>
   );
