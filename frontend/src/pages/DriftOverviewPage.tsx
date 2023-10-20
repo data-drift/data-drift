@@ -6,8 +6,9 @@ const PageContainer = styled.div`
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  padding-left: ${({ theme }) => theme.spacing(6)};
+  padding: 0 ${({ theme }) => theme.spacing(6)};
   align-items: flex-start;
+  background-color: ${({ theme }) => theme.colors.background};
 `;
 
 const Separator = styled.div`
@@ -16,11 +17,20 @@ const Separator = styled.div`
   margin-bottom: ${({ theme }) => theme.spacing(2)};
 `;
 
+const DriftDetailContainer = styled.div`
+  width: 100%;
+  background-color: ${({ theme }) => theme.colors.background2};
+  padding: ${({ theme }) => theme.spacing(2)};
+  box-sizing: border-box;
+  clip-path: ${({ theme }) => theme.upLeftClipping};
+`;
+
 const DriftOverviewPage = () => {
   return (
     <PageContainer>
       <h1>Drift overview</h1>
       <Separator />
+      <DriftDetailContainer>Coucou</DriftDetailContainer>
     </PageContainer>
   );
 };
