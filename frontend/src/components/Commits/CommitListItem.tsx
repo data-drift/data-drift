@@ -69,20 +69,22 @@ export const CommitListItem = ({
           dangerouslySetInnerHTML={{ __html: name.replace(/\n/g, "<br/>") }}
         ></p>
       </div>
-      <a href={commitUrl} target="_blank" rel="noopener noreferrer">
-        <button
-          style={{
-            padding: "8px 16px",
-            backgroundColor: "#333",
-            color: "#fff",
-            borderRadius: "0px",
-            border: "2px solid #fff",
-            fontFamily: "monospace",
-          }}
-        >
-          View Commit
-        </button>
-      </a>
+      {commitUrl && (
+        <a href={commitUrl} target="_blank" rel="noopener noreferrer">
+          <button
+            style={{
+              padding: "8px 16px",
+              backgroundColor: "#333",
+              color: "#fff",
+              borderRadius: "0px",
+              border: "2px solid #fff",
+              fontFamily: "monospace",
+            }}
+          >
+            View Commit
+          </button>
+        </a>
+      )}
     </div>
   );
 };
