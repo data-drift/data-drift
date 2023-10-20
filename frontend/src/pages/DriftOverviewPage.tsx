@@ -29,7 +29,7 @@ const DriftDetailContainer = styled.div`
   gap: ${({ theme }) => theme.spacing(20)};
 `;
 
-const MetadataContainer = styled.div`
+const SubSectionContainer = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -65,12 +65,12 @@ const DriftOverviewPage = () => {
       <h1>Drift overview</h1>
       <Separator />
       <DriftDetailContainer>
-        <MetadataContainer>
+        <SubSectionContainer>
           <strong>Metric Metadata</strong>
           <BlackContainer>Stabilization time: 3d</BlackContainer>
           <BlackContainer>Volatility: 1%</BlackContainer>
-        </MetadataContainer>
-        <MetadataContainer>
+        </SubSectionContainer>
+        <SubSectionContainer>
           <strong>Current Drift</strong>
           <TansparentContainer>
             Detected on {new Date().toLocaleDateString()}
@@ -82,10 +82,11 @@ const DriftOverviewPage = () => {
               <TrendChip trend="up" absoluteValue={2} />
             </span>
           </BlackContainer>
-        </MetadataContainer>
-        <MetadataContainer>
+        </SubSectionContainer>
+        <SubSectionContainer>
           <strong>Owner</strong>
-        </MetadataContainer>
+          <TansparentContainer>Aya Nakamura</TansparentContainer>
+        </SubSectionContainer>
       </DriftDetailContainer>
     </PageContainer>
   );
