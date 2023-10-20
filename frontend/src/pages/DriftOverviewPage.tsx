@@ -59,6 +59,8 @@ const DrillDownButton = styled.button`
   font-family: monospace;
   margin-left: auto;
   margin-top: auto;
+  display: flex;
+  flex-direction: row;
 `;
 
 const TansparentContainer = styled.div`
