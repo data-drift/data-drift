@@ -1,15 +1,21 @@
 import sys
+import threading
+import webbrowser
 import click
 import json
+from datagit.dataset import generate_dataframe, insert_drift
 import pandas as pd
 import os
 from datagit import github_connector
+from datagit import local_connector
 from datagit.drift_evaluators import auto_merge_drift
 from github import Github
 import subprocess
 import platform
 
 import pkg_resources
+import http.server
+import socketserver
 
 
 @click.group()
@@ -99,18 +105,157 @@ def start():
                 "datagit", "bin/data-drift-mac-intel"
             )
     else:
-        binary_path = pkg_resources.resource_filename(
-            "datagit", "bin/data-drift-mac-m1"
-        )
+        # TODO: Update this path for other platforms (Linux, Windows, etc.)
+        raise ValueError("Unsupported platform")
+
+    # Get a copy of the current environment variables
+    env = os.environ.copy()
+
+    # Set the PORT environment variable
+    env["PORT"] = "9740"
 
     server_process = subprocess.Popen(
         [binary_path],
+        env=env,
     )
 
+    PORT = 9741
+
+    SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+    DIRECTORY = os.path.join(SCRIPT_DIR, "bin/frontend/dist")
+
+    class Handler(http.server.SimpleHTTPRequestHandler):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, directory=DIRECTORY, **kwargs)
+
+        def do_GET(self):
+            print(f"Request path: {self.path}")
+            # If the requested URL maps to an existing file, serve that.
+            if os.path.exists(self.translate_path(self.path)):
+                super().do_GET()
+                return
+
+            # Otherwise, serve the main index.html file.
+            self.path = "index.html"
+            super().do_GET()
+
+    httpd = socketserver.TCPServer(("", PORT), Handler)
+
     try:
-        # Wait for both processes to complete (they won't unless manually stopped)
+        print(f"Serving directory '{DIRECTORY}' on port {PORT}")
+        url = f"http://localhost:{PORT}/tables"
+        print("Opening browser...", url)
+        webbrowser.open(url)
+        httpd.serve_forever()
         server_process.wait()
+
     except KeyboardInterrupt:
-        # Handle keyboard interrupt, terminate both servers
+        click.echo("Shutting down servers...")
+        httpd.shutdown()
+        click.echo("Httpd shut down")
         server_process.terminate()
+        click.echo("Server down")
         sys.exit()
+
+
+@cli_entrypoint.group()
+def seed():
+    pass
+
+
+@seed.command()
+@click.option(
+    "--table",
+    help="name of your table",
+)
+@click.option(
+    "--row-number",
+    default=10000,
+    help="Number of line to generate",
+)
+def create(table, row_number):
+    if not table:
+        table = click.prompt("Table name")
+    click.echo("Creating seed file...")
+    dataframe = generate_dataframe(row_number)
+    click.echo(dataframe)
+    local_connector.store_metric(metric_name=table, metric_value=dataframe)
+    click.echo("Creating seed created...")
+
+
+@seed.command()
+@click.option(
+    "--table",
+    help="name of your table",
+)
+@click.option(
+    "--row-number",
+    default=100,
+    help="Number of line to update",
+)
+def update(table, row_number):
+    if not table:
+        tables = local_connector.get_metrics()
+        table = select_from_list("Please enter table number", tables)
+
+    click.echo("Updating seed file...")
+    dataframe = local_connector.get_metric(metric_name=table)
+    drifted_dataset = insert_drift(dataframe, row_number)
+    local_connector.store_metric(metric_name=table, metric_value=drifted_dataset)
+
+
+@seed.command()
+@click.argument("csvpathfile")
+@click.option(
+    "--table",
+    help="name of your table",
+)
+@click.option(
+    "--unique-key-column",
+    help="name of your unique key column",
+)
+@click.option(
+    "--date-column",
+    help="name of your date column",
+)
+def load_csv(csvpathfile, table, unique_key_column, date_column):
+    if not table:
+        tables = local_connector.get_metrics()
+        table = click.prompt(
+            "Please enter table name (exising or not)", type=click.Choice(tables)
+        )
+
+    click.echo(f"Loading CSV file {csvpathfile}...")
+    assert os.path.exists(csvpathfile), f"CSV file {csvpathfile} does not exist"
+    dataframe = pd.read_csv(csvpathfile)
+
+    if "unique_key" not in dataframe.columns:
+        if not unique_key_column:
+            unique_key_column = click.prompt(
+                "Please enter unique key column name",
+                type=click.Choice(dataframe.columns),
+            )
+
+        assert (
+            unique_key_column in dataframe.columns
+        ), f"Column {unique_key_column} does not exist in CSV file"
+        dataframe.insert(0, "unique_key", dataframe[unique_key_column])
+
+    if "date" not in dataframe.columns:
+        if not date_column:
+            date_column = click.prompt(
+                "Please enter date column name", type=click.Choice(dataframe.columns)
+            )
+        assert (
+            date_column in dataframe.columns
+        ), f"Column {date_column} does not exist in CSV file"
+        dataframe.insert(1, "date", dataframe[date_column])
+
+    local_connector.store_metric(metric_name=table, metric_value=dataframe)
+
+
+def select_from_list(prompt, choices):
+    for idx, item in enumerate(choices, 1):
+        click.echo(f"{idx}: {item}")
+    selection = click.prompt(prompt, type=click.IntRange(1, len(choices)))
+    return choices[selection - 1]
