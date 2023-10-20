@@ -51,6 +51,16 @@ const BlackContainer = styled.div`
   gap: ${({ theme }) => theme.spacing(1)};
 `;
 
+const DrillDownButton = styled.button`
+  padding: 8px 16px;
+  background-color: ${({ theme }) => theme.colors.primary};
+  color: black;
+  border-radius: 0px;
+  font-family: monospace;
+  margin-left: auto;
+  margin-top: auto;
+`;
+
 const TansparentContainer = styled.div`
   width: 100%;
   padding: ${({ theme }) => theme.spacing(2)} 0;
@@ -87,6 +97,9 @@ const DriftOverviewPage = () => {
           <strong>Owner</strong>
           <TansparentContainer>Aya Nakamura</TansparentContainer>
         </SubSectionContainer>
+        <DrillDownButton>
+          <strong> DRILL DOWN</strong>
+        </DrillDownButton>
       </DriftDetailContainer>
     </PageContainer>
   );
