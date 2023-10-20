@@ -9,6 +9,7 @@ import Overview from "./pages/Overview/Overview";
 import TableList from "./pages/TableList";
 import TablePage from "./pages/TablePage";
 import MetricPage from "./pages/MetricPage";
+import DriftOverviewPage from "./pages/DriftOverviewPage";
 
 export const router = createBrowserRouter([
   {
@@ -58,5 +59,9 @@ export const router = createBrowserRouter([
     path: "tables/:tableName/metrics/:metricName",
     element: <MetricPage />,
     loader: MetricPage.loader,
+  },
+  {
+    path: "drift-overview",
+    element: <DriftOverviewPage />,
   },
 ]);

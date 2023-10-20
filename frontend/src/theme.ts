@@ -36,6 +36,9 @@ export const theme = {
       medium: "16px",
     },
   },
+  upLeftClipping: "polygon(12px 0, 100% 0, 100% 100%, 0 100%, 0 12px)",
+  downLeftClipping:
+    "polygon(0 0, 100% 0, 100% 100%, 12px 100%, 0 calc(100% - 12px))",
 };
 
 export type ThemeType = typeof theme;
