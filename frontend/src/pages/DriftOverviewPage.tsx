@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import TrendChip from "../components/Charts/TrendChip";
 
 const PageContainer = styled.div`
   height: 100vh;
@@ -43,6 +44,11 @@ const BlackContainer = styled.div`
   box-sizing: border-box;
   margin-top: ${({ theme }) => theme.spacing(2)};
   text-align: start;
+  flex-direction: row;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: ${({ theme }) => theme.spacing(1)};
 `;
 
 const TansparentContainer = styled.div`
@@ -71,7 +77,10 @@ const DriftOverviewPage = () => {
           </TansparentContainer>
           <TansparentContainer>4 month impacted</TansparentContainer>
           <BlackContainer>
-            Total drift <strong>48.9</strong>
+            Total drift:<strong>48.9</strong>{" "}
+            <span style={{ marginLeft: "auto" }}>
+              <TrendChip trend="up" absoluteValue={2} />
+            </span>
           </BlackContainer>
         </MetadataContainer>
       </DriftDetailContainer>

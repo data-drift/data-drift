@@ -12,7 +12,7 @@ const ChipContainer = styled.div<{ trend: Props["trend"] }>`
       : trend === "down"
       ? theme.colors.dataDown
       : theme.colors.text};
-  padding: ${({ theme }) => theme.spacing(2)};
+  padding: ${({ theme }) => theme.spacing(1)} ${({ theme }) => theme.spacing(2)};
   color: ${({ theme, trend }) =>
     trend === "neutral" ? "black" : theme.colors.text};
   clip-path: ${({ theme, trend }) =>
