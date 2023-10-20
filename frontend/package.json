@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "build:pypi": "npm run build -- --mode pypi --outDir ../tools/datagit/datagit/bin/frontend/dist",
+    "build:pypi": "npm run build -- --mode pypi --outDir ../tools/datagit/datagit/bin/frontend/dist --emptyOutDir",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",

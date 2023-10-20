@@ -204,7 +204,7 @@ def update(table, row_number):
     local_connector.store_metric(metric_name=table, metric_value=drifted_dataset)
 
 
-@seed.command()
+@cli_entrypoint.command()
 @click.argument("csvpathfile")
 @click.option(
     "--table",
