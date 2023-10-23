@@ -44,10 +44,10 @@ export const MonthlyMetric: Story = {
 export const QuarterlyMetric: Story = {
   args: {
     data: [
-      { name: "MRR Q1 2023", before: 100, after: 95 },
-      { name: "MRR Q2 2023", before: 90, after: 92 },
-      { name: "MRR Q3 2023", before: 88, after: 91 },
-      { name: "MRR Q4 2023", before: 85, after: 88 },
+      { name: "MRR Q1 2023", before: 123395.76, after: 123342.12 },
+      { name: "MRR Q2 2023", before: 23295.76, after: 57642.12 },
+      { name: "MRR Q3 2023", before: 101395.76, after: 123342.12 },
+      { name: "MRR Q4 2023", before: 105395.76, after: 83342.12 },
     ],
   },
 };
