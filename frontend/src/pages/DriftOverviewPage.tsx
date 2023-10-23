@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
 import TrendChip from "../components/Charts/TrendChip";
 import DualMetricBarChart from "../components/Charts/DualMetricBarChart";
+import { Tooltip } from "../components/Common/Tooltip";
 
 const PageContainer = styled.div`
   height: 100vh;
@@ -28,6 +29,7 @@ const DriftDetailContainer = styled.div`
   display: flex;
   flex-direction: row;
   gap: ${({ theme }) => theme.spacing(20)};
+  overflow: visible;
 `;
 
 const SubSectionContainer = styled.div`
@@ -148,8 +150,24 @@ const DriftOverviewPage = () => {
       <DriftDetailContainer>
         <SubSectionContainer>
           <strong>Metric Metadata</strong>
-          <BlackContainer>Stabilization time: 3d</BlackContainer>
-          <BlackContainer>Volatility: 1%</BlackContainer>
+          <BlackContainer>
+            <Tooltip>
+              Stabilization time: 10d
+              <span>
+                The monthly metric stops moving 10 days after the end of the
+                month
+              </span>
+            </Tooltip>
+          </BlackContainer>
+          <BlackContainer>
+            <Tooltip>
+              Volatility: 1%
+              <span>
+                The monthly metric moves up or down by 1% on average, after its
+                first computation
+              </span>
+            </Tooltip>
+          </BlackContainer>
         </SubSectionContainer>
         <SubSectionContainer>
           <strong>Current Drift</strong>
