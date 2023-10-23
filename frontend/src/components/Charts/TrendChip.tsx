@@ -7,7 +7,6 @@ type Props = {
 
 const ChipContainer = styled.div<{ trend: Props["trend"] }>`
   display: inline-block;
-
   background-color: ${({ theme, trend }) =>
     trend === "up"
       ? theme.colors.dataUp
@@ -19,6 +18,18 @@ const ChipContainer = styled.div<{ trend: Props["trend"] }>`
     trend === "neutral" ? "black" : theme.colors.text};
   clip-path: ${({ theme, trend }) =>
     trend === "up" ? theme.upLeftClipping : theme.downLeftClipping};
+
+  &::after {
+    position: relative;
+    content: "${({ trend }) =>
+      trend === "up" ? "↗" : trend === "down" ? "↘" : ""}";
+    bottom: ${({ trend }) =>
+      trend === "up" ? "9px" : trend === "down" ? "-5px" : ""};
+    right: -5px;
+    width: 0;
+    height: 0;
+    font-size: 10px;
+  }
 `;
 
 const TrendChip = ({ trend, absoluteValue }: Props) => {
