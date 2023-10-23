@@ -44,7 +44,9 @@ const CustomBarShape = (
   // Payload is present in props, in that scenario we can use it to get the value
   // @ts-ignore
   const payload = props.payload as DualBarPayload | undefined;
-  const { before, after } = payload ? payload : { before: 0, after: 0 };
+  const { before, after, percentageChange } = payload
+    ? payload
+    : { before: 0, after: 0, percentageChange: 0 };
   const value =
     dataKey === "before" ? before : dataKey === "after" ? after : null;
 
@@ -83,12 +85,22 @@ const CustomBarShape = (
       </text>
       {shouldDisplayTrendChip && (
         <foreignObject
-          x={x - 25 + trendChipOffset}
+          x={x - 100 + trendChipOffset}
           y={y - 40}
-          width={50}
+          width={200}
           height={50}
         >
-          <TrendChip trend="down" absoluteValue={10} />
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <TrendChip
+              trend={trend}
+              absoluteValue={Math.abs(percentageChange)}
+            />
+          </div>
         </foreignObject>
       )}
     </>

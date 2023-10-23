@@ -8,6 +8,13 @@ const meta = {
     layout: "centered",
   },
   tags: ["autodocs"],
+  decorators: [
+    (Story) => (
+      <div style={{ width: "128px" }}>
+        <Story />
+      </div>
+    ),
+  ],
 } satisfies Meta<typeof TrendChip>;
 
 export default meta;
@@ -31,6 +38,20 @@ export const DownCase: Story = {
 export const NeutralCase: Story = {
   args: {
     trend: "neutral",
-    absoluteValue: 2,
+    absoluteValue: 0,
+  },
+};
+
+export const LowNumberCase: Story = {
+  args: {
+    trend: "up",
+    absoluteValue: 0.00002,
+  },
+};
+
+export const LargeNumberCase: Story = {
+  args: {
+    trend: "down",
+    absoluteValue: 11231231,
   },
 };
