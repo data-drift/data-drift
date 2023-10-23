@@ -42,6 +42,7 @@ const CustomBarShape = (
   const { fill, x, y, width, dataKey } = props;
 
   // Payload is present in props, in that scenario we can use it to get the value
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const payload = props.payload as DualBarPayload | undefined;
   const { before, after, percentageChange } = payload
