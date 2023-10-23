@@ -2,6 +2,7 @@ import styled from "@emotion/styled";
 import TrendChip from "../components/Charts/TrendChip";
 import DualMetricBarChart from "../components/Charts/DualMetricBarChart";
 import { Tooltip } from "../components/Common/Tooltip";
+import GitHubButton from "react-github-btn";
 
 const PageContainer = styled.div`
   height: 100vh;
@@ -142,10 +143,32 @@ const data = [
   },
 ];
 
+const StyledHeaderContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+`;
+
 const DriftOverviewPage = () => {
   return (
     <PageContainer>
-      <h1>Drift: MRR monthly</h1>
+      <StyledHeaderContainer>
+        <h1>Drift: MRR monthly</h1>
+        <div style={{ paddingTop: "24px" }}>
+          <GitHubButton
+            href="https://github.com/data-drift/data-drift"
+            data-color-scheme="no-preference: dark; light: light; dark: dark;"
+            data-icon="octicon-star"
+            aria-label="Star data-drift/data-drift on GitHub"
+            data-size="large"
+            data-show-count={true}
+          >
+            Star
+          </GitHubButton>
+        </div>
+      </StyledHeaderContainer>
       <Separator />
       <DriftDetailContainer>
         <SubSectionContainer>
