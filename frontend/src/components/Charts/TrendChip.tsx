@@ -6,6 +6,8 @@ type Props = {
 };
 
 const ChipContainer = styled.div<{ trend: Props["trend"] }>`
+  display: inline-block;
+
   background-color: ${({ theme, trend }) =>
     trend === "up"
       ? theme.colors.dataUp
@@ -20,7 +22,6 @@ const ChipContainer = styled.div<{ trend: Props["trend"] }>`
 `;
 
 const TrendChip = ({ trend, absoluteValue }: Props) => {
-  console.log(trend, absoluteValue);
   return (
     <ChipContainer trend={trend}>
       <strong>{absoluteValue}%</strong>
