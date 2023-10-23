@@ -168,7 +168,12 @@ const DriftOverviewPage = () => {
           <strong>Owner</strong>
           <TansparentContainer>Aya Nakamura</TansparentContainer>
         </SubSectionContainer>
-        <DrillDownButton>
+        <DrillDownButton
+          onClick={() => {
+            window.location.href =
+              "/41231518/samox/dbt-example/overview?commitSha=37467fb6ce76d26fad8b09d7582ed3f6ad5d61e3&snapshotDate=2023-10-18";
+          }}
+        >
           <strong> DRILL DOWN</strong>
         </DrillDownButton>
       </DriftDetailContainer>
