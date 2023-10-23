@@ -30,8 +30,14 @@ const DualMetricBarChart = ({ data }: Props) => {
         <YAxis />
         <Tooltip />
         <Legend />
-        <Bar dataKey="before" fill={theme.colors.strongNegative} />
-        <Bar dataKey="after" fill={theme.colors.strongPositive} />
+        <Bar
+          dataKey="before"
+          fill={theme.colors.hexToRgba(theme.colors.strongNegative, 0.4)}
+        />
+        <Bar
+          dataKey="after"
+          fill={theme.colors.hexToRgba(theme.colors.strongPositive, 0.4)}
+        />
       </BarChart>
     </ResponsiveContainer>
   );

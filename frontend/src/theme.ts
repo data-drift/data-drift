@@ -5,6 +5,16 @@ const diffColors = {
   lightNegative: "#491a1b",
 };
 
+const hexToRgba = (hex: string, alpha = 1): string => {
+  // Ensure the hex value is 6 characters long, ignoring possible leading '#'
+  const validHex = hex.slice(-6);
+
+  // Extract the red, green, and blue components
+  const [r, g, b] = validHex.match(/\w\w/g)!.map((val) => parseInt(val, 16));
+
+  return `rgba(${r},${g},${b},${alpha})`;
+};
+
 export const theme = {
   colors: {
     background: "#1E1E1E",
@@ -12,6 +22,7 @@ export const theme = {
     text: "#F0F0F0",
     text2: "#FFFFFF",
     ...diffColors,
+    hexToRgba,
     diffSelect(diffType: "added" | "removed") {
       return diffType === "added"
         ? { strong: diffColors.strongPositive, light: diffColors.lightPositive }
