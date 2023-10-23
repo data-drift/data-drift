@@ -125,7 +125,7 @@ const DualMetricBarChart = ({ data }: Props) => {
         />
         <XAxis dataKey="name" />
         <YAxis />
-        <Tooltip />
+        <Tooltip contentStyle={{ backgroundColor: theme.colors.background }} />
         <Legend />
         <Bar
           dataKey="before"
