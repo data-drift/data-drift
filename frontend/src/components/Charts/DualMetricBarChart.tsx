@@ -114,12 +114,15 @@ const DualMetricBarChart = ({ data }: Props) => {
   const totalWidth = (barSize + 20) * data.length * 2 + 30; // Assuming 30px additional margin
 
   return (
-    <ResponsiveContainer width={totalWidth} height={300}>
+    <ResponsiveContainer width={totalWidth} height={400}>
       <BarChart
         data={data}
         margin={{ top: 48, right: 30, left: 20, bottom: 5 }}
       >
-        <CartesianGrid strokeDasharray="3 3" />
+        <CartesianGrid
+          stroke={theme.colors.hexToRgba(theme.colors.background2, 0.8)}
+          vertical={false}
+        />
         <XAxis dataKey="name" />
         <YAxis />
         <Tooltip />

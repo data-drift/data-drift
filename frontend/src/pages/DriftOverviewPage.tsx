@@ -156,7 +156,7 @@ const DriftOverviewPage = () => {
           <TansparentContainer>
             Detected on {new Date().toLocaleDateString()}
           </TansparentContainer>
-          <TansparentContainer>4 month impacted</TansparentContainer>
+          <TansparentContainer>7 month impacted</TansparentContainer>
           <BlackContainer>
             Total drift:<strong>48.9</strong>{" "}
             <span style={{ marginLeft: "auto", paddingLeft: "8px" }}>
