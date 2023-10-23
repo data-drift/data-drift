@@ -56,7 +56,8 @@ const CustomBarShape = (
     value == null ||
     x == undefined ||
     width == undefined ||
-    y == undefined
+    y == undefined ||
+    fill == undefined
   ) {
     return null;
   }
@@ -65,19 +66,17 @@ const CustomBarShape = (
   const shouldDisplayTrendChip = getShouldDisplayTrendChip(trend, dataKey);
   const trendChipOffset = dataKey === "before" ? width : 0;
 
-  const brightFill = fill
-    ? fill.slice(0, fill.lastIndexOf(",")) + ",1)"
-    : "white";
+  const transparentFill = theme.colors.hexToRgba(fill, 0.4);
 
   return (
     <>
-      <Rectangle {...props} y={y} fill={fill} />
-      <Rectangle x={x} y={y} width={width} height={2} fill={brightFill} />
+      <Rectangle {...props} y={y} fill={transparentFill} />
+      <Rectangle x={x} y={y} width={width} height={2} fill={fill} />
 
       <text
         x={x + width / 2}
         y={y + 12}
-        fill={theme.colors.hexToRgba(theme.colors.text, 1)}
+        fill={theme.colors.text}
         textAnchor="middle"
         dominantBaseline="middle"
         fontSize={10}
@@ -129,13 +128,13 @@ const DualMetricBarChart = ({ data }: Props) => {
         <Legend />
         <Bar
           dataKey="before"
-          fill={theme.colors.hexToRgba(theme.colors.strongNegative, 0.4)}
+          fill={theme.colors.strongNegative}
           barSize={barSize}
           shape={<CustomBarShape dataKey="before" />}
         />
         <Bar
           dataKey="after"
-          fill={theme.colors.hexToRgba(theme.colors.strongPositive, 0.4)}
+          fill={theme.colors.strongPositive}
           barSize={barSize}
           shape={<CustomBarShape dataKey="after" />}
         />
