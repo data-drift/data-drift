@@ -108,9 +108,13 @@ const CustomBarShape = (
   );
 };
 
+const barSize = 80;
+
 const DualMetricBarChart = ({ data }: Props) => {
+  const totalWidth = (barSize + 20) * data.length * 2 + 30; // Assuming 30px additional margin
+
   return (
-    <ResponsiveContainer width="100%" height={300}>
+    <ResponsiveContainer width={totalWidth} height={300}>
       <BarChart
         data={data}
         margin={{ top: 48, right: 30, left: 20, bottom: 5 }}
@@ -123,11 +127,13 @@ const DualMetricBarChart = ({ data }: Props) => {
         <Bar
           dataKey="before"
           fill={theme.colors.hexToRgba(theme.colors.strongNegative, 0.4)}
+          barSize={barSize}
           shape={<CustomBarShape dataKey="before" />}
         />
         <Bar
           dataKey="after"
           fill={theme.colors.hexToRgba(theme.colors.strongPositive, 0.4)}
+          barSize={barSize}
           shape={<CustomBarShape dataKey="after" />}
         />
       </BarChart>
