@@ -9,6 +9,13 @@ const meta = {
     layout: "centered",
   },
   tags: ["autodocs"],
+  decorators: [
+    (Story) => (
+      <div style={{ width: "1024px" }}>
+        <Story />
+      </div>
+    ),
+  ],
 } satisfies Meta<typeof DualMetricBarChart>;
 
 export default meta;
