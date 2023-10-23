@@ -47,7 +47,7 @@ export const QuarterlyMetric: Story = {
       { name: "MRR Q1 2023", before: 123395.76, after: 123342.12 },
       { name: "MRR Q2 2023", before: 23295.76, after: 57642.12 },
       { name: "MRR Q3 2023", before: 101395.76, after: 123342.12 },
-      { name: "MRR Q4 2023", before: 105395.76, after: 83342.12 },
+      { name: "MRR Q4 2023", before: 105395.76, after: 105395.76 },
     ],
   },
 };

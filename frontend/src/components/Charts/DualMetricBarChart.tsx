@@ -11,16 +11,31 @@ import {
   RectangleProps,
 } from "recharts";
 import { theme } from "../../theme";
+import TrendChip from "./TrendChip";
 
 type DualBarPayload = {
   name: string;
   before: number;
   after: number;
+  percentageChange: number;
 };
 type Props = {
   data: Array<DualBarPayload>;
 };
 
+function getShouldDisplayTrendChip(
+  trend: "up" | "down" | "neutral",
+  dataKey: "before" | "after"
+): boolean {
+  switch (trend) {
+    case "up":
+      return dataKey === "after";
+    case "down":
+      return dataKey === "before";
+    case "neutral":
+      return dataKey === "before";
+  }
+}
 const CustomBarShape = (
   props: RectangleProps & { dataKey: "before" | "after" }
 ) => {
@@ -29,10 +44,23 @@ const CustomBarShape = (
   // Payload is present in props, in that scenario we can use it to get the value
   // @ts-ignore
   const payload = props.payload as DualBarPayload | undefined;
-  console.log(dataKey);
-  const { before, after } = payload ? payload : { before: null, after: null };
+  const { before, after } = payload ? payload : { before: 0, after: 0 };
   const value =
     dataKey === "before" ? before : dataKey === "after" ? after : null;
+
+  if (
+    value == undefined ||
+    value == null ||
+    x == undefined ||
+    width == undefined ||
+    y == undefined
+  ) {
+    return null;
+  }
+
+  const trend = before < after ? "up" : before > after ? "down" : "neutral";
+  const shouldDisplayTrendChip = getShouldDisplayTrendChip(trend, dataKey);
+  const trendChipOffset = dataKey === "before" ? width : 0;
 
   const brightFill = fill
     ? fill.slice(0, fill.lastIndexOf(",")) + ",1)"
@@ -42,25 +70,31 @@ const CustomBarShape = (
     <>
       <Rectangle {...props} y={y} fill={fill} />
       <Rectangle x={x} y={y} width={width} height={2} fill={brightFill} />
-      {value !== undefined &&
-        value !== null &&
-        x !== undefined &&
-        width !== undefined &&
-        y !== undefined && (
-          <text
-            x={x + width / 2}
-            y={y + 12}
-            fill={theme.colors.hexToRgba(theme.colors.text, 1)}
-            textAnchor="middle"
-            dominantBaseline="middle"
-            fontSize={10}
-          >
-            {value.toLocaleString()}
-          </text>
-        )}
+
+      <text
+        x={x + width / 2}
+        y={y + 12}
+        fill={theme.colors.hexToRgba(theme.colors.text, 1)}
+        textAnchor="middle"
+        dominantBaseline="middle"
+        fontSize={10}
+      >
+        {value.toLocaleString()}
+      </text>
+      {shouldDisplayTrendChip && (
+        <foreignObject
+          x={x - 25 + trendChipOffset}
+          y={y - 40}
+          width={50}
+          height={50}
+        >
+          <TrendChip trend="down" absoluteValue={10} />
+        </foreignObject>
+      )}
     </>
   );
 };
+
 const DualMetricBarChart = ({ data }: Props) => {
   return (
     <ResponsiveContainer width="100%" height={300}>
