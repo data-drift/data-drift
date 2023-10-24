@@ -1,7 +1,6 @@
 import styled from "@emotion/styled";
 import TrendChip from "../components/Charts/TrendChip";
 import DualMetricBarChart from "../components/Charts/DualMetricBarChart";
-import { Tooltip } from "../components/Common/Tooltip";
 import GitHubButton from "react-github-btn";
 
 const PageContainer = styled.div`
@@ -155,7 +154,7 @@ const DriftOverviewPage = () => {
   return (
     <PageContainer>
       <StyledHeaderContainer>
-        <h1>Drift: MRR monthly</h1>
+        <h1>MRR - Definition Update</h1>
         <div style={{ paddingTop: "24px" }}>
           <GitHubButton
             href="https://github.com/data-drift/data-drift"
@@ -171,27 +170,6 @@ const DriftOverviewPage = () => {
       </StyledHeaderContainer>
       <Separator />
       <DriftDetailContainer>
-        <SubSectionContainer>
-          <strong>Metric Metadata</strong>
-          <BlackContainer>
-            <Tooltip>
-              Stabilization time: 10d
-              <span>
-                The monthly metric stops moving 10 days after the end of the
-                month
-              </span>
-            </Tooltip>
-          </BlackContainer>
-          <BlackContainer>
-            <Tooltip>
-              Volatility: 1%
-              <span>
-                The monthly metric moves up or down by 1% on average, after its
-                first computation
-              </span>
-            </Tooltip>
-          </BlackContainer>
-        </SubSectionContainer>
         <SubSectionContainer>
           <strong>Current Drift</strong>
           <TansparentContainer>
