@@ -18,7 +18,6 @@ export const getFileCommits = (
     return commit.commit.message.includes(filepath);
   });
   const metricEvents = metricCommits.reduce((acc, commit) => {
-    console.log(acc);
     const isDrift = commit.commit.message.includes("Drift");
     const type = isDrift ? "Drift" : "New Data";
     const isPartition = commit.commit.message.includes(filepath + "/");

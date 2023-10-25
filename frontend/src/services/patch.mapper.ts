@@ -143,9 +143,30 @@ const emptyRow = (csvColumnsLength: number): Row => ({
 });
 
 const csvStringLineToRowData = (line: string, isEmphasized = false): Row => {
+  let fields: string[] = [];
+
+  if (!line.includes('"')) {
+    fields = line.split(",");
+  } else {
+    let insideQuotes = false;
+    let fieldStart = 0;
+
+    for (let i = 0; i <= line.length; i++) {
+      if (i === line.length || (line[i] === "," && !insideQuotes)) {
+        fields.push(line.substring(fieldStart, i));
+        fieldStart = i + 1;
+      } else if (line[i] === '"') {
+        insideQuotes = !insideQuotes;
+      }
+    }
+  }
+
   return {
-    data: line.split(",").map((value) => ({
-      value,
+    data: fields.map((value) => ({
+      value:
+        value.startsWith('"') && value.endsWith('"')
+          ? value.slice(1, -1)
+          : value,
       type: Number.isNaN(Number(value)) ? "string" : "number",
     })),
     isEmphasized,
