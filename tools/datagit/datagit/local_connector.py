@@ -23,7 +23,7 @@ def store_metric(*, store_name="default", metric_name: str, metric_value: pd.Dat
     if not os.path.isfile(metric_file_path):
         metric_file_dir = os.path.dirname(metric_file_path)
         os.makedirs(metric_file_dir, exist_ok=True)
-        metric_value.to_csv(metric_file_path, index=False)
+        metric_value.to_csv(metric_file_path, index=False, na_rep="NA")
         add_file = [metric_file_name]
         repo.index.add(add_file)
         repo.index.commit(f"NEW DATA: {metric_name}")
@@ -32,7 +32,7 @@ def store_metric(*, store_name="default", metric_name: str, metric_value: pd.Dat
     initial_dataframe = pd.read_csv(metric_file_path)
     update_breakdown = dataframe_update_breakdown(initial_dataframe, metric_value)
     for key, value in update_breakdown.items():
-        value.to_csv(metric_file_path)
+        value.to_csv(metric_file_path, na_rep="NA")
         add_file = [metric_file_name]
         repo.index.add(add_file)
         if repo.index.diff("HEAD"):

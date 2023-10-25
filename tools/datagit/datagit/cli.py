@@ -91,6 +91,11 @@ def run(token, repo, project_dir):
             os.remove(metric_file)
 
 
+@dbt.command()
+def snapshot():
+    click.echo("Hello")
+
+
 @cli_entrypoint.command()
 def start():
     click.echo("Starting the application...")

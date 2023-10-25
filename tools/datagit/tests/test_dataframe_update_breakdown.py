@@ -10,6 +10,7 @@ class TestUpdateBreakdown(unittest.TestCase):
                 "unique_key": [1, 2, 3],
                 "date": ["2021-01-01", "2021-01-02", "2021-01-03"],
                 "name": ["A", "B", "C"],
+                "country": ["FR", "SP", "NA"],
                 "age": [25, 30, 35],
                 "Pet": ["Dog", "Cat", "Bird"],
             }
@@ -20,6 +21,7 @@ class TestUpdateBreakdown(unittest.TestCase):
                 "unique_key": [2, 3, 4],
                 "date": ["2021-01-02", "2021-01-03", "2021-01-04"],
                 "name": ["B", "C", "D"],
+                "country": ["SP", "NA", "BE"],
                 "age": [30, 36, 40],
                 "city": ["X", "Y", "Z"],
             }
@@ -43,6 +45,15 @@ class TestUpdateBreakdown(unittest.TestCase):
         result = dataframe_update_breakdown(self.initial_df, self.final_df)
         self.assertIn("city", result["MIGRATION Column Added"].columns)
         self.assertEqual(result["MIGRATION Column Added"].loc[3, "city"], "Y")
+
+    def test_country_code_NA(self):
+        result = dataframe_update_breakdown(self.initial_df, self.final_df)
+        self.assertFalse(result["MIGRATION Column Deleted"]["country"].isna().any())
+        self.assertFalse(result["NEW DATA"]["country"].isna().any())
+        self.assertFalse(result["DRIFT"]["country"].isna().any())
+        self.assertFalse(result["MIGRATION Column Added"]["country"].isna().any())
+        self.assertEqual(result["MIGRATION Column Deleted"].loc[3, "country"], "NA")
+        self.assertEqual(result["MIGRATION Column Added"].loc[3, "country"], "NA")
 
 
 if __name__ == "__main__":
