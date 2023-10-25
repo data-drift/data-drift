@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 import os
 
 from datagit.dataset_helpers import sort_dataframe_on_first_column_and_assert_is_unique
@@ -10,7 +11,13 @@ datadrift_dir = os.path.join(home_dir, ".datadrift")
 os.makedirs(datadrift_dir, exist_ok=True)
 
 
-def store_metric(*, store_name="default", metric_name: str, metric_value: pd.DataFrame):
+def store_metric(
+    *,
+    store_name="default",
+    metric_name: str,
+    metric_value: pd.DataFrame,
+    measure_date=datetime.now(timezone.utc),
+):
     metric_value = sort_dataframe_on_first_column_and_assert_is_unique(metric_value)
     store_dir = os.path.join(datadrift_dir, store_name)
     os.makedirs(store_dir, exist_ok=True)
@@ -26,7 +33,7 @@ def store_metric(*, store_name="default", metric_name: str, metric_value: pd.Dat
         metric_value.to_csv(metric_file_path, index=False, na_rep="NA")
         add_file = [metric_file_name]
         repo.index.add(add_file)
-        repo.index.commit(f"NEW DATA: {metric_name}")
+        repo.index.commit(f"NEW DATA: {metric_name}", author_date=measure_date)
         return
 
     initial_dataframe = pd.read_csv(metric_file_path)
@@ -36,7 +43,7 @@ def store_metric(*, store_name="default", metric_name: str, metric_value: pd.Dat
         add_file = [metric_file_name]
         repo.index.add(add_file)
         if repo.index.diff("HEAD"):
-            repo.index.commit(f"{key}: {metric_name}")
+            repo.index.commit(f"{key}: {metric_name}", author_date=measure_date)
         else:
             pass
     pass
