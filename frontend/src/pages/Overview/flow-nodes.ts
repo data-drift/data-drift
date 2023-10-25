@@ -20,6 +20,9 @@ export const getFileCommits = (
   const metricEvents = metricCommits.reduce((acc, commit) => {
     const isDrift = commit.commit.message.includes("Drift");
     const type = isDrift ? "Drift" : "New Data";
+    const eventDate = commit.commit.author?.date
+      ? new Date(commit.commit.author.date)
+      : null;
     const isPartition = commit.commit.message.includes(filepath + "/");
     if (isPartition) {
       const partitionName = commit.commit.message
@@ -36,6 +39,7 @@ export const getFileCommits = (
       } else {
         acc.push({
           type,
+          eventDate,
           subEvents: [subEvent],
         });
       }
@@ -43,6 +47,7 @@ export const getFileCommits = (
     } else {
       acc.push({
         type,
+        eventDate,
         onClick: () => selectCommit(commit.sha),
       });
       return acc;

@@ -42,8 +42,16 @@ describe("getFileCommits", () => {
     const filepath = "path/to/file";
     const selectCommit = jest.fn<(commitSha: string) => void, [string]>();
     const expectedEvents = [
-      { type: "Drift", onClick: expect.any(Function) as () => void },
-      { type: "New Data", onClick: expect.any(Function) as () => void },
+      {
+        type: "Drift",
+        eventDate: null,
+        onClick: expect.any(Function) as () => void,
+      },
+      {
+        type: "New Data",
+        eventDate: null,
+        onClick: expect.any(Function) as () => void,
+      },
     ] satisfies LineageEvent[];
 
     const events = getFileCommits(commitList, filepath, selectCommit);

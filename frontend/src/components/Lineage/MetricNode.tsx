@@ -70,6 +70,7 @@ type SubEvent = {
 
 export type LineageEvent = {
   type: "New Data" | "Drift";
+  eventDate: Date | null;
   subEvents?: SubEvent[];
   onClick?: () => void;
 };
@@ -111,7 +112,8 @@ export const MetricNode = ({
                 eventType={event.type}
                 onClick={() => handleEventClick(event)}
               >
-                {event.type}
+                {event.type}{" "}
+                {event.eventDate ? event.eventDate.toLocaleTimeString() : ""}
               </EventChip>
               {expandedEvent === event.type && (
                 <ul>
