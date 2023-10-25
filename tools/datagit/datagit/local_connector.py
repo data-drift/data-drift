@@ -1,10 +1,11 @@
 from datetime import datetime, timezone
 import os
+from typing import Iterator
 
 from datagit.dataset_helpers import sort_dataframe_on_first_column_and_assert_is_unique
 from .dataframe_update_breakdown import dataframe_update_breakdown
 import pandas as pd
-from git import Repo
+from git import Commit, Repo
 
 home_dir = os.path.expanduser("~")
 datadrift_dir = os.path.join(home_dir, ".datadrift")
@@ -61,3 +62,40 @@ def get_metrics(*, store_name="default"):
         os.path.splitext(f)[0] for f in os.listdir(store_dir) if f.endswith(".csv")
     ]
     return csv_files
+
+
+def delete_metric(*, store_name="default", metric_name: str):
+    # Getting commit history
+    commit_history = list(
+        get_metric_history(store_name=store_name, metric_name=metric_name)
+    )
+
+    # If there's no commit, exit
+    if not commit_history:
+        return
+
+    store_dir = os.path.join(datadrift_dir, store_name)
+    repo = Repo(store_dir)
+
+    # Create a new copy of main branch
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    keep_main = f"keep_main_{timestamp}"
+    repo.git.checkout("HEAD", b=keep_main)
+
+    # Create a new temporary branch and checkout
+    repo.git.checkout("HEAD", b="tmp_branch")
+
+    for commit in commit_history:
+        repo.git.rebase("--onto", commit.hexsha + "^", commit.hexsha, "tmp_branch")
+
+    repo.git.branch("-D", "main")
+    repo.git.checkout("HEAD", b="main")
+    repo.git.branch("-D", "tmp_branch")
+
+
+def get_metric_history(*, store_name="default", metric_name: str) -> Iterator[Commit]:
+    store_dir = os.path.join(datadrift_dir, store_name)
+    metric_file_name = f"{metric_name}.csv"
+    repo = Repo(store_dir)
+    commits = repo.iter_commits(paths=metric_file_name)
+    return commits

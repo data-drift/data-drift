@@ -210,6 +210,19 @@ def update(table, row_number):
 
 
 @cli_entrypoint.command()
+@click.option(
+    "--table",
+    help="name of your table",
+)
+def delete(table):
+    tables = local_connector.get_metrics()
+    if not table:
+        tables = local_connector.get_metrics()
+        table = select_from_list("Please enter table number", tables)
+    local_connector.delete_metric(metric_name=table)
+
+
+@cli_entrypoint.command()
 @click.argument("csvpathfile")
 @click.option(
     "--table",
