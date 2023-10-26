@@ -67,7 +67,8 @@ def run(token, repo, project_dir):
     data_drift_nodes = [
         node
         for node in manifest["nodes"].values()
-        if node["config"]["meta"].get("datadrift", False)
+        if (node["resource_type"] == "model")
+        & node["config"]["meta"].get("datadrift", False)
     ]
 
     for node in data_drift_nodes:
