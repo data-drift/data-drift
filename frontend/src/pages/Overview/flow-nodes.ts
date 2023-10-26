@@ -18,7 +18,7 @@ export const getFileCommits = (
     return commit.commit.message.includes(filepath);
   });
   const metricEvents = metricCommits.reduce((acc, commit) => {
-    const isDrift = commit.commit.message.includes("Drift");
+    const isDrift = commit.commit.message.toLowerCase().includes("drift");
     const type = isDrift ? "Drift" : "New Data";
     const eventDate = commit.commit.author?.date
       ? new Date(commit.commit.author.date)
