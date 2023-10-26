@@ -40,18 +40,24 @@ def dbt():
     default=lambda: os.environ.get("DATADRIFT_GITHUB_REPO", ""),
     help="The datagit repo in the form org/repo",
 )
+@click.option(
+    "--storage",
+    default="local",
+    help="Wether to use local or github storage",
+)
 @click.option("--project-dir", default=".", help="The dbt project dir")
-def run(token, repo, project_dir):
+def run(token, repo, storage, project_dir):
     from dbt.cli.main import dbtRunner
     from dbt.config.runtime import load_profile, load_project, RuntimeConfig
     from dbt.adapters.factory import get_adapter
 
-    if not repo:
-        repo = click.prompt("Your repo")
+    if storage == "github":
+        if not repo:
+            repo = click.prompt("Your repo")
 
-    if not token:
-        token = click.prompt("Your token")
-    click.echo(f"Pushing to {repo}!")
+        if not token:
+            token = click.prompt("Your token")
+        click.echo(f"Pushing to {repo}!")
 
     project_path = project_dir
     dbtRunner().invoke(["-q", "debug"], project_dir=str(project_path))
@@ -81,16 +87,20 @@ def run(token, repo, project_dir):
             metric_file = "data.csv"
             table.to_csv(metric_file)
             dataframe = pd.read_csv(metric_file)
-
-            github_connector.store_metric(
-                dataframe=dataframe,
-                ghClient=Github(token),
-                branch="main",
-                filepath=repo + "/dbt-drift/metrics/" + node["name"] + ".csv",
-                drift_evaluator=auto_merge_drift,
-            )
-
             os.remove(metric_file)
+
+            if storage == "github":
+                github_connector.store_metric(
+                    dataframe=dataframe,
+                    ghClient=Github(token),
+                    branch="main",
+                    filepath=repo + "/dbt-drift/metrics/" + node["name"] + ".csv",
+                    drift_evaluator=auto_merge_drift,
+                )
+            else:
+                local_connector.store_metric(
+                    metric_name=node["name"], metric_value=dataframe
+                )
 
 
 @dbt.command()
@@ -124,7 +134,7 @@ def snapshot():
             snapshot_table = node["relation_name"]
             date_column = node["config"]["meta"]["datadrift_date"]
             unique_key = node["config"]["unique_key"]
-            metric_name = snapshot_table
+            metric_name = node["name"]
 
             text_query = f"""
             SELECT DISTINCT dbt_valid_from FROM {snapshot_table}
