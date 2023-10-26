@@ -142,7 +142,7 @@ def snapshot():
             SELECT DISTINCT dbt_valid_to FROM {snapshot_table} WHERE NOT NULL;
             """
 
-            df = dbt_adapter_query(adapter, text_query, "data-snapshot-date.csv")
+            df = dbt_adapter_query(adapter, text_query)
             df["dbt_valid_from"] = pd.to_datetime(df["dbt_valid_from"])
 
             metric_history = local_connector.get_metric_history(metric_name=metric_name)
@@ -167,9 +167,7 @@ def snapshot():
                     (dbt_valid_to IS NULL AND dbt_valid_from <= '{date}');
                 """
 
-                data_as_of_date = dbt_adapter_query(
-                    adapter, asOfQuery, "data-snapshot-asof.csv"
-                )
+                data_as_of_date = dbt_adapter_query(adapter, asOfQuery)
 
                 data_as_of_date.replace({np.nan: "NA"}, inplace=True)
 
@@ -379,13 +377,10 @@ def select_from_list(prompt, choices):
 def dbt_adapter_query(
     adapter,
     query: str,
-    temp_metric_file_name: str,
 ) -> pd.DataFrame:
     _, table = adapter.execute(query, fetch=True)
-
-    #  TODO: Try to transform table in a dataframe without writing to a file
-    table.to_csv(temp_metric_file_name)
-
-    df = pd.read_csv(temp_metric_file_name)
-    os.remove(temp_metric_file_name)
-    return df
+    data = {
+        column_name: table.columns[column_name].values()
+        for column_name in table.column_names
+    }
+    return pd.DataFrame(data)
