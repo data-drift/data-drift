@@ -81,13 +81,7 @@ def run(token, repo, storage, project_dir):
     for node in data_drift_nodes:
         query = f'SELECT {node["config"]["meta"]["datadrift_unique_key"]} as unique_key,{node["config"]["meta"]["datadrift_date"]} as date, * FROM {node["relation_name"]}'
         with adapter.connection_named("default"):
-            resp, table = adapter.execute(query, fetch=True)
-
-            #  TODO: Try to transform table in a dataframe without writing to a file
-            metric_file = "data.csv"
-            table.to_csv(metric_file)
-            dataframe = pd.read_csv(metric_file)
-            os.remove(metric_file)
+            dataframe = dbt_adapter_query(adapter, query)
 
             if storage == "github":
                 github_connector.store_metric(
