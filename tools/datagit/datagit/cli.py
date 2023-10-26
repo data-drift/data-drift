@@ -1,9 +1,9 @@
 import sys
-import threading
 import webbrowser
 import click
 import json
 from datagit.dataset import generate_dataframe, insert_drift
+import numpy as np
 import pandas as pd
 import os
 from datagit import github_connector
@@ -12,10 +12,11 @@ from datagit.drift_evaluators import auto_merge_drift
 from github import Github
 import subprocess
 import platform
-
+from datetime import datetime
 import pkg_resources
 import http.server
 import socketserver
+from tzlocal import get_localzone
 
 
 @click.group()
@@ -94,7 +95,92 @@ def run(token, repo, project_dir):
 
 @dbt.command()
 def snapshot():
-    click.echo("Hello")
+    from dbt.cli.main import dbtRunner
+    from dbt.config.runtime import load_profile, load_project, RuntimeConfig
+    from dbt.adapters.factory import get_adapter
+
+    project_dir = "."
+    project_path = project_dir
+    dbtRunner().invoke(["-q", "debug"], project_dir=str(project_path))
+    profile = load_profile(str(project_path), {})
+    project = load_project(str(project_path), version_check=False, profile=profile)
+
+    runtime_config = RuntimeConfig.from_parts(project, profile, {})
+
+    adapter = get_adapter(runtime_config)
+
+    with open(f"{project_path}/target/manifest.json") as manifest_file:
+        manifest = json.load(manifest_file)
+
+    snapshot_nodes = [
+        node
+        for node in manifest["nodes"].values()
+        if (node["resource_type"] == "snapshot")
+    ]
+
+    for node in snapshot_nodes:
+        print("Handling node:", node["unique_id"])
+        with adapter.connection_named("default"):
+            snapshot_table = node["relation_name"]
+            date_column = node["config"]["meta"]["datadrift_date"]
+            unique_key = node["config"]["unique_key"]
+            metric_name = snapshot_table
+
+            text_query = f"""
+            SELECT DISTINCT dbt_valid_from FROM {snapshot_table}
+            UNION
+            SELECT DISTINCT dbt_valid_to FROM {snapshot_table} WHERE NOT NULL;
+            """
+
+            df = dbt_adapter_query(adapter, text_query, "data-snapshot-date.csv")
+            df["dbt_valid_from"] = pd.to_datetime(df["dbt_valid_from"])
+
+            metric_history = local_connector.get_metric_history(metric_name=metric_name)
+            latest_commit = next(metric_history, None)
+            if latest_commit is not None:
+                authored_date = latest_commit.authored_date
+                authored_datetime = datetime.fromtimestamp(authored_date)
+                # Compare only the second part, without the milliseconds, and take dates after the latest measure commit
+                df = df.loc[df["dbt_valid_from"].dt.floor("S") > authored_datetime]
+
+            print("Snapshot dates to process:", df)
+
+            for index, row in df.iterrows():
+                date = row["dbt_valid_from"]
+                print(f"Processing data for date: {date}")
+                if pd.isna(date):
+                    date = pd.Timestamp.now()
+
+                asOfQuery = f"""
+                SELECT * FROM {snapshot_table}
+                WHERE ('{date}' >= dbt_valid_from AND  '{date}' < dbt_valid_to) OR
+                    (dbt_valid_to IS NULL AND dbt_valid_from <= '{date}');
+                """
+
+                data_as_of_date = dbt_adapter_query(
+                    adapter, asOfQuery, "data-snapshot-asof.csv"
+                )
+
+                data_as_of_date.replace({np.nan: "NA"}, inplace=True)
+
+                # Drop dbt columns and add date and unique_key columns
+                data_as_of_date = data_as_of_date.drop(
+                    ["dbt_scd_id", "dbt_updated_at", "dbt_valid_from", "dbt_valid_to"],
+                    axis=1,
+                )
+                data_as_of_date["date"] = data_as_of_date[date_column]
+                data_as_of_date["unique_key"] = data_as_of_date[unique_key]
+                print(data_as_of_date)
+
+                # Compute date in UTC format
+                local_tz = get_localzone()
+                localized_date = date.replace(tzinfo=local_tz)
+
+                local_connector.store_metric(
+                    metric_name=metric_name,
+                    metric_value=data_as_of_date,
+                    measure_date=localized_date,
+                )
 
 
 @cli_entrypoint.command()
@@ -278,3 +364,18 @@ def select_from_list(prompt, choices):
         click.echo(f"{idx}: {item}")
     selection = click.prompt(prompt, type=click.IntRange(1, len(choices)))
     return choices[selection - 1]
+
+
+def dbt_adapter_query(
+    adapter,
+    query: str,
+    temp_metric_file_name: str,
+) -> pd.DataFrame:
+    _, table = adapter.execute(query, fetch=True)
+
+    #  TODO: Try to transform table in a dataframe without writing to a file
+    table.to_csv(temp_metric_file_name)
+
+    df = pd.read_csv(temp_metric_file_name)
+    os.remove(temp_metric_file_name)
+    return df

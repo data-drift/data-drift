@@ -24,5 +24,5 @@ setup(
         ],
     },
     python_requires=">=3.6",
-    install_requires=["pandas", "PyGithub", "click", "GitPython", "Faker"],
+    install_requires=["pandas", "PyGithub", "click", "GitPython", "Faker", "tzlocal"],
 )
