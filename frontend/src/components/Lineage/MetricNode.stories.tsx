@@ -14,8 +14,12 @@ export const DefaultCase: Story = {
   args: {
     metricName: "FCT Order",
     events: [
-      { type: "New Data" },
-      { type: "Drift", subEvents: [{ name: "2023-09" }, { name: "2023-10" }] },
+      { type: "New Data", eventDate: null },
+      {
+        type: "Drift",
+        eventDate: new Date("2021-09-01 12:13:14"),
+        subEvents: [{ name: "2023-09" }, { name: "2023-10" }],
+      },
     ],
   },
 };
