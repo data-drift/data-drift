@@ -1,3 +1,4 @@
+import socket
 import sys
 import webbrowser
 import click
@@ -201,6 +202,10 @@ def snapshot():
 def start():
     click.echo("Starting the application...")
 
+    if is_port_in_use(9740) or is_port_in_use(9741):
+        click.echo("Server(s) already running on port 9740 or 9741. Exiting.")
+        sys.exit()
+
     if platform.system() == "Darwin":
         if platform.machine().startswith("arm"):
             binary_path = pkg_resources.resource_filename(
@@ -391,3 +396,9 @@ def dbt_adapter_query(
         for column_name in table.column_names
     }
     return pd.DataFrame(data)
+
+
+def is_port_in_use(port):
+    """Check if a given port is in use."""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        return s.connect_ex(("localhost", port)) == 0
