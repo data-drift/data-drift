@@ -80,7 +80,7 @@ def run(token, repo, storage, project_dir):
 
     for node in data_drift_nodes:
         query = f'SELECT {node["config"]["meta"]["datadrift_unique_key"]} as unique_key,{node["config"]["meta"]["datadrift_date"]} as date, * FROM {node["relation_name"]}'
-        with adapter.connection_named("default"):
+        with adapter.connection_named("default"):  # type: ignore
             dataframe = dbt_adapter_query(adapter, query)
 
             if storage == "github":
@@ -132,7 +132,7 @@ def snapshot():
 
     for node in snapshot_nodes:
         print("Handling node:", node["unique_id"])
-        with adapter.connection_named("default"):
+        with adapter.connection_named("default"):  # type: ignore
             snapshot_table = node["relation_name"]
             date_column = node["config"]["meta"]["datadrift_date"]
             unique_key = node["config"]["unique_key"]
@@ -348,7 +348,7 @@ def load_csv(csvpathfile, table, unique_key_column, date_column):
         if not unique_key_column:
             unique_key_column = click.prompt(
                 "Please enter unique key column name",
-                type=click.Choice(dataframe.columns),
+                type=click.Choice(dataframe.columns),  # type: ignore
             )
 
         assert (
@@ -359,7 +359,7 @@ def load_csv(csvpathfile, table, unique_key_column, date_column):
     if "date" not in dataframe.columns:
         if not date_column:
             date_column = click.prompt(
-                "Please enter date column name", type=click.Choice(dataframe.columns)
+                "Please enter date column name", type=click.Choice(dataframe.columns)  # type: ignore
             )
         assert (
             date_column in dataframe.columns
