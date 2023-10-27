@@ -16,7 +16,11 @@ import {
 } from "./components";
 import { loader, localStrategyLoader, useOverviewLoaderData } from "./loader";
 import { getNodesFromConfig } from "./flow-nodes";
-import { getCommitList, getPatchAndHeader } from "../../services/data-drift";
+import {
+  getCommitList,
+  getCommitListLocalStrategy,
+  getPatchAndHeader,
+} from "../../services/data-drift";
 import { Endpoints } from "@octokit/types";
 import { DiffTable } from "../DisplayCommit/DiffTable";
 import { parsePatch } from "../../services/patch.mapper";
@@ -116,8 +120,24 @@ const Overview = () => {
   useEffect(() => {
     const fetchCommit = async () => {
       switch (config.strategy) {
-        case "local":
+        case "local": {
+          const result = await getCommitListLocalStrategy(
+            config.params.tableName,
+            currentDate.toISOString().substring(0, 10)
+          );
+          const { nodes, edges } = getNodesFromConfig(
+            selectedMetric,
+            result.data,
+            handleSetSelectedCommit
+          );
+          setCommitListData({
+            data: result.data,
+            loading: false,
+            nodes,
+            edges,
+          });
           break;
+        }
         case "github": {
           const result = await getCommitList(
             config.params,

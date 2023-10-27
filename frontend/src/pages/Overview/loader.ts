@@ -6,6 +6,10 @@ import {
   getConfig,
 } from "../../services/data-drift";
 
+enum Strategy {
+  Github = "github",
+  Local = "local",
+}
 function assertParamsIsDefined(
   params: Params<"installationId" | "owner" | "repo">
 ): asserts params is { installationId: string; owner: string; repo: string } {
@@ -34,11 +38,11 @@ export const loader = async ({
   return {
     params,
     config,
-    strategy: "github",
-  };
+    strategy: Strategy.Github,
+  } as const;
 };
 
-export const localStrategyLoader = async ({
+export const localStrategyLoader = ({
   params,
 }: {
   params: Params<"tableName">;
@@ -60,13 +64,15 @@ export const localStrategyLoader = async ({
   };
 
   return {
-    params,
+    params: { ...params, tableName },
     config,
-    strategy: "local",
-  };
+    strategy: Strategy.Local,
+  } as const;
 };
 
-type LoaderData = Awaited<ReturnType<typeof loader>>;
+type LoaderData = Awaited<
+  ReturnType<typeof loader | typeof localStrategyLoader>
+>;
 
 function assertLoaderDataIsDefined(
   loaderData: unknown
