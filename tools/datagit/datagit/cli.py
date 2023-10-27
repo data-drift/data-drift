@@ -127,70 +127,74 @@ def snapshot():
         [node["name"] for node in snapshot_nodes],
     )
 
-    print("Handling snapshot:", snapshot_name)
-    print("Handling snapshot index:", snapshot_index)
+    node = snapshot_nodes[snapshot_index]
+    print("Handling node:", node["unique_id"])
 
-    for node in snapshot_nodes:
-        print("Handling node:", node["unique_id"])
-        with adapter.connection_named("default"):  # type: ignore
-            snapshot_table = node["relation_name"]
-            date_column = node["config"]["meta"]["datadrift_date"]
-            unique_key = node["config"]["unique_key"]
-            metric_name = node["name"]
+    snapshot_table = node["relation_name"]
+    default_date_column = "created_at"
 
-            text_query = f"""
-            SELECT DISTINCT dbt_valid_from FROM {snapshot_table}
-            UNION
-            SELECT DISTINCT dbt_valid_to FROM {snapshot_table} WHERE NOT NULL;
+    # prompt the user for a date column
+    date_column = click.prompt(
+        "Enter the date column name", default=default_date_column
+    )
+
+    unique_key = node["config"]["unique_key"]
+    metric_name = node["name"]
+
+    with adapter.connection_named("default"):  # type: ignore
+        text_query = f"""
+        SELECT DISTINCT dbt_valid_from FROM {snapshot_table}
+        UNION
+        SELECT DISTINCT dbt_valid_to FROM {snapshot_table} WHERE NOT NULL;
+        """
+
+        df = dbt_adapter_query(adapter, text_query)
+        df["dbt_valid_from"] = pd.to_datetime(df["dbt_valid_from"])
+
+        metric_history = local_connector.get_metric_history(metric_name=metric_name)
+        latest_commit = next(metric_history, None)
+        if latest_commit is not None:
+            authored_date = latest_commit.authored_date
+            authored_datetime = datetime.fromtimestamp(authored_date)
+            # Compare only the second part, without the milliseconds, and take dates after the latest measure commit
+            df = df.loc[df["dbt_valid_from"].dt.floor("S") > authored_datetime]
+
+        print("Snapshot dates to process:", df)
+
+        for index, row in df.iterrows():
+            date = row["dbt_valid_from"]
+            print(f"Processing data for date: {date}")
+            if pd.isna(date):
+                date = pd.Timestamp.now()
+
+            asOfQuery = f"""
+            SELECT * FROM {snapshot_table}
+            WHERE ('{date}' >= dbt_valid_from AND  '{date}' < dbt_valid_to) OR
+                (dbt_valid_to IS NULL AND dbt_valid_from <= '{date}');
             """
 
-            df = dbt_adapter_query(adapter, text_query)
-            df["dbt_valid_from"] = pd.to_datetime(df["dbt_valid_from"])
+            data_as_of_date = dbt_adapter_query(adapter, asOfQuery)
 
-            metric_history = local_connector.get_metric_history(metric_name=metric_name)
-            latest_commit = next(metric_history, None)
-            if latest_commit is not None:
-                authored_date = latest_commit.authored_date
-                authored_datetime = datetime.fromtimestamp(authored_date)
-                # Compare only the second part, without the milliseconds, and take dates after the latest measure commit
-                df = df.loc[df["dbt_valid_from"].dt.floor("S") > authored_datetime]
+            data_as_of_date.replace({np.nan: "NA"}, inplace=True)
 
-            print("Snapshot dates to process:", df)
+            # Drop dbt columns and add date and unique_key columns
+            data_as_of_date = data_as_of_date.drop(
+                ["dbt_scd_id", "dbt_updated_at", "dbt_valid_from", "dbt_valid_to"],
+                axis=1,
+            )
+            data_as_of_date["date"] = data_as_of_date[date_column]
+            data_as_of_date["unique_key"] = data_as_of_date[unique_key]
+            print(data_as_of_date)
 
-            for index, row in df.iterrows():
-                date = row["dbt_valid_from"]
-                print(f"Processing data for date: {date}")
-                if pd.isna(date):
-                    date = pd.Timestamp.now()
+            # Compute date in UTC format
+            local_tz = get_localzone()
+            localized_date = date.replace(tzinfo=local_tz)
 
-                asOfQuery = f"""
-                SELECT * FROM {snapshot_table}
-                WHERE ('{date}' >= dbt_valid_from AND  '{date}' < dbt_valid_to) OR
-                    (dbt_valid_to IS NULL AND dbt_valid_from <= '{date}');
-                """
-
-                data_as_of_date = dbt_adapter_query(adapter, asOfQuery)
-
-                data_as_of_date.replace({np.nan: "NA"}, inplace=True)
-
-                # Drop dbt columns and add date and unique_key columns
-                data_as_of_date = data_as_of_date.drop(
-                    ["dbt_scd_id", "dbt_updated_at", "dbt_valid_from", "dbt_valid_to"],
-                    axis=1,
-                )
-                data_as_of_date["date"] = data_as_of_date[date_column]
-                data_as_of_date["unique_key"] = data_as_of_date[unique_key]
-                print(data_as_of_date)
-
-                # Compute date in UTC format
-                local_tz = get_localzone()
-                localized_date = date.replace(tzinfo=local_tz)
-
-                local_connector.store_metric(
-                    metric_name=metric_name,
-                    metric_value=data_as_of_date,
-                    measure_date=localized_date,
-                )
+            local_connector.store_metric(
+                metric_name=metric_name,
+                metric_value=data_as_of_date,
+                measure_date=localized_date,
+            )
 
 
 @cli_entrypoint.command()
