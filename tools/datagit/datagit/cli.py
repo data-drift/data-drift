@@ -1,9 +1,7 @@
-import socket
-import sys
-import webbrowser
 import click
 import json
 from datagit.dataset import generate_dataframe, insert_drift
+from datagit.server import start_server
 import numpy as np
 import pandas as pd
 import os
@@ -11,12 +9,9 @@ from datagit import github_connector
 from datagit import local_connector
 from datagit.drift_evaluators import auto_merge_drift
 from github import Github
-import subprocess
-import platform
+
 from datetime import datetime
-import pkg_resources
-import http.server
-import socketserver
+
 from tzlocal import get_localzone
 
 
@@ -196,77 +191,13 @@ def snapshot():
                 metric_value=data_as_of_date,
                 measure_date=localized_date,
             )
+    start_server("/tables/" + metric_name)
 
 
 @cli_entrypoint.command()
 def start():
     click.echo("Starting the application...")
-
-    if is_port_in_use(9740) or is_port_in_use(9741):
-        click.echo("Server(s) already running on port 9740 or 9741. Exiting.")
-        sys.exit()
-
-    if platform.system() == "Darwin":
-        if platform.machine().startswith("arm"):
-            binary_path = pkg_resources.resource_filename(
-                "datagit", "bin/data-drift-mac-m1"
-            )
-        else:
-            binary_path = pkg_resources.resource_filename(
-                "datagit", "bin/data-drift-mac-intel"
-            )
-    else:
-        # TODO: Update this path for other platforms (Linux, Windows, etc.)
-        raise ValueError("Unsupported platform")
-
-    # Get a copy of the current environment variables
-    env = os.environ.copy()
-
-    # Set the PORT environment variable
-    env["PORT"] = "9740"
-
-    server_process = subprocess.Popen(
-        [binary_path],
-        env=env,
-    )
-
-    PORT = 9741
-
-    SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-    DIRECTORY = os.path.join(SCRIPT_DIR, "bin/frontend/dist")
-
-    class Handler(http.server.SimpleHTTPRequestHandler):
-        def __init__(self, *args, **kwargs):
-            super().__init__(*args, directory=DIRECTORY, **kwargs)
-
-        def do_GET(self):
-            print(f"Request path: {self.path}")
-            # If the requested URL maps to an existing file, serve that.
-            if os.path.exists(self.translate_path(self.path)):
-                super().do_GET()
-                return
-
-            # Otherwise, serve the main index.html file.
-            self.path = "index.html"
-            super().do_GET()
-
-    httpd = socketserver.TCPServer(("", PORT), Handler)
-
-    try:
-        print(f"Serving directory '{DIRECTORY}' on port {PORT}")
-        url = f"http://localhost:{PORT}/tables"
-        print("Opening browser...", url)
-        webbrowser.open(url)
-        httpd.serve_forever()
-        server_process.wait()
-
-    except KeyboardInterrupt:
-        click.echo("Shutting down servers...")
-        httpd.shutdown()
-        click.echo("Httpd shut down")
-        server_process.terminate()
-        click.echo("Server down")
-        sys.exit()
+    start_server()
 
 
 @cli_entrypoint.group()
@@ -396,9 +327,3 @@ def dbt_adapter_query(
         for column_name in table.column_names
     }
     return pd.DataFrame(data)
-
-
-def is_port_in_use(port):
-    """Check if a given port is in use."""
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        return s.connect_ex(("localhost", port)) == 0
