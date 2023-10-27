@@ -122,6 +122,14 @@ def snapshot():
         if (node["resource_type"] == "snapshot")
     ]
 
+    [snapshot_name, snapshot_index] = select_from_list(
+        "Which snapshot do you want to process?",
+        [node["name"] for node in snapshot_nodes],
+    )
+
+    print("Handling snapshot:", snapshot_name)
+    print("Handling snapshot index:", snapshot_index)
+
     for node in snapshot_nodes:
         print("Handling node:", node["unique_id"])
         with adapter.connection_named("default"):
@@ -290,7 +298,7 @@ def create(table, row_number):
 def update(table, row_number):
     if not table:
         tables = local_connector.get_metrics()
-        table = select_from_list("Please enter table number", tables)
+        [table] = select_from_list("Please enter table number", tables)
 
     click.echo("Updating seed file...")
     dataframe = local_connector.get_metric(metric_name=table)
@@ -307,7 +315,7 @@ def delete(table):
     tables = local_connector.get_metrics()
     if not table:
         tables = local_connector.get_metrics()
-        table = select_from_list("Please enter table number", tables)
+        [table] = select_from_list("Please enter table number", tables)
     local_connector.delete_metric(metric_name=table)
 
 
@@ -365,7 +373,8 @@ def select_from_list(prompt, choices):
     for idx, item in enumerate(choices, 1):
         click.echo(f"{idx}: {item}")
     selection = click.prompt(prompt, type=click.IntRange(1, len(choices)))
-    return choices[selection - 1]
+    index = selection - 1
+    return [choices[index], index]
 
 
 def dbt_adapter_query(
