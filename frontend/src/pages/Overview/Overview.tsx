@@ -14,7 +14,7 @@ import {
   StyledHeader,
   StyledSelect,
 } from "./components";
-import { loader, useOverviewLoaderData } from "./loader";
+import { loader, localStrategyLoader, useOverviewLoaderData } from "./loader";
 import { getNodesFromConfig } from "./flow-nodes";
 import { getCommitList, getPatchAndHeader } from "../../services/data-drift";
 import { Endpoints } from "@octokit/types";
@@ -87,41 +87,64 @@ const Overview = () => {
   useEffect(() => {
     const fetchPatchData = async () => {
       if (!selectedCommit) return;
-      setDualTableData({ dualTableProps: undefined, loading: true });
-      const patchAndHeader = await getPatchAndHeader({
-        installationId: config.params.installationId,
-        owner: config.params.owner,
-        repo: config.params.repo,
-        commitSHA: selectedCommit,
-      });
-      const { oldData, newData } = parsePatch(
-        patchAndHeader.patch,
-        patchAndHeader.headers
-      );
-      const dualTableProps = {
-        tableProps1: oldData,
-        tableProps2: newData,
-      };
-      setDualTableData({ dualTableProps, loading: false });
+      switch (config.strategy) {
+        case "local":
+          break;
+        case "github": {
+          setDualTableData({ dualTableProps: undefined, loading: true });
+          const patchAndHeader = await getPatchAndHeader({
+            installationId: config.params.installationId,
+            owner: config.params.owner,
+            repo: config.params.repo,
+            commitSHA: selectedCommit,
+          });
+          const { oldData, newData } = parsePatch(
+            patchAndHeader.patch,
+            patchAndHeader.headers
+          );
+          const dualTableProps = {
+            tableProps1: oldData,
+            tableProps2: newData,
+          };
+          setDualTableData({ dualTableProps, loading: false });
+        }
+      }
     };
     void fetchPatchData();
-  }, [selectedCommit, config.params]);
+  }, [selectedCommit, config.params, config.strategy]);
 
   useEffect(() => {
     const fetchCommit = async () => {
-      const result = await getCommitList(
-        config.params,
-        currentDate.toISOString().substring(0, 10)
-      );
-      const { nodes, edges } = getNodesFromConfig(
-        selectedMetric,
-        result.data,
-        handleSetSelectedCommit
-      );
-      setCommitListData({ data: result.data, loading: false, nodes, edges });
+      switch (config.strategy) {
+        case "local":
+          break;
+        case "github": {
+          const result = await getCommitList(
+            config.params,
+            currentDate.toISOString().substring(0, 10)
+          );
+          const { nodes, edges } = getNodesFromConfig(
+            selectedMetric,
+            result.data,
+            handleSetSelectedCommit
+          );
+          setCommitListData({
+            data: result.data,
+            loading: false,
+            nodes,
+            edges,
+          });
+        }
+      }
     };
     void fetchCommit();
-  }, [currentDate, config.params, selectedMetric, handleSetSelectedCommit]);
+  }, [
+    currentDate,
+    config.params,
+    config.strategy,
+    selectedMetric,
+    handleSetSelectedCommit,
+  ]);
 
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -195,5 +218,6 @@ const Overview = () => {
 };
 
 Overview.loader = loader;
+Overview.localStrategyLoader = localStrategyLoader;
 
 export default Overview;

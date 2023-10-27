@@ -83,6 +83,29 @@ export const getCommitList = async (
   return result;
 };
 
+export const getCommitListLocalStrategy = async (
+  tableName: string,
+  date?: string
+) => {
+  const cacheKey = `${tableName}-${date || "no-date"}`;
+  const store = "default";
+
+  if (commitListCache.has(cacheKey)) {
+    const cachedResult = commitListCache.get(cacheKey);
+    if (cachedResult) {
+      return cachedResult;
+    }
+  }
+  const result = await axios.get<
+    Endpoints["GET /repos/{owner}/{repo}/commits"]["response"]["data"]
+  >(`${DATA_DRIFT_API_URL}/stores/${store}/tables/${tableName}/commits`, {
+    params: { date },
+  });
+
+  commitListCache.set(cacheKey, result);
+  return result;
+};
+
 // Define the custom type
 export type Timegrain = "year" | "quarter" | "month" | "week" | "day";
 

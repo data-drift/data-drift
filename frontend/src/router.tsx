@@ -56,6 +56,11 @@ export const router = createBrowserRouter([
     loader: TablePage.loader,
   },
   {
+    path: "tables/:tableName/history",
+    element: <Overview />,
+    loader: Overview.localStrategyLoader,
+  },
+  {
     path: "tables/:tableName/metrics/:metricName",
     element: <MetricPage />,
     loader: MetricPage.loader,
