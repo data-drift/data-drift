@@ -1,19 +1,19 @@
 package local_store
 
 import (
-	"bufio"
 	"encoding/csv"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/data-drift/data-drift/common"
 	"github.com/gin-gonic/gin"
-	"gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/plumbing"
-	"gopkg.in/src-d/go-git.v4/plumbing/object"
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
 type MeasurementRequest struct {
@@ -43,13 +43,7 @@ func MeasurementHandler(c *gin.Context) {
 	table := c.Param("table")
 	measurementId := c.Param("measurementId")
 
-	var req MeasurementRequest
-	if err := c.BindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	commit, err := getMeasurement(store, table, measurementId)
+	commit, patch, headers, err := getMeasurement(store, table, measurementId)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -70,12 +64,14 @@ func MeasurementHandler(c *gin.Context) {
 		},
 	}
 
-	file, _ := commit.File(table + ".csv")
-	content, _ := file.Contents()
-	getMetricByTimeGrain(req, content)
+	patchString := ""
+	lines := strings.Split(patch.String(), "\n")
 
-	c.JSON(http.StatusOK, gin.H{"MeasurementMetaData": measurementMetaData})
+	if len(lines) > 4 {
+		patchString = strings.TrimRight(strings.Join(lines[4:], "\n"), "\n")
+	}
 
+	c.JSON(http.StatusOK, gin.H{"MeasurementMetaData": measurementMetaData, "Patch": patchString, "Headers": headers})
 }
 
 func getMeasurements(store string, table string, date time.Time) ([]CommitInfo, error) {
@@ -122,42 +118,77 @@ func getMeasurements(store string, table string, date time.Time) ([]CommitInfo, 
 	return commits, nil
 }
 
-func getMeasurement(store string, table string, commitSha string) (*object.Commit, error) {
+func getMeasurement(store string, table string, commitSha string) (*object.Commit, *object.Patch, []string, error) {
 	repoDir, err := getStoreDir(store)
+	log.Println("repoDir", repoDir)
 	filePath := table + ".csv"
 	if err != nil {
 		print("Error getting store directory")
-		return nil, err
+		return nil, nil, nil, err
 	}
 	repo, err := git.PlainOpen(repoDir)
 	if err != nil {
 		print("Error opening repo")
-		return nil, err
+		return nil, nil, nil, err
 	}
 
 	if err != nil {
 		print("Error getting HEAD reference")
-		return nil, err
+		return nil, nil, nil, err
 	}
 	hash := plumbing.NewHash(commitSha)
 
 	commit, err := repo.CommitObject(hash)
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, err
 	}
 	_, err = commit.File(filePath)
 	if err != nil {
-		return nil, fmt.Errorf("file not present in measurement")
+		return nil, nil, nil, fmt.Errorf("file not present in measurement")
 	}
-	return commit, err
-}
 
-func getMetricByTimeGrain(measurementRequest MeasurementRequest, fileContent string) error {
-	reader := csv.NewReader(bufio.NewReader(strings.NewReader(fileContent)))
-	records, err := reader.ReadAll()
+	// Retrieve the commit's parents
+	parent, err := commit.Parent(0)
+
+	log.Println("commit", commit.Hash, commit.Author.When, commit.Message)
+	log.Println("parent", parent.Hash, parent.Author.When, commit.Message)
 	if err != nil {
-		return err
+		return nil, nil, nil, err
 	}
-	fmt.Println(records[0])
-	return nil
+
+	// Generate the patch between the commit and its first parent
+	patch, err := commit.Patch(parent)
+
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	log.Println("patch message", patch.Message())
+	log.Println("patch String", patch.FilePatches()[0].Chunks())
+	for _, chunk := range patch.FilePatches()[0].Chunks() {
+		log.Printf("chunk: %v\n", chunk)
+	}
+
+	file, err := commit.File(filePath)
+	if err != nil {
+		// Handle the error. For example:
+		log.Fatalf("Failed to get file: %v", err)
+	}
+
+	content, err := file.Contents()
+	if err != nil {
+		// Handle the error. For example:
+		log.Fatalf("Failed to read file contents: %v", err)
+	}
+
+	// Convert the content to an io.Reader. Assuming content is a string:
+	reader := csv.NewReader(strings.NewReader(content))
+
+	// read the headers from the CSV file
+	headers, err := reader.Read()
+	if err != nil {
+		// Handle the error. For example:
+		log.Fatalf("Failed to read CSV headers: %v", err)
+	}
+	return commit, patch, headers, nil
 }

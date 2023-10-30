@@ -19,6 +19,7 @@ import { getNodesFromConfig } from "./flow-nodes";
 import {
   getCommitList,
   getCommitListLocalStrategy,
+  getMeasurement,
   getPatchAndHeader,
 } from "../../services/data-drift";
 import { DiffTable } from "../DisplayCommit/DiffTable";
@@ -77,8 +78,25 @@ const Overview = () => {
     const fetchPatchData = async () => {
       if (!selectedCommit) return;
       switch (config.strategy) {
-        case "local":
+        case "local": {
+          setDualTableData({ dualTableProps: undefined, loading: true });
+          const measurementResults = await getMeasurement(
+            "default",
+            config.params.tableName,
+            selectedCommit
+          );
+          console.log(measurementResults.data);
+          const { oldData, newData } = parsePatch(
+            measurementResults.data.Patch,
+            measurementResults.data.Headers
+          );
+          const dualTableProps = {
+            tableProps1: oldData,
+            tableProps2: newData,
+          };
+          setDualTableData({ dualTableProps, loading: false });
           break;
+        }
         case "github": {
           setDualTableData({ dualTableProps: undefined, loading: true });
           const patchAndHeader = await getPatchAndHeader({

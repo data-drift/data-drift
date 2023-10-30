@@ -31,6 +31,30 @@ export const getPatchAndHeader = async (
   };
 };
 
+export const getMeasurement = async (
+  store: string,
+  tableId: string,
+  measurementId: string
+) => {
+  const result = await axios.get<{
+    MeasurementMetaData: {
+      MeasurementTimestamp: number;
+      MeasurementDate: string;
+      MeasurementDateTime: string;
+      MeasurementComments: {
+        CommentAuthor: string;
+        CommentBody: string;
+      }[];
+      MeasurementId: string;
+    };
+    Patch: string;
+    Headers: string[];
+  }>(
+    `${DATA_DRIFT_API_URL}/stores/${store}/tables/${tableId}/measurements/${measurementId}`
+  );
+  return result;
+};
+
 export const getMetricCohorts = async ({
   installationId,
   metricName,
