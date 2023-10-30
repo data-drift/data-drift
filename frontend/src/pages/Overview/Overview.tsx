@@ -48,23 +48,6 @@ const Overview = () => {
     ? new Date(searchParams.get("snapshotDate") as string)
     : new Date();
   const [currentDate, setCurrentDate] = useState(initialSnapshotDate);
-  const handleSetCurrentDate = useCallback(
-    (newDate: Date) => {
-      const searchParams = new URLSearchParams(window.location.search);
-      searchParams.set(
-        "snapshotDate",
-        currentDate.toISOString().substring(0, 10)
-      );
-      const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
-      window.history.pushState({ path: newUrl }, "", newUrl);
-
-      setCurrentDate(newDate);
-      handleSetSelectedCommit("");
-      setCommitListData((prev) => ({ ...prev, loading: true }));
-      setDualTableData({ dualTableProps: undefined, loading: false });
-    },
-    [currentDate]
-  );
 
   const [commitListData, setCommitListData] = useState({
     data: [] as {
@@ -183,6 +166,24 @@ const Overview = () => {
   ]);
 
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const handleSetCurrentDate = useCallback(
+    (newDate: Date) => {
+      const searchParams = new URLSearchParams(window.location.search);
+      searchParams.set(
+        "snapshotDate",
+        currentDate.toISOString().substring(0, 10)
+      );
+      const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
+      window.history.pushState({ path: newUrl }, "", newUrl);
+
+      setCurrentDate(newDate);
+      handleSetSelectedCommit("");
+      setCommitListData((prev) => ({ ...prev, loading: true }));
+      setDualTableData({ dualTableProps: undefined, loading: false });
+    },
+    [currentDate, handleSetSelectedCommit]
+  );
 
   const incrementDate = useCallback(() => {
     const newDate = new Date(currentDate.setDate(currentDate.getDate() + 1));
