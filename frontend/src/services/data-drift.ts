@@ -84,15 +84,18 @@ export const getCommitList = async (
 };
 
 export const getCommitListLocalStrategy = async (
-  tableName: string,
+  tableId: string,
   date?: string
 ) => {
   const store = "default";
-  const tableId = tableName;
 
-  const result = await axios.get<
-    Endpoints["GET /repos/{owner}/{repo}/commits"]["response"]["data"]
-  >(`${DATA_DRIFT_API_URL}/stores/${store}/tables/${tableId}/measurements`, {
+  const result = await axios.get<{
+    Measurements: {
+      Message: string;
+      Date: string;
+      Sha: string;
+    }[];
+  }>(`${DATA_DRIFT_API_URL}/stores/${store}/tables/${tableId}/measurements`, {
     params: { date },
   });
 

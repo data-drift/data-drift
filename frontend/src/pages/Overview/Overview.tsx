@@ -21,7 +21,6 @@ import {
   getCommitListLocalStrategy,
   getPatchAndHeader,
 } from "../../services/data-drift";
-import { Endpoints } from "@octokit/types";
 import { DiffTable } from "../DisplayCommit/DiffTable";
 import { parsePatch } from "../../services/patch.mapper";
 import Loader from "../../components/Common/Loader";
@@ -68,7 +67,10 @@ const Overview = () => {
   );
 
   const [commitListData, setCommitListData] = useState({
-    data: [] as Endpoints["GET /repos/{owner}/{repo}/commits"]["response"]["data"],
+    data: [] as {
+      commit: { message: string; author: { date?: string } | null };
+      sha: string;
+    }[],
     loading: true,
     nodes: [] as Node[],
     edges: [] as Edge[],
@@ -125,13 +127,27 @@ const Overview = () => {
             config.params.tableName,
             currentDate.toISOString().substring(0, 10)
           );
+
+          const mappedCommits = result.data.Measurements.map((commit) => ({
+            commit: {
+              message: commit.Message,
+              author: {
+                date: commit.Date,
+              },
+            },
+            sha: commit.Sha,
+          })) satisfies {
+            commit: { message: string; author: { date?: string } | null };
+            sha: string;
+          }[];
+
           const { nodes, edges } = getNodesFromConfig(
             selectedMetric,
-            result.data,
+            mappedCommits,
             handleSetSelectedCommit
           );
           setCommitListData({
-            data: result.data,
+            data: mappedCommits,
             loading: false,
             nodes,
             edges,

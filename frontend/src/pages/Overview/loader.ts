@@ -1,10 +1,5 @@
 import { Params, useLoaderData } from "react-router-dom";
-import {
-  DDConfig,
-  getCommitList,
-  getCommitListLocalStrategy,
-  getConfig,
-} from "../../services/data-drift";
+import { DDConfig, getConfig } from "../../services/data-drift";
 
 enum Strategy {
   Github = "github",
