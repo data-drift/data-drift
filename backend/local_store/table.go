@@ -3,6 +3,7 @@ package local_store
 import (
 	"encoding/csv"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -119,7 +120,7 @@ func getCommitsForFile(store string, filePath string) ([]CommitInfo, error) {
 
 		return nil
 	})
-	if err != nil && err.Error() != "EOF" {
+	if err != nil && err != io.EOF {
 		print("Error iterating commits", err.Error())
 		return nil, err
 	}

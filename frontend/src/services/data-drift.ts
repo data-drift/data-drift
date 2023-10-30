@@ -91,7 +91,7 @@ export const getCommitListLocalStrategy = async (
 
   const result = await axios.get<
     Endpoints["GET /repos/{owner}/{repo}/commits"]["response"]["data"]
-  >(`${DATA_DRIFT_API_URL}/stores/${store}/tables/${tableName}/commits`, {
+  >(`${DATA_DRIFT_API_URL}/stores/${store}/tables/${tableName}/measurements`, {
     params: { date },
   });
 

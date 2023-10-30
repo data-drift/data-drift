@@ -4,8 +4,10 @@ import (
 	"bufio"
 	"encoding/csv"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/data-drift/data-drift/common"
 	"github.com/gin-gonic/gin"
@@ -17,6 +19,23 @@ import (
 type MeasurementRequest struct {
 	Metric    string           `json:"metric"`
 	TimeGrain common.TimeGrain `json:"timegrain"`
+}
+
+func MeasurementsHandler(c *gin.Context) {
+	store := c.Param("store")
+	table := c.Param("table")
+	queryDate := c.Query("date")
+	date, err := time.Parse("2006-01-02", queryDate)
+	if err != nil {
+		c.JSON(http.StatusNotAcceptable, gin.H{"error": err.Error()})
+		return
+	}
+	measurements, err := getMeasurements(store, table, date)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"Measurements": measurements})
 }
 
 func MeasurementHandler(c *gin.Context) {
@@ -57,6 +76,50 @@ func MeasurementHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"MeasurementMetaData": measurementMetaData})
 
+}
+
+func getMeasurements(store string, table string, date time.Time) ([]CommitInfo, error) {
+	repoDir, err := getStoreDir(store)
+	filePath := table + ".csv"
+	if err != nil {
+		print("Error getting store directory")
+		return nil, err
+	}
+	repo, err := git.PlainOpen(repoDir)
+	if err != nil {
+		print("Error opening repo")
+		return nil, err
+	}
+
+	ref, err := repo.Head()
+	if err != nil {
+		print("Error fetching repo head")
+		return nil, err
+	}
+
+	cIter, err := repo.Log(&git.LogOptions{From: ref.Hash(), FileName: &filePath})
+	if err != nil {
+		print("Error getting commit log")
+		return nil, err
+	}
+
+	commits := []CommitInfo{}
+
+	err = cIter.ForEach(func(c *object.Commit) error {
+		if c.Author.When.Format("2006-01-02") == date.Format("2006-01-02") {
+			commits = append(commits, CommitInfo{
+				Message: c.Message,
+				Date:    c.Author.When,
+				Sha:     c.Hash.String(),
+			})
+		}
+		return nil
+	})
+	if err != nil && err != io.EOF {
+		print("Error iterating commits", err.Error())
+		return nil, err
+	}
+	return commits, nil
 }
 
 func getMeasurement(store string, table string, commitSha string) (*object.Commit, error) {
