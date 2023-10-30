@@ -47,7 +47,7 @@ export const getMetricCohorts = async ({
   return result;
 };
 
-const commitListCache = new Map<
+const githubCommitListCache = new Map<
   string,
   AxiosResponse<
     Endpoints["GET /repos/{owner}/{repo}/commits"]["response"]["data"]
@@ -66,8 +66,8 @@ export const getCommitList = async (
     date || "no-date"
   }`;
 
-  if (commitListCache.has(cacheKey)) {
-    const cachedResult = commitListCache.get(cacheKey);
+  if (githubCommitListCache.has(cacheKey)) {
+    const cachedResult = githubCommitListCache.get(cacheKey);
     if (cachedResult) {
       return cachedResult;
     }
@@ -79,7 +79,7 @@ export const getCommitList = async (
     params: { date },
   });
 
-  commitListCache.set(cacheKey, result);
+  githubCommitListCache.set(cacheKey, result);
   return result;
 };
 
@@ -87,22 +87,14 @@ export const getCommitListLocalStrategy = async (
   tableName: string,
   date?: string
 ) => {
-  const cacheKey = `${tableName}-${date || "no-date"}`;
   const store = "default";
 
-  if (commitListCache.has(cacheKey)) {
-    const cachedResult = commitListCache.get(cacheKey);
-    if (cachedResult) {
-      return cachedResult;
-    }
-  }
   const result = await axios.get<
     Endpoints["GET /repos/{owner}/{repo}/commits"]["response"]["data"]
   >(`${DATA_DRIFT_API_URL}/stores/${store}/tables/${tableName}/commits`, {
     params: { date },
   });
 
-  commitListCache.set(cacheKey, result);
   return result;
 };
 
