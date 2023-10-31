@@ -141,11 +141,6 @@ func getMeasurement(store string, table string, commitSha string) (*object.Commi
 		return nil, "", nil, fmt.Errorf("file not present in measurement")
 	}
 
-	// Retrieve the commit's parents
-	parent, err := commit.Parent(0)
-
-	log.Println("commit", commit.Hash, commit.Author.When, commit.Message)
-	log.Println("parent", parent.Hash, parent.Author.When, commit.Message)
 	if err != nil {
 		return nil, "", nil, err
 	}
@@ -172,10 +167,8 @@ func getMeasurement(store string, table string, commitSha string) (*object.Commi
 		log.Fatalf("Failed to read CSV headers: %v", err)
 	}
 
-	previousFile, _ := parent.File(filePath)
-	previousContent, _ := previousFile.Contents()
-	previousReader := csv.NewReader(strings.NewReader(previousContent))
-	previousRecords, _ := previousReader.ReadAll()
+	// Retrieve the commit's parents
+	previousRecords := getPreviousRecord(commit, filePath)
 
 	patch, err := helpers.GenerateCsvPatch(currentRecord, previousRecords)
 	if err != nil {
@@ -188,4 +181,16 @@ func getMeasurement(store string, table string, commitSha string) (*object.Commi
 	patch = strings.Join(lines, "\n")
 
 	return commit, patch, headers, nil
+}
+
+func getPreviousRecord(commit *object.Commit, filePath string) [][]string {
+	parent, _ := commit.Parent(0)
+	previousFile, err := parent.File(filePath)
+	if err != nil {
+		return [][]string{{"No file"}}
+	}
+	previousContent, _ := previousFile.Contents()
+	previousReader := csv.NewReader(strings.NewReader(previousContent))
+	previousRecords, _ := previousReader.ReadAll()
+	return previousRecords
 }
