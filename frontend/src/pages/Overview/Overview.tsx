@@ -14,10 +14,14 @@ import {
   StyledHeader,
   StyledSelect,
 } from "./components";
-import { loader, useOverviewLoaderData } from "./loader";
+import { loader, localStrategyLoader, useOverviewLoaderData } from "./loader";
 import { getNodesFromConfig } from "./flow-nodes";
-import { getCommitList, getPatchAndHeader } from "../../services/data-drift";
-import { Endpoints } from "@octokit/types";
+import {
+  getCommitList,
+  getCommitListLocalStrategy,
+  getMeasurement,
+  getPatchAndHeader,
+} from "../../services/data-drift";
 import { DiffTable } from "../DisplayCommit/DiffTable";
 import { parsePatch } from "../../services/patch.mapper";
 import Loader from "../../components/Common/Loader";
@@ -45,26 +49,12 @@ const Overview = () => {
     ? new Date(searchParams.get("snapshotDate") as string)
     : new Date();
   const [currentDate, setCurrentDate] = useState(initialSnapshotDate);
-  const handleSetCurrentDate = useCallback(
-    (newDate: Date) => {
-      const searchParams = new URLSearchParams(window.location.search);
-      searchParams.set(
-        "snapshotDate",
-        currentDate.toISOString().substring(0, 10)
-      );
-      const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
-      window.history.pushState({ path: newUrl }, "", newUrl);
-
-      setCurrentDate(newDate);
-      handleSetSelectedCommit("");
-      setCommitListData((prev) => ({ ...prev, loading: true }));
-      setDualTableData({ dualTableProps: undefined, loading: false });
-    },
-    [currentDate]
-  );
 
   const [commitListData, setCommitListData] = useState({
-    data: [] as Endpoints["GET /repos/{owner}/{repo}/commits"]["response"]["data"],
+    data: [] as {
+      commit: { message: string; author: { date?: string } | null };
+      sha: string;
+    }[],
     loading: true,
     nodes: [] as Node[],
     edges: [] as Edge[],
@@ -87,43 +77,131 @@ const Overview = () => {
   useEffect(() => {
     const fetchPatchData = async () => {
       if (!selectedCommit) return;
-      setDualTableData({ dualTableProps: undefined, loading: true });
-      const patchAndHeader = await getPatchAndHeader({
-        installationId: config.params.installationId,
-        owner: config.params.owner,
-        repo: config.params.repo,
-        commitSHA: selectedCommit,
-      });
-      const { oldData, newData } = parsePatch(
-        patchAndHeader.patch,
-        patchAndHeader.headers
-      );
-      const dualTableProps = {
-        tableProps1: oldData,
-        tableProps2: newData,
-      };
-      setDualTableData({ dualTableProps, loading: false });
+      switch (config.strategy) {
+        case "local": {
+          setDualTableData({ dualTableProps: undefined, loading: true });
+          const measurementResults = await getMeasurement(
+            "default",
+            config.params.tableName,
+            selectedCommit
+          );
+          console.log(measurementResults.data);
+          const { oldData, newData } = parsePatch(
+            measurementResults.data.Patch,
+            measurementResults.data.Headers
+          );
+          const dualTableProps = {
+            tableProps1: oldData,
+            tableProps2: newData,
+          };
+          setDualTableData({ dualTableProps, loading: false });
+          break;
+        }
+        case "github": {
+          setDualTableData({ dualTableProps: undefined, loading: true });
+          const patchAndHeader = await getPatchAndHeader({
+            installationId: config.params.installationId,
+            owner: config.params.owner,
+            repo: config.params.repo,
+            commitSHA: selectedCommit,
+          });
+          const { oldData, newData } = parsePatch(
+            patchAndHeader.patch,
+            patchAndHeader.headers
+          );
+          const dualTableProps = {
+            tableProps1: oldData,
+            tableProps2: newData,
+          };
+          setDualTableData({ dualTableProps, loading: false });
+        }
+      }
     };
     void fetchPatchData();
-  }, [selectedCommit, config.params]);
+  }, [selectedCommit, config.params, config.strategy]);
 
   useEffect(() => {
     const fetchCommit = async () => {
-      const result = await getCommitList(
-        config.params,
-        currentDate.toISOString().substring(0, 10)
-      );
-      const { nodes, edges } = getNodesFromConfig(
-        selectedMetric,
-        result.data,
-        handleSetSelectedCommit
-      );
-      setCommitListData({ data: result.data, loading: false, nodes, edges });
+      switch (config.strategy) {
+        case "local": {
+          const result = await getCommitListLocalStrategy(
+            config.params.tableName,
+            currentDate.toISOString().substring(0, 10)
+          );
+
+          const mappedCommits = result.data.Measurements.map((commit) => ({
+            commit: {
+              message: commit.Message,
+              author: {
+                date: commit.Date,
+              },
+            },
+            sha: commit.Sha,
+          })) satisfies {
+            commit: { message: string; author: { date?: string } | null };
+            sha: string;
+          }[];
+
+          const { nodes, edges } = getNodesFromConfig(
+            selectedMetric,
+            mappedCommits,
+            handleSetSelectedCommit
+          );
+          setCommitListData({
+            data: mappedCommits,
+            loading: false,
+            nodes,
+            edges,
+          });
+          break;
+        }
+        case "github": {
+          const result = await getCommitList(
+            config.params,
+            currentDate.toISOString().substring(0, 10)
+          );
+          const { nodes, edges } = getNodesFromConfig(
+            selectedMetric,
+            result.data,
+            handleSetSelectedCommit
+          );
+          setCommitListData({
+            data: result.data,
+            loading: false,
+            nodes,
+            edges,
+          });
+        }
+      }
     };
     void fetchCommit();
-  }, [currentDate, config.params, selectedMetric, handleSetSelectedCommit]);
+  }, [
+    currentDate,
+    config.params,
+    config.strategy,
+    selectedMetric,
+    handleSetSelectedCommit,
+  ]);
 
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const handleSetCurrentDate = useCallback(
+    (newDate: Date) => {
+      const searchParams = new URLSearchParams(window.location.search);
+      searchParams.set(
+        "snapshotDate",
+        currentDate.toISOString().substring(0, 10)
+      );
+      const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
+      window.history.pushState({ path: newUrl }, "", newUrl);
+
+      setCurrentDate(newDate);
+      handleSetSelectedCommit("");
+      setCommitListData((prev) => ({ ...prev, loading: true }));
+      setDualTableData({ dualTableProps: undefined, loading: false });
+    },
+    [currentDate, handleSetSelectedCommit]
+  );
 
   const incrementDate = useCallback(() => {
     const newDate = new Date(currentDate.setDate(currentDate.getDate() + 1));
@@ -195,5 +273,6 @@ const Overview = () => {
 };
 
 Overview.loader = loader;
+Overview.localStrategyLoader = localStrategyLoader;
 
 export default Overview;

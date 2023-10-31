@@ -3,6 +3,7 @@ package local_store
 import (
 	"encoding/csv"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -10,8 +11,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/plumbing/object"
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
 type CommitInfo struct {
@@ -119,7 +120,7 @@ func getCommitsForFile(store string, filePath string) ([]CommitInfo, error) {
 
 		return nil
 	})
-	if err != nil && err.Error() != "EOF" {
+	if err != nil && err != io.EOF {
 		print("Error iterating commits", err.Error())
 		return nil, err
 	}

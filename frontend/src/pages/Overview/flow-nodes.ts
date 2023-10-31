@@ -1,5 +1,5 @@
 import { Edge, Node, Position } from "reactflow";
-import { DDConfigMetric, getCommitList } from "../../services/data-drift";
+import { DDConfigMetric } from "../../services/data-drift";
 import { extractFileNameAndPath } from "../../services/string-helpers";
 import { LineageEvent } from "../../components/Lineage/MetricNode";
 
@@ -10,7 +10,10 @@ const baseNode = {
 };
 
 export const getFileCommits = (
-  commitList: Awaited<ReturnType<typeof getCommitList>>["data"],
+  commitList: {
+    commit: { message: string; author: { date?: string } | null };
+    sha: string;
+  }[],
   filepath: DDConfigMetric["filepath"],
   selectCommit: (commit: string) => void
 ): LineageEvent[] => {
@@ -58,7 +61,10 @@ export const getFileCommits = (
 
 export const getNodesFromConfig = (
   metric: DDConfigMetric,
-  commitList: Awaited<ReturnType<typeof getCommitList>>["data"],
+  commitList: {
+    commit: { message: string; author: { date?: string } | null };
+    sha: string;
+  }[],
   selectCommit: (commit: string) => void
 ): { nodes: Node[]; edges: Edge[] } => {
   const metricEvents = getFileCommits(

@@ -31,6 +31,30 @@ export const getPatchAndHeader = async (
   };
 };
 
+export const getMeasurement = async (
+  store: string,
+  tableId: string,
+  measurementId: string
+) => {
+  const result = await axios.get<{
+    MeasurementMetaData: {
+      MeasurementTimestamp: number;
+      MeasurementDate: string;
+      MeasurementDateTime: string;
+      MeasurementComments: {
+        CommentAuthor: string;
+        CommentBody: string;
+      }[];
+      MeasurementId: string;
+    };
+    Patch: string;
+    Headers: string[];
+  }>(
+    `${DATA_DRIFT_API_URL}/stores/${store}/tables/${tableId}/measurements/${measurementId}`
+  );
+  return result;
+};
+
 export const getMetricCohorts = async ({
   installationId,
   metricName,
@@ -47,7 +71,7 @@ export const getMetricCohorts = async ({
   return result;
 };
 
-const commitListCache = new Map<
+const githubCommitListCache = new Map<
   string,
   AxiosResponse<
     Endpoints["GET /repos/{owner}/{repo}/commits"]["response"]["data"]
@@ -66,8 +90,8 @@ export const getCommitList = async (
     date || "no-date"
   }`;
 
-  if (commitListCache.has(cacheKey)) {
-    const cachedResult = commitListCache.get(cacheKey);
+  if (githubCommitListCache.has(cacheKey)) {
+    const cachedResult = githubCommitListCache.get(cacheKey);
     if (cachedResult) {
       return cachedResult;
     }
@@ -79,7 +103,26 @@ export const getCommitList = async (
     params: { date },
   });
 
-  commitListCache.set(cacheKey, result);
+  githubCommitListCache.set(cacheKey, result);
+  return result;
+};
+
+export const getCommitListLocalStrategy = async (
+  tableId: string,
+  date?: string
+) => {
+  const store = "default";
+
+  const result = await axios.get<{
+    Measurements: {
+      Message: string;
+      Date: string;
+      Sha: string;
+    }[];
+  }>(`${DATA_DRIFT_API_URL}/stores/${store}/tables/${tableId}/measurements`, {
+    params: { date },
+  });
+
   return result;
 };
 
@@ -280,7 +323,7 @@ export const getTableList = async () => {
   return result;
 };
 
-export const getTable = async (tableName: string) => {
+export const getTable = async (tableId: string) => {
   const result = await axios.get<{
     commits: {
       Message: string;
@@ -290,7 +333,7 @@ export const getTable = async (tableName: string) => {
     store: string;
     table: string;
     tableColumns: string[];
-  }>(`${DATA_DRIFT_API_URL}/stores/default/tables/${tableName}`);
+  }>(`${DATA_DRIFT_API_URL}/stores/default/tables/${tableId}`);
   return result;
 };
 
@@ -300,7 +343,7 @@ export const getMetricHistory = async (params: {
   metric: string;
   periodKey: string;
 }) => {
-  const { store, table, metric, periodKey } = params;
+  const { store, table: tableId, metric, periodKey } = params;
   const result = await axios.post<{
     metricHistory: {
       LineCount: number;
@@ -321,7 +364,7 @@ export const getMetricHistory = async (params: {
     periodKey: string;
     store: string;
     table: string;
-  }>(`${DATA_DRIFT_API_URL}/stores/${store}/tables/${table}/metrics`, {
+  }>(`${DATA_DRIFT_API_URL}/stores/${store}/tables/${tableId}/metrics`, {
     metric,
     period: periodKey,
   });

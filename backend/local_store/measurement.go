@@ -1,17 +1,20 @@
 package local_store
 
 import (
-	"bufio"
 	"encoding/csv"
 	"fmt"
+	"io"
+	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/data-drift/data-drift/common"
+	"github.com/data-drift/data-drift/helpers"
 	"github.com/gin-gonic/gin"
-	"gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/plumbing"
-	"gopkg.in/src-d/go-git.v4/plumbing/object"
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
 type MeasurementRequest struct {
@@ -19,18 +22,29 @@ type MeasurementRequest struct {
 	TimeGrain common.TimeGrain `json:"timegrain"`
 }
 
+func MeasurementsHandler(c *gin.Context) {
+	store := c.Param("store")
+	table := c.Param("table")
+	queryDate := c.Query("date")
+	date, err := time.Parse("2006-01-02", queryDate)
+	if err != nil {
+		c.JSON(http.StatusNotAcceptable, gin.H{"error": err.Error()})
+		return
+	}
+	measurements, err := getMeasurements(store, table, date)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"Measurements": measurements})
+}
+
 func MeasurementHandler(c *gin.Context) {
 	store := c.Param("store")
 	table := c.Param("table")
 	measurementId := c.Param("measurementId")
 
-	var req MeasurementRequest
-	if err := c.BindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	commit, err := getMeasurement(store, table, measurementId)
+	commit, patch, headers, err := getMeasurement(store, table, measurementId)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -51,15 +65,10 @@ func MeasurementHandler(c *gin.Context) {
 		},
 	}
 
-	file, _ := commit.File(table + ".csv")
-	content, _ := file.Contents()
-	getMetricByTimeGrain(req, content)
-
-	c.JSON(http.StatusOK, gin.H{"MeasurementMetaData": measurementMetaData})
-
+	c.JSON(http.StatusOK, gin.H{"MeasurementMetaData": measurementMetaData, "Patch": patch, "Headers": headers})
 }
 
-func getMeasurement(store string, table string, commitSha string) (*object.Commit, error) {
+func getMeasurements(store string, table string, date time.Time) ([]CommitInfo, error) {
 	repoDir, err := getStoreDir(store)
 	filePath := table + ".csv"
 	if err != nil {
@@ -72,29 +81,116 @@ func getMeasurement(store string, table string, commitSha string) (*object.Commi
 		return nil, err
 	}
 
+	ref, err := repo.Head()
+	if err != nil {
+		print("Error fetching repo head")
+		return nil, err
+	}
+
+	cIter, err := repo.Log(&git.LogOptions{From: ref.Hash(), FileName: &filePath})
+	if err != nil {
+		print("Error getting commit log")
+		return nil, err
+	}
+
+	commits := []CommitInfo{}
+
+	err = cIter.ForEach(func(c *object.Commit) error {
+		if c.Author.When.Format("2006-01-02") == date.Format("2006-01-02") {
+			commits = append(commits, CommitInfo{
+				Message: c.Message,
+				Date:    c.Author.When,
+				Sha:     c.Hash.String(),
+			})
+		}
+		return nil
+	})
+	if err != nil && err != io.EOF {
+		print("Error iterating commits", err.Error())
+		return nil, err
+	}
+	return commits, nil
+}
+
+func getMeasurement(store string, table string, commitSha string) (*object.Commit, string, []string, error) {
+	repoDir, err := getStoreDir(store)
+	log.Println("repoDir", repoDir)
+	filePath := table + ".csv"
+	if err != nil {
+		print("Error getting store directory")
+		return nil, "", nil, err
+	}
+	repo, err := git.PlainOpen(repoDir)
+	if err != nil {
+		print("Error opening repo")
+		return nil, "", nil, err
+	}
+
 	if err != nil {
 		print("Error getting HEAD reference")
-		return nil, err
+		return nil, "", nil, err
 	}
 	hash := plumbing.NewHash(commitSha)
 
 	commit, err := repo.CommitObject(hash)
 	if err != nil {
-		return nil, err
+		return nil, "", nil, err
 	}
-	_, err = commit.File(filePath)
+	file, err := commit.File(filePath)
 	if err != nil {
-		return nil, fmt.Errorf("file not present in measurement")
+		return nil, "", nil, fmt.Errorf("file not present in measurement")
 	}
-	return commit, err
+
+	if err != nil {
+		return nil, "", nil, err
+	}
+
+	if err != nil {
+		// Handle the error. For example:
+		log.Fatalf("Failed to get file: %v", err)
+	}
+
+	currentContent, err := file.Contents()
+	if err != nil {
+		// Handle the error. For example:
+		log.Fatalf("Failed to read file contents: %v", err)
+	}
+
+	// Convert the content to an io.Reader. Assuming content is a string:
+	reader := csv.NewReader(strings.NewReader(currentContent))
+
+	// read the headers from the CSV file
+	currentRecord, err := reader.ReadAll()
+	headers := currentRecord[0]
+	if err != nil {
+		// Handle the error. For example:
+		log.Fatalf("Failed to read CSV headers: %v", err)
+	}
+
+	// Retrieve the commit's parents
+	previousRecords := getPreviousRecord(commit, filePath)
+
+	patch, err := helpers.GenerateCsvPatch(currentRecord, previousRecords)
+	if err != nil {
+		log.Fatalf("Failed to generate patch: %v", err)
+	}
+	lines := strings.Split(patch, "\n")
+	if len(lines) > 10000 {
+		lines = lines[:10000]
+	}
+	patch = strings.Join(lines, "\n")
+
+	return commit, patch, headers, nil
 }
 
-func getMetricByTimeGrain(measurementRequest MeasurementRequest, fileContent string) error {
-	reader := csv.NewReader(bufio.NewReader(strings.NewReader(fileContent)))
-	records, err := reader.ReadAll()
+func getPreviousRecord(commit *object.Commit, filePath string) [][]string {
+	parent, _ := commit.Parent(0)
+	previousFile, err := parent.File(filePath)
 	if err != nil {
-		return err
+		return [][]string{{"No file"}}
 	}
-	fmt.Println(records[0])
-	return nil
+	previousContent, _ := previousFile.Contents()
+	previousReader := csv.NewReader(strings.NewReader(previousContent))
+	previousRecords, _ := previousReader.ReadAll()
+	return previousRecords
 }

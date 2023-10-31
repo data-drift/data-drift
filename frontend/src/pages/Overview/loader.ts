@@ -1,6 +1,10 @@
 import { Params, useLoaderData } from "react-router-dom";
-import { getCommitList, getConfig } from "../../services/data-drift";
+import { DDConfig, getConfig } from "../../services/data-drift";
 
+enum Strategy {
+  Github = "github",
+  Local = "local",
+}
 function assertParamsIsDefined(
   params: Params<"installationId" | "owner" | "repo">
 ): asserts params is { installationId: string; owner: string; repo: string } {
@@ -22,23 +26,48 @@ export const loader = async ({
 }: {
   params: Params<"installationId" | "owner" | "repo">;
 }) => {
-  const searchParams = new URLSearchParams(window.location.search);
-  const snapshotDate = searchParams.get("snapshotDate") || undefined;
-
   assertParamsIsDefined(params);
-  const [result, config] = await Promise.all([
-    getCommitList(params, snapshotDate),
-    getConfig(params),
-  ]);
+
+  const config = await getConfig(params);
 
   return {
-    data: result.data,
     params,
     config,
-  };
+    strategy: Strategy.Github,
+  } as const;
 };
 
-type LoaderData = Awaited<ReturnType<typeof loader>>;
+export const localStrategyLoader = ({
+  params,
+}: {
+  params: Params<"tableName">;
+}) => {
+  const tableName = params.tableName || "";
+
+  const config: DDConfig = {
+    metrics: [
+      {
+        metricName: tableName,
+        filepath: tableName,
+        upstreamFiles: [],
+        dateColumnName: "",
+        KPIColumnName: "",
+        timeGrains: [],
+        dimensions: [],
+      },
+    ],
+  };
+
+  return {
+    params: { ...params, tableName },
+    config,
+    strategy: Strategy.Local,
+  } as const;
+};
+
+type LoaderData = Awaited<
+  ReturnType<typeof loader | typeof localStrategyLoader>
+>;
 
 function assertLoaderDataIsDefined(
   loaderData: unknown

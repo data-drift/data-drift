@@ -60,7 +60,8 @@ func main() {
 	router.GET("stores/:store/tables", local_store.TablesHandler)
 	router.GET("stores/:store/tables/:table", local_store.TableHandler)
 	router.POST("stores/:store/tables/:table/metrics", local_store.MetricHandler)
-	router.POST("stores/:store/tables/:table/measurements/:measurementId", local_store.MeasurementHandler)
+	router.GET("stores/:store/tables/:table/measurements", local_store.MeasurementsHandler)
+	router.GET("stores/:store/tables/:table/measurements/:measurementId", local_store.MeasurementHandler)
 
 	router.GET("config/:owner/:repo", github.GetConfigHandler)
 	router.POST("validate-config", github.ValidateConfigHandler)
