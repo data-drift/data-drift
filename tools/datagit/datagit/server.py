@@ -23,6 +23,8 @@ def start_server(open_browser_url="/tables"):
             binary_path = pkg_resources.resource_filename(
                 "datagit", "bin/data-drift-mac-intel"
             )
+    elif platform.system() == "Linux":
+        binary_path = pkg_resources.resource_filename("datagit", "bin/data-drift-linux")
     else:
         # TODO: Update this path for other platforms (Linux, Windows, etc.)
         raise ValueError("Unsupported platform")

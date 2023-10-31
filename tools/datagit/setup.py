@@ -20,6 +20,7 @@ setup(
         "datagit": [
             "bin/data-drift-mac-m1",
             "bin/data-drift-mac-intel",
+            "bin/data-drift-linux",
             "bin/frontend/dist/**",
         ],
     },
