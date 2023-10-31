@@ -25,6 +25,7 @@ import {
 import { DiffTable } from "../DisplayCommit/DiffTable";
 import { parsePatch } from "../../services/patch.mapper";
 import Loader from "../../components/Common/Loader";
+import StarUs from "../../components/Common/StarUs";
 
 const Overview = () => {
   const config = useOverviewLoaderData();
@@ -85,7 +86,6 @@ const Overview = () => {
             config.params.tableName,
             selectedCommit
           );
-          console.log(measurementResults.data);
           const { oldData, newData } = parsePatch(
             measurementResults.data.Patch,
             measurementResults.data.Headers
@@ -242,6 +242,7 @@ const Overview = () => {
             </option>
           ))}
         </StyledSelect>
+        <StarUs />
       </StyledHeader>
 
       <LineageContainer>

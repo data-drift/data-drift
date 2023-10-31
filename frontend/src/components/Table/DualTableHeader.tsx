@@ -47,7 +47,6 @@ const useDualTableHeader = () => {
     const searchParams = new URLSearchParams(window.location.search);
     searchParams.set("endDate", newEndDate);
     const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
-    console.log(newUrl);
     window.history.pushState({ path: newUrl }, "", newUrl);
     setEndDate(newEndDate);
   };
