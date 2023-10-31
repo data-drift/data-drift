@@ -82,7 +82,7 @@ export const CommitListItem = ({
       </div>
       {commitUrl && (
         <a href={commitUrl} target="_blank" rel="noopener noreferrer">
-          <StyledButton>View Commit</StyledButton>
+          <StyledButton>View</StyledButton>
         </a>
       )}
     </Container>
