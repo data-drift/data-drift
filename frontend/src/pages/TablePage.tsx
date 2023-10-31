@@ -18,9 +18,9 @@ const TablePage = () => {
       <h2>Table: {loader.data.table}</h2>
       <h3>Columns:</h3>
       <ul>
-        {loader.data.tableColumns.map((table) => (
-          <li key={table} style={{ textAlign: "justify" }}>
-            <a href={`./${loader.data.table}/metrics/${table}`}>{table}</a>
+        {loader.data.tableColumns.map((metric) => (
+          <li key={metric} style={{ textAlign: "justify" }}>
+            <a href={`./${loader.data.table}/metrics/${metric}`}>{metric}</a>
           </li>
         ))}
       </ul>
@@ -28,12 +28,17 @@ const TablePage = () => {
       {loader.data.commits.length > 0 ? (
         loader.data.commits.map((commit) => {
           const isDrift = commit.Message.includes("DRIFT");
-          const commitUrl = "";
+          const commitDate = new Date(commit.Date);
+          const commitUrl = `/tables/${
+            loader.data.table
+          }/history?snapshotDate=${
+            commitDate.toISOString().split("T")[0]
+          }&commitSha=${commit.Sha}`;
           return (
             <CommitListItem
               key={commit.Sha}
               type={isDrift ? "Drift" : "New Data"}
-              date={new Date(commit.Date)}
+              date={commitDate}
               name={commit.Message}
               commitUrl={commitUrl}
               isParentData={false}
