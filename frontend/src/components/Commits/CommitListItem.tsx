@@ -46,6 +46,7 @@ const TypeSpan = styled.span<{ type: CommitListItemProps["type"] }>`
   border-radius: 0;
   padding: 4px 8px;
   font-weight: bold;
+  margin-right: 8px;
 `;
 
 const ParentDataSpan = styled.span`
