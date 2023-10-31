@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="driftdb",
-    version="0.0.1-alpha9",
+    version="0.0.1-alpha12",
     packages=find_packages(),
     author="Sammy Teillet",
     author_email="sammy.teillet@gmail.com",
@@ -18,8 +18,9 @@ setup(
     ],
     package_data={
         "datagit": [
-            "bin/data-drift-mac-m1",
-            "bin/data-drift-mac-intel",
+            "bin/datadrift-mac-m1",
+            "bin/datadrift-mac-intel",
+            "bin/datadrift-linux",
             "bin/frontend/dist/**",
         ],
     },

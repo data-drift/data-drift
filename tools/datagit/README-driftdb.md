@@ -19,6 +19,16 @@ It's designed to address stability of a metric, which is directly correlated to 
 
 # Getting started
 
+## From dbt snapshot (dbt >= 1.6)
+
+```shell
+pip install driftdb
+
+driftdb dbt snapshot
+```
+
+## From generated seeds
+
 ```shell
 pip install driftdb
 
