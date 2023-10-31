@@ -33,14 +33,7 @@ const TablePage = () => {
         <StarUs />
       </h1>
       <h2>Table: {loader.data.table}</h2>
-      <h3>Columns:</h3>
-      <ul>
-        {loader.data.tableColumns.map((metric) => (
-          <li key={metric} style={{ textAlign: "justify" }}>
-            <a href={`./${loader.data.table}/metrics/${metric}`}>{metric}</a>
-          </li>
-        ))}
-      </ul>
+
       <h3>History:</h3>
       <div style={{ maxWidth: "fit-content" }}>
         {loader.data.commits.length > 0 ? (
@@ -79,6 +72,16 @@ const TablePage = () => {
           </div>
         )}
       </div>
+
+      <h3>Columns:</h3>
+      <ul>
+        {loader.data.tableColumns.map((metric) => (
+          <li key={metric} style={{ textAlign: "justify" }}>
+            <a href={`./${loader.data.table}/metrics/${metric}`}>{metric}</a>
+          </li>
+        ))}
+      </ul>
+      <div></div>
     </div>
   );
 };
