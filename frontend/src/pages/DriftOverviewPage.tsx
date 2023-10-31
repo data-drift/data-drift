@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import TrendChip from "../components/Charts/TrendChip";
 import DualMetricBarChart from "../components/Charts/DualMetricBarChart";
-import GitHubButton from "react-github-btn";
+import StarUs from "../components/Common/StarUs";
 
 const PageContainer = styled.div`
   height: 100vh;
@@ -156,16 +156,7 @@ const DriftOverviewPage = () => {
       <StyledHeaderContainer>
         <h1>MRR - Definition Update</h1>
         <div style={{ paddingTop: "24px" }}>
-          <GitHubButton
-            href="https://github.com/data-drift/data-drift"
-            data-color-scheme="no-preference: dark; light: light; dark: dark;"
-            data-icon="octicon-star"
-            aria-label="Star data-drift/data-drift on GitHub"
-            data-size="large"
-            data-show-count={true}
-          >
-            Star
-          </GitHubButton>
+          <StarUs />
         </div>
       </StyledHeaderContainer>
       <Separator />
