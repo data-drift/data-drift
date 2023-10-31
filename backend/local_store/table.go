@@ -4,7 +4,6 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -110,13 +109,11 @@ func getCommitsForFile(store string, filePath string) ([]CommitInfo, error) {
 
 	err = commitIter.ForEach(func(commit *object.Commit) error {
 
-		log.Println(commit.Hash.String())
 		commits = append(commits, CommitInfo{
 			Message: commit.Message,
 			Date:    commit.Author.When,
 			Sha:     commit.Hash.String(),
 		})
-		log.Println("it worked")
 
 		return nil
 	})
