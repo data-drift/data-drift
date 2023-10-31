@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/data-drift/data-drift/common"
+	"github.com/data-drift/data-drift/helpers"
 	"github.com/gin-gonic/gin"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
@@ -64,14 +65,7 @@ func MeasurementHandler(c *gin.Context) {
 		},
 	}
 
-	patchString := ""
-	lines := strings.Split(patch.String(), "\n")
-
-	if len(lines) > 4 {
-		patchString = strings.TrimRight(strings.Join(lines[4:], "\n"), "\n")
-	}
-
-	c.JSON(http.StatusOK, gin.H{"MeasurementMetaData": measurementMetaData, "Patch": patchString, "Headers": headers})
+	c.JSON(http.StatusOK, gin.H{"MeasurementMetaData": measurementMetaData, "Patch": patch, "Headers": headers})
 }
 
 func getMeasurements(store string, table string, date time.Time) ([]CommitInfo, error) {
@@ -118,33 +112,33 @@ func getMeasurements(store string, table string, date time.Time) ([]CommitInfo, 
 	return commits, nil
 }
 
-func getMeasurement(store string, table string, commitSha string) (*object.Commit, *object.Patch, []string, error) {
+func getMeasurement(store string, table string, commitSha string) (*object.Commit, string, []string, error) {
 	repoDir, err := getStoreDir(store)
 	log.Println("repoDir", repoDir)
 	filePath := table + ".csv"
 	if err != nil {
 		print("Error getting store directory")
-		return nil, nil, nil, err
+		return nil, "", nil, err
 	}
 	repo, err := git.PlainOpen(repoDir)
 	if err != nil {
 		print("Error opening repo")
-		return nil, nil, nil, err
+		return nil, "", nil, err
 	}
 
 	if err != nil {
 		print("Error getting HEAD reference")
-		return nil, nil, nil, err
+		return nil, "", nil, err
 	}
 	hash := plumbing.NewHash(commitSha)
 
 	commit, err := repo.CommitObject(hash)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, "", nil, err
 	}
-	_, err = commit.File(filePath)
+	file, err := commit.File(filePath)
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("file not present in measurement")
+		return nil, "", nil, fmt.Errorf("file not present in measurement")
 	}
 
 	// Retrieve the commit's parents
@@ -153,42 +147,45 @@ func getMeasurement(store string, table string, commitSha string) (*object.Commi
 	log.Println("commit", commit.Hash, commit.Author.When, commit.Message)
 	log.Println("parent", parent.Hash, parent.Author.When, commit.Message)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, "", nil, err
 	}
 
-	// Generate the patch between the commit and its first parent
-	patch, err := commit.Patch(parent)
-
-	if err != nil {
-		return nil, nil, nil, err
-	}
-
-	log.Println("patch message", patch.Message())
-	log.Println("patch String", patch.FilePatches()[0].Chunks())
-	for _, chunk := range patch.FilePatches()[0].Chunks() {
-		log.Printf("chunk: %v\n", chunk)
-	}
-
-	file, err := commit.File(filePath)
 	if err != nil {
 		// Handle the error. For example:
 		log.Fatalf("Failed to get file: %v", err)
 	}
 
-	content, err := file.Contents()
+	currentContent, err := file.Contents()
 	if err != nil {
 		// Handle the error. For example:
 		log.Fatalf("Failed to read file contents: %v", err)
 	}
 
 	// Convert the content to an io.Reader. Assuming content is a string:
-	reader := csv.NewReader(strings.NewReader(content))
+	reader := csv.NewReader(strings.NewReader(currentContent))
 
 	// read the headers from the CSV file
-	headers, err := reader.Read()
+	currentRecord, err := reader.ReadAll()
+	headers := currentRecord[0]
 	if err != nil {
 		// Handle the error. For example:
 		log.Fatalf("Failed to read CSV headers: %v", err)
 	}
+
+	previousFile, _ := parent.File(filePath)
+	previousContent, _ := previousFile.Contents()
+	previousReader := csv.NewReader(strings.NewReader(previousContent))
+	previousRecords, _ := previousReader.ReadAll()
+
+	patch, err := helpers.GenerateCsvPatch(currentRecord, previousRecords)
+	if err != nil {
+		log.Fatalf("Failed to generate patch: %v", err)
+	}
+	lines := strings.Split(patch, "\n")
+	if len(lines) > 10000 {
+		lines = lines[:10000]
+	}
+	patch = strings.Join(lines, "\n")
+
 	return commit, patch, headers, nil
 }
