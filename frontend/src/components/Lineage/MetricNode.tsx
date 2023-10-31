@@ -42,11 +42,11 @@ const EventChip = styled.div<{ eventType: LineageEvent["type"] }>`
   display: inline-block;
   text-align: center;
   margin-right: 5px;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s; // For a smooth visual feedback
+  transition: transform 0.2s, box-shadow 0.2s;
   &:hover {
-    transform: scale(1.05); // Slightly enlarges the chip
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); // Adds a subtle shadow for depth
+    cursor: pointer !important;
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
 `;
 
