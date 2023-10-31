@@ -85,7 +85,6 @@ const Overview = () => {
             config.params.tableName,
             selectedCommit
           );
-          console.log(measurementResults.data);
           const { oldData, newData } = parsePatch(
             measurementResults.data.Patch,
             measurementResults.data.Headers
