@@ -1,5 +1,6 @@
 import http.server
 import os
+from threading import Timer
 import webbrowser
 import pkg_resources
 import platform
@@ -66,7 +67,11 @@ def start_server(open_browser_url="/tables"):
         print(f"Serving directory '{DIRECTORY}' on port {PORT}")
         url = f"http://localhost:{PORT}{open_browser_url}"
         print("Opening browser...", url)
-        webbrowser.open(url)
+
+        def open_url():
+            webbrowser.open(url)
+
+        Timer(1, open_url).start()
         httpd.serve_forever()
         server_process.wait()
 
