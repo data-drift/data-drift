@@ -312,6 +312,21 @@ def load_csv(csvpathfile, table, unique_key_column, date_column):
     local_connector.store_metric(metric_name=table, metric_value=dataframe)
 
 
+@cli_entrypoint.group()
+def store():
+    pass
+
+
+@store.command()
+@click.option(
+    "--store",
+    help="name of the store",
+    default="default",
+)
+def delete(store):
+    local_connector.delete_store(store_name=store)
+
+
 def select_from_list(prompt, choices):
     for idx, item in enumerate(choices, 1):
         click.echo(f"{idx}: {item}")

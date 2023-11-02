@@ -112,3 +112,8 @@ def get_or_init_repo(*, store_name="default"):
         repo = Repo.init(store_dir)
         repo.index.commit("Init DB")
         return repo
+
+
+def delete_store(*, store_name="default"):
+    store_dir = os.path.join(datadrift_dir, store_name)
+    os.system(f"rm -rf {store_dir}")
