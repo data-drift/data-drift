@@ -20,11 +20,10 @@ def store_metric(
     measure_date=datetime.now(timezone.utc),
 ):
     metric_value = sort_dataframe_on_first_column_and_assert_is_unique(metric_value)
-    store_dir = os.path.join(datadrift_dir, store_name)
-    os.makedirs(store_dir, exist_ok=True)
-    print(f"Storing metric {metric_name} in db {store_dir}")
 
-    repo = Repo.init(store_dir)
+    repo = get_or_init_repo(store_name=store_name)
+    store_dir = repo.working_dir
+    print(f"Storing metric {metric_name} in db {store_dir}")
     metric_file_name = f"{metric_name}.csv"
     metric_file_path = os.path.join(store_dir, metric_file_name)
 
@@ -51,15 +50,17 @@ def store_metric(
 
 
 def get_metric(*, store_name="default", metric_name: str) -> pd.DataFrame:
-    store_dir = os.path.join(datadrift_dir, store_name)
+    store_dir = get_or_init_repo(store_name=store_name).working_dir
     metric_file_name = f"{metric_name}.csv"
     return pd.read_csv(os.path.join(store_dir, metric_file_name))
 
 
 def get_metrics(*, store_name="default"):
-    store_dir = os.path.join(datadrift_dir, store_name)
+    repo = get_or_init_repo(store_name=store_name)
     csv_files = [
-        os.path.splitext(f)[0] for f in os.listdir(store_dir) if f.endswith(".csv")
+        os.path.splitext(f)[0]
+        for f in os.listdir(repo.working_dir)
+        if f.endswith(".csv")
     ]
     return csv_files
 
@@ -74,8 +75,7 @@ def delete_metric(*, store_name="default", metric_name: str):
     if not commit_history:
         return
 
-    store_dir = os.path.join(datadrift_dir, store_name)
-    repo = Repo(store_dir)
+    repo = get_or_init_repo(store_name=store_name)
 
     # Create a new copy of main branch
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
@@ -94,8 +94,21 @@ def delete_metric(*, store_name="default", metric_name: str):
 
 
 def get_metric_history(*, store_name="default", metric_name: str) -> Iterator[Commit]:
-    store_dir = os.path.join(datadrift_dir, store_name)
+    repo = get_or_init_repo(store_name=store_name)
     metric_file_name = f"{metric_name}.csv"
-    repo = Repo(store_dir)
     commits = repo.iter_commits(paths=metric_file_name)
     return commits
+
+
+def get_or_init_repo(*, store_name="default"):
+    store_dir = os.path.join(datadrift_dir, store_name)
+    os.makedirs(store_dir, exist_ok=True)
+
+    try:
+        repo = Repo(store_dir)
+        return repo
+    except:
+        print(f"The store {store_name} does not exist. Creating it now.")
+        repo = Repo.init(store_dir)
+        repo.index.commit("Init DB")
+        return repo

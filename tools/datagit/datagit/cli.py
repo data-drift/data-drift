@@ -64,6 +64,7 @@ def run(token, repo, storage, project_dir):
 
     adapter = get_adapter(runtime_config)
 
+    click.echo(f"Parsing manifest")
     with open(f"{project_path}/target/manifest.json") as manifest_file:
         manifest = json.load(manifest_file)
 
