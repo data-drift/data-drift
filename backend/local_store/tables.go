@@ -59,8 +59,7 @@ func getListOfFilesFromStore(store string) []string {
 		return nil
 	})
 	if err != nil {
-		fmt.Println("Error:", err)
-		return nil
+		fmt.Println("Error getting tables:", err)
 	}
 
 	return fileNames

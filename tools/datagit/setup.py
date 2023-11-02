@@ -1,8 +1,9 @@
 from setuptools import setup, find_packages
+from version import version
 
 setup(
     name="driftdb",
-    version="0.0.1-alpha12",
+    version=version,
     packages=find_packages(),
     author="Sammy Teillet",
     author_email="sammy.teillet@gmail.com",

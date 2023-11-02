@@ -9,6 +9,7 @@ from datagit import github_connector
 from datagit import local_connector
 from datagit.drift_evaluators import auto_merge_drift
 from github import Github
+from version import version
 
 from datetime import datetime
 
@@ -16,6 +17,7 @@ from tzlocal import get_localzone
 
 
 @click.group()
+@click.version_option(version=version, prog_name="driftdb")
 def cli_entrypoint():
     pass
 
@@ -64,6 +66,7 @@ def run(token, repo, storage, project_dir):
 
     adapter = get_adapter(runtime_config)
 
+    click.echo(f"Parsing manifest")
     with open(f"{project_path}/target/manifest.json") as manifest_file:
         manifest = json.load(manifest_file)
 
@@ -307,6 +310,21 @@ def load_csv(csvpathfile, table, unique_key_column, date_column):
         dataframe.insert(1, "date", dataframe[date_column])
 
     local_connector.store_metric(metric_name=table, metric_value=dataframe)
+
+
+@cli_entrypoint.group()
+def store():
+    pass
+
+
+@store.command()
+@click.option(
+    "--store",
+    help="name of the store",
+    default="default",
+)
+def delete(store):
+    local_connector.delete_store(store_name=store)
 
 
 def select_from_list(prompt, choices):

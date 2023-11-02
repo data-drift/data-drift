@@ -184,7 +184,10 @@ func getMeasurement(store string, table string, commitSha string) (*object.Commi
 }
 
 func getPreviousRecord(commit *object.Commit, filePath string) [][]string {
-	parent, _ := commit.Parent(0)
+	parent, err := commit.Parent(0)
+	if err != nil {
+		return [][]string{{"No file"}}
+	}
 	previousFile, err := parent.File(filePath)
 	if err != nil {
 		return [][]string{{"No file"}}
