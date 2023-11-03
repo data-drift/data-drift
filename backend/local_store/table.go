@@ -27,6 +27,15 @@ func StoreTableHandler(c *gin.Context) {
 	table := c.Param("table")
 	fileName := table + ".csv"
 
+	// Get the commit message and date from the request
+	commitMessage := c.PostForm("commitMessage")
+	commitDateString := c.PostForm("commitDateRFC3339")
+	commitDate, err := time.Parse(time.RFC3339, commitDateString)
+	if err != nil {
+		commitDate = time.Now()
+	}
+	log.Println("commitDate:", commitDate)
+
 	file, err := c.FormFile("csvfile")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -80,10 +89,10 @@ func StoreTableHandler(c *gin.Context) {
 		c.JSON(http.StatusAlreadyReported, gin.H{"message": "No changes to commit"})
 		return
 	}
-	commit, err := wt.Commit("Added CSV file", &git.CommitOptions{
+	commit, err := wt.Commit(commitMessage, &git.CommitOptions{
 		Author: &object.Signature{
 			Name: "Driftdb",
-			When: time.Now(),
+			When: commitDate,
 		},
 	})
 	if err != nil {
