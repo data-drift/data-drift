@@ -3,6 +3,7 @@ package local_store
 import (
 	"bufio"
 	"encoding/csv"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -46,23 +47,23 @@ func getMetricHistory(store string, table string, metricName string, periodKey c
 	repoDir, err := getStoreDir(store)
 	filePath := table + ".csv"
 	if err != nil {
-		print("Error getting store directory")
+		log.Println("Error getting store directory")
 		return nil, err
 	}
 	repo, err := git.PlainOpen(repoDir)
 	if err != nil {
-		print("Error opening repo")
+		log.Println("Error opening repo")
 		return nil, err
 	}
 
 	if err != nil {
-		print("Error getting HEAD reference")
+		log.Println("Error getting HEAD reference")
 		return nil, err
 	}
 
 	commitIter, err := repo.Log(&git.LogOptions{FileName: &filePath})
 	if err != nil {
-		print("Error getting commit history")
+		log.Println("Error getting commit history")
 		return nil, err
 	}
 
@@ -72,7 +73,7 @@ func getMetricHistory(store string, table string, metricName string, periodKey c
 		file, _ := commit.File(filePath)
 		content, err := file.Contents()
 		if err != nil {
-			print(err)
+			log.Println(err)
 			return err
 		}
 		reader := csv.NewReader(bufio.NewReader(strings.NewReader(content)))

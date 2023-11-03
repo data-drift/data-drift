@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -18,6 +19,93 @@ type CommitInfo struct {
 	Message string
 	Date    time.Time
 	Sha     string
+}
+
+func StoreTableHandler(c *gin.Context) {
+
+	store := c.Param("store")
+	table := c.Param("table")
+	fileName := table + ".csv"
+
+	// Get the commit message and date from the request
+	commitMessage := c.PostForm("commitMessage")
+	commitDateString := c.PostForm("commitDateRFC3339")
+	commitDate, err := time.Parse(time.RFC3339, commitDateString)
+	if err != nil {
+		commitDate = time.Now()
+	}
+	log.Println("commitDate:", commitDate)
+
+	file, err := c.FormFile("csvfile")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	repoDir, err := getStoreDir(store)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = c.SaveUploadedFile(file, repoDir+"/"+fileName)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	repo, err := git.PlainOpen(repoDir)
+	if err != nil {
+		if err == git.ErrRepositoryNotExists {
+			repo, err = git.PlainInit(repoDir, false)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+	}
+
+	wt, err := repo.Worktree()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	_, err = wt.Add(fileName)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	status, err := wt.Status()
+	if err != nil {
+		log.Fatalf("Failed to get status of working tree: %s", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if status.IsClean() {
+		log.Println("No changes to commit")
+		c.JSON(http.StatusAlreadyReported, gin.H{"message": "No changes to commit"})
+		return
+	}
+	commit, err := wt.Commit(commitMessage, &git.CommitOptions{
+		Author: &object.Signature{
+			Name: "Driftdb",
+			When: commitDate,
+		},
+	})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	obj, err := repo.CommitObject(commit)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"commit": obj.Hash.String()})
 }
 
 func TableHandler(c *gin.Context) {
