@@ -1,5 +1,5 @@
 FROM golang:1.20
-
+ENV HOME /root
 WORKDIR /app
 
 COPY go.mod .
@@ -9,8 +9,10 @@ RUN go mod download
 COPY . .
 RUN go build
 
-# # Expose port 8080 for the application
-EXPOSE 8080
+
+VOLUME $HOME/.datadrift/default
+ENV PORT=9740
+EXPOSE $PORT
 
 # # Run the application when the container starts
 CMD ["./data-drift"]
