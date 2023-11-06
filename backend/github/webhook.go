@@ -15,7 +15,7 @@ import (
 	"github.com/data-drift/data-drift/reducers"
 	"github.com/data-drift/data-drift/reports"
 	"github.com/gin-gonic/gin"
-	"github.com/google/go-github/v42/github"
+	"github.com/google/go-github/v56/github"
 	"github.com/xeipuuv/gojsonschema"
 )
 

@@ -12,7 +12,7 @@ import (
 	"github.com/data-drift/data-drift/common"
 	"github.com/data-drift/data-drift/reducers"
 	"github.com/data-drift/data-drift/urlgen"
-	"github.com/google/go-github/v42/github"
+	"github.com/google/go-github/v56/github"
 	"github.com/shopspring/decimal"
 )
 

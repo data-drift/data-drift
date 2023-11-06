@@ -3,7 +3,7 @@ package history
 import (
 	"context"
 
-	"github.com/google/go-github/v42/github"
+	"github.com/google/go-github/v56/github"
 )
 
 func GetCommitComments(client *github.Client, ctx context.Context, RepoOwner string, RepoName string, commitSha string) []*github.IssueComment {
