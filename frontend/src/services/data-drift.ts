@@ -4,8 +4,7 @@ import { MetricCohortsResults } from "./data-drift.types";
 import { Endpoints } from "@octokit/types";
 
 const DATA_DRIFT_API_URL =
-  String(import.meta.env.VITE_DATADRIFT_SERVER_URL) ||
-  "https://data-drift.herokuapp.com";
+  String(import.meta.env.VITE_DATADRIFT_SERVER_URL) || "";
 
 export const getPatchAndHeader = async (
   params: CommitParam & { installationId: string }
