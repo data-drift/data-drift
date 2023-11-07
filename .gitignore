@@ -17,6 +17,7 @@ _test
 # Output files
 *.out
 dist
+dist-front
 
 # Dependency directories
 vendor/
