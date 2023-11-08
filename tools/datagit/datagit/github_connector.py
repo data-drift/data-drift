@@ -7,11 +7,10 @@ import pandas as pd
 from github import Github, Repository, ContentFile, GithubException
 from datagit.drift_evaluators import (
     DriftEvaluatorContext,
-    default_drift_evaluator,
     auto_merge_drift,
+    safe_drift_evaluator,
 )
 from datagit.dataset_helpers import (
-    compare_dataframes,
     sort_dataframe_on_first_column_and_assert_is_unique,
 )
 import re
@@ -27,7 +26,7 @@ def store_metric(
     branch: Optional[str] = None,
     assignees: Optional[List[str]] = None,
     store_json: bool = False,
-    drift_evaluator: Callable[[DriftEvaluatorContext], Dict] = default_drift_evaluator,
+    drift_evaluator: Callable[[DriftEvaluatorContext], Dict] = auto_merge_drift,
 ) -> None:
     """
     Store metrics into a specific repository file on GitHub.
