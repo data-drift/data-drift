@@ -1,5 +1,6 @@
+from datagit.drift_evaluators import DriftEvaluatorContext
 import pandas as pd
-from typing import Dict, TypedDict
+from typing import Dict, Optional, TypedDict
 from enum import Enum
 
 
@@ -12,6 +13,7 @@ class DataFrameUpdate(TypedDict):
     df: pd.DataFrame
     has_update: bool
     type: UpdateType
+    drift_context: Optional[DriftEvaluatorContext]
 
 
 def dataframe_update_breakdown(
@@ -44,14 +46,24 @@ def dataframe_update_breakdown(
             df=step1,
             has_update=not initial_dataframe.equals(step1),
             type=UpdateType.OTHER,
+            drift_context=None,
         ),
         "NEW DATA": DataFrameUpdate(
-            df=step2, has_update=not step1.equals(step2), type=UpdateType.OTHER
+            df=step2,
+            has_update=not step1.equals(step2),
+            type=UpdateType.OTHER,
+            drift_context=None,
         ),
         "DRIFT": DataFrameUpdate(
-            df=step3, has_update=not step2.equals(step3), type=UpdateType.DRIFT
+            df=step3,
+            has_update=not step2.equals(step3),
+            type=UpdateType.DRIFT,
+            drift_context=DriftEvaluatorContext(before=step2, after=step3),
         ),
         "MIGRATION Column Added": DataFrameUpdate(
-            df=step4, has_update=not step3.equals(step4), type=UpdateType.OTHER
+            df=step4,
+            has_update=not step3.equals(step4),
+            type=UpdateType.OTHER,
+            drift_context=None,
         ),
     }
