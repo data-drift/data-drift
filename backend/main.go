@@ -66,7 +66,7 @@ func main() {
 	router.GET("config/:owner/:repo", github.GetConfigHandler)
 	router.POST("validate-config", github.ValidateConfigHandler)
 
-	staticFilesPath := "./dist-front"
+	staticFilesPath := "./dist-app"
 	router.Static("/assets", filepath.Join(staticFilesPath, "assets"))
 	router.StaticFile("/logo.png", filepath.Join(staticFilesPath, "logo.png"))
 	// If the route does not match any API or static file, serve index.html
