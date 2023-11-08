@@ -1,9 +1,15 @@
 import pandas as pd
+from typing import Dict, TypedDict
+
+
+class DataFrameUpdate(TypedDict):
+    df: pd.DataFrame
+    has_update: bool
 
 
 def dataframe_update_breakdown(
     initial_dataframe: pd.DataFrame, final_dataframe: pd.DataFrame
-) -> dict:
+) -> Dict[str, DataFrameUpdate]:
     # Ensure the dataframes have the same index
     initial_dataframe = initial_dataframe.set_index(initial_dataframe.columns[0])
     final_dataframe = final_dataframe.set_index(final_dataframe.columns[0])
@@ -27,8 +33,8 @@ def dataframe_update_breakdown(
     step4 = final_dataframe
 
     return {
-        "MIGRATION Column Deleted": step1,
-        "NEW DATA": step2,
-        "DRIFT": step3,
-        "MIGRATION Column Added": step4,
+        "MIGRATION Column Deleted": DataFrameUpdate(df=step1, has_update=True),
+        "NEW DATA": DataFrameUpdate(df=step2, has_update=True),
+        "DRIFT": DataFrameUpdate(df=step3, has_update=True),
+        "MIGRATION Column Added": DataFrameUpdate(df=step4, has_update=True),
     }

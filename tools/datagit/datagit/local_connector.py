@@ -39,7 +39,7 @@ def store_metric(
     initial_dataframe = pd.read_csv(metric_file_path)
     update_breakdown = dataframe_update_breakdown(initial_dataframe, metric_value)
     for key, value in update_breakdown.items():
-        value.to_csv(metric_file_path, na_rep="NA")
+        value["df"].to_csv(metric_file_path, na_rep="NA")
         add_file = [metric_file_name]
         repo.index.add(add_file)
         if repo.index.diff("HEAD"):
