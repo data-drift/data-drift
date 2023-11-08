@@ -1,6 +1,4 @@
-import logging
 import time
-import traceback
 from typing import Optional, List, Callable, Dict
 from datagit.dataframe_update_breakdown import UpdateType, dataframe_update_breakdown
 import pandas as pd
@@ -213,63 +211,6 @@ def assert_file_exists(
             raise e
 
 
-def push_new_lines(
-    file_path: str,
-    repo: Repository.Repository,
-    branch: str,
-    dataframe: pd.DataFrame,
-    store_json: bool,
-):
-    dataframe = dataframe.sort_values(by=["unique_key"])
-    commit_message = "New data: " + file_path
-    print("Commit: " + commit_message)
-    update_file_with_retry(
-        repo,
-        file_path,
-        commit_message,
-        dataframe.to_csv(index=False, header=True),
-        branch,
-    )
-
-    if store_json:
-        json_file_path = file_path.replace(".csv", ".json")
-        json_commit_message = "New data (json): " + json_file_path
-        json_data = dataframe.to_json(orient="records", lines=True, date_format="iso")
-        update_file_with_retry(
-            repo, json_file_path, json_commit_message, json_data, branch
-        )
-
-
-def push_drift_lines(
-    file_path: str,
-    repo: Repository.Repository,
-    branch: str,
-    dataframe: pd.DataFrame,
-    store_json: bool,
-    commit_body: str = "",
-):
-    dataframe = dataframe.sort_values(by=["unique_key"])
-    commit_message = "Drift: " + file_path
-    print("Commit: " + commit_message)
-    if commit_body != "":
-        commit_message = commit_message + "\n\n" + commit_body
-    update_file_with_retry(
-        repo,
-        file_path,
-        commit_message,
-        dataframe.to_csv(index=False, header=True),
-        branch,
-    )
-
-    if store_json:
-        json_file_path = file_path.replace(".csv", ".json")
-        json_commit_message = "Drift (json): " + json_file_path
-        json_data = dataframe.to_json(orient="records", lines=True, date_format="iso")
-        update_file_with_retry(
-            repo, json_file_path, json_commit_message, json_data, branch
-        )
-
-
 def update_file_with_retry(
     repo: Repository.Repository, file_path, commit_message, data, branch, max_retries=3
 ):
@@ -441,23 +382,6 @@ def checkout_branch_from_default_branch(repo: Repository.Repository, branch_name
     except GithubException:
         pass
     return
-
-
-def copy_and_compare_dataframes(initial_df1: pd.DataFrame, initial_df2: pd.DataFrame):
-    df1 = initial_df1.copy()
-    df2 = initial_df2.copy()
-    df1 = df1[df2.columns]
-
-    df1.set_index("unique_key", inplace=True)
-    df2.set_index("unique_key", inplace=True)
-    df1.sort_index(inplace=True)
-    df2.sort_index(inplace=True)
-    try:
-        comparison = df1.compare(df2)
-        print("comparison", comparison)
-        return comparison
-    except Exception as e:
-        print("Could not display drift", e)
 
 
 def get_monthly_file_path(file_path, month):
