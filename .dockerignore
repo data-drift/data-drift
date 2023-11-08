@@ -1,0 +1,4 @@
+**/*.env
+Dockerfile
+**/*.pem
+**/node_modules

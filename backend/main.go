@@ -5,6 +5,7 @@ import (
 	"flag"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"github.com/data-drift/data-drift/debug"
 	"github.com/data-drift/data-drift/github"
@@ -46,8 +47,6 @@ func main() {
 
 	router.Use(gin.Logger())
 
-	router.GET("/", HealthCheck)
-
 	router.GET("/ghhealth", github.HealthCheck)
 	router.GET("/ghhealth/:installation-id", github.HealthCheckInstallation)
 
@@ -66,6 +65,16 @@ func main() {
 
 	router.GET("config/:owner/:repo", github.GetConfigHandler)
 	router.POST("validate-config", github.ValidateConfigHandler)
+
+	staticFilesPath := "./dist-app"
+	router.Static("/assets", filepath.Join(staticFilesPath, "assets"))
+	router.StaticFile("/logo.png", filepath.Join(staticFilesPath, "logo.png"))
+	// If the route does not match any API or static file, serve index.html
+	// This is useful for handling HTML5 history API used in single-page applications.
+	router.NoRoute(func(c *gin.Context) {
+		print("No route")
+		c.File(filepath.Join(staticFilesPath, "index.html"))
+	})
 
 	router.Run(":" + port)
 
