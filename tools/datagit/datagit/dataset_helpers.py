@@ -112,14 +112,12 @@ def compare_dataframes(
 
 
 def get_addition_deletion_and_diff(initial_df, final_df, unique_key):
-    initial_df = initial_df.reset_index()
-    final_df = final_df.reset_index()
     initial_df = convert_object_to_string(initial_df)
     final_df = convert_object_to_string(final_df)
 
     # Get the unique keys for each dataframe
-    initial_keys = set(initial_df[unique_key])
-    final_keys = set(final_df[unique_key])
+    initial_keys = set(initial_df.reset_index()[unique_key])
+    final_keys = set(final_df.reset_index()[unique_key])
 
     intersection_keys = initial_keys.intersection(final_keys)
 
