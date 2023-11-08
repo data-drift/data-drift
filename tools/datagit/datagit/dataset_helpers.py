@@ -93,26 +93,30 @@ def compare_dataframes(
         if additions > 0:
             result += f"- 🆕 {additions} addition{'s' if additions > 1 else ''}\n"
         else:
-            result += f"- ~~🆕 0 addition~~\n"
+            result += f"- 🆕 0 addition\n"
         if modifications > 0:
             result += (
                 f"- ♻️ {modifications} modification{'s' if modifications > 1 else ''}\n"
             )
         else:
-            result += f"- ~~♻️ 0 modification~~\n"
+            result += f"- ♻️ 0 modification\n"
         if deletions > 0:
             result += f"- 🗑️ {deletions} deletion{'s' if deletions > 1 else ''}\n"
         else:
-            result += f"- ~~🗑️ 0 deletion~~\n"
+            result += f"- 🗑️ 0 deletion\n"
 
         return result.strip()
+
     except Exception as e:
         return f"Could not generate drift description: {e}"
 
 
 def get_addition_deletion_and_diff(initial_df, final_df, unique_key):
+    initial_df = initial_df.reset_index()
+    final_df = final_df.reset_index()
     initial_df = convert_object_to_string(initial_df)
     final_df = convert_object_to_string(final_df)
+
     # Get the unique keys for each dataframe
     initial_keys = set(initial_df[unique_key])
     final_keys = set(final_df[unique_key])
