@@ -1,10 +1,17 @@
 import pandas as pd
 from typing import Dict, TypedDict
+from enum import Enum
+
+
+class UpdateType(Enum):
+    DRIFT = "drift"
+    OTHER = "other"
 
 
 class DataFrameUpdate(TypedDict):
     df: pd.DataFrame
     has_update: bool
+    type: UpdateType
 
 
 def dataframe_update_breakdown(
@@ -33,8 +40,18 @@ def dataframe_update_breakdown(
     step4 = final_dataframe
 
     return {
-        "MIGRATION Column Deleted": DataFrameUpdate(df=step1, has_update=True),
-        "NEW DATA": DataFrameUpdate(df=step2, has_update=True),
-        "DRIFT": DataFrameUpdate(df=step3, has_update=True),
-        "MIGRATION Column Added": DataFrameUpdate(df=step4, has_update=True),
+        "MIGRATION Column Deleted": DataFrameUpdate(
+            df=step1,
+            has_update=not initial_dataframe.equals(step1),
+            type=UpdateType.OTHER,
+        ),
+        "NEW DATA": DataFrameUpdate(
+            df=step2, has_update=not step1.equals(step2), type=UpdateType.OTHER
+        ),
+        "DRIFT": DataFrameUpdate(
+            df=step3, has_update=not step2.equals(step3), type=UpdateType.DRIFT
+        ),
+        "MIGRATION Column Added": DataFrameUpdate(
+            df=step4, has_update=not step3.equals(step4), type=UpdateType.OTHER
+        ),
     }

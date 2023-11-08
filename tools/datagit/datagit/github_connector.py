@@ -1,9 +1,15 @@
+import logging
 import time
 import traceback
 from typing import Optional, List, Callable, Dict
+from datagit.dataframe_update_breakdown import UpdateType, dataframe_update_breakdown
 import pandas as pd
 from github import Github, Repository, ContentFile, GithubException
-from datagit.drift_evaluators import default_drift_evaluator, auto_merge_drift
+from datagit.drift_evaluators import (
+    DriftEvaluatorContext,
+    default_drift_evaluator,
+    auto_merge_drift,
+)
 from datagit.dataset_helpers import (
     compare_dataframes,
     sort_dataframe_on_first_column_and_assert_is_unique,
@@ -21,9 +27,7 @@ def store_metric(
     branch: Optional[str] = None,
     assignees: Optional[List[str]] = None,
     store_json: bool = False,
-    drift_evaluator: Callable[
-        [Dict[str, pd.DataFrame]], Dict
-    ] = default_drift_evaluator,
+    drift_evaluator: Callable[[DriftEvaluatorContext], Dict] = default_drift_evaluator,
 ) -> None:
     """
     Store metrics into a specific repository file on GitHub.
@@ -135,7 +139,7 @@ def push_metric(
     store_json,
     file_path,
     repo,
-    drift_evaluator,
+    drift_evaluator: Callable[[DriftEvaluatorContext], Dict],
 ):
     dataframe = dataframe.astype("string")
     contents = assert_file_exists(repo, file_path, ref=default_branch)
@@ -194,17 +198,25 @@ def push_metric(
             except Exception as e:
                 print("Dataframe comparison failed, default to push drift: " + str(e))
 
+            # there might be a new column to push, when do I push it ?
+
+            # Either I use the breakdown method and push the drift on the drift branch
+            # Or I hardocde some shit
+            # Let's go with option 1
+            # first get the breakdown, then run the alert evaluator, the push all the data, the first commits on main, depending on the drift, the rest on another branch
+            #
+
             if should_push_drift:
                 print("Drift detected")
 
                 try:
-                    data_drift_context = {
-                        "reported_dataframe": old_data_with_freshdata.copy(),
-                        "computed_dataframe": dataframe.copy(),
-                    }
-                    drift_evaluation = drift_evaluator(
-                        data_drift_context=data_drift_context
+                    data_drift_context = DriftEvaluatorContext(
+                        {
+                            "before": old_data_with_freshdata.copy(),
+                            "after": dataframe.copy(),
+                        }
                     )
+                    drift_evaluation = drift_evaluator(data_drift_context)
                 except Exception as e:
                     print("Drift evaluator failed: " + str(e))
                     traceback.print_exc()
