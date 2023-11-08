@@ -1,9 +1,24 @@
+from datagit.drift_evaluators import DriftEvaluatorContext
 import pandas as pd
+from typing import Dict, Optional, TypedDict
+from enum import Enum
+
+
+class UpdateType(Enum):
+    DRIFT = "drift"
+    OTHER = "other"
+
+
+class DataFrameUpdate(TypedDict):
+    df: pd.DataFrame
+    has_update: bool
+    type: UpdateType
+    drift_context: Optional[DriftEvaluatorContext]
 
 
 def dataframe_update_breakdown(
     initial_dataframe: pd.DataFrame, final_dataframe: pd.DataFrame
-) -> dict:
+) -> Dict[str, DataFrameUpdate]:
     # Ensure the dataframes have the same index
     initial_dataframe = initial_dataframe.set_index(initial_dataframe.columns[0])
     final_dataframe = final_dataframe.set_index(final_dataframe.columns[0])
@@ -27,8 +42,28 @@ def dataframe_update_breakdown(
     step4 = final_dataframe
 
     return {
-        "MIGRATION Column Deleted": step1,
-        "NEW DATA": step2,
-        "DRIFT": step3,
-        "MIGRATION Column Added": step4,
+        "MIGRATION Column Deleted": DataFrameUpdate(
+            df=step1,
+            has_update=not initial_dataframe.equals(step1),
+            type=UpdateType.OTHER,
+            drift_context=None,
+        ),
+        "NEW DATA": DataFrameUpdate(
+            df=step2,
+            has_update=not step1.equals(step2),
+            type=UpdateType.OTHER,
+            drift_context=None,
+        ),
+        "DRIFT": DataFrameUpdate(
+            df=step3,
+            has_update=not step2.equals(step3),
+            type=UpdateType.DRIFT,
+            drift_context=DriftEvaluatorContext(before=step2, after=step3),
+        ),
+        "MIGRATION Column Added": DataFrameUpdate(
+            df=step4,
+            has_update=not step3.equals(step4),
+            type=UpdateType.OTHER,
+            drift_context=None,
+        ),
     }

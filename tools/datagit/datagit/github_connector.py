@@ -1,11 +1,16 @@
+import logging
 import time
 import traceback
 from typing import Optional, List, Callable, Dict
+from datagit.dataframe_update_breakdown import UpdateType, dataframe_update_breakdown
 import pandas as pd
 from github import Github, Repository, ContentFile, GithubException
-from datagit.drift_evaluators import default_drift_evaluator, auto_merge_drift
+from datagit.drift_evaluators import (
+    DriftEvaluatorContext,
+    auto_merge_drift,
+    safe_drift_evaluator,
+)
 from datagit.dataset_helpers import (
-    compare_dataframes,
     sort_dataframe_on_first_column_and_assert_is_unique,
 )
 import re
@@ -21,9 +26,7 @@ def store_metric(
     branch: Optional[str] = None,
     assignees: Optional[List[str]] = None,
     store_json: bool = False,
-    drift_evaluator: Callable[
-        [Dict[str, pd.DataFrame]], Dict
-    ] = default_drift_evaluator,
+    drift_evaluator: Callable[[DriftEvaluatorContext], Dict] = auto_merge_drift,
 ) -> None:
     """
     Store metrics into a specific repository file on GitHub.
@@ -135,7 +138,7 @@ def push_metric(
     store_json,
     file_path,
     repo,
-    drift_evaluator,
+    drift_evaluator: Callable[[DriftEvaluatorContext], Dict],
 ):
     dataframe = dataframe.astype("string")
     contents = assert_file_exists(repo, file_path, ref=default_branch)
@@ -159,90 +162,41 @@ def push_metric(
                 keep_default_na=False,
             )
             print("Old Dataframe dtypes", old_dataframe.dtypes.to_dict())
-
-            try:
-                old_dates = set(old_dataframe[date_column])
-            except KeyError:
-                print("No date column found")
-                old_dates = []
-            new_dates = set(dataframe[date_column])
-            already_stored_dates = new_dates.intersection(old_dates)
-            new_dataframe = dataframe[
-                ~dataframe[date_column].isin(already_stored_dates)
-            ]
-            old_data_with_freshdata = pd.concat([old_dataframe, new_dataframe])
-            if len(new_dataframe) > 0:
-                print("New data found")
-                push_new_lines(
-                    file_path,
-                    repo,
-                    default_branch,
-                    old_data_with_freshdata,
-                    store_json,
-                )
-
-            checkout_branch_from_default_branch(repo, drift_branch)
-            should_push_drift = True
-            try:
-                difference_between_old_and_new = copy_and_compare_dataframes(
-                    old_data_with_freshdata, dataframe
-                )
-                if (difference_between_old_and_new is not None) and (
-                    len(difference_between_old_and_new) == 0
-                ):
-                    should_push_drift = False
-            except Exception as e:
-                print("Dataframe comparison failed, default to push drift: " + str(e))
-
-            if should_push_drift:
-                print("Drift detected")
-
-                try:
-                    data_drift_context = {
-                        "reported_dataframe": old_data_with_freshdata.copy(),
-                        "computed_dataframe": dataframe.copy(),
-                    }
-                    drift_evaluation = drift_evaluator(
-                        data_drift_context=data_drift_context
-                    )
-                except Exception as e:
-                    print("Drift evaluator failed: " + str(e))
-                    traceback.print_exc()
-                    print("Using default drift evaluator")
-                    alert_message = f"Drift detected:\n" + compare_dataframes(
-                        old_data_with_freshdata,
-                        dataframe,
-                        "unique_key",
-                    )
-                    drift_evaluation = {"should_alert": True, "message": alert_message}
-
-                print("Drift evaluation: " + str(drift_evaluation))
-                if drift_evaluation["should_alert"]:
-                    push_drift_lines(
-                        file_path, repo, drift_branch, dataframe, store_json
-                    )
-                    print("Drift pushed")
-                    print("Creating pull request")
-                    description_body = drift_evaluation["message"]
-                    create_pullrequest(
-                        repo, drift_branch, assignees, file_path, description_body
-                    )
-                else:
-                    print("No alert needed, pushing on reported branch")
-                    push_drift_lines(
-                        file_path,
-                        repo,
-                        default_branch,
-                        dataframe,
-                        store_json,
-                        drift_evaluation["message"],
-                    )
-                    print("Drift pushed on main branch")
-
+            update_breakdown = dataframe_update_breakdown(old_dataframe, dataframe)
+            if any(item["has_update"] for item in update_breakdown.values()):
+                print("Change detected")
             else:
-                print("No drift detected")
+                print("Nothing to update")
+                pass
+            branch = default_branch
+            for key, value in update_breakdown.items():
+                commit_message = key
+                pr_message = ""
+                if value["has_update"]:
+                    print("Update: " + key)
+                    if value["type"] == UpdateType.DRIFT and value["drift_context"]:
+                        drift_evaluation = safe_drift_evaluator(
+                            value["drift_context"], drift_evaluator
+                        )
+                        commit_message = key + "\n\n" + drift_evaluation["message"]
+                        if drift_evaluation["should_alert"]:
+                            checkout_branch_from_default_branch(repo, drift_branch)
+                            pr_message = (
+                                pr_message + "\n\n" + drift_evaluation["message"]
+                            )
+                            branch = drift_branch
 
-    pass
+                    update_file_with_retry(
+                        repo=repo,
+                        file_path=file_path,
+                        commit_message=commit_message,
+                        data=dataframe.to_csv(index=False, header=True),
+                        branch=branch,
+                    )
+                    if pr_message != "":
+                        create_pullrequest(
+                            repo, branch, assignees, file_path, pr_message
+                        )
 
 
 def assert_file_exists(

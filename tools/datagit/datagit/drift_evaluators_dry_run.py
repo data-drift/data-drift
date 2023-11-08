@@ -1,5 +1,6 @@
 import traceback
 from typing import Callable, Dict
+from datagit.drift_evaluators import DriftEvaluatorContext
 from github import Github
 
 import pandas as pd
@@ -7,7 +8,7 @@ import pandas as pd
 
 def run_drift_evaluator(
     *,
-    drift_evaluator: Callable[[Dict[str, pd.DataFrame]], Dict],
+    drift_evaluator: Callable[[DriftEvaluatorContext], Dict],
     gh_client: Github,
     repo_name: str,
     commit_sha: str
@@ -32,10 +33,12 @@ def run_drift_evaluator(
     )
 
     #  run drift evaluator
-    data_drift_context = {
-        "reported_dataframe": old_dataframe,
-        "computed_dataframe": new_dataframe,
-    }
+    data_drift_context = DriftEvaluatorContext(
+        {
+            "before": old_dataframe,
+            "after": new_dataframe,
+        }
+    )
     try:
         drift_evaluation = drift_evaluator(data_drift_context)
         #  return result

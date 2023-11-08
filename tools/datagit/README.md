@@ -156,8 +156,8 @@ You can provide a custom evaluator which is a function with the following proper
 
 - parameters:
   - `data_drift_context``: a dictionnary with:
-  - computed_dataframe (the metric up to date)
-  - reported_dataframe (the metric already reported)
+  - before (the dataframe before, aka yesterday)
+  - after (the latest dataframe, aka today)
 - return value:
   - A dictionnary containing:
   - "should_alert": Boolean, If `True` a pull request will be opened, If `False` the drift will be merged
