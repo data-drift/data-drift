@@ -19,7 +19,7 @@ COPY --from=frontend /app/dist ./dist-app
 RUN go build
 
 
-VOLUME $HOME/.datadrift/default
+VOLUME $HOME/.datadrift
 ENV PORT=9740
 EXPOSE $PORT
 
