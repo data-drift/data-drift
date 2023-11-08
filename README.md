@@ -21,36 +21,29 @@
   </a>
 </p>
 
-<h1 align="center" >The Chronological Metric Store</h1>
+<h1 align="center" >Metrics Observability & Troubleshooting</h1>
 
-<p align="center">Datadrift helps analytics teams provide auditable metrics to demanding data consumers.
+<p align="center">Datadrift is an open-source monitoring and incident management platform to help data teams deliver trusted and reliable metrics.
 </p>
 
 <p align="center">
   <a href="https://www.data-drift.io">
-    <img src="./datadrift-metric-store.png" alt="DataDrift " />
+    <img src="./datadrift-overview.png" alt="DataDrift " />
   </a>
 </p>
 
-# ❓ Why Datadrift?
+Data monitoring tools fail by focusing on static tests (eg. null, unique, expected values) and metadata monitoring (eg. column-level). 
+</br> 
+**Data teams detect and solve data issues faster with Datadrift's row-level monitoring & troubleshooting.**
 
-We know providing actionnable and trusted metrics is hard. Here is how Datadrift helps:
-
-**Metric changelog and metadata**: give data consumers the full context and explain why metrics changed over time.
-
-**Drift detection and troobleshooting**: solve metric quality issues fast and painlessly.
-
-**Open-source**: break free from vendor-lock in and shape your own metric store with open-source collaboration.
-
-</br>
+</br> 
 
 # 🚀 Quickstart
 
-## dbt installation (beta)
+## dbt installation
 
-```shell
-pip install datagit
-datagit dbt run
+```
+pip install driftdb
 ```
 
 [Check the video](https://app.claap.io/sammyt/demo-beta-integration-dbt-c-ApwBh9kt4p-Qp4wXE2MfCzG)
@@ -67,15 +60,16 @@ Put the probe in your pipeline.
 
 For a step-by-step guide on the python installation, see the [docs](https://pypi.org/project/datagit/).
 
+## Datadrift cloud
+
 We are in development and we would love to do the installation with you. [Fill the form on our website](https://www.data-drift.io/) so we can do a 15min demo. If the tool solves your problem then the installation require 2\*30 min meeting.
 
 </br>
 
-# ⚡️ Use cases
+# ⚡️ Key Features 
 
-## 🔔 Monitoring drift with custom alerting
-
-Become aware of unknown unknowns in your data quality with metric drift alerting. Monitor the [quality and consistency of your metrics](https://www.data-drift.io/blog/why-data-consumers-do-not-trust-your-reporting-and-you-might-not-even-know-it) over time.
+## 🔮 Metrics monitoring & custom alerting
+Get full visibility into metrics variation and pro-actively detect data quality issues. Become aware of unknown unknowns with metric drift custom alerting. 
 
   <a href="https://www.data-drift.io">
     <img src="./datadrift-new-drift-alert.png" alt="DataDrift new drift custom alerting" width="800px"/>
@@ -83,9 +77,17 @@ Become aware of unknown unknowns in your data quality with metric drift alerting
 
 </br>
 
-## 🔬 Troubleshooting & metric reconciliation
-
+## 🧑‍🎤 Automated troubleshooting & reconciliation
 Operationalize your monitoring and solve your underlying data quality issue with lineage drill-down to understand the root cause of the problem.
+
+  <a href="https://www.data-drift.io">
+    <img src="./datadrift-metric-troubleshooting.png" alt="DataDrift diff compare table" width="800px"/>
+  </a>
+
+</br>
+
+## 💎 Metric issues management & changelog
+Give visibility to data consumers with metric changelog and in-context explanations.
 
   <a href="https://www.data-drift.io">
     <img src="./datadrift-changelog-dark.png" alt="DataDrift metric drift changelog" width="800px"/>
@@ -93,19 +95,8 @@ Operationalize your monitoring and solve your underlying data quality issue with
 
 </br>
 
-## 🔄 Safe refactoring and migrations
-
-Migrate without hassle and safely between tools with diff-checks before/after and within/across databases.
-
-  <a href="https://www.data-drift.io">
-    <img src="./datadrift-diff-compare.png" alt="DataDrift diff compare table" width="800px"/>
-  </a>
-
-</br>
-
 ## 🧠 And much more
-
-We'd love to hear from you if you have any other use case. Just open a new [issue](https://github.com/data-drift/data-drift/issues) to tell us more about it and see how we could help!
+We are in the early days of Datadrift. Just open a new [issue](https://github.com/data-drift/data-drift/issues) to tell us more about it and see how we could help!
 
 </br>
 
