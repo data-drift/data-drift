@@ -41,7 +41,6 @@ class TestStoreMetric(unittest.TestCase):
                 dataframe=self.dataframe,
                 filepath=self.filepath,
                 assignees=["jerome"],
-                store_json=False,
             )
 
             self.repo.get_contents.assert_has_calls(
@@ -61,7 +60,6 @@ class TestStoreMetric(unittest.TestCase):
                 dataframe=self.dataframe,
                 filepath=self.filepath,
                 assignees=["jerome"],
-                store_json=False,
             )
 
             self.repo.get_contents.assert_has_calls(
@@ -78,7 +76,6 @@ class TestStoreMetric(unittest.TestCase):
                 dataframe=self.dataframe,
                 filepath=self.filepath,
                 assignees=[],
-                store_json=False,
             )
 
             self.repo.get_contents.assert_has_calls(
