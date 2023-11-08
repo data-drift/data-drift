@@ -96,7 +96,7 @@ Give visibility to data consumers with metric changelog and in-context explanati
 </br>
 
 ## 🧠 And much more
-We in the early days of Datadrift. Just open a new [issue](https://github.com/data-drift/data-drift/issues) to tell us more about it and see how we could help!
+We are in the early days of Datadrift. Just open a new [issue](https://github.com/data-drift/data-drift/issues) to tell us more about it and see how we could help!
 
 </br>
 
