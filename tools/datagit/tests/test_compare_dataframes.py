@@ -19,7 +19,7 @@ class TestStoreMetric(unittest.TestCase):
         result = compare_dataframes(df1, df2, "unique_key")
 
         # Define the expected result
-        expected_result = "- 🆕 1 addition\n- ~~♻️ 0 modification~~\n- 🗑️ 1 deletion"
+        expected_result = "- 🆕 1 addition\n- ♻️ 0 modification\n- 🗑️ 1 deletion"
 
         # Assert that the actual result matches the expected result
         assert result == expected_result
@@ -36,7 +36,7 @@ class TestStoreMetric(unittest.TestCase):
 
         # Define the expected result
         expected_result = (
-            "- ~~🆕 0 addition~~\n- ~~♻️ 0 modification~~\n- 🗑️ 2 deletions"
+            "- 🆕 0 addition\n- ♻️ 0 modification\n- 🗑️ 2 deletions"
         )
 
         # Assert that the actual result matches the expected result
@@ -54,7 +54,7 @@ class TestStoreMetric(unittest.TestCase):
 
         # Define the expected result
         expected_result = (
-            "- 🆕 2 additions\n- ~~♻️ 0 modification~~\n- ~~🗑️ 0 deletion~~"
+            "- 🆕 2 additions\n- ♻️ 0 modification\n- 🗑️ 0 deletion"
         )
 
         # Assert that the actual result matches the expected result
@@ -74,7 +74,7 @@ class TestStoreMetric(unittest.TestCase):
 
         # Define the expected result
         expected_result = (
-            "- ~~🆕 0 addition~~\n- ♻️ 2 modifications\n- ~~🗑️ 0 deletion~~"
+            "- 🆕 0 addition\n- ♻️ 2 modifications\n- 🗑️ 0 deletion"
         )
 
         # Assert that the actual result matches the expected result
