@@ -1,9 +1,16 @@
+# Quickstart
+
+```sh
+docker volume create driftdb-store
+docker run --name driftdb -p 9740:9740 -vdriftdb-store:/root/.datadrift quay.io/datadrift/driftdb
+```
+
 # Development
 
 In the `backend` folder build the image,
 
 ```sh
-docker volume create datadrift_store # A volume should be created to keep the stored data between container restarts.
-docker build -t datadrift .
-docker run -p 8080:8080 -v datadrift_store:/root/.datadrift datadrift
+docker volume create driftdb-store
+docker build -t driftdb-dev .
+docker run -p 9740:9740 -v driftdb-store:/root/.datadrift driftdb-dev
 ```
