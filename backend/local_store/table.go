@@ -62,6 +62,23 @@ func StoreTableHandler(c *gin.Context) {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 				return
 			}
+			wt, err := repo.Worktree()
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+			commit, err := wt.Commit("Init DB", &git.CommitOptions{
+				Author: &object.Signature{
+					Name: "Driftdb",
+					When: time.Now(),
+				},
+				AllowEmptyCommits: true,
+			})
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+			fmt.Printf("Init repo with commit %s\n", commit)
 		} else {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return

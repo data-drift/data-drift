@@ -76,6 +76,7 @@ def delete_metric(*, store_name="default", metric_name: str):
         return
 
     repo = get_or_init_repo(store_name=store_name)
+    active_branch = repo.active_branch
 
     # Create a new copy of main branch
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
@@ -83,14 +84,16 @@ def delete_metric(*, store_name="default", metric_name: str):
     repo.git.checkout("HEAD", b=keep_main)
 
     # Create a new temporary branch and checkout
-    repo.git.checkout("HEAD", b="tmp_branch")
+    tmp_branch = f"tmp_branch_{timestamp}"
+    repo.git.checkout("HEAD", b=tmp_branch)
 
     for commit in commit_history:
-        repo.git.rebase("--onto", commit.hexsha + "^", commit.hexsha, "tmp_branch")
+        print(f"Deleting commit {commit.hexsha}")
+        repo.git.rebase("--onto", commit.hexsha + "^", commit.hexsha, tmp_branch)
 
-    repo.git.branch("-D", "main")
-    repo.git.checkout("HEAD", b="main")
-    repo.git.branch("-D", "tmp_branch")
+    repo.git.branch("-D", active_branch)
+    repo.git.checkout("HEAD", b=active_branch)
+    repo.git.branch("-D", tmp_branch)
 
 
 def get_metric_history(*, store_name="default", metric_name: str) -> Iterator[Commit]:
