@@ -112,7 +112,7 @@ def drift_breakdown(
     without_deleted = before_drift.drop(deleted_keys).sort_index()
 
     # DataFrame with added lines
-    with_added = without_deleted.append(after_drift.loc[added_keys]).sort_index()
+    with_added = pd.concat([without_deleted, after_drift.loc[added_keys]]).sort_index()
     after_drift = after_drift.reindex(
         index=with_added.index, columns=with_added.columns
     )
