@@ -9,7 +9,6 @@ from datagit import github_connector
 from datagit import local_connector
 from datagit.drift_evaluators import auto_merge_drift
 from github import Github
-from version import version
 
 from datetime import datetime
 
@@ -17,7 +16,6 @@ from tzlocal import get_localzone
 
 
 @click.group()
-@click.version_option(version=version, prog_name="driftdb")
 def cli_entrypoint():
     pass
 
