@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
-from version import version
+from datagit.version import version
 
 setup(
     name="driftdb",
