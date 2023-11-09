@@ -132,6 +132,9 @@ def push_metric(
     repo,
     drift_evaluator: Callable[[DriftEvaluatorContext], Dict],
 ):
+    if dataframe.index.name != "unique_key":
+        dataframe = dataframe.set_index("unique_key")
+
     dataframe = dataframe.astype("string")
     contents = assert_file_exists(repo, file_path, ref=default_branch)
     if contents is None:
@@ -180,7 +183,7 @@ def push_metric(
                         repo=repo,
                         file_path=file_path,
                         commit_message=commit_message,
-                        data=dataframe.to_csv(index=False, header=True),
+                        data=value["df"].to_csv(index=True, header=True),
                         branch=branch,
                     )
                     if pr_message != "":
@@ -239,7 +242,7 @@ def create_file_on_branch(
     commit_message = "New data: " + file_path
     print("Commit: " + commit_message)
     repo.create_file(
-        file_path, commit_message, dataframe.to_csv(index=False, header=True), branch
+        file_path, commit_message, dataframe.to_csv(index=True, header=True), branch
     )
 
 

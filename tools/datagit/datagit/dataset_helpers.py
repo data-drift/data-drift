@@ -112,6 +112,11 @@ def compare_dataframes(
 
 
 def get_addition_deletion_and_diff(initial_df, final_df, unique_key):
+    if not unique_key in initial_df.columns:
+        initial_df = initial_df.reset_index()
+    if not unique_key in final_df.columns:
+        final_df = final_df.reset_index()
+
     initial_df = convert_object_to_string(initial_df)
     final_df = convert_object_to_string(final_df)
 
