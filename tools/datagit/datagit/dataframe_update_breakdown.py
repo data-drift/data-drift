@@ -61,6 +61,14 @@ def dataframe_update_breakdown(
             step3_1_drift_context, drift_evaluator
         )
     step3_2 = result["with_deleted_and_added"]
+    step3_2_has_update = not step3_1.equals(step3_2)
+    step3_2_drift_context = None
+    step3_2_drift_evaluation = None
+    if step3_2_has_update:
+        step3_2_drift_context = DriftEvaluatorContext(before=step3_1, after=step3_2)
+        step3_2_drift_evaluation = safe_drift_evaluator(
+            step3_2_drift_context, drift_evaluator
+        )
     step3_3 = result["with_deleted_and_added_and_modified"]
 
     step4 = final_dataframe.reindex(index=step3_3.index, columns=step3_3.columns)
@@ -89,10 +97,10 @@ def dataframe_update_breakdown(
         ),
         "DRIFT Addition": DataFrameUpdate(
             df=step3_2,
-            has_update=not step3_1.equals(step3_2),
+            has_update=step3_2_has_update,
             type=UpdateType.DRIFT,
-            drift_context=DriftEvaluatorContext(before=step3_1, after=step3_2),
-            drift_evaluation=None,
+            drift_context=step3_2_drift_context,
+            drift_evaluation=step3_2_drift_evaluation,
         ),
         "DRIFT Modification": DataFrameUpdate(
             df=step3_3,

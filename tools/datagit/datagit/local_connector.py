@@ -44,6 +44,8 @@ def store_metric(
         repo.index.add(add_file)
         if repo.index.diff("HEAD"):
             commit_message = f"{key}: {metric_name}"
+            if value["drift_evaluation"] != None:
+                commit_message += f"\n{value['drift_evaluation']['message']}"
             repo.index.commit(message=commit_message, author_date=measure_date)
         else:
             pass
