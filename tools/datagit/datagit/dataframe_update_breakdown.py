@@ -121,3 +121,69 @@ def drift_breakdown(
         with_deleted_and_added=with_added,
         with_deleted_and_added_and_modified=after_drift,
     )
+
+
+def summarize_dataframe_updates(data_drift_context: DriftEvaluatorContext):
+    """
+    Summarize the updates made to a dataframe including added, deleted, and modified rows.
+    Group the modifications by the pattern of changes.
+
+    Parameters:
+    - initial_df (pd.DataFrame): The original dataframe before updates.
+    - final_df (pd.DataFrame): The updated dataframe after changes.
+    - key (str): The name of the column or index to use as the unique key for comparison.
+
+    Returns:
+    - A dictionary with three keys: 'added', 'deleted', and 'modified', each containing
+      a respective dataframe of changes, and 'modification_patterns', a dataframe summarizing
+      the patterns of modification.
+    """
+    initial_df = data_drift_context["before"]
+    final_df = data_drift_context["after"]
+
+    initial_df = initial_df.set_index("unique_key")
+    final_df = final_df.set_index("unique_key")
+
+    deleted_rows = initial_df[~initial_df.index.isin(final_df.index)]
+
+    added_rows = final_df[~final_df.index.isin(initial_df.index)]
+
+    common_indices = initial_df.index.intersection(final_df.index)
+    common_rows_initial = initial_df.loc[common_indices]
+    common_rows_final = final_df.loc[common_indices]
+
+    changes = common_rows_initial != common_rows_final
+    changed_rows = changes[changes.any(axis=1)].index
+
+    pattern_changes = {}
+    for key in changed_rows:
+        for col in common_rows_initial.columns:
+            if common_rows_initial.at[key, col] != common_rows_final.at[key, col]:
+                old_value = common_rows_initial.at[key, col]
+                new_value = common_rows_final.at[key, col]
+                change_pattern = (col, old_value, new_value)
+                if change_pattern not in pattern_changes:
+                    pattern_changes[change_pattern] = [key]
+                else:
+                    pattern_changes[change_pattern].append(key)
+
+    patterns_list = []
+    for pattern, keys in pattern_changes.items():
+        col, old, new = pattern
+        patterns_list.append(
+            {
+                "unique_keys": keys,
+                "column": col,
+                "old_value": old,
+                "new_value": new,
+                "pattern_id": hash(pattern),
+            }
+        )
+
+    patterns_df = pd.DataFrame(patterns_list)
+
+    return {
+        "added": added_rows,
+        "deleted": deleted_rows,
+        "modified_patterns": patterns_df,
+    }
