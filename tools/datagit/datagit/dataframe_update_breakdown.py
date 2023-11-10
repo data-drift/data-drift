@@ -28,7 +28,7 @@ def dataframe_update_breakdown(
     columns_added = set(final_dataframe.columns) - set(initial_dataframe.columns)
     columns_removed = set(initial_dataframe.columns) - set(final_dataframe.columns)
 
-    step1 = initial_dataframe.drop(columns=columns_removed)
+    step1 = initial_dataframe.drop(columns=list(columns_removed))
 
     # TODO handle case when there is not
     # new_data = initial_dataframe
@@ -39,7 +39,7 @@ def dataframe_update_breakdown(
 
     step2 = pd.concat([step1, new_data[step1.columns]], axis=0)
 
-    step3 = final_dataframe.drop(columns=columns_added)
+    step3 = final_dataframe.drop(columns=list(columns_added))
     result = drift_breakdown(before_drift=step2, after_drift=step3)
     step3_1 = result["with_deleted"]
     step3_2 = result["with_deleted_and_added"]
