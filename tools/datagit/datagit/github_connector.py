@@ -162,9 +162,9 @@ def push_metric(
                 print("Nothing to update")
                 pass
             branch = default_branch
+            pr_message = ""
             for key, value in update_breakdown.items():
                 commit_message = key
-                pr_message = ""
                 if value["has_update"]:
                     print("Update: " + key)
                     if value["type"] == UpdateType.DRIFT and value["drift_context"]:
@@ -173,7 +173,8 @@ def push_metric(
                         )
                         commit_message = key + "\n\n" + drift_evaluation["message"]
                         if drift_evaluation["should_alert"]:
-                            checkout_branch_from_default_branch(repo, drift_branch)
+                            if pr_message == "":
+                                checkout_branch_from_default_branch(repo, drift_branch)
                             pr_message = (
                                 pr_message + "\n\n" + drift_evaluation["message"]
                             )
@@ -186,10 +187,9 @@ def push_metric(
                         data=value["df"].to_csv(index=True, header=True),
                         branch=branch,
                     )
-                    if pr_message != "":
-                        create_pullrequest(
-                            repo, branch, assignees, file_path, pr_message
-                        )
+
+            if pr_message != "":
+                create_pullrequest(repo, branch, assignees, file_path, pr_message)
 
 
 def assert_file_exists(
