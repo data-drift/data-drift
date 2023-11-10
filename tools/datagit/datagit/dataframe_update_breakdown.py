@@ -70,8 +70,16 @@ def dataframe_update_breakdown(
             step3_2_drift_context, drift_evaluator
         )
     step3_3 = result["with_deleted_and_added_and_modified"]
+    step3_3_has_update = not step3_2.equals(step3_3)
+    step3_3_drift_context = None
+    step3_3_drift_evaluation = None
+    if step3_3_has_update:
+        step3_3_drift_context = DriftEvaluatorContext(before=step3_2, after=step3_3)
+        step3_3_drift_evaluation = safe_drift_evaluator(
+            step3_3_drift_context, drift_evaluator
+        )
 
-    step4 = final_dataframe.reindex(index=step3_3.index, columns=step3_3.columns)
+    step4 = final_dataframe.reindex(index=step3_3.index)
 
     return {
         "MIGRATION Column Deleted": DataFrameUpdate(
@@ -104,10 +112,10 @@ def dataframe_update_breakdown(
         ),
         "DRIFT Modification": DataFrameUpdate(
             df=step3_3,
-            has_update=not step3_2.equals(step3_3),
+            has_update=step3_3_has_update,
             type=UpdateType.DRIFT,
-            drift_context=DriftEvaluatorContext(before=step3_2, after=step3_3),
-            drift_evaluation=None,
+            drift_context=step3_3_drift_context,
+            drift_evaluation=step3_3_drift_evaluation,
         ),
         "MIGRATION Column Added": DataFrameUpdate(
             df=step4,
