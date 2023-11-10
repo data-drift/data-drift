@@ -43,7 +43,8 @@ def store_metric(
         add_file = [metric_file_name]
         repo.index.add(add_file)
         if repo.index.diff("HEAD"):
-            repo.index.commit(f"{key}: {metric_name}", author_date=measure_date)
+            commit_message = f"{key}: {metric_name}"
+            repo.index.commit(message=commit_message, author_date=measure_date)
         else:
             pass
     pass

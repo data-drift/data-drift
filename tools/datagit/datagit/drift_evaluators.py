@@ -9,7 +9,12 @@ class DriftEvaluatorContext(TypedDict):
     after: pd.DataFrame
 
 
-def alert_drift(data_drift_context: DriftEvaluatorContext):
+class DriftEvaluation(TypedDict):
+    should_alert: bool
+    message: str
+
+
+def alert_drift(data_drift_context: DriftEvaluatorContext) -> DriftEvaluation:
     message = f"Drift detected:\n" + compare_dataframes(
         data_drift_context["before"],
         data_drift_context["after"],
@@ -18,7 +23,7 @@ def alert_drift(data_drift_context: DriftEvaluatorContext):
     return {"should_alert": True, "message": message}
 
 
-def auto_merge_drift(data_drift_context: DriftEvaluatorContext):
+def auto_merge_drift(data_drift_context: DriftEvaluatorContext) -> DriftEvaluation:
     message = f"Drift detected:\n" + compare_dataframes(
         data_drift_context["before"],
         data_drift_context["after"],
@@ -32,8 +37,8 @@ def auto_merge_drift(data_drift_context: DriftEvaluatorContext):
 
 def safe_drift_evaluator(
     data_drift_context: DriftEvaluatorContext,
-    drift_evaluator: Callable[[DriftEvaluatorContext], dict],
-):
+    drift_evaluator: Callable[[DriftEvaluatorContext], DriftEvaluation],
+) -> DriftEvaluation:
     try:
         drift_evaluation = drift_evaluator(data_drift_context)
         return drift_evaluation

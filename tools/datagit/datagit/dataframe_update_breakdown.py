@@ -1,6 +1,11 @@
-from datagit.drift_evaluators import DriftEvaluatorContext
+from datagit.drift_evaluators import (
+    DriftEvaluation,
+    DriftEvaluatorContext,
+    auto_merge_drift,
+    safe_drift_evaluator,
+)
 import pandas as pd
-from typing import Dict, Optional, TypedDict
+from typing import Callable, Dict, Optional, TypedDict
 from enum import Enum
 
 
@@ -14,10 +19,15 @@ class DataFrameUpdate(TypedDict):
     has_update: bool
     type: UpdateType
     drift_context: Optional[DriftEvaluatorContext]
+    drift_evaluation: Optional[DriftEvaluation]
 
 
 def dataframe_update_breakdown(
-    initial_dataframe: pd.DataFrame, final_dataframe: pd.DataFrame
+    initial_dataframe: pd.DataFrame,
+    final_dataframe: pd.DataFrame,
+    drift_evaluator: Callable[
+        [DriftEvaluatorContext], DriftEvaluation
+    ] = auto_merge_drift,
 ) -> Dict[str, DataFrameUpdate]:
     if initial_dataframe.index.name != "unique_key":
         initial_dataframe = initial_dataframe.set_index("unique_key")
@@ -42,6 +52,14 @@ def dataframe_update_breakdown(
     step3 = final_dataframe.drop(columns=list(columns_added))
     result = drift_breakdown(before_drift=step2, after_drift=step3)
     step3_1 = result["with_deleted"]
+    step3_1_has_update = not step2.equals(step3_1)
+    step3_1_drift_context = None
+    step3_1_drift_evaluation = None
+    if step3_1_has_update:
+        step3_1_drift_context = DriftEvaluatorContext(before=step2, after=step3_1)
+        step3_1_drift_evaluation = safe_drift_evaluator(
+            step3_1_drift_context, drift_evaluator
+        )
     step3_2 = result["with_deleted_and_added"]
     step3_3 = result["with_deleted_and_added_and_modified"]
 
@@ -53,36 +71,42 @@ def dataframe_update_breakdown(
             has_update=not initial_dataframe.equals(step1),
             type=UpdateType.OTHER,
             drift_context=None,
+            drift_evaluation=None,
         ),
         "NEW DATA": DataFrameUpdate(
             df=step2,
             has_update=not step1.equals(step2),
             type=UpdateType.OTHER,
             drift_context=None,
+            drift_evaluation=None,
         ),
         "DRIFT Deletion": DataFrameUpdate(
             df=step3_1,
-            has_update=not step2.equals(step3_1),
+            has_update=step3_1_has_update,
             type=UpdateType.DRIFT,
-            drift_context=DriftEvaluatorContext(before=step2, after=step3_1),
+            drift_context=step3_1_drift_context,
+            drift_evaluation=step3_1_drift_evaluation,
         ),
         "DRIFT Addition": DataFrameUpdate(
             df=step3_2,
             has_update=not step3_1.equals(step3_2),
             type=UpdateType.DRIFT,
             drift_context=DriftEvaluatorContext(before=step3_1, after=step3_2),
+            drift_evaluation=None,
         ),
         "DRIFT Modification": DataFrameUpdate(
             df=step3_3,
             has_update=not step3_2.equals(step3_3),
             type=UpdateType.DRIFT,
             drift_context=DriftEvaluatorContext(before=step3_2, after=step3_3),
+            drift_evaluation=None,
         ),
         "MIGRATION Column Added": DataFrameUpdate(
             df=step4,
             has_update=not step3_3.equals(step4),
             type=UpdateType.OTHER,
             drift_context=None,
+            drift_evaluation=None,
         ),
     }
 

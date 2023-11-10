@@ -4,6 +4,7 @@ from datagit.dataframe_update_breakdown import UpdateType, dataframe_update_brea
 import pandas as pd
 from github import Github, Repository, ContentFile, GithubException
 from datagit.drift_evaluators import (
+    DriftEvaluation,
     DriftEvaluatorContext,
     auto_merge_drift,
     safe_drift_evaluator,
@@ -23,7 +24,9 @@ def store_metric(
     filepath: str,
     branch: Optional[str] = None,
     assignees: Optional[List[str]] = None,
-    drift_evaluator: Callable[[DriftEvaluatorContext], Dict] = auto_merge_drift,
+    drift_evaluator: Callable[
+        [DriftEvaluatorContext], DriftEvaluation
+    ] = auto_merge_drift,
 ) -> None:
     """
     Store metrics into a specific repository file on GitHub.
@@ -130,7 +133,7 @@ def push_metric(
     drift_branch,
     file_path,
     repo,
-    drift_evaluator: Callable[[DriftEvaluatorContext], Dict],
+    drift_evaluator: Callable[[DriftEvaluatorContext], DriftEvaluation],
 ):
     if dataframe.index.name != "unique_key":
         dataframe = dataframe.set_index("unique_key")
@@ -155,7 +158,9 @@ def push_metric(
                 keep_default_na=False,
             )
             print("Old Dataframe dtypes", old_dataframe.dtypes.to_dict())
-            update_breakdown = dataframe_update_breakdown(old_dataframe, dataframe)
+            update_breakdown = dataframe_update_breakdown(
+                old_dataframe, dataframe, drift_evaluator
+            )
             if any(item["has_update"] for item in update_breakdown.values()):
                 print("Change detected")
             else:
@@ -173,12 +178,12 @@ def push_metric(
                         )
                         commit_message = key + "\n\n" + drift_evaluation["message"]
                         if drift_evaluation["should_alert"]:
-                            if pr_message == "":
+                            if branch == default_branch:
                                 checkout_branch_from_default_branch(repo, drift_branch)
+                                branch = drift_branch
                             pr_message = (
                                 pr_message + "\n\n" + drift_evaluation["message"]
                             )
-                            branch = drift_branch
 
                     update_file_with_retry(
                         repo=repo,
