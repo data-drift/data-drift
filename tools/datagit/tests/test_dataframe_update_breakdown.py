@@ -38,8 +38,10 @@ class TestUpdateBreakdown(unittest.TestCase):
 
     def test_drift(self):
         result = dataframe_update_breakdown(self.initial_df, self.final_df)
-        self.assertNotIn(1, result["DRIFT"]["df"].index)
-        self.assertEqual(result["DRIFT"]["df"].loc[3, "age"], 36)
+        self.assertNotIn(1, result["DRIFT Deletion"]["df"].index)
+        self.assertNotIn(1, result["DRIFT Addition"]["df"].index)
+        self.assertNotIn(1, result["DRIFT Modification"]["df"].index)
+        self.assertEqual(result["DRIFT Modification"]["df"].loc[3, "age"], 36)
 
     def test_columns_added(self):
         result = dataframe_update_breakdown(self.initial_df, self.final_df)
@@ -52,7 +54,9 @@ class TestUpdateBreakdown(unittest.TestCase):
             result["MIGRATION Column Deleted"]["df"]["country"].isna().any()
         )
         self.assertFalse(result["NEW DATA"]["df"]["country"].isna().any())
-        self.assertFalse(result["DRIFT"]["df"]["country"].isna().any())
+        self.assertFalse(result["DRIFT Deletion"]["df"]["country"].isna().any())
+        self.assertFalse(result["DRIFT Addition"]["df"]["country"].isna().any())
+        self.assertFalse(result["DRIFT Modification"]["df"]["country"].isna().any())
         self.assertFalse(result["MIGRATION Column Added"]["df"]["country"].isna().any())
         self.assertEqual(
             result["MIGRATION Column Deleted"]["df"].loc[3, "country"], "NA"
