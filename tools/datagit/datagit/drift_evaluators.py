@@ -14,6 +14,9 @@ class DriftEvaluation(TypedDict):
     message: str
 
 
+DriftEvaluator = Callable[[DriftEvaluatorContext], DriftEvaluation]
+
+
 def alert_drift(data_drift_context: DriftEvaluatorContext) -> DriftEvaluation:
     message = f"Drift detected:\n" + compare_dataframes(
         data_drift_context["before"],

@@ -1,13 +1,13 @@
 import time
-from typing import Optional, List, Callable, Dict
+from typing import Optional, List, Callable
 from datagit.dataframe_update_breakdown import UpdateType, dataframe_update_breakdown
 import pandas as pd
 from github import Github, Repository, ContentFile, GithubException
 from datagit.drift_evaluators import (
     DriftEvaluation,
+    DriftEvaluator,
     DriftEvaluatorContext,
     auto_merge_drift,
-    safe_drift_evaluator,
 )
 from datagit.dataset_helpers import (
     sort_dataframe_on_first_column_and_assert_is_unique,
@@ -24,9 +24,7 @@ def store_metric(
     filepath: str,
     branch: Optional[str] = None,
     assignees: Optional[List[str]] = None,
-    drift_evaluator: Callable[
-        [DriftEvaluatorContext], DriftEvaluation
-    ] = auto_merge_drift,
+    drift_evaluator: DriftEvaluator = auto_merge_drift,
 ) -> None:
     """
     Store metrics into a specific repository file on GitHub.
@@ -133,7 +131,7 @@ def push_metric(
     drift_branch,
     file_path,
     repo,
-    drift_evaluator: Callable[[DriftEvaluatorContext], DriftEvaluation],
+    drift_evaluator: DriftEvaluator,
 ):
     if dataframe.index.name != "unique_key":
         dataframe = dataframe.set_index("unique_key")

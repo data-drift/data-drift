@@ -1,6 +1,5 @@
 import traceback
-from typing import Callable, Dict
-from datagit.drift_evaluators import DriftEvaluatorContext
+from datagit.drift_evaluators import DriftEvaluatorContext, DriftEvaluator
 from github import Github
 
 import pandas as pd
@@ -8,7 +7,7 @@ import pandas as pd
 
 def run_drift_evaluator(
     *,
-    drift_evaluator: Callable[[DriftEvaluatorContext], Dict],
+    drift_evaluator: DriftEvaluator,
     gh_client: Github,
     repo_name: str,
     commit_sha: str

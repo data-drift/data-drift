@@ -1,11 +1,12 @@
 from datagit.drift_evaluators import (
     DriftEvaluation,
+    DriftEvaluator,
     DriftEvaluatorContext,
     auto_merge_drift,
     safe_drift_evaluator,
 )
 import pandas as pd
-from typing import Callable, Dict, Optional, TypedDict
+from typing import Dict, Optional, TypedDict
 from enum import Enum
 
 
@@ -25,9 +26,7 @@ class DataFrameUpdate(TypedDict):
 def dataframe_update_breakdown(
     initial_dataframe: pd.DataFrame,
     final_dataframe: pd.DataFrame,
-    drift_evaluator: Callable[
-        [DriftEvaluatorContext], DriftEvaluation
-    ] = auto_merge_drift,
+    drift_evaluator: DriftEvaluator = auto_merge_drift,
 ) -> Dict[str, DataFrameUpdate]:
     if initial_dataframe.index.name != "unique_key":
         initial_dataframe = initial_dataframe.set_index("unique_key")
