@@ -173,17 +173,18 @@ def push_metric(
                 if value["has_update"]:
                     print("Update: " + key)
                     if value["type"] == UpdateType.DRIFT and value["drift_context"]:
-                        drift_evaluation = safe_drift_evaluator(
-                            value["drift_context"], drift_evaluator
-                        )
-                        commit_message = key + "\n\n" + drift_evaluation["message"]
-                        if drift_evaluation["should_alert"]:
-                            if branch == default_branch:
-                                checkout_branch_from_default_branch(repo, drift_branch)
-                                branch = drift_branch
-                            pr_message = (
-                                pr_message + "\n\n" + drift_evaluation["message"]
-                            )
+                        drift_evaluation = value["drift_evaluation"]
+                        if drift_evaluation:
+                            commit_message += "\n\n" + drift_evaluation["message"]
+                            if drift_evaluation["should_alert"]:
+                                if branch == default_branch:
+                                    checkout_branch_from_default_branch(
+                                        repo, drift_branch
+                                    )
+                                    branch = drift_branch
+                                pr_message = (
+                                    pr_message + "\n\n" + drift_evaluation["message"]
+                                )
 
                     update_file_with_retry(
                         repo=repo,
