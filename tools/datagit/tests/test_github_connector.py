@@ -14,7 +14,7 @@ def mocked_read_csv(url, *args, **kwargs):
     # Return a dummy DataFrame instead of reading the URL
     return pd.DataFrame(
         {
-            "col1": [1, 2, 3],
+            "unique_key": [1, 2, 3],
             "col2": [4, 5, 6],
             "date": ["2021-01-01", "2022-02-02", "2023-03-03"],
         }
