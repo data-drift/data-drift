@@ -142,7 +142,7 @@ def push_metric(
     contents = assert_file_exists(repo, file_path, ref=default_branch)
     if contents is None:
         print("Metric not found, creating it on branch: " + default_branch)
-        create_file_on_branch(
+        init_file(
             file_path=file_path, repo=repo, branch=default_branch, dataframe=dataframe
         )
         print("Metric stored")
@@ -240,7 +240,7 @@ def update_file_with_retry(
     raise Exception(f"Failed to update file after {max_retries} retries")
 
 
-def create_file_on_branch(
+def init_file(
     *,
     file_path: str,
     repo: Repository.Repository,
