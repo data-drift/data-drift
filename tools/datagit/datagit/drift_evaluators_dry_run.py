@@ -19,6 +19,12 @@ def run_drift_evaluator(
     raw_content = repo.get_contents(file.filename, ref=commit_sha)
     parent_raw_content = repo.get_contents(file.filename, ref=commit.parents[0].sha)
 
+    if isinstance(raw_content, list):
+        raw_content = raw_content[0]
+
+    if isinstance(parent_raw_content, list):
+        parent_raw_content = parent_raw_content[0]
+
     new_dataframe = pd.read_csv(
         raw_content.download_url,
         dtype="string",
