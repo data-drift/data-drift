@@ -142,7 +142,9 @@ def push_metric(
     contents = assert_file_exists(repo, file_path, ref=default_branch)
     if contents is None:
         print("Metric not found, creating it on branch: " + default_branch)
-        create_file_on_branch(file_path, repo, default_branch, dataframe, assignees)
+        create_file_on_branch(
+            file_path=file_path, repo=repo, branch=default_branch, dataframe=dataframe
+        )
         print("Metric stored")
         pass
     else:
@@ -239,11 +241,11 @@ def update_file_with_retry(
 
 
 def create_file_on_branch(
+    *,
     file_path: str,
     repo: Repository.Repository,
     branch: str,
     dataframe: pd.DataFrame,
-    assignees: List[str],
 ):
     commit_message = "New data: " + file_path
     print("Commit: " + commit_message)
