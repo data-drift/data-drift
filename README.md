@@ -10,6 +10,9 @@
 </p>
 
 <p align="center">
+  <a href="https://discord.gg/X2RUXFAm">
+    <img src="https://dcbadge.vercel.app/api/server/X2RUXFAm?style=flat" alt="Discord">
+  </a>
   <a href="https://github.com/data-drift/data-drift/actions/workflows/datadrift-build.yml">
     <img src="https://img.shields.io/github/actions/workflow/status/data-drift/data-drift/datadrift-build.yml?style=flat-square" alt="Data-Drift Build">
   </a>
@@ -100,11 +103,12 @@ We are in the early days of Datadrift. Just open a new [issue](https://github.co
 
 </br>
 
-# 💚 Contributing
+# 💚 Community
 
 We 💚 contributions big and small. In priority order (although everything is appreciated) with the most helpful first:
 
-- Star this repo to help us get visibility
+- [Star this repo](https://github.com/data-drift/data-drift) to help us get visibility and build awesome open-source tools
+- [Join our Discord server](https://discord.gg/X2RUXFAm) to be part of our thriving community
 - [Open an issue](https://github.com/data-drift/data-drift/issues) to share your idea or a bug you might have spotted
 - [Become a Design Partner](https://www.data-drift.io/design-partner) to co-built a product you & users love
 
