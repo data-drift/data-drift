@@ -3,7 +3,10 @@ import os
 from typing import Iterator
 
 from datagit.dataset_helpers import sort_dataframe_on_first_column_and_assert_is_unique
-from .dataframe_update_breakdown import dataframe_update_breakdown
+from .dataframe_update_breakdown import (
+    dataframe_update_breakdown,
+    drift_summary_to_string,
+)
 import pandas as pd
 from git import Commit, Repo
 
@@ -46,6 +49,9 @@ def store_metric(
             commit_message = f"{key}: {metric_name}"
             if value["drift_evaluation"] != None:
                 commit_message += f"\n{value['drift_evaluation']['message']}"
+            if value["drift_summary"]:
+                string_summary = drift_summary_to_string(value["drift_summary"])
+                commit_message += "\n\n" + string_summary
             repo.index.commit(message=commit_message, author_date=measure_date)
         else:
             pass

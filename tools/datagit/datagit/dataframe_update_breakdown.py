@@ -15,12 +15,29 @@ class UpdateType(Enum):
     OTHER = "other"
 
 
+class DriftSummary(TypedDict):
+    added_rows: pd.DataFrame
+    deleted_rows: pd.DataFrame
+    modified_rows_unique_keys: pd.Index
+    modified_patterns: pd.DataFrame
+
+
+def drift_summary_to_string(drift_summary: DriftSummary) -> str:
+    return (
+        f"Added Rows:\n{drift_summary['added_rows'].to_string()}\n"
+        f"Deleted Rows:\n{drift_summary['deleted_rows'].to_string()}\n"
+        f"Modified Rows Unique Keys:\n{drift_summary['modified_rows_unique_keys']}\n"
+        f"Modified Patterns:\n{drift_summary['modified_patterns'].to_string()}"
+    )
+
+
 class DataFrameUpdate(TypedDict):
     df: pd.DataFrame
     has_update: bool
     type: UpdateType
     drift_context: Optional[DriftEvaluatorContext]
     drift_evaluation: Optional[DriftEvaluation]
+    drift_summary: Optional[DriftSummary]
 
 
 def dataframe_update_breakdown(
@@ -49,36 +66,16 @@ def dataframe_update_breakdown(
     step2 = pd.concat([step1, new_data[step1.columns]], axis=0)
 
     step3 = final_dataframe.drop(columns=list(columns_added))
-    result = drift_breakdown(before_drift=step2, after_drift=step3)
-    step3_1 = result["with_deleted"]
-    step3_1_has_update = not step2.equals(step3_1)
-    step3_1_drift_context = None
-    step3_1_drift_evaluation = None
-    if step3_1_has_update:
-        step3_1_drift_context = DriftEvaluatorContext(before=step2, after=step3_1)
-        step3_1_drift_evaluation = safe_drift_evaluator(
-            step3_1_drift_context, drift_evaluator
-        )
-    step3_2 = result["with_deleted_and_added"]
-    step3_2_has_update = not step3_1.equals(step3_2)
-    step3_2_drift_context = None
-    step3_2_drift_evaluation = None
-    if step3_2_has_update:
-        step3_2_drift_context = DriftEvaluatorContext(before=step3_1, after=step3_2)
-        step3_2_drift_evaluation = safe_drift_evaluator(
-            step3_2_drift_context, drift_evaluator
-        )
-    step3_3 = result["with_deleted_and_added_and_modified"]
-    step3_3_has_update = not step3_2.equals(step3_3)
-    step3_3_drift_context = None
-    step3_3_drift_evaluation = None
-    if step3_3_has_update:
-        step3_3_drift_context = DriftEvaluatorContext(before=step3_2, after=step3_3)
-        step3_3_drift_evaluation = safe_drift_evaluator(
-            step3_3_drift_context, drift_evaluator
-        )
+    has_drift = not step2.equals(step3)
+    drift_summary = None
+    drift_context = None
+    drift_evaluation = None
+    if has_drift:
+        drift_summary = summarize_dataframe_updates(initial_df=step2, final_df=step3)
+        drift_context = DriftEvaluatorContext(before=step2, after=step3)
+        drift_evaluation = safe_drift_evaluator(drift_context, drift_evaluator)
 
-    step4 = final_dataframe.reindex(index=step3_3.index)
+    step4 = final_dataframe.reindex(index=step3.index)
 
     return {
         "MIGRATION Column Deleted": DataFrameUpdate(
@@ -87,6 +84,7 @@ def dataframe_update_breakdown(
             type=UpdateType.OTHER,
             drift_context=None,
             drift_evaluation=None,
+            drift_summary=None,
         ),
         "NEW DATA": DataFrameUpdate(
             df=step2,
@@ -94,34 +92,23 @@ def dataframe_update_breakdown(
             type=UpdateType.OTHER,
             drift_context=None,
             drift_evaluation=None,
+            drift_summary=None,
         ),
-        "DRIFT Deletion": DataFrameUpdate(
-            df=step3_1,
-            has_update=step3_1_has_update,
+        "DRIFT": DataFrameUpdate(
+            df=step3,
+            has_update=not step2.equals(step3),
             type=UpdateType.DRIFT,
-            drift_context=step3_1_drift_context,
-            drift_evaluation=step3_1_drift_evaluation,
-        ),
-        "DRIFT Addition": DataFrameUpdate(
-            df=step3_2,
-            has_update=step3_2_has_update,
-            type=UpdateType.DRIFT,
-            drift_context=step3_2_drift_context,
-            drift_evaluation=step3_2_drift_evaluation,
-        ),
-        "DRIFT Modification": DataFrameUpdate(
-            df=step3_3,
-            has_update=step3_3_has_update,
-            type=UpdateType.DRIFT,
-            drift_context=step3_3_drift_context,
-            drift_evaluation=step3_3_drift_evaluation,
+            drift_context=drift_context,
+            drift_evaluation=drift_evaluation,
+            drift_summary=drift_summary,
         ),
         "MIGRATION Column Added": DataFrameUpdate(
             df=step4,
-            has_update=not step3_3.equals(step4),
+            has_update=not step3.equals(step4),
             type=UpdateType.OTHER,
             drift_context=None,
             drift_evaluation=None,
+            drift_summary=None,
         ),
     }
 
@@ -162,7 +149,10 @@ def drift_breakdown(
     )
 
 
-def summarize_dataframe_updates(data_drift_context: DriftEvaluatorContext):
+def summarize_dataframe_updates(
+    initial_df: pd.DataFrame,
+    final_df: pd.DataFrame,
+) -> DriftSummary:
     """
     Summarize the updates made to a dataframe including added, deleted, and modified rows.
     Group the modifications by the pattern of changes.
@@ -177,11 +167,14 @@ def summarize_dataframe_updates(data_drift_context: DriftEvaluatorContext):
       a respective dataframe of changes, and 'modification_patterns', a dataframe summarizing
       the patterns of modification.
     """
-    initial_df = data_drift_context["before"]
-    final_df = data_drift_context["after"]
 
-    initial_df = initial_df.set_index("unique_key")
-    final_df = final_df.set_index("unique_key")
+    if initial_df.index.name != "unique_key":
+        initial_df = initial_df.set_index("unique_key")
+
+    if final_df.index.name != "unique_key":
+        final_df = final_df.set_index("unique_key")
+
+    final_df = final_df.reindex(index=initial_df.index)
 
     deleted_rows = initial_df[~initial_df.index.isin(final_df.index)]
 
@@ -222,7 +215,8 @@ def summarize_dataframe_updates(data_drift_context: DriftEvaluatorContext):
     patterns_df = pd.DataFrame(patterns_list)
 
     return {
-        "added": added_rows,
-        "deleted": deleted_rows,
+        "added_rows": added_rows,
+        "deleted_rows": deleted_rows,
+        "modified_rows_unique_keys": changed_rows,
         "modified_patterns": patterns_df,
     }

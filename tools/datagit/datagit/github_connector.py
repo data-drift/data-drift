@@ -1,12 +1,14 @@
 import time
-from typing import Optional, List, Callable
-from datagit.dataframe_update_breakdown import UpdateType, dataframe_update_breakdown
+from typing import Optional, List, Callable, Dict
+from datagit.dataframe_update_breakdown import (
+    UpdateType,
+    dataframe_update_breakdown,
+    drift_summary_to_string,
+)
 import pandas as pd
 from github import Github, Repository, ContentFile, GithubException
 from datagit.drift_evaluators import (
-    DriftEvaluation,
     DriftEvaluator,
-    DriftEvaluatorContext,
     auto_merge_drift,
 )
 from datagit.dataset_helpers import (
@@ -172,19 +174,24 @@ def push_metric(
                 commit_message = key
                 if value["has_update"]:
                     print("Update: " + key)
-                    if value["type"] == UpdateType.DRIFT and value["drift_context"]:
+                    if (
+                        value["type"] == UpdateType.DRIFT
+                        and value["drift_context"]
+                        and value["drift_evaluation"]
+                    ):
                         drift_evaluation = value["drift_evaluation"]
-                        if drift_evaluation:
-                            commit_message += "\n\n" + drift_evaluation["message"]
-                            if drift_evaluation["should_alert"]:
-                                if branch == default_branch:
-                                    checkout_branch_from_default_branch(
-                                        repo, drift_branch
-                                    )
-                                    branch = drift_branch
-                                pr_message = (
-                                    pr_message + "\n\n" + drift_evaluation["message"]
-                                )
+                        commit_message += "\n\n" + drift_evaluation["message"]
+                        if value["drift_summary"]:
+                            commit_message += "\n\n" + drift_summary_to_string(
+                                value["drift_summary"]
+                            )
+                        if drift_evaluation["should_alert"]:
+                            if branch == default_branch:
+                                checkout_branch_from_default_branch(repo, drift_branch)
+                                branch = drift_branch
+                            pr_message = (
+                                pr_message + "\n\n" + drift_evaluation["message"]
+                            )
 
                     update_file_with_retry(
                         repo=repo,
