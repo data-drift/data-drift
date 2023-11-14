@@ -2,6 +2,7 @@ from datagit.drift_evaluators import (
     DriftEvaluation,
     DriftEvaluator,
     DriftEvaluatorContext,
+    DriftSummary,
     auto_merge_drift,
     safe_drift_evaluator,
 )
@@ -13,24 +14,6 @@ from enum import Enum
 class UpdateType(Enum):
     DRIFT = "drift"
     OTHER = "other"
-
-
-class DriftSummary(TypedDict):
-    added_rows: pd.DataFrame
-    deleted_rows: pd.DataFrame
-    modified_rows_unique_keys: pd.Index
-    modified_patterns: pd.DataFrame
-
-
-def drift_summary_to_string(drift_summary: DriftSummary) -> str:
-    return (
-        f"Drift Summary:\n"
-        f"Added Rows:\n{drift_summary['added_rows'].to_string()}\n"
-        f"Deleted Rows:\n{drift_summary['deleted_rows'].to_string()}\n"
-        f"Modified Rows Unique Keys:\n{drift_summary['modified_rows_unique_keys']}\n"
-        f"Modified Patterns:\n{drift_summary['modified_patterns'].to_string()}"
-        f"Drift Summary End\n"
-    )
 
 
 class DataFrameUpdate(TypedDict):

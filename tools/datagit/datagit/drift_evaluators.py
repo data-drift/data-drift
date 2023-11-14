@@ -1,8 +1,30 @@
 import traceback
 from typing import Callable, TypedDict
-from datagit.dataframe_update_breakdown import DriftSummary
 from datagit.dataset_helpers import compare_dataframes
 import pandas as pd
+
+
+class DriftSummary(TypedDict):
+    added_rows: pd.DataFrame
+    deleted_rows: pd.DataFrame
+    modified_rows_unique_keys: pd.Index
+    modified_patterns: pd.DataFrame
+
+
+def drift_summary_to_string(drift_summary: DriftSummary) -> str:
+    return (
+        f"Drift Summary:\n"
+        f"Added Rows:\n{drift_summary['added_rows'].to_string()}\n"
+        f"Deleted Rows:\n{drift_summary['deleted_rows'].to_string()}\n"
+        f"Modified Rows Unique Keys:\n{drift_summary['modified_rows_unique_keys']}\n"
+        f"Modified Patterns:\n{drift_summary['modified_patterns'].to_string()}\n"
+        f"Drift Summary Json\n"
+        f"Added Rows JSON:\n{drift_summary['added_rows'].to_json(index=True)}\n"
+        f"Deleted Rows JSON:\n{drift_summary['deleted_rows'].to_json(index=True)}\n"
+        f"Modified Rows Unique Keys List:\n{drift_summary['modified_rows_unique_keys'].to_list()}\n"
+        f"Modified Patterns Json:\n{drift_summary['modified_patterns'].to_json()}\n"
+        f"Drift Summary Json End\n"
+    )
 
 
 class DriftEvaluatorContext(TypedDict):
