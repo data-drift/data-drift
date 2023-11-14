@@ -32,6 +32,10 @@ def parse_drift_summary(commit_message: str) -> DriftSummary:
     # Extracting the drift summary part
     start_tag = "Drift Summary Json Begin\n"
     end_tag = "\nDrift Summary Json End"
+
+    if start_tag not in commit_message or end_tag not in commit_message:
+        raise ValueError("Drift summary tags not found in the commit message.")
+
     start_index = commit_message.find(start_tag) + len(start_tag)
     end_index = commit_message.find(end_tag)
     drift_summary_str = commit_message[start_index:end_index]

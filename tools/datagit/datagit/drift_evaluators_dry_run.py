@@ -44,7 +44,6 @@ def run_drift_evaluator(
     drift_summary = None
     try:
         commit_message = commit.commit.message
-        print("Commit message", commit_message)
         drift_summary = parse_drift_summary(commit_message)
     except Exception as e:
         print("Failed to parse drift summary: " + str(e))
