@@ -1,5 +1,9 @@
 import traceback
-from datagit.drift_evaluators import DriftEvaluatorContext, DriftEvaluator
+from datagit.drift_evaluators import (
+    DriftEvaluatorContext,
+    DriftEvaluator,
+    parse_drift_summary,
+)
 from github import Github
 
 import pandas as pd
@@ -37,11 +41,21 @@ def run_drift_evaluator(
         keep_default_na=False,
     )
 
+    drift_summary = None
+    try:
+        commit_message = commit.commit.message
+        print("Commit message", commit_message)
+        drift_summary = parse_drift_summary(commit_message)
+    except Exception as e:
+        print("Failed to parse drift summary: " + str(e))
+        traceback.print_exc()
+
     #  run drift evaluator
     data_drift_context = DriftEvaluatorContext(
         {
             "before": old_dataframe,
             "after": new_dataframe,
+            "summary": drift_summary,
         }
     )
     try:

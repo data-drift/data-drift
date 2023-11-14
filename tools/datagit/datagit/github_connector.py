@@ -3,13 +3,13 @@ from typing import Optional, List, Callable, Dict
 from datagit.dataframe_update_breakdown import (
     UpdateType,
     dataframe_update_breakdown,
-    drift_summary_to_string,
 )
 import pandas as pd
 from github import Github, Repository, ContentFile, GithubException
 from datagit.drift_evaluators import (
     DriftEvaluator,
     auto_merge_drift,
+    drift_summary_to_string,
 )
 from datagit.dataset_helpers import (
     sort_dataframe_on_first_column_and_assert_is_unique,

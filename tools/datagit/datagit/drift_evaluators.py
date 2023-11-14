@@ -1,6 +1,6 @@
 import json
 import traceback
-from typing import Callable, TypedDict
+from typing import Callable, Optional, TypedDict
 from datagit.dataset_helpers import compare_dataframes
 import pandas as pd
 
@@ -41,7 +41,7 @@ def parse_drift_summary(commit_message: str) -> DriftSummary:
     drift_summary = DriftSummary(
         added_rows=pd.read_json(parts[1]),
         deleted_rows=pd.read_json(parts[3]),
-        modified_rows_unique_keys=pd.Index(json.loads(parts[5])),
+        modified_rows_unique_keys=pd.Index(parts[5].split(",")),
         modified_patterns=pd.read_json(parts[7]),
     )
 
@@ -51,7 +51,7 @@ def parse_drift_summary(commit_message: str) -> DriftSummary:
 class DriftEvaluatorContext(TypedDict):
     before: pd.DataFrame
     after: pd.DataFrame
-    summary: DriftSummary
+    summary: Optional[DriftSummary]
 
 
 class DriftEvaluation(TypedDict):
