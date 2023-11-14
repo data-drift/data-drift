@@ -24,10 +24,12 @@ class DriftSummary(TypedDict):
 
 def drift_summary_to_string(drift_summary: DriftSummary) -> str:
     return (
+        f"Drift Summary:\n"
         f"Added Rows:\n{drift_summary['added_rows'].to_string()}\n"
         f"Deleted Rows:\n{drift_summary['deleted_rows'].to_string()}\n"
         f"Modified Rows Unique Keys:\n{drift_summary['modified_rows_unique_keys']}\n"
         f"Modified Patterns:\n{drift_summary['modified_patterns'].to_string()}"
+        f"Drift Summary End\n"
     )
 
 
