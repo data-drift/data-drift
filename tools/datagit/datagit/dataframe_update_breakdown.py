@@ -72,7 +72,9 @@ def dataframe_update_breakdown(
     drift_evaluation = None
     if has_drift:
         drift_summary = summarize_dataframe_updates(initial_df=step2, final_df=step3)
-        drift_context = DriftEvaluatorContext(before=step2, after=step3)
+        drift_context = DriftEvaluatorContext(
+            before=step2, after=step3, summary=drift_summary
+        )
         drift_evaluation = safe_drift_evaluator(drift_context, drift_evaluator)
 
     step4 = final_dataframe.reindex(index=step3.index)

@@ -1,5 +1,6 @@
 import traceback
 from typing import Callable, TypedDict
+from datagit.dataframe_update_breakdown import DriftSummary
 from datagit.dataset_helpers import compare_dataframes
 import pandas as pd
 
@@ -7,6 +8,7 @@ import pandas as pd
 class DriftEvaluatorContext(TypedDict):
     before: pd.DataFrame
     after: pd.DataFrame
+    summary: DriftSummary
 
 
 class DriftEvaluation(TypedDict):
