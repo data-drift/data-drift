@@ -56,7 +56,7 @@ def dataframe_update_breakdown(
 
     step1 = initial_dataframe.drop(columns=list(columns_removed))
 
-    # TODO handle case when there is not
+    # TODO handle case when there is not the collection date
     # new_data = initial_dataframe
     # if "date" in initial_dataframe.columns and "date" in final_dataframe.columns:
     new_data = final_dataframe.loc[
