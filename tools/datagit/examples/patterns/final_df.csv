@@ -1,11 +1,9 @@
 unique_key,Product,Category,Quantity,Sales
 1,Apple,Food,35,175
 2,Banana,Food,45,135
-21,Pineapple,Food,60,240
 4,Desk,Furniture,5,550
 5,Office Chair,Furniture,10,350
 7,Monitor,Electronics,12,580
-22,Projector,Electronics,5,800
 8,Keyboard,Electronics,25,280
 9,Mouse,Electronics,60,300
 10,Book,Stationery,45,225
@@ -17,4 +15,6 @@ unique_key,Product,Category,Quantity,Sales
 17,Liquid Soap,Cleaning,35,105
 19,Sponge,Cleaning,90,180
 20,Swiffer,Cleaning,25,130
+21,Pineapple,Food,60,240
+22,Projector,Electronics,5,800
 24,Glass Cleaner,Cleaning,40,200

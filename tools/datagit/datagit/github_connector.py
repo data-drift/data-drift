@@ -1,13 +1,15 @@
 import time
 from typing import Optional, List, Callable, Dict
-from datagit.dataframe_update_breakdown import UpdateType, dataframe_update_breakdown
+from datagit.dataframe_update_breakdown import (
+    UpdateType,
+    dataframe_update_breakdown,
+)
 import pandas as pd
 from github import Github, Repository, ContentFile, GithubException
 from datagit.drift_evaluators import (
-    DriftEvaluation,
-    DriftEvaluatorContext,
+    DriftEvaluator,
     auto_merge_drift,
-    safe_drift_evaluator,
+    drift_summary_to_string,
 )
 from datagit.dataset_helpers import (
     sort_dataframe_on_first_column_and_assert_is_unique,
@@ -24,9 +26,7 @@ def store_metric(
     filepath: str,
     branch: Optional[str] = None,
     assignees: Optional[List[str]] = None,
-    drift_evaluator: Callable[
-        [DriftEvaluatorContext], DriftEvaluation
-    ] = auto_merge_drift,
+    drift_evaluator: DriftEvaluator = auto_merge_drift,
 ) -> None:
     """
     Store metrics into a specific repository file on GitHub.
@@ -133,7 +133,7 @@ def push_metric(
     drift_branch,
     file_path,
     repo,
-    drift_evaluator: Callable[[DriftEvaluatorContext], DriftEvaluation],
+    drift_evaluator: DriftEvaluator,
 ):
     if dataframe.index.name != "unique_key":
         dataframe = dataframe.set_index("unique_key")
@@ -142,7 +142,9 @@ def push_metric(
     contents = assert_file_exists(repo, file_path, ref=default_branch)
     if contents is None:
         print("Metric not found, creating it on branch: " + default_branch)
-        create_file_on_branch(file_path, repo, default_branch, dataframe, assignees)
+        init_file(
+            file_path=file_path, repo=repo, branch=default_branch, dataframe=dataframe
+        )
         print("Metric stored")
         pass
     else:
@@ -172,17 +174,29 @@ def push_metric(
                 commit_message = key
                 if value["has_update"]:
                     print("Update: " + key)
-                    if value["type"] == UpdateType.DRIFT and value["drift_context"]:
-                        drift_evaluation = safe_drift_evaluator(
-                            value["drift_context"], drift_evaluator
-                        )
-                        commit_message = key + "\n\n" + drift_evaluation["message"]
+                    if (
+                        value["type"] == UpdateType.DRIFT
+                        and value["drift_context"]
+                        and value["drift_evaluation"]
+                    ):
+                        drift_evaluation = value["drift_evaluation"]
+                        commit_message += "\n\n" + drift_evaluation["message"]
+                        drift_summary_string = ""
+                        if value["drift_summary"]:
+                            drift_summary_string = drift_summary_to_string(
+                                value["drift_summary"]
+                            )
+                            commit_message += "\n\n" + drift_summary_string
                         if drift_evaluation["should_alert"]:
                             if branch == default_branch:
                                 checkout_branch_from_default_branch(repo, drift_branch)
                                 branch = drift_branch
                             pr_message = (
-                                pr_message + "\n\n" + drift_evaluation["message"]
+                                pr_message
+                                + "\n\n"
+                                + drift_evaluation["message"]
+                                + "\n\n"
+                                + drift_summary_string
                             )
 
                     update_file_with_retry(
@@ -237,12 +251,12 @@ def update_file_with_retry(
     raise Exception(f"Failed to update file after {max_retries} retries")
 
 
-def create_file_on_branch(
+def init_file(
+    *,
     file_path: str,
     repo: Repository.Repository,
     branch: str,
     dataframe: pd.DataFrame,
-    assignees: List[str],
 ):
     commit_message = "New data: " + file_path
     print("Commit: " + commit_message)

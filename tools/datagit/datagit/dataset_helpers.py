@@ -1,3 +1,4 @@
+import traceback
 import pandas as pd
 
 
@@ -108,6 +109,7 @@ def compare_dataframes(
         return result.strip()
 
     except Exception as e:
+        traceback.print_exc()
         return f"Could not generate drift description: {e}"
 
 
