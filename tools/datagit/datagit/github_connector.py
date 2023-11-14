@@ -181,16 +181,22 @@ def push_metric(
                     ):
                         drift_evaluation = value["drift_evaluation"]
                         commit_message += "\n\n" + drift_evaluation["message"]
+                        drift_summary_string = ""
                         if value["drift_summary"]:
-                            commit_message += "\n\n" + drift_summary_to_string(
+                            drift_summary_string = drift_summary_to_string(
                                 value["drift_summary"]
                             )
+                            commit_message += "\n\n" + drift_summary_string
                         if drift_evaluation["should_alert"]:
                             if branch == default_branch:
                                 checkout_branch_from_default_branch(repo, drift_branch)
                                 branch = drift_branch
                             pr_message = (
-                                pr_message + "\n\n" + drift_evaluation["message"]
+                                pr_message
+                                + "\n\n"
+                                + drift_evaluation["message"]
+                                + "\n\n"
+                                + drift_summary_string
                             )
 
                     update_file_with_retry(
