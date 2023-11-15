@@ -21,11 +21,11 @@ import datetime
 
 def store_table(
     *,
-    ghClient: Github,
-    table_dataframe: pd.DataFrame,
+    github_client: Github,
     filepath: str,
     branch: Optional[str] = None,
     assignees: Optional[List[str]] = None,
+    table_dataframe: pd.DataFrame,
     drift_evaluator: DriftEvaluator = auto_merge_drift,
 ) -> None:
     """
@@ -61,7 +61,7 @@ def store_table(
     repo_orga, repo_name, file_path = filepath.split("/", 2)
     drift_branch = get_valid_branch_name(file_path)
 
-    repo = ghClient.get_repo(repo_orga + "/" + repo_name)
+    repo = github_client.get_repo(repo_orga + "/" + repo_name)
     working_branch = branch if branch is not None else repo.default_branch
     assert_branch_exist(repo, working_branch)
     table_dataframe = sort_dataframe_on_first_column_and_assert_is_unique(
@@ -119,7 +119,7 @@ def partition_and_store_table(
         print(f"Storing metric for Month: {name}")
         monthly_filepath = get_monthly_file_path(filepath, name.strftime("%Y-%m"))  # type: ignore
         store_table(
-            ghClient=ghClient,
+            github_client=ghClient,
             table_dataframe=group,
             filepath=monthly_filepath,
             branch=branch,

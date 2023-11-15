@@ -37,7 +37,7 @@ class TestStoreMetric(unittest.TestCase):
     def test_store_metric(self):
         with patch("pandas.read_csv", side_effect=mocked_read_csv):
             store_table(
-                ghClient=self.ghClient,
+                github_client=self.ghClient,
                 table_dataframe=self.dataframe,
                 filepath=self.filepath,
                 assignees=["jerome"],
@@ -56,7 +56,7 @@ class TestStoreMetric(unittest.TestCase):
                 422, {"message": "A pull request already exists"}, None
             )
             store_table(
-                ghClient=self.ghClient,
+                github_client=self.ghClient,
                 table_dataframe=self.dataframe,
                 filepath=self.filepath,
                 assignees=["jerome"],
@@ -72,7 +72,7 @@ class TestStoreMetric(unittest.TestCase):
     def test_store_metric_with_no_assignee(self):
         with patch("pandas.read_csv", side_effect=mocked_read_csv):
             store_table(
-                ghClient=self.ghClient,
+                github_client=self.ghClient,
                 table_dataframe=self.dataframe,
                 filepath=self.filepath,
                 assignees=[],
