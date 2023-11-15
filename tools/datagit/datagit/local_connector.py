@@ -15,7 +15,7 @@ datadrift_dir = os.path.join(home_dir, ".datadrift")
 os.makedirs(datadrift_dir, exist_ok=True)
 
 
-def store_metric(
+def store_table(
     *,
     store_name="default",
     metric_name: str,
