@@ -3,9 +3,9 @@ import os
 from typing import Iterator
 
 from datagit.dataset_helpers import sort_dataframe_on_first_column_and_assert_is_unique
+from datagit.drift_evaluators import drift_summary_to_string
 from .dataframe_update_breakdown import (
     dataframe_update_breakdown,
-    drift_summary_to_string,
 )
 import pandas as pd
 from git import Commit, Repo
