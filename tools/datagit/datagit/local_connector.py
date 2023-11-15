@@ -18,35 +18,37 @@ os.makedirs(datadrift_dir, exist_ok=True)
 def store_table(
     *,
     store_name="default",
-    metric_name: str,
-    metric_value: pd.DataFrame,
+    table_name: str,
+    table_dataframe: pd.DataFrame,
     measure_date=datetime.now(timezone.utc),
 ):
-    metric_value = sort_dataframe_on_first_column_and_assert_is_unique(metric_value)
+    table_dataframe = sort_dataframe_on_first_column_and_assert_is_unique(
+        table_dataframe
+    )
 
     repo = get_or_init_repo(store_name=store_name)
     store_dir = repo.working_dir
-    print(f"Storing metric {metric_name} in db {store_dir}")
-    metric_file_name = f"{metric_name}.csv"
+    print(f"Storing metric {table_name} in db {store_dir}")
+    metric_file_name = f"{table_name}.csv"
     metric_file_path = os.path.join(store_dir, metric_file_name)
 
     if not os.path.isfile(metric_file_path):
         metric_file_dir = os.path.dirname(metric_file_path)
         os.makedirs(metric_file_dir, exist_ok=True)
-        metric_value.to_csv(metric_file_path, index=False, na_rep="NA")
+        table_dataframe.to_csv(metric_file_path, index=False, na_rep="NA")
         add_file = [metric_file_name]
         repo.index.add(add_file)
-        repo.index.commit(f"NEW DATA: {metric_name}", author_date=measure_date)
+        repo.index.commit(f"NEW DATA: {table_name}", author_date=measure_date)
         return
 
     initial_dataframe = pd.read_csv(metric_file_path)
-    update_breakdown = dataframe_update_breakdown(initial_dataframe, metric_value)
+    update_breakdown = dataframe_update_breakdown(initial_dataframe, table_dataframe)
     for key, value in update_breakdown.items():
         value["df"].to_csv(metric_file_path, na_rep="NA")
         add_file = [metric_file_name]
         repo.index.add(add_file)
         if repo.index.diff("HEAD"):
-            commit_message = f"{key}: {metric_name}"
+            commit_message = f"{key}: {table_name}"
             if value["drift_evaluation"] != None:
                 commit_message += f"\n{value['drift_evaluation']['message']}"
             if value["drift_summary"]:

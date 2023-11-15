@@ -92,7 +92,7 @@ def run(token, repo, storage, project_dir):
                 )
             else:
                 local_connector.store_table(
-                    metric_name=node["name"], metric_value=dataframe
+                    table_name=node["name"], table_dataframe=dataframe
                 )
 
 
@@ -190,8 +190,8 @@ def snapshot():
             localized_date = date.replace(tzinfo=local_tz)
 
             local_connector.store_table(
-                metric_name=metric_name,
-                metric_value=data_as_of_date,
+                table_name=metric_name,
+                table_dataframe=data_as_of_date,
                 measure_date=localized_date,
             )
     start_server("/tables/" + metric_name)
@@ -224,7 +224,7 @@ def create(table, row_number):
     click.echo("Creating seed file...")
     dataframe = generate_dataframe(row_number)
     click.echo(dataframe)
-    local_connector.store_table(metric_name=table, metric_value=dataframe)
+    local_connector.store_table(table_name=table, table_dataframe=dataframe)
     click.echo("Creating seed created...")
 
 
@@ -246,7 +246,7 @@ def update(table, row_number):
     click.echo("Updating seed file...")
     dataframe = local_connector.get_metric(metric_name=table)
     drifted_dataset = insert_drift(dataframe, row_number)
-    local_connector.store_table(metric_name=table, metric_value=drifted_dataset)
+    local_connector.store_table(table_name=table, table_dataframe=drifted_dataset)
 
 
 @cli_entrypoint.command()
@@ -309,7 +309,7 @@ def load_csv(csvpathfile, table, unique_key_column, date_column):
         ), f"Column {date_column} does not exist in CSV file"
         dataframe.insert(1, "date", dataframe[date_column])
 
-    local_connector.store_table(metric_name=table, metric_value=dataframe)
+    local_connector.store_table(table_name=table, table_dataframe=dataframe)
 
 
 @cli_entrypoint.group()
