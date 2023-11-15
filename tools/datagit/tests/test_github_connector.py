@@ -38,7 +38,7 @@ class TestStoreMetric(unittest.TestCase):
         with patch("pandas.read_csv", side_effect=mocked_read_csv):
             store_table(
                 ghClient=self.ghClient,
-                dataframe=self.dataframe,
+                table_dataframe=self.dataframe,
                 filepath=self.filepath,
                 assignees=["jerome"],
             )
@@ -57,7 +57,7 @@ class TestStoreMetric(unittest.TestCase):
             )
             store_table(
                 ghClient=self.ghClient,
-                dataframe=self.dataframe,
+                table_dataframe=self.dataframe,
                 filepath=self.filepath,
                 assignees=["jerome"],
             )
@@ -73,7 +73,7 @@ class TestStoreMetric(unittest.TestCase):
         with patch("pandas.read_csv", side_effect=mocked_read_csv):
             store_table(
                 ghClient=self.ghClient,
-                dataframe=self.dataframe,
+                table_dataframe=self.dataframe,
                 filepath=self.filepath,
                 assignees=[],
             )

@@ -84,7 +84,7 @@ def run(token, repo, storage, project_dir):
 
             if storage == "github":
                 github_connector.store_table(
-                    dataframe=dataframe,
+                    table_dataframe=dataframe,
                     ghClient=Github(token),
                     branch="main",
                     filepath=repo + "/dbt-drift/metrics/" + node["name"] + ".csv",

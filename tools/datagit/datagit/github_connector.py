@@ -22,7 +22,7 @@ import datetime
 def store_table(
     *,
     ghClient: Github,
-    dataframe: pd.DataFrame,
+    table_dataframe: pd.DataFrame,
     filepath: str,
     branch: Optional[str] = None,
     assignees: Optional[List[str]] = None,
@@ -64,10 +64,12 @@ def store_table(
     repo = ghClient.get_repo(repo_orga + "/" + repo_name)
     working_branch = branch if branch is not None else repo.default_branch
     assert_branch_exist(repo, working_branch)
-    dataframe = sort_dataframe_on_first_column_and_assert_is_unique(dataframe)
+    table_dataframe = sort_dataframe_on_first_column_and_assert_is_unique(
+        table_dataframe
+    )
 
     push_metric(
-        dataframe,
+        table_dataframe,
         assignees,
         working_branch,
         drift_branch,
@@ -118,7 +120,7 @@ def partition_and_store_table(
         monthly_filepath = get_monthly_file_path(filepath, name.strftime("%Y-%m"))  # type: ignore
         store_table(
             ghClient=ghClient,
-            dataframe=group,
+            table_dataframe=group,
             filepath=monthly_filepath,
             branch=branch,
             assignees=None,
