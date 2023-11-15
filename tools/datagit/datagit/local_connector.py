@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 import os
-from typing import Iterator
+from typing import Iterator, Optional
 
 from datagit.dataset_helpers import sort_dataframe_on_first_column_and_assert_is_unique
 from datagit.drift_evaluators import drift_summary_to_string
@@ -20,8 +20,10 @@ def store_table(
     store_name="default",
     table_name: str,
     table_dataframe: pd.DataFrame,
-    measure_date=datetime.now(timezone.utc),
+    measure_date: Optional[datetime] = None,
 ):
+    if measure_date is None:
+        measure_date = datetime.now(timezone.utc)
     table_dataframe = sort_dataframe_on_first_column_and_assert_is_unique(
         table_dataframe
     )
