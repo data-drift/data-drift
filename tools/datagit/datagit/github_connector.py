@@ -22,10 +22,11 @@ import datetime
 def store_table(
     *,
     github_client: Github,
-    filepath: str,
+    github_repository_name: str,
     branch: Optional[str] = None,
     assignees: Optional[List[str]] = None,
     table_dataframe: pd.DataFrame,
+    table_name: str,
     drift_evaluator: DriftEvaluator = auto_merge_drift,
 ) -> None:
     """
@@ -58,10 +59,10 @@ def store_table(
         assignees = []
 
     print("Storing metric...")
-    repo_orga, repo_name, file_path = filepath.split("/", 2)
+    file_path = table_name
     drift_branch = get_valid_branch_name(file_path)
 
-    repo = github_client.get_repo(repo_orga + "/" + repo_name)
+    repo = github_client.get_repo(github_repository_name)
     working_branch = branch if branch is not None else repo.default_branch
     assert_branch_exist(repo, working_branch)
     table_dataframe = sort_dataframe_on_first_column_and_assert_is_unique(
@@ -81,9 +82,10 @@ def store_table(
 
 def partition_and_store_table(
     *,
-    ghClient: Github,
-    dataframe: pd.DataFrame,
-    filepath: str,
+    github_client: Github,
+    github_repository_name: str,
+    table_dataframe: pd.DataFrame,
+    table_name: str,
     branch: Optional[str] = None,
 ) -> None:
     """
@@ -110,18 +112,19 @@ def partition_and_store_table(
 
     print("Partitionning metric...")
 
-    dataframe["date"] = pd.to_datetime(dataframe["date"])
+    table_dataframe["date"] = pd.to_datetime(table_dataframe["date"])
 
-    grouped = dataframe.groupby(pd.Grouper(key="date", freq="M"))
+    grouped = table_dataframe.groupby(pd.Grouper(key="date", freq="M"))
 
     # Iterate over the groups and print the sub-dataframes
     for name, group in grouped:
         print(f"Storing metric for Month: {name}")
-        monthly_filepath = get_monthly_file_path(filepath, name.strftime("%Y-%m"))  # type: ignore
+        monthly_table_name = get_monthly_file_path(table_name, name.strftime("%Y-%m"))  # type: ignore
         store_table(
-            github_client=ghClient,
+            github_client=github_client,
             table_dataframe=group,
-            filepath=monthly_filepath,
+            github_repository_name=github_repository_name,
+            table_name=monthly_table_name,
             branch=branch,
             assignees=None,
             drift_evaluator=auto_merge_drift,
