@@ -83,7 +83,7 @@ def run(token, repo, storage, project_dir):
             dataframe = dbt_adapter_query(adapter, query)
 
             if storage == "github":
-                github_connector.store_metric(
+                github_connector.store_table(
                     dataframe=dataframe,
                     ghClient=Github(token),
                     branch="main",

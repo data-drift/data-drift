@@ -3,7 +3,7 @@ from unittest import mock
 from unittest.mock import MagicMock, call
 import pandas as pd
 from github import GithubException
-from datagit.github_connector import store_metric
+from datagit.github_connector import store_table
 from unittest.mock import patch
 
 
@@ -36,7 +36,7 @@ class TestStoreMetric(unittest.TestCase):
 
     def test_store_metric(self):
         with patch("pandas.read_csv", side_effect=mocked_read_csv):
-            store_metric(
+            store_table(
                 ghClient=self.ghClient,
                 dataframe=self.dataframe,
                 filepath=self.filepath,
@@ -55,7 +55,7 @@ class TestStoreMetric(unittest.TestCase):
             self.repo.create_pull.side_effect = GithubException(
                 422, {"message": "A pull request already exists"}, None
             )
-            store_metric(
+            store_table(
                 ghClient=self.ghClient,
                 dataframe=self.dataframe,
                 filepath=self.filepath,
@@ -71,7 +71,7 @@ class TestStoreMetric(unittest.TestCase):
 
     def test_store_metric_with_no_assignee(self):
         with patch("pandas.read_csv", side_effect=mocked_read_csv):
-            store_metric(
+            store_table(
                 ghClient=self.ghClient,
                 dataframe=self.dataframe,
                 filepath=self.filepath,

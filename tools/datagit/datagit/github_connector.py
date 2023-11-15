@@ -19,7 +19,7 @@ import os
 import datetime
 
 
-def store_metric(
+def store_table(
     *,
     ghClient: Github,
     dataframe: pd.DataFrame,
@@ -116,7 +116,7 @@ def partition_and_store_table(
     for name, group in grouped:
         print(f"Storing metric for Month: {name}")
         monthly_filepath = get_monthly_file_path(filepath, name.strftime("%Y-%m"))  # type: ignore
-        store_metric(
+        store_table(
             ghClient=ghClient,
             dataframe=group,
             filepath=monthly_filepath,
