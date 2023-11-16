@@ -51,6 +51,9 @@ def dataframe_update_breakdown(
     step2 = pd.concat([step1, new_data[step1.columns]], axis=0)
 
     step3 = final_dataframe.drop(columns=list(columns_added))
+    common_index = step3.index.intersection(step2.index)
+    step3 = step3.reindex(index=common_index)
+
     has_drift = not step2.equals(step3)
     drift_summary = None
     drift_context = None
