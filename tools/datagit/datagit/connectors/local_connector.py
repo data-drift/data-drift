@@ -73,7 +73,9 @@ class LocalConnector:
     def get_table(self, metric_name: str) -> Optional[pd.DataFrame]:
         store_dir = self.store_dir
         metric_file_name = f"{metric_name}.csv"
-        if not os.path.isfile(metric_file_name):
+        table_file_path = os.path.join(store_dir, metric_file_name)
+
+        if not os.path.isfile(table_file_path):
             return None
         return pd.read_csv(os.path.join(store_dir, metric_file_name))
 
@@ -85,7 +87,7 @@ class LocalConnector:
         table_file_path = os.path.join(store_dir, table_file_name)
         table_file_dir = os.path.dirname(table_file_path)
         os.makedirs(table_file_dir, exist_ok=True)
-        dataframe.to_csv(table_file_path, index=False, na_rep="NA")
+        dataframe.to_csv(table_file_path, index=True, na_rep="NA")
         add_file = [table_file_name]
         self.repo.index.add(add_file)
         self.repo.index.commit(f"NEW DATA: {table_name}", author_date=measure_date)
@@ -115,7 +117,7 @@ class LocalConnector:
                 pass
 
     def get_tables(self):
-        repo = self.store_dir
+        repo = self.repo
         csv_files = [
             os.path.splitext(f)[0]
             for f in os.listdir(repo.working_dir)
