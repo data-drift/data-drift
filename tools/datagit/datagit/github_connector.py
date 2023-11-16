@@ -201,7 +201,6 @@ def store_table(
     """
 
     print("Storing metric...")
-    drift_branch = get_alert_branch_name(table_name)
 
     github_connector = GithubConnector(
         github_client=github_client,
@@ -215,7 +214,6 @@ def store_table(
 
     push_metric(
         table_dataframe,
-        drift_branch,
         table_name,
         github_connector,
         drift_evaluator,
@@ -274,7 +272,6 @@ def partition_and_store_table(
 
 def push_metric(
     dataframe,
-    drift_branch,
     file_path,
     github_connector: GithubConnector,
     drift_evaluator: DriftEvaluatorAbstractClass = DefaultDriftEvaluator(),
@@ -332,6 +329,7 @@ def push_metric(
                             commit_message += "\n\n" + drift_summary_string
                         if drift_evaluation["should_alert"]:
                             if branch == default_branch:
+                                drift_branch = get_alert_branch_name(file_path)
                                 github_connector.checkout_branch_from_default_branch(
                                     drift_branch
                                 )
