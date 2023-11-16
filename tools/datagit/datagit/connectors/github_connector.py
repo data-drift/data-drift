@@ -1,3 +1,4 @@
+from datetime import datetime
 import time
 from typing import Dict, Optional, List
 
@@ -174,7 +175,10 @@ class GithubConnector(AbstractConnector):
         raise Exception(f"Failed to update file after {max_retries} retries")
 
     def handle_breakdown(
-        self, table_name: str, update_breakdown: Dict[str, DataFrameUpdate]
+        self,
+        table_name: str,
+        update_breakdown: Dict[str, DataFrameUpdate],
+        measure_date: datetime,
     ):
         branch = self.default_branch
         pr_message = ""

@@ -4,19 +4,6 @@ from datagit.dataframe.helpers import parse_date_column
 
 
 class TestDateParsing(unittest.TestCase):
-    # def test_parse_date_column(self):
-    #     data1 = {'date': ['2021-01-01', '2022/02/02',
-    #                       '03-03-2023', '04.04.2024']}
-    #     df1 = pd.DataFrame(data1)
-
-    #     expected_data1 = {'date': ['2021-01-01',
-    #                                '2022-02-02', '2023-03-03', '2024-04-04']}
-    #     expected_df1 = pd.DataFrame(expected_data1)
-
-    #     result_df1 = parse_date_column(df1)
-
-    #     self.assertTrue(result_df1.equals(expected_df1))
-
     def test_parse_date_time_column(self):
         data = {
             "date": [

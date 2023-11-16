@@ -3,7 +3,8 @@ from unittest import mock
 from unittest.mock import MagicMock, call
 import pandas as pd
 from github import GithubException
-from datagit.connectors.github_connector import store_table
+from datagit.connectors.github_connector import GithubConnector
+from datagit.connectors.workflow import snapshot_table
 from unittest.mock import patch
 
 
@@ -34,14 +35,17 @@ class TestStoreMetric(unittest.TestCase):
         )
         self.github_repository_name = "org/repo"
         self.table_name = "path/to/file.csv"
+        self.connector = GithubConnector(
+            github_client=self.ghClient,
+            github_repository_name=self.github_repository_name,
+            assignees=["jerome"],
+        )
 
     def test_store_metric(self):
         with patch("pandas.read_csv", side_effect=mocked_read_csv):
-            store_table(
-                github_client=self.ghClient,
+            snapshot_table(
+                connector=self.connector,
                 table_dataframe=self.dataframe,
-                assignees=["jerome"],
-                github_repository_name=self.github_repository_name,
                 table_name=self.table_name,
             )
 
@@ -57,11 +61,9 @@ class TestStoreMetric(unittest.TestCase):
             self.repo.create_pull.side_effect = GithubException(
                 422, {"message": "A pull request already exists"}, None
             )
-            store_table(
-                github_client=self.ghClient,
+            snapshot_table(
+                connector=self.connector,
                 table_dataframe=self.dataframe,
-                assignees=["jerome"],
-                github_repository_name=self.github_repository_name,
                 table_name=self.table_name,
             )
 
@@ -74,11 +76,9 @@ class TestStoreMetric(unittest.TestCase):
 
     def test_store_metric_with_no_assignee(self):
         with patch("pandas.read_csv", side_effect=mocked_read_csv):
-            store_table(
-                github_client=self.ghClient,
+            snapshot_table(
+                connector=self.connector,
                 table_dataframe=self.dataframe,
-                assignees=[],
-                github_repository_name=self.github_repository_name,
                 table_name=self.table_name,
             )
 
