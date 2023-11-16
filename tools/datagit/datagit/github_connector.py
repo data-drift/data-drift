@@ -57,18 +57,14 @@ class GithubConnector:
             self.branch,
         )
 
-    def create_pullrequest(
-        self,
-        file_path: str,
-        description_body: str,
-    ):
+    def create_pullrequest(self, file_path: str, description_body: str, branch: str):
         try:
             if len(self.assignees) > 0:
                 pullrequest = self.repo.create_pull(
                     title="New drift detected " + file_path,
                     body=description_body,
-                    head=self.branch,
-                    base=self.repo.default_branch,
+                    head=branch,
+                    base=self.branch,
                 )
                 print("Pull request created: " + pullrequest.html_url)
                 existing_assignees = self.assert_assignees_exists()
@@ -307,7 +303,7 @@ def push_metric(
                     )
 
             if pr_message != "":
-                github_connector.create_pullrequest(file_path, pr_message)
+                github_connector.create_pullrequest(file_path, pr_message, branch)
 
 
 def update_file_with_retry(
