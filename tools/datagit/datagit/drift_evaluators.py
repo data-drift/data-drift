@@ -1,6 +1,6 @@
 import traceback
 from typing import Callable, Optional, TypedDict
-from datagit.dataset_helpers import compare_dataframes
+from datagit.dataframe.helpers import compare_dataframes
 import pandas as pd
 from abc import ABC, abstractmethod
 

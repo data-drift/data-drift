@@ -2,7 +2,9 @@ from datetime import datetime, timezone
 import os
 from typing import Iterator, Optional
 
-from datagit.dataset_helpers import sort_dataframe_on_first_column_and_assert_is_unique
+from datagit.dataframe.helpers import (
+    sort_dataframe_on_first_column_and_assert_is_unique,
+)
 from datagit.drift_evaluators import (
     DefaultDriftEvaluator,
     DriftEvaluatorAbstractClass,

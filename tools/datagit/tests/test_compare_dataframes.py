@@ -1,7 +1,7 @@
 import unittest
 import pandas as pd
 
-from datagit.dataset_helpers import compare_dataframes
+from datagit.dataframe.helpers import compare_dataframes
 
 
 class TestStoreMetric(unittest.TestCase):
@@ -34,9 +34,7 @@ class TestStoreMetric(unittest.TestCase):
         result = compare_dataframes(df1, df2, "unique_key")
 
         # Define the expected result
-        expected_result = (
-            "- 🆕 0 addition\n- ♻️ 0 modification\n- 🗑️ 2 deletions"
-        )
+        expected_result = "- 🆕 0 addition\n- ♻️ 0 modification\n- 🗑️ 2 deletions"
 
         # Assert that the actual result matches the expected result
         assert result == expected_result
@@ -52,9 +50,7 @@ class TestStoreMetric(unittest.TestCase):
         result = compare_dataframes(df1, df2, "unique_key")
 
         # Define the expected result
-        expected_result = (
-            "- 🆕 2 additions\n- ♻️ 0 modification\n- 🗑️ 0 deletion"
-        )
+        expected_result = "- 🆕 2 additions\n- ♻️ 0 modification\n- 🗑️ 0 deletion"
 
         # Assert that the actual result matches the expected result
         assert result == expected_result
@@ -72,9 +68,7 @@ class TestStoreMetric(unittest.TestCase):
         result = compare_dataframes(df1, df2, "unique_key")
 
         # Define the expected result
-        expected_result = (
-            "- 🆕 0 addition\n- ♻️ 2 modifications\n- 🗑️ 0 deletion"
-        )
+        expected_result = "- 🆕 0 addition\n- ♻️ 2 modifications\n- 🗑️ 0 deletion"
 
         # Assert that the actual result matches the expected result
         assert result == expected_result
