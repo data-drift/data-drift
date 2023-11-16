@@ -203,27 +203,22 @@ def store_table(
         assignees = []
 
     print("Storing metric...")
-    file_path = table_name
-    drift_branch = get_valid_branch_name(file_path)
+    drift_branch = get_valid_branch_name(table_name)
 
-    repo = github_client.get_repo(github_repository_name)
-    working_branch = branch if branch is not None else repo.default_branch
     github_connector = GithubConnector(
         github_client=github_client,
         github_repository_name=github_repository_name,
         default_branch=branch,
         assignees=assignees,
     )
-    github_connector.assert_branch_exist(repo, working_branch)
     table_dataframe = sort_dataframe_on_first_column_and_assert_is_unique(
         table_dataframe
     )
 
     push_metric(
         table_dataframe,
-        working_branch,
         drift_branch,
-        file_path,
+        table_name,
         github_connector,
         drift_evaluator,
     )
@@ -281,12 +276,12 @@ def partition_and_store_table(
 
 def push_metric(
     dataframe,
-    default_branch,
     drift_branch,
     file_path,
     github_connector: GithubConnector,
     drift_evaluator: DriftEvaluatorAbstractClass = DefaultDriftEvaluator(),
 ):
+    default_branch = github_connector.default_branch
     if dataframe.index.name != "unique_key":
         dataframe = dataframe.set_index("unique_key")
 
