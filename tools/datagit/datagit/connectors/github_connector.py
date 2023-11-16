@@ -1,5 +1,10 @@
 import time
 from typing import Optional, List
+
+from .common import get_alert_branch_name
+
+from ..drift_evaluator.drift_evaluators import drift_summary_to_string
+from ..dataframe.dataframe_update_breakdown import UpdateType
 import pandas as pd
 from github import Github, Repository, ContentFile, GithubException
 
@@ -47,6 +52,7 @@ class GithubConnector:
         file_path: str,
         dataframe: pd.DataFrame,
     ):
+        print("Creating table on branch: " + self.default_branch)
         commit_message = "New data: " + file_path
         print("Commit: " + commit_message)
         self.repo.create_file(
@@ -55,6 +61,7 @@ class GithubConnector:
             dataframe.to_csv(index=True, header=True),
             self.default_branch,
         )
+        print("Table created")
 
     def create_pullrequest(self, file_path: str, description_body: str, branch: str):
         try:
@@ -158,3 +165,40 @@ class GithubConnector:
                 else:
                     raise e
         raise Exception(f"Failed to update file after {max_retries} retries")
+
+    def handle_breakdown(self, table_name: str, update_breakdown):
+        branch = self.default_branch
+        pr_message = ""
+        for key, value in update_breakdown.items():
+            commit_message = key
+            if value["has_update"]:
+                print("Update: " + key)
+                if (
+                    value["type"] == UpdateType.DRIFT
+                    and value["drift_context"]
+                    and value["drift_evaluation"]
+                ):
+                    drift_evaluation = value["drift_evaluation"]
+                    commit_message += "\n\n" + drift_evaluation["message"]
+                    drift_summary_string = ""
+                    if value["drift_summary"]:
+                        drift_summary_string = drift_summary_to_string(
+                            value["drift_summary"]
+                        )
+                        commit_message += "\n\n" + drift_summary_string
+                    if drift_evaluation["should_alert"]:
+                        if branch == self.default_branch:
+                            drift_branch = get_alert_branch_name(table_name)
+                            self.checkout_branch_from_default_branch(drift_branch)
+                            branch = drift_branch
+                        pr_message = pr_message + "\n\n" + drift_evaluation["message"]
+
+                self.update_file_with_retry(
+                    file_path=table_name,
+                    commit_message=commit_message,
+                    data=value["df"].to_csv(index=True, header=True),
+                    branch=branch,
+                )
+
+        if pr_message != "":
+            self.create_pullrequest(table_name, pr_message, branch)
