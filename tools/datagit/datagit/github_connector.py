@@ -19,6 +19,31 @@ import os
 import datetime
 
 
+class GithubConnector:
+    def __init__(
+        self,
+        github_client: Github,
+        github_repository_name: str,
+        branch: Optional[str] = None,
+        assignees: Optional[List[str]] = None,
+    ):
+        self.repo = github_client.get_repo(github_repository_name)
+        self.branch = branch if branch is not None else self.repo.default_branch
+        assert_branch_exist(self.repo, self.branch)
+        self.assignees = assignees if assignees is not None else []
+
+    def assert_file_exists(self, file_path: str) -> Optional[ContentFile.ContentFile]:
+        try:
+            contents = self.repo.get_contents(file_path, ref=self.branch)
+            assert not isinstance(contents, list), "pathfile returned multiple contents"
+            return contents
+        except GithubException as e:
+            if e.status == 404:
+                return None
+            else:
+                raise e
+
+
 def store_table(
     *,
     github_client: Github,
@@ -69,6 +94,13 @@ def store_table(
         table_dataframe
     )
 
+    github_connector = GithubConnector(
+        github_client=github_client,
+        github_repository_name=github_repository_name,
+        branch=branch,
+        assignees=assignees,
+    )
+
     push_metric(
         table_dataframe,
         assignees,
@@ -76,6 +108,7 @@ def store_table(
         drift_branch,
         file_path,
         repo,
+        github_connector,
         drift_evaluator,
     )
 
@@ -137,13 +170,14 @@ def push_metric(
     drift_branch,
     file_path,
     repo,
+    github_connector: GithubConnector,
     drift_evaluator: DriftEvaluatorAbstractClass = DefaultDriftEvaluator(),
 ):
     if dataframe.index.name != "unique_key":
         dataframe = dataframe.set_index("unique_key")
 
     dataframe = dataframe.astype("string")
-    contents = assert_file_exists(repo, file_path, ref=default_branch)
+    contents = github_connector.assert_file_exists(file_path)
     if contents is None:
         print("Metric not found, creating it on branch: " + default_branch)
         init_file(
@@ -204,6 +238,7 @@ def push_metric(
                             )
 
                     update_file_with_retry(
+                        github_connector=github_connector,
                         repo=repo,
                         file_path=file_path,
                         commit_message=commit_message,
@@ -215,28 +250,20 @@ def push_metric(
                 create_pullrequest(repo, branch, assignees, file_path, pr_message)
 
 
-def assert_file_exists(
-    repo: Repository.Repository, file_path: str, ref: str
-) -> Optional[ContentFile.ContentFile]:
-    try:
-        contents = repo.get_contents(file_path, ref=ref)
-        assert not isinstance(contents, list), "pathfile returned multiple contents"
-        return contents
-    except GithubException as e:
-        if e.status == 404:
-            return None
-        else:
-            raise e
-
-
 def update_file_with_retry(
-    repo: Repository.Repository, file_path, commit_message, data, branch, max_retries=3
+    github_connector: GithubConnector,
+    repo: Repository.Repository,
+    file_path,
+    commit_message,
+    data,
+    branch,
+    max_retries=3,
 ):
     retries = 0
 
     while retries < max_retries:
         try:
-            content = assert_file_exists(repo, file_path, ref=branch)
+            content = github_connector.assert_file_exists(file_path)
             if content is None:
                 response = repo.create_file(file_path, commit_message, data, branch)
                 print(response["commit"].html_url)
