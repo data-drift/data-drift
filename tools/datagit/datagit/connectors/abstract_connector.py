@@ -9,7 +9,10 @@ import pandas as pd
 class AbstractConnector(ABC):
     @abstractmethod
     def handle_breakdown(
-        self, table_name: str, update_breakdown: Dict[str, DataFrameUpdate]
+        self,
+        table_name: str,
+        update_breakdown: Dict[str, DataFrameUpdate],
+        measure_date: datetime,
     ):
         pass
 

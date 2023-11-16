@@ -32,7 +32,8 @@ def snapshot_table(
     )
     if table_dataframe.index.name != "unique_key":
         table_dataframe = table_dataframe.set_index("unique_key")
-    table_dataframe = table_dataframe.astype("string")
+    table_dataframe = table_dataframe.astype(str)
+
     date_column = find_date_column(table_dataframe)
     if date_column is None:
         raise Exception("Collection date column not found")

@@ -38,6 +38,7 @@ def dataframe_update_breakdown(
 
     common_index = final_dataframe.index.intersection(initial_dataframe.index)
     initial_dataframe = initial_dataframe.reindex(index=common_index)
+    print("common_index length", len(common_index))
 
     columns_added = set(final_dataframe.columns) - set(initial_dataframe.columns)
     columns_removed = set(initial_dataframe.columns) - set(final_dataframe.columns)
@@ -167,6 +168,9 @@ def summarize_dataframe_updates(
     if final_df.index.name != "unique_key":
         final_df = final_df.set_index("unique_key")
 
+    initial_df = initial_df.astype(str)
+    final_df = final_df.astype(str)
+
     final_df = final_df.reindex(index=initial_df.index)
 
     deleted_rows = initial_df[~initial_df.index.isin(final_df.index)]
@@ -178,10 +182,11 @@ def summarize_dataframe_updates(
     common_rows_final = final_df.loc[common_indices]
 
     changes = common_rows_initial != common_rows_final
-    changed_rows = changes[changes.any(axis=1)].index
+    changed_rows_index = changes[changes.any(axis=1)].index
 
+    # There may be rows that have not changed but pandas will consider them as changed
     pattern_changes = {}
-    for key in changed_rows:
+    for key in changed_rows_index:
         for col in common_rows_initial.columns:
             if common_rows_initial.at[key, col] != common_rows_final.at[key, col]:
                 old_value = common_rows_initial.at[key, col]
@@ -210,6 +215,6 @@ def summarize_dataframe_updates(
     return {
         "added_rows": added_rows,
         "deleted_rows": deleted_rows,
-        "modified_rows_unique_keys": changed_rows,
+        "modified_rows_unique_keys": changed_rows_index,
         "modified_patterns": patterns_df,
     }
