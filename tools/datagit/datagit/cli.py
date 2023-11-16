@@ -257,12 +257,12 @@ def update(table, row_number):
     local_store_table(table_name=table, table_dataframe=drifted_dataset)
 
 
-@cli_entrypoint.command()
+@cli_entrypoint.command(name="delete")
 @click.option(
     "--table",
     help="name of your table",
 )
-def delete(table):
+def delete_table(table):
     local_connector = LocalConnector()
     tables = local_connector.get_tables()
     if not table:
@@ -327,13 +327,13 @@ def store():
     pass
 
 
-@store.command()
+@store.command(name="delete")
 @click.option(
     "--store",
     help="name of the store",
     default="default",
 )
-def delete(store):
+def delete_store(store):
     LocalConnector.delete_store(store_name=store)
 
 
