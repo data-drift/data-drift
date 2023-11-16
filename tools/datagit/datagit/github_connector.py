@@ -129,7 +129,6 @@ def partition_and_store_table(
             table_name=monthly_table_name,
             branch=branch,
             assignees=None,
-            drift_evaluator=auto_merge_drift,
         )
 
 
@@ -140,7 +139,7 @@ def push_metric(
     drift_branch,
     file_path,
     repo,
-    drift_evaluator: DriftEvaluator,
+    drift_evaluator: DriftEvaluatorAbstractClass = DefaultDriftEvaluator(),
 ):
     if dataframe.index.name != "unique_key":
         dataframe = dataframe.set_index("unique_key")
