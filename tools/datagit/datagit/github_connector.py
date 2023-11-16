@@ -71,7 +71,7 @@ class GithubConnector:
                     base=self.repo.default_branch,
                 )
                 print("Pull request created: " + pullrequest.html_url)
-                existing_assignees = assert_assignees_exists(self.repo, self.assignees)
+                existing_assignees = self.assert_assignees_exists()
                 pullrequest.add_to_assignees(*existing_assignees)
             else:
                 print("No assignees, skipping pull request creation")
@@ -93,6 +93,16 @@ class GithubConnector:
             reported_branch = repo.get_branch(repo.default_branch)
 
             repo.create_git_ref(f"refs/heads/{branch_name}", reported_branch.commit.sha)
+
+    def assert_assignees_exists(self) -> List[str]:
+        members = [collaborator.login for collaborator in self.repo.get_collaborators()]
+        exising_assignees = []
+        for assignee in self.assignees:
+            if assignee not in members:
+                print(f"Assignee {assignee} does not exist")
+            else:
+                exising_assignees.append(assignee)
+        return exising_assignees
 
 
 def store_table(
@@ -330,19 +340,6 @@ def update_file_with_retry(
             else:
                 raise e
     raise Exception(f"Failed to update file after {max_retries} retries")
-
-
-def assert_assignees_exists(
-    repo: Repository.Repository, assignees: List[str]
-) -> List[str]:
-    members = [collaborator.login for collaborator in repo.get_collaborators()]
-    exising_assignees = []
-    for assignee in assignees:
-        if assignee not in members:
-            print(f"Assignee {assignee} does not exist")
-        else:
-            exising_assignees.append(assignee)
-    return exising_assignees
 
 
 def get_valid_branch_name(filepath: str) -> str:
