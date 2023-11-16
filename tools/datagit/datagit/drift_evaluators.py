@@ -1,4 +1,3 @@
-import json
 import traceback
 from typing import Callable, Optional, TypedDict
 from datagit.dataset_helpers import compare_dataframes
