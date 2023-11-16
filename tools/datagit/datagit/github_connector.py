@@ -6,7 +6,7 @@ from datagit.dataframe.dataframe_update_breakdown import (
 )
 import pandas as pd
 from github import Github, Repository, ContentFile, GithubException
-from datagit.drift_evaluators import (
+from datagit.drift_evaluator.drift_evaluators import (
     DefaultDriftEvaluator,
     DriftEvaluatorAbstractClass,
     drift_summary_to_string,

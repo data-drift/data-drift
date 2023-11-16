@@ -1,4 +1,4 @@
-from datagit.drift_evaluators import (
+from datagit.drift_evaluator.drift_evaluators import (
     DefaultDriftEvaluator,
     DriftEvaluation,
     DriftEvaluatorAbstractClass,
