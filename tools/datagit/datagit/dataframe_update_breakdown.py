@@ -36,6 +36,9 @@ def dataframe_update_breakdown(
     if final_dataframe.index.name != "unique_key":
         final_dataframe = final_dataframe.set_index("unique_key")
 
+    common_index = final_dataframe.index.intersection(initial_dataframe.index)
+    initial_dataframe = initial_dataframe.reindex(index=common_index)
+
     columns_added = set(final_dataframe.columns) - set(initial_dataframe.columns)
     columns_removed = set(initial_dataframe.columns) - set(final_dataframe.columns)
 
@@ -51,8 +54,6 @@ def dataframe_update_breakdown(
     step2 = pd.concat([step1, new_data[step1.columns]], axis=0)
 
     step3 = final_dataframe.drop(columns=list(columns_added))
-    common_index = step3.index.intersection(step2.index)
-    step3 = step3.reindex(index=common_index)
 
     has_drift = not step2.equals(step3)
     drift_summary = None
