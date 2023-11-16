@@ -63,7 +63,12 @@ class GithubConnector:
         )
         print("Table created")
 
-    def create_pullrequest(self, file_path: str, description_body: str, branch: str):
+    def close_pullrequests(self, title: str):
+        pass
+
+    def create_pullrequest(
+        self, title: str, file_path: str, description_body: str, branch: str
+    ):
         try:
             if len(self.assignees) > 0:
                 pullrequest = self.repo.create_pull(
@@ -201,4 +206,10 @@ class GithubConnector:
                 )
 
         if pr_message != "":
-            self.create_pullrequest(table_name, pr_message, branch)
+            title = "New drift detected " + table_name
+            self.create_pullrequest(
+                title=title,
+                file_path=table_name,
+                description_body=pr_message,
+                branch=branch,
+            )
