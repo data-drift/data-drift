@@ -3,7 +3,7 @@ from unittest import mock
 from unittest.mock import MagicMock, call
 import pandas as pd
 from github import GithubException
-from datagit.github_connector import store_table
+from datagit.connectors.github_connector import store_table
 from unittest.mock import patch
 
 

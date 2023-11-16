@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import MagicMock
-from datagit.github_connector import get_alert_branch_name
+from datagit.connectors.github_connector import get_alert_branch_name
 import re
 
 

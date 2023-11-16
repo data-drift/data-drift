@@ -5,8 +5,8 @@ from datagit.server import start_server
 import numpy as np
 import pandas as pd
 import os
-from datagit import github_connector
-from datagit import local_connector
+from datagit.connectors import github_connector
+from datagit.connectors import local_connector
 from datagit.drift_evaluator.drift_evaluators import auto_merge_drift
 from github import Github
 from . import version
