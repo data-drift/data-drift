@@ -1,5 +1,5 @@
 import unittest
-from datagit.query_builder import build_query
+from datagit.query_builder.query_builder import build_query
 
 
 class TestBuildQuery(unittest.TestCase):
