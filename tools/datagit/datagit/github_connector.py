@@ -100,6 +100,34 @@ class GithubConnector:
                 exising_assignees.append(assignee)
         return exising_assignees
 
+    def checkout_branch_from_default_branch(self, branch_name: str):
+        self.assert_branch_exist(self.repo, branch_name)
+        try:
+            ref = self.repo.get_git_ref(f"heads/{branch_name}")
+            ref.delete()
+        except GithubException:
+            pass
+
+        """
+        Checkout a branch from the default branch of the given repository.
+        """
+        # Get the default branch of the repository
+        default_branch = self.repo.get_branch(self.branch)
+        print(
+            "Checkout branch: " + branch_name,
+            " from branch:" + default_branch.name,
+        )
+
+        # Create a new reference to the default branch
+
+        try:
+            ref = self.repo.create_git_ref(
+                f"refs/heads/{branch_name}", default_branch.commit.sha
+            )
+        except GithubException:
+            pass
+        return
+
 
 def store_table(
     *,
@@ -281,8 +309,8 @@ def push_metric(
                             commit_message += "\n\n" + drift_summary_string
                         if drift_evaluation["should_alert"]:
                             if branch == default_branch:
-                                checkout_branch_from_default_branch(
-                                    github_connector, repo, drift_branch
+                                github_connector.checkout_branch_from_default_branch(
+                                    drift_branch
                                 )
                                 branch = drift_branch
                             pr_message = (
@@ -367,36 +395,6 @@ def find_date_column(df):
         return date_columns[0]
     else:
         return df.columns[0]
-
-
-def checkout_branch_from_default_branch(
-    github_connector: GithubConnector, repo: Repository.Repository, branch_name: str
-):
-    github_connector.assert_branch_exist(repo, branch_name)
-    try:
-        ref = repo.get_git_ref(f"heads/{branch_name}")
-        ref.delete()
-    except GithubException:
-        pass
-
-    """
-    Checkout a branch from the default branch of the given repository.
-    """
-    # Get the default branch of the repository
-    default_branch = repo.get_branch(repo.default_branch)
-    print(
-        "Checkout branch: " + branch_name, " from default branch:" + default_branch.name
-    )
-
-    # Create a new reference to the default branch
-
-    try:
-        ref = repo.create_git_ref(
-            f"refs/heads/{branch_name}", default_branch.commit.sha
-        )
-    except GithubException:
-        pass
-    return
 
 
 def get_monthly_file_path(file_path, month):
