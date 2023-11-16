@@ -7,11 +7,7 @@ import pandas as pd
 import os
 from datagit.connectors.workflow import snapshot_table
 from datagit.connectors.github_connector import GithubConnector
-from datagit.connectors.local_connector import (
-    LocalConnector,
-    store_table as local_store_table,
-)
-from datagit.drift_evaluator.drift_evaluators import auto_merge_drift
+from datagit.connectors.local_connector import LocalConnector
 from github import Github
 from . import version
 
@@ -92,12 +88,17 @@ def run(token, repo, storage, project_dir):
                     github_repository_name=repo,
                 )
                 snapshot_table(
-                    github_connector=github_connector,
+                    connector=github_connector,
                     table_dataframe=dataframe,
                     table_name="/dbt-drift/metrics/" + node["name"] + ".csv",
                 )
             else:
-                local_store_table(table_name=node["name"], table_dataframe=dataframe)
+                local_connector = LocalConnector()
+                snapshot_table(
+                    connector=local_connector,
+                    table_name=node["name"],
+                    table_dataframe=dataframe,
+                )
 
 
 @dbt.command()
@@ -194,7 +195,9 @@ def snapshot():
             local_tz = get_localzone()
             localized_date = date.replace(tzinfo=local_tz)
 
-            local_store_table(
+            local_connector = LocalConnector()
+            snapshot_table(
+                connector=local_connector,
                 table_name=metric_name,
                 table_dataframe=data_as_of_date,
                 measure_date=localized_date,
@@ -228,9 +231,12 @@ def create(table, row_number):
         table = click.prompt("Table name")
     click.echo("Creating seed file...")
     dataframe = generate_dataframe(row_number)
-    click.echo(dataframe)
 
-    local_store_table(table_name=table, table_dataframe=dataframe)
+    click.echo(dataframe.columns)
+    local_connector = LocalConnector()
+    snapshot_table(
+        connector=local_connector, table_name=table, table_dataframe=dataframe
+    )
     click.echo("Creating seed created...")
 
 
@@ -253,8 +259,14 @@ def update(table, row_number):
 
     click.echo("Updating seed file...")
     dataframe = local_connector.get_table(metric_name=table)
+    if dataframe is None:
+        raise Exception("Table not found")
     drifted_dataset = insert_drift(dataframe, row_number)
-    local_store_table(table_name=table, table_dataframe=drifted_dataset)
+    local_connector = LocalConnector()
+
+    snapshot_table(
+        connector=local_connector, table_name=table, table_dataframe=drifted_dataset
+    )
 
 
 @cli_entrypoint.command(name="delete")
@@ -319,7 +331,10 @@ def load_csv(csvpathfile, table, unique_key_column, date_column):
         ), f"Column {date_column} does not exist in CSV file"
         dataframe.insert(1, "date", dataframe[date_column])
 
-    local_store_table(table_name=table, table_dataframe=dataframe)
+    local_connector = LocalConnector()
+    snapshot_table(
+        connector=local_connector, table_name=table, table_dataframe=dataframe
+    )
 
 
 @cli_entrypoint.group()

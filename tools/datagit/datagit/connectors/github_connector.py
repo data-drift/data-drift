@@ -1,6 +1,7 @@
 import time
 from typing import Dict, Optional, List
 
+from .abstract_connector import AbstractConnector
 from .common import get_alert_branch_name
 
 from ..drift_evaluator.drift_evaluators import drift_summary_to_string
@@ -9,7 +10,7 @@ import pandas as pd
 from github import Github, Repository, ContentFile, GithubException
 
 
-class GithubConnector:
+class GithubConnector(AbstractConnector):
     def __init__(
         self,
         github_client: Github,
@@ -35,7 +36,7 @@ class GithubConnector:
             else:
                 raise e
 
-    def get_latest_table_snapshot(self, table_name: str) -> Optional[pd.DataFrame]:
+    def get_table(self, table_name: str) -> Optional[pd.DataFrame]:
         table_file_content = self.assert_file_exists(table_name)
         if table_file_content is None:
             return None
@@ -47,7 +48,7 @@ class GithubConnector:
             )
             return old_dataframe
 
-    def init_file(
+    def init_table(
         self,
         file_path: str,
         dataframe: pd.DataFrame,
@@ -69,13 +70,11 @@ class GithubConnector:
             if pull.title == title:
                 pull.edit(state="closed")
 
-    def create_pullrequest(
-        self, title: str, file_path: str, description_body: str, branch: str
-    ):
+    def create_pullrequest(self, title: str, description_body: str, branch: str):
         try:
             if len(self.assignees) > 0:
                 pullrequest = self.repo.create_pull(
-                    title="New drift detected " + file_path,
+                    title=title,
                     body=description_body,
                     head=branch,
                     base=self.default_branch,
@@ -215,7 +214,6 @@ class GithubConnector:
             self.close_pullrequests(title=title)
             self.create_pullrequest(
                 title=title,
-                file_path=table_name,
                 description_body=pr_message,
                 branch=branch,
             )

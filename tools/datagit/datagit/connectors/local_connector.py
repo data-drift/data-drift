@@ -1,66 +1,21 @@
-from datetime import datetime, timezone
+from datetime import datetime
 import os
 from typing import Dict, Iterator, Optional
 
-from datagit.dataframe.helpers import (
-    sort_dataframe_on_first_column_and_assert_is_unique,
-)
-from datagit.drift_evaluator.drift_evaluators import (
-    DefaultDriftEvaluator,
-    DriftEvaluatorAbstractClass,
+from .abstract_connector import AbstractConnector
+
+
+from ..drift_evaluator.drift_evaluators import (
     drift_summary_to_string,
 )
 from ..dataframe.dataframe_update_breakdown import (
     DataFrameUpdate,
-    dataframe_update_breakdown,
 )
 import pandas as pd
 from git import Commit, Repo
 
 
-def store_table(
-    *,
-    store_name="default",
-    table_name: str,
-    table_dataframe: pd.DataFrame,
-    measure_date: Optional[datetime] = None,
-    drift_evaluator: DriftEvaluatorAbstractClass = DefaultDriftEvaluator(),
-):
-    if measure_date is None:
-        measure_date = datetime.now(timezone.utc)
-    table_dataframe = sort_dataframe_on_first_column_and_assert_is_unique(
-        table_dataframe
-    )
-
-    local_connector = LocalConnector(store_name=store_name)
-
-    repo = local_connector.repo
-    store_dir = repo.working_dir
-    print(f"Storing table {table_name} in db {store_dir}")
-
-    latest_stored_snapshot = local_connector.get_table(table_name)
-
-    if latest_stored_snapshot == None:
-        print("Table not found, creating it")
-        local_connector.init_table(
-            table_name=table_name, dataframe=table_dataframe, measure_date=measure_date
-        )
-        print("Table stored")
-        return
-
-    else:
-        update_breakdown = dataframe_update_breakdown(
-            latest_stored_snapshot, table_dataframe, drift_evaluator
-        )
-
-        local_connector.handle_breakdown(
-            table_name=table_name,
-            update_breakdown=update_breakdown,
-            measure_date=measure_date,
-        )
-
-
-class LocalConnector:
+class LocalConnector(AbstractConnector):
     home_dir = os.path.expanduser("~")
     datadrift_dir = os.path.join(home_dir, ".datadrift")
     os.makedirs(datadrift_dir, exist_ok=True)

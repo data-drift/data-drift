@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
 from typing import Optional
-from .local_connector import LocalConnector
+
+from datagit.connectors.abstract_connector import AbstractConnector
 from .common import find_date_column
-from .github_connector import GithubConnector
 from ..dataframe.dataframe_update_breakdown import (
     dataframe_update_breakdown,
 )
@@ -17,12 +17,13 @@ from ..drift_evaluator.drift_evaluators import (
 import pandas as pd
 
 
-def snapshot_table_local(
+def snapshot_table(
+    *,
+    connector: AbstractConnector,
     table_dataframe: pd.DataFrame,
     table_name: str,
-    connector: LocalConnector,
-    drift_evaluator: DriftEvaluatorAbstractClass = DefaultDriftEvaluator(),
     measure_date: Optional[datetime] = None,
+    drift_evaluator: DriftEvaluatorAbstractClass = DefaultDriftEvaluator(),
 ):
     if measure_date is None:
         measure_date = datetime.now(timezone.utc)
@@ -62,48 +63,11 @@ def snapshot_table_local(
             pass
 
 
-def snapshot_table(
-    table_dataframe: pd.DataFrame,
-    table_name: str,
-    github_connector: GithubConnector,
-    drift_evaluator: DriftEvaluatorAbstractClass = DefaultDriftEvaluator(),
-):
-    table_dataframe = sort_dataframe_on_first_column_and_assert_is_unique(
-        table_dataframe
-    )
-    if table_dataframe.index.name != "unique_key":
-        table_dataframe = table_dataframe.set_index("unique_key")
-    table_dataframe = table_dataframe.astype("string")
-    date_column = find_date_column(table_dataframe)
-    if date_column is None:
-        raise Exception("Collection date column not found")
-
-    latest_stored_snapshot = github_connector.get_latest_table_snapshot(table_name)
-
-    if latest_stored_snapshot is None:
-        print("Table not found, creating it")
-        github_connector.init_file(file_path=table_name, dataframe=table_dataframe)
-        print("Table stored")
-        pass
-    else:
-        print("Table found, updating it")
-        update_breakdown = dataframe_update_breakdown(
-            latest_stored_snapshot, table_dataframe, drift_evaluator
-        )
-        if any(item["has_update"] for item in update_breakdown.values()):
-            print("Change detected")
-            github_connector.handle_breakdown(
-                table_name=table_name, update_breakdown=update_breakdown
-            )
-        else:
-            print("Nothing to update")
-            pass
-
-
 def partition_and_snapshot_table(
     *,
-    github_connector: GithubConnector,
+    connector: AbstractConnector,
     table_dataframe: pd.DataFrame,
+    measure_date: Optional[datetime] = None,
     table_name: str,
 ) -> None:
     print("Partitionning table by month...")
@@ -119,5 +83,6 @@ def partition_and_snapshot_table(
         snapshot_table(
             table_dataframe=group,
             table_name=monthly_table_name,
-            github_connector=github_connector,
+            measure_date=measure_date,
+            connector=connector,
         )
