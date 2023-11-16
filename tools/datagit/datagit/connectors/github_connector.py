@@ -174,24 +174,24 @@ def store_table(
     drift_evaluator: DriftEvaluatorAbstractClass = DefaultDriftEvaluator(),
 ) -> None:
     """
-    Store metrics into a specific repository file on GitHub.
+    Store tables into a specific repository file on GitHub.
 
     Parameters:
       ghClient (PyGithub.Github): An instance of a GitHub client to interact with the GitHub API.
-      dataframe (pd.DataFrame): The dataframe containing the metrics to be stored.
+      dataframe (pd.DataFrame): The dataframe containing the tables to be stored.
       filepath (str): The full path to the target file in the format
         'organization/repository/path_to_file'.
       assignees (Optional[List[str]]): List of GitHub usernames to be assigned to the pull request.
         Defaults to None. If list is empty no alert will be raised, nor pull
         request will be created.
-      branch (Optional[str]): The name of the branch where the metrics will be stored.
+      branch (Optional[str]): The name of the branch where the tables will be stored.
         If None, the default branch will be used. Defaults to None.
       drift_evaluator (Callable): Function that evaluates context and return information
         about how drift should be handled. See `drift_evaluator` module.
 
     Returns:
       None: This function does not return any value, but it performs a side effect of
-      pushing the metric to GitHub.
+      pushing the table to GitHub.
 
     Raises:
       ValueError: If the dataframe does not have a unique first column or if the file
@@ -200,7 +200,7 @@ def store_table(
         insufficient permissions, non-existent repo, etc.
     """
 
-    print("Storing metric...")
+    print("Storing table...")
 
     github_connector = GithubConnector(
         github_client=github_client,
@@ -212,7 +212,7 @@ def store_table(
         table_dataframe
     )
 
-    push_metric(
+    push_table(
         table_dataframe,
         table_name,
         github_connector,
@@ -229,19 +229,19 @@ def partition_and_store_table(
     branch: Optional[str] = None,
 ) -> None:
     """
-    Store metrics into a specific repository file on GitHub.
+    Store tables into a specific repository file on GitHub.
 
     Parameters:
       ghClient (Github): An instance of a GitHub client to interact with the GitHub API.
-      dataframe (pd.DataFrame): The dataframe containing the metrics to be stored.
+      dataframe (pd.DataFrame): The dataframe containing the tables to be stored.
       filepath (str): The full path to the target file in the format
         'organization/repository/path_to_file'.
-      branch (Optional[str]): The name of the branch where the metrics will be stored.
+      branch (Optional[str]): The name of the branch where the tables will be stored.
         If None, the default branch will be used. Defaults to None.
 
     Returns:
       None: This function does not return any value, but it performs a side effect of
-      pushing the metric to GitHub.
+      pushing the table to GitHub.
 
     Raises:
       ValueError: If the dataframe does not have a unique first column or if the file
@@ -250,7 +250,7 @@ def partition_and_store_table(
         insufficient permissions, non-existent repo, etc.
     """
 
-    print("Partitionning metric...")
+    print("Partitionning table by month...")
 
     table_dataframe["date"] = pd.to_datetime(table_dataframe["date"])
 
@@ -258,7 +258,7 @@ def partition_and_store_table(
 
     # Iterate over the groups and print the sub-dataframes
     for name, group in grouped:
-        print(f"Storing metric for Month: {name}")
+        print(f"Storing table for Month: {name}")
         monthly_table_name = get_monthly_file_path(table_name, name.strftime("%Y-%m"))  # type: ignore
         store_table(
             github_client=github_client,
@@ -270,7 +270,7 @@ def partition_and_store_table(
         )
 
 
-def push_metric(
+def push_table(
     dataframe,
     file_path,
     github_connector: GithubConnector,
@@ -283,12 +283,12 @@ def push_metric(
     dataframe = dataframe.astype("string")
     contents = github_connector.assert_file_exists(file_path)
     if contents is None:
-        print("Metric not found, creating it on branch: " + default_branch)
+        print("Table not found, creating it on branch: " + default_branch)
         github_connector.init_file(file_path=file_path, dataframe=dataframe)
-        print("Metric stored")
+        print("Table stored")
         pass
     else:
-        print("Metric found, updating it on branch: " + default_branch)
+        print("Table found, updating it on branch: " + default_branch)
         date_column = find_date_column(dataframe)
         if contents.content is not None and date_column is not None:
             # Compare the contents of the file with the new contents and assert if it need 2 commits
