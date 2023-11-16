@@ -1,6 +1,6 @@
 import click
 import json
-from .dataframe.dataset import generate_dataframe, insert_drift
+from .dataframe.seed import generate_dataframe, insert_drift
 from datagit.server import start_server
 import numpy as np
 import pandas as pd
