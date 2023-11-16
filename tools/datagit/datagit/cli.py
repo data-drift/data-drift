@@ -87,7 +87,8 @@ def run(token, repo, storage, project_dir):
                     table_dataframe=dataframe,
                     github_client=Github(token),
                     branch="main",
-                    filepath=repo + "/dbt-drift/metrics/" + node["name"] + ".csv",
+                    github_repository_name=repo,
+                    table_name="/dbt-drift/metrics/" + node["name"] + ".csv",
                     drift_evaluator=auto_merge_drift,
                 )
             else:
