@@ -10,7 +10,7 @@ from datagit.drift_evaluators import (
     DriftEvaluatorAbstractClass,
     drift_summary_to_string,
 )
-from .dataframe_update_breakdown import (
+from .dataframe.dataframe_update_breakdown import (
     dataframe_update_breakdown,
 )
 import pandas as pd

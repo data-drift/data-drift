@@ -1,6 +1,6 @@
 import time
 from typing import Optional, List
-from datagit.dataframe_update_breakdown import (
+from datagit.dataframe.dataframe_update_breakdown import (
     UpdateType,
     dataframe_update_breakdown,
 )
