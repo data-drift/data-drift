@@ -57,10 +57,11 @@ class LocalConnector(AbstractConnector):
         table_file_name = f"{table_name}.csv"
         table_file_path = os.path.join(store_dir, table_file_name)
         for key, value in update_breakdown.items():
-            value["df"].to_csv(table_file_path, na_rep="NA")
-            add_file = [table_file_name]
-            self.repo.index.add(add_file)
-            if self.repo.index.diff("HEAD"):
+            if value["has_update"]:
+                print("Update: " + key)
+                value["df"].to_csv(table_file_path, na_rep="NA")
+                add_file = [table_file_name]
+                self.repo.index.add(add_file)
                 commit_message = f"{key}: {table_name}"
                 if value["drift_evaluation"] != None:
                     commit_message += f"\n{value['drift_evaluation']['message']}"
@@ -68,8 +69,6 @@ class LocalConnector(AbstractConnector):
                     string_summary = drift_summary_to_string(value["drift_summary"])
                     commit_message += "\n\n" + string_summary
                 self.repo.index.commit(message=commit_message, author_date=measure_date)
-            else:
-                pass
 
     def get_tables(self):
         repo = self.repo

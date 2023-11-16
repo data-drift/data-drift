@@ -193,7 +193,6 @@ class GithubConnector(AbstractConnector):
                 ):
                     drift_evaluation = value["drift_evaluation"]
                     commit_message += "\n\n" + drift_evaluation["message"]
-                    drift_summary_string = ""
                     if value["drift_summary"]:
                         drift_summary_string = drift_summary_to_string(
                             value["drift_summary"]
