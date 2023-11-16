@@ -314,11 +314,7 @@ def push_metric(
                                 )
                                 branch = drift_branch
                             pr_message = (
-                                pr_message
-                                + "\n\n"
-                                + drift_evaluation["message"]
-                                + "\n\n"
-                                + drift_summary_string
+                                pr_message + "\n\n" + drift_evaluation["message"]
                             )
 
                     update_file_with_retry(
