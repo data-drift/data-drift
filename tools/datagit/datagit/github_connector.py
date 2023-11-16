@@ -43,6 +43,44 @@ class GithubConnector:
             else:
                 raise e
 
+    def init_file(
+        self,
+        file_path: str,
+        dataframe: pd.DataFrame,
+    ):
+        commit_message = "New data: " + file_path
+        print("Commit: " + commit_message)
+        self.repo.create_file(
+            file_path,
+            commit_message,
+            dataframe.to_csv(index=True, header=True),
+            self.branch,
+        )
+
+    def create_pullrequest(
+        self,
+        file_path: str,
+        description_body: str,
+    ):
+        try:
+            if len(self.assignees) > 0:
+                pullrequest = self.repo.create_pull(
+                    title="New drift detected " + file_path,
+                    body=description_body,
+                    head=self.branch,
+                    base=self.repo.default_branch,
+                )
+                print("Pull request created: " + pullrequest.html_url)
+                existing_assignees = assert_assignees_exists(self.repo, self.assignees)
+                pullrequest.add_to_assignees(*existing_assignees)
+            else:
+                print("No assignees, skipping pull request creation")
+        except GithubException as e:
+            if e.status == 422:
+                print("Pull request already exists, skipping...")
+            else:
+                raise e
+
 
 def store_table(
     *,
@@ -180,9 +218,7 @@ def push_metric(
     contents = github_connector.assert_file_exists(file_path)
     if contents is None:
         print("Metric not found, creating it on branch: " + default_branch)
-        init_file(
-            file_path=file_path, repo=repo, branch=default_branch, dataframe=dataframe
-        )
+        github_connector.init_file(file_path=file_path, dataframe=dataframe)
         print("Metric stored")
         pass
     else:
@@ -247,7 +283,7 @@ def push_metric(
                     )
 
             if pr_message != "":
-                create_pullrequest(repo, branch, assignees, file_path, pr_message)
+                github_connector.create_pullrequest(file_path, pr_message)
 
 
 def update_file_with_retry(
@@ -280,47 +316,6 @@ def update_file_with_retry(
             else:
                 raise e
     raise Exception(f"Failed to update file after {max_retries} retries")
-
-
-def init_file(
-    *,
-    file_path: str,
-    repo: Repository.Repository,
-    branch: str,
-    dataframe: pd.DataFrame,
-):
-    commit_message = "New data: " + file_path
-    print("Commit: " + commit_message)
-    repo.create_file(
-        file_path, commit_message, dataframe.to_csv(index=True, header=True), branch
-    )
-
-
-def create_pullrequest(
-    repo: Repository.Repository,
-    branch: str,
-    assignees: List[str],
-    file_path: str,
-    description_body: str,
-):
-    try:
-        if len(assignees) > 0:
-            pullrequest = repo.create_pull(
-                title="New drift detected " + file_path,
-                body=description_body,
-                head=branch,
-                base=repo.default_branch,
-            )
-            print("Pull request created: " + pullrequest.html_url)
-            existing_assignees = assert_assignees_exists(repo, assignees)
-            pullrequest.add_to_assignees(*existing_assignees)
-        else:
-            print("No assignees, skipping pull request creation")
-    except GithubException as e:
-        if e.status == 422:
-            print("Pull request already exists, skipping...")
-        else:
-            raise e
 
 
 def assert_branch_exist(repo: Repository.Repository, branch_name: str) -> None:
