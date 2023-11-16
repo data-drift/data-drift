@@ -20,22 +20,24 @@ from github import Github
 import pandas as pd
 
 
-def push_table(
-    table_dataframe,
-    table_name,
+def snapshot_table(
+    table_dataframe: pd.DataFrame,
+    table_name: str,
     github_connector: GithubConnector,
     drift_evaluator: DriftEvaluatorAbstractClass = DefaultDriftEvaluator(),
 ):
     table_dataframe = sort_dataframe_on_first_column_and_assert_is_unique(
         table_dataframe
     )
-    default_branch = github_connector.default_branch
     if table_dataframe.index.name != "unique_key":
         table_dataframe = table_dataframe.set_index("unique_key")
-
     table_dataframe = table_dataframe.astype("string")
-    contents = github_connector.assert_file_exists(table_name)
-    if contents is None:
+
+    default_branch = github_connector.default_branch
+
+    latest_stored_snapshot = github_connector.get_latest_table_snapshot(table_name)
+
+    if latest_stored_snapshot is None:
         print("Table not found, creating it on branch: " + default_branch)
         github_connector.init_file(file_path=table_name, dataframe=table_dataframe)
         print("Table stored")
@@ -43,18 +45,13 @@ def push_table(
     else:
         print("Table found, updating it on branch: " + default_branch)
         date_column = find_date_column(table_dataframe)
-        if contents.content is not None and date_column is not None:
+        if date_column is not None:
             # Compare the contents of the file with the new contents and assert if it need 2 commits
-            print("Content", contents.download_url)
             print("Dataframe dtypes", table_dataframe.dtypes.to_dict())
-            old_dataframe = pd.read_csv(
-                contents.download_url,
-                dtype="string",
-                keep_default_na=False,
-            )
-            print("Old Dataframe dtypes", old_dataframe.dtypes.to_dict())
+
+            print("Old Dataframe dtypes", latest_stored_snapshot.dtypes.to_dict())
             update_breakdown = dataframe_update_breakdown(
-                old_dataframe, table_dataframe, drift_evaluator
+                latest_stored_snapshot, table_dataframe, drift_evaluator
             )
             if any(item["has_update"] for item in update_breakdown.values()):
                 print("Change detected")
@@ -171,7 +168,7 @@ def store_table(
         assignees=assignees,
     )
 
-    push_table(
+    snapshot_table(
         table_dataframe,
         table_name,
         github_connector,
@@ -225,7 +222,7 @@ def partition_and_store_table(
     for name, group in grouped:
         print(f"Storing table for Month: {name}")
         monthly_table_name = get_monthly_file_path(table_name, name.strftime("%Y-%m"))  # type: ignore
-        push_table(
+        snapshot_table(
             table_dataframe=group,
             table_name=monthly_table_name,
             github_connector=github_connector,

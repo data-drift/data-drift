@@ -1,7 +1,5 @@
 import time
 from typing import Optional, List
-from datagit.dataframe.dataframe_update_breakdown import (
-)
 import pandas as pd
 from github import Github, Repository, ContentFile, GithubException
 
@@ -31,6 +29,18 @@ class GithubConnector:
                 return None
             else:
                 raise e
+
+    def get_latest_table_snapshot(self, table_name: str) -> Optional[pd.DataFrame]:
+        table_file_content = self.assert_file_exists(table_name)
+        if table_file_content is None:
+            return None
+        else:
+            old_dataframe = pd.read_csv(
+                table_file_content.download_url,
+                dtype="string",
+                keep_default_na=False,
+            )
+            return old_dataframe
 
     def init_file(
         self,
