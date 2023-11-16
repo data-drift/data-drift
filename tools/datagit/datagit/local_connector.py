@@ -3,7 +3,13 @@ import os
 from typing import Iterator, Optional
 
 from datagit.dataset_helpers import sort_dataframe_on_first_column_and_assert_is_unique
-from datagit.drift_evaluators import drift_summary_to_string
+from datagit.drift_evaluators import (
+    DefaultDriftEvaluator,
+    DriftEvaluator,
+    DriftEvaluatorAbstractClass,
+    auto_merge_drift,
+    drift_summary_to_string,
+)
 from .dataframe_update_breakdown import (
     dataframe_update_breakdown,
 )
@@ -21,6 +27,7 @@ def store_table(
     table_name: str,
     table_dataframe: pd.DataFrame,
     measure_date: Optional[datetime] = None,
+    drift_evaluator: DriftEvaluatorAbstractClass = DefaultDriftEvaluator(),
 ):
     if measure_date is None:
         measure_date = datetime.now(timezone.utc)
@@ -44,7 +51,9 @@ def store_table(
         return
 
     initial_dataframe = pd.read_csv(table_file_path)
-    update_breakdown = dataframe_update_breakdown(initial_dataframe, table_dataframe)
+    update_breakdown = dataframe_update_breakdown(
+        initial_dataframe, table_dataframe, drift_evaluator
+    )
     for key, value in update_breakdown.items():
         value["df"].to_csv(table_file_path, na_rep="NA")
         add_file = [table_file_name]

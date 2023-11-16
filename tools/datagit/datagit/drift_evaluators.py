@@ -3,6 +3,7 @@ import traceback
 from typing import Callable, Optional, TypedDict
 from datagit.dataset_helpers import compare_dataframes
 import pandas as pd
+from abc import ABC, abstractmethod
 
 
 class DriftSummary(TypedDict):
@@ -64,6 +65,23 @@ class DriftEvaluation(TypedDict):
 
 
 DriftEvaluator = Callable[[DriftEvaluatorContext], DriftEvaluation]
+
+
+class DriftEvaluatorAbstractClass(ABC):
+    @staticmethod
+    @abstractmethod
+    def compute_drift_evaluation(
+        data_drift_context: DriftEvaluatorContext,
+    ) -> DriftEvaluation:
+        pass
+
+
+class DefaultDriftEvaluator(DriftEvaluatorAbstractClass):
+    @staticmethod
+    def compute_drift_evaluation(
+        data_drift_context: DriftEvaluatorContext,
+    ) -> DriftEvaluation:
+        return auto_merge_drift(data_drift_context)
 
 
 def alert_drift(data_drift_context: DriftEvaluatorContext) -> DriftEvaluation:

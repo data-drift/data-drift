@@ -1,5 +1,5 @@
 import time
-from typing import Optional, List, Callable, Dict
+from typing import Optional, List
 from datagit.dataframe_update_breakdown import (
     UpdateType,
     dataframe_update_breakdown,
@@ -7,7 +7,9 @@ from datagit.dataframe_update_breakdown import (
 import pandas as pd
 from github import Github, Repository, ContentFile, GithubException
 from datagit.drift_evaluators import (
+    DefaultDriftEvaluator,
     DriftEvaluator,
+    DriftEvaluatorAbstractClass,
     auto_merge_drift,
     drift_summary_to_string,
 )
@@ -27,7 +29,7 @@ def store_table(
     assignees: Optional[List[str]] = None,
     table_dataframe: pd.DataFrame,
     table_name: str,
-    drift_evaluator: DriftEvaluator = auto_merge_drift,
+    drift_evaluator: DriftEvaluatorAbstractClass = DefaultDriftEvaluator(),
 ) -> None:
     """
     Store metrics into a specific repository file on GitHub.
