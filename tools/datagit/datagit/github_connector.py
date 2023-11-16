@@ -201,7 +201,7 @@ def store_table(
     """
 
     print("Storing metric...")
-    drift_branch = get_valid_branch_name(table_name)
+    drift_branch = get_alert_branch_name(table_name)
 
     github_connector = GithubConnector(
         github_client=github_client,
@@ -351,7 +351,7 @@ def push_metric(
                 github_connector.create_pullrequest(file_path, pr_message, branch)
 
 
-def get_valid_branch_name(filepath: str) -> str:
+def get_alert_branch_name(filepath: str) -> str:
     """
     Returns a valid Git branch name based on the given filepath.
     """
