@@ -80,6 +80,14 @@ class DefaultDriftEvaluator(DriftEvaluatorAbstractClass):
         return auto_merge_drift(data_drift_context)
 
 
+class AlertDriftEvaluator(DriftEvaluatorAbstractClass):
+    @staticmethod
+    def compute_drift_evaluation(
+        data_drift_context: DriftEvaluatorContext,
+    ) -> DriftEvaluation:
+        return alert_drift(data_drift_context)
+
+
 def alert_drift(data_drift_context: DriftEvaluatorContext) -> DriftEvaluation:
     message = f"Drift detected:\n" + compare_dataframes(
         data_drift_context["before"],
