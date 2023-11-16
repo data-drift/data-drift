@@ -199,8 +199,6 @@ def store_table(
       GithubException: If there is an error in interacting with the GitHub API, e.g.,
         insufficient permissions, non-existent repo, etc.
     """
-    if assignees is None:
-        assignees = []
 
     print("Storing metric...")
     drift_branch = get_valid_branch_name(table_name)
