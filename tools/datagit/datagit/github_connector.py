@@ -24,17 +24,19 @@ class GithubConnector:
         self,
         github_client: Github,
         github_repository_name: str,
-        branch: Optional[str] = None,
+        default_branch: Optional[str] = None,
         assignees: Optional[List[str]] = None,
     ):
         self.repo = github_client.get_repo(github_repository_name)
-        self.branch = branch if branch is not None else self.repo.default_branch
-        self.assert_branch_exist(self.repo, self.branch)
+        self.default_branch = (
+            default_branch if default_branch is not None else self.repo.default_branch
+        )
+        self.assert_branch_exist(self.repo, self.default_branch)
         self.assignees = assignees if assignees is not None else []
 
     def assert_file_exists(self, file_path: str) -> Optional[ContentFile.ContentFile]:
         try:
-            contents = self.repo.get_contents(file_path, ref=self.branch)
+            contents = self.repo.get_contents(file_path, ref=self.default_branch)
             assert not isinstance(contents, list), "pathfile returned multiple contents"
             return contents
         except GithubException as e:
@@ -54,7 +56,7 @@ class GithubConnector:
             file_path,
             commit_message,
             dataframe.to_csv(index=True, header=True),
-            self.branch,
+            self.default_branch,
         )
 
     def create_pullrequest(self, file_path: str, description_body: str, branch: str):
@@ -64,7 +66,7 @@ class GithubConnector:
                     title="New drift detected " + file_path,
                     body=description_body,
                     head=branch,
-                    base=self.branch,
+                    base=self.default_branch,
                 )
                 print("Pull request created: " + pullrequest.html_url)
                 existing_assignees = self.assert_assignees_exists()
@@ -112,7 +114,7 @@ class GithubConnector:
         Checkout a branch from the default branch of the given repository.
         """
         # Get the default branch of the repository
-        default_branch = self.repo.get_branch(self.branch)
+        default_branch = self.repo.get_branch(self.default_branch)
         print(
             "Checkout branch: " + branch_name,
             " from branch:" + default_branch.name,
@@ -127,6 +129,38 @@ class GithubConnector:
         except GithubException:
             pass
         return
+
+    def update_file_with_retry(
+        self,
+        file_path,
+        commit_message,
+        data,
+        branch,
+        max_retries=3,
+    ):
+        retries = 0
+
+        while retries < max_retries:
+            try:
+                content = self.assert_file_exists(file_path)
+                if content is None:
+                    response = self.repo.create_file(
+                        file_path, commit_message, data, branch
+                    )
+                    print(response["commit"].html_url)
+                else:
+                    response = self.repo.update_file(
+                        file_path, commit_message, data, content.sha, branch
+                    )
+                    print(response["commit"].html_url)
+                return
+            except GithubException as e:
+                if e.status == 409:
+                    retries += 1
+                    time.sleep(1)  # Wait for 1 second before retrying
+                else:
+                    raise e
+        raise Exception(f"Failed to update file after {max_retries} retries")
 
 
 def store_table(
@@ -177,7 +211,7 @@ def store_table(
     github_connector = GithubConnector(
         github_client=github_client,
         github_repository_name=github_repository_name,
-        branch=branch,
+        default_branch=branch,
         assignees=assignees,
     )
     github_connector.assert_branch_exist(repo, working_branch)
@@ -187,11 +221,9 @@ def store_table(
 
     push_metric(
         table_dataframe,
-        assignees,
         working_branch,
         drift_branch,
         file_path,
-        repo,
         github_connector,
         drift_evaluator,
     )
@@ -249,11 +281,9 @@ def partition_and_store_table(
 
 def push_metric(
     dataframe,
-    assignees,
     default_branch,
     drift_branch,
     file_path,
-    repo,
     github_connector: GithubConnector,
     drift_evaluator: DriftEvaluatorAbstractClass = DefaultDriftEvaluator(),
 ):
@@ -317,9 +347,7 @@ def push_metric(
                                 pr_message + "\n\n" + drift_evaluation["message"]
                             )
 
-                    update_file_with_retry(
-                        github_connector=github_connector,
-                        repo=repo,
+                    github_connector.update_file_with_retry(
                         file_path=file_path,
                         commit_message=commit_message,
                         data=value["df"].to_csv(index=True, header=True),
@@ -328,38 +356,6 @@ def push_metric(
 
             if pr_message != "":
                 github_connector.create_pullrequest(file_path, pr_message, branch)
-
-
-def update_file_with_retry(
-    github_connector: GithubConnector,
-    repo: Repository.Repository,
-    file_path,
-    commit_message,
-    data,
-    branch,
-    max_retries=3,
-):
-    retries = 0
-
-    while retries < max_retries:
-        try:
-            content = github_connector.assert_file_exists(file_path)
-            if content is None:
-                response = repo.create_file(file_path, commit_message, data, branch)
-                print(response["commit"].html_url)
-            else:
-                response = repo.update_file(
-                    file_path, commit_message, data, content.sha, branch
-                )
-                print(response["commit"].html_url)
-            return
-        except GithubException as e:
-            if e.status == 409:
-                retries += 1
-                time.sleep(1)  # Wait for 1 second before retrying
-            else:
-                raise e
-    raise Exception(f"Failed to update file after {max_retries} retries")
 
 
 def get_valid_branch_name(filepath: str) -> str:
