@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 import os
-from typing import Iterator, Optional
+from typing import Dict, Iterator, Optional
 
 from datagit.dataframe.helpers import (
     sort_dataframe_on_first_column_and_assert_is_unique,
@@ -11,6 +11,7 @@ from datagit.drift_evaluator.drift_evaluators import (
     drift_summary_to_string,
 )
 from ..dataframe.dataframe_update_breakdown import (
+    DataFrameUpdate,
     dataframe_update_breakdown,
 )
 import pandas as pd
@@ -36,37 +37,27 @@ def store_table(
     repo = local_connector.repo
     store_dir = repo.working_dir
     print(f"Storing table {table_name} in db {store_dir}")
-    table_file_name = f"{table_name}.csv"
-    table_file_path = os.path.join(store_dir, table_file_name)
 
-    if not os.path.isfile(table_file_path):
-        table_file_dir = os.path.dirname(table_file_path)
-        os.makedirs(table_file_dir, exist_ok=True)
-        table_dataframe.to_csv(table_file_path, index=False, na_rep="NA")
-        add_file = [table_file_name]
-        repo.index.add(add_file)
-        repo.index.commit(f"NEW DATA: {table_name}", author_date=measure_date)
+    latest_stored_snapshot = local_connector.get_table(table_name)
+
+    if latest_stored_snapshot == None:
+        print("Table not found, creating it")
+        local_connector.init_table(
+            table_name=table_name, dataframe=table_dataframe, measure_date=measure_date
+        )
+        print("Table stored")
         return
 
-    initial_dataframe = pd.read_csv(table_file_path)
-    update_breakdown = dataframe_update_breakdown(
-        initial_dataframe, table_dataframe, drift_evaluator
-    )
-    for key, value in update_breakdown.items():
-        value["df"].to_csv(table_file_path, na_rep="NA")
-        add_file = [table_file_name]
-        repo.index.add(add_file)
-        if repo.index.diff("HEAD"):
-            commit_message = f"{key}: {table_name}"
-            if value["drift_evaluation"] != None:
-                commit_message += f"\n{value['drift_evaluation']['message']}"
-            if value["drift_summary"]:
-                string_summary = drift_summary_to_string(value["drift_summary"])
-                commit_message += "\n\n" + string_summary
-            repo.index.commit(message=commit_message, author_date=measure_date)
-        else:
-            pass
-    pass
+    else:
+        update_breakdown = dataframe_update_breakdown(
+            latest_stored_snapshot, table_dataframe, drift_evaluator
+        )
+
+        local_connector.handle_breakdown(
+            table_name=table_name,
+            update_breakdown=update_breakdown,
+            measure_date=measure_date,
+        )
 
 
 class LocalConnector:
@@ -79,10 +70,49 @@ class LocalConnector:
         self.repo = self.get_or_init_repo(store_name=self.store_name)
         self.store_dir = self.repo.working_dir
 
-    def get_table(self, metric_name: str) -> pd.DataFrame:
+    def get_table(self, metric_name: str) -> Optional[pd.DataFrame]:
         store_dir = self.store_dir
         metric_file_name = f"{metric_name}.csv"
+        if not os.path.isfile(metric_file_name):
+            return None
         return pd.read_csv(os.path.join(store_dir, metric_file_name))
+
+    def init_table(
+        self, table_name: str, dataframe: pd.DataFrame, measure_date: datetime
+    ):
+        store_dir = self.store_dir
+        table_file_name = f"{table_name}.csv"
+        table_file_path = os.path.join(store_dir, table_file_name)
+        table_file_dir = os.path.dirname(table_file_path)
+        os.makedirs(table_file_dir, exist_ok=True)
+        dataframe.to_csv(table_file_path, index=False, na_rep="NA")
+        add_file = [table_file_name]
+        self.repo.index.add(add_file)
+        self.repo.index.commit(f"NEW DATA: {table_name}", author_date=measure_date)
+
+    def handle_breakdown(
+        self,
+        table_name: str,
+        measure_date: datetime,
+        update_breakdown: Dict[str, DataFrameUpdate],
+    ):
+        store_dir = self.store_dir
+        table_file_name = f"{table_name}.csv"
+        table_file_path = os.path.join(store_dir, table_file_name)
+        for key, value in update_breakdown.items():
+            value["df"].to_csv(table_file_path, na_rep="NA")
+            add_file = [table_file_name]
+            self.repo.index.add(add_file)
+            if self.repo.index.diff("HEAD"):
+                commit_message = f"{key}: {table_name}"
+                if value["drift_evaluation"] != None:
+                    commit_message += f"\n{value['drift_evaluation']['message']}"
+                if value["drift_summary"]:
+                    string_summary = drift_summary_to_string(value["drift_summary"])
+                    commit_message += "\n\n" + string_summary
+                self.repo.index.commit(message=commit_message, author_date=measure_date)
+            else:
+                pass
 
     def get_tables(self):
         repo = self.store_dir

@@ -1,10 +1,10 @@
 import time
-from typing import Optional, List
+from typing import Dict, Optional, List
 
 from .common import get_alert_branch_name
 
 from ..drift_evaluator.drift_evaluators import drift_summary_to_string
-from ..dataframe.dataframe_update_breakdown import UpdateType
+from ..dataframe.dataframe_update_breakdown import DataFrameUpdate, UpdateType
 import pandas as pd
 from github import Github, Repository, ContentFile, GithubException
 
@@ -174,7 +174,9 @@ class GithubConnector:
                     raise e
         raise Exception(f"Failed to update file after {max_retries} retries")
 
-    def handle_breakdown(self, table_name: str, update_breakdown):
+    def handle_breakdown(
+        self, table_name: str, update_breakdown: Dict[str, DataFrameUpdate]
+    ):
         branch = self.default_branch
         pr_message = ""
         for key, value in update_breakdown.items():
