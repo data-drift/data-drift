@@ -32,15 +32,17 @@ class TestStoreMetric(unittest.TestCase):
         self.dataframe = pd.DataFrame(
             {"unique_key": [1, 2], "col2": [3, 4], "date": ["2021-01-01", "2022-02-02"]}
         )
-        self.filepath = "org/repo/path/to/file.csv"
+        self.github_repository_name = "org/repo"
+        self.table_name = "path/to/file.csv"
 
     def test_store_metric(self):
         with patch("pandas.read_csv", side_effect=mocked_read_csv):
             store_table(
                 github_client=self.ghClient,
                 table_dataframe=self.dataframe,
-                filepath=self.filepath,
                 assignees=["jerome"],
+                github_repository_name=self.github_repository_name,
+                table_name=self.table_name,
             )
 
             self.repo.get_contents.assert_has_calls(
@@ -58,8 +60,9 @@ class TestStoreMetric(unittest.TestCase):
             store_table(
                 github_client=self.ghClient,
                 table_dataframe=self.dataframe,
-                filepath=self.filepath,
                 assignees=["jerome"],
+                github_repository_name=self.github_repository_name,
+                table_name=self.table_name,
             )
 
             self.repo.get_contents.assert_has_calls(
@@ -74,8 +77,9 @@ class TestStoreMetric(unittest.TestCase):
             store_table(
                 github_client=self.ghClient,
                 table_dataframe=self.dataframe,
-                filepath=self.filepath,
                 assignees=[],
+                github_repository_name=self.github_repository_name,
+                table_name=self.table_name,
             )
 
             self.repo.get_contents.assert_has_calls(
