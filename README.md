@@ -13,6 +13,8 @@
   <a href="https://discord.gg/X2RUXFAm">
     <img src="https://dcbadge.vercel.app/api/server/X2RUXFAm?style=flat&theme=discord" alt="Discord">
   </a>
+     <a href="https://github.com/data-drift/data-drift/stargazers"><img src="https://img.shields.io/github/stars/data-drift/data-drift" alt="Github Stars">
+  </a>
   <a href="https://github.com/data-drift/data-drift/actions/workflows/datadrift-build.yml">
     <img src="https://img.shields.io/github/actions/workflow/status/data-drift/data-drift/datadrift-build.yml?style=flat-square" alt="Data-Drift Build">
   </a>
