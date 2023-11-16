@@ -209,6 +209,12 @@ def partition_and_store_table(
         insufficient permissions, non-existent repo, etc.
     """
 
+    github_connector = GithubConnector(
+        github_client=github_client,
+        github_repository_name=github_repository_name,
+        default_branch=branch,
+    )
+
     print("Partitionning table by month...")
 
     table_dataframe["date"] = pd.to_datetime(table_dataframe["date"])
@@ -219,13 +225,10 @@ def partition_and_store_table(
     for name, group in grouped:
         print(f"Storing table for Month: {name}")
         monthly_table_name = get_monthly_file_path(table_name, name.strftime("%Y-%m"))  # type: ignore
-        store_table(
-            github_client=github_client,
+        push_table(
             table_dataframe=group,
-            github_repository_name=github_repository_name,
             table_name=monthly_table_name,
-            branch=branch,
-            assignees=None,
+            github_connector=github_connector,
         )
 
 
