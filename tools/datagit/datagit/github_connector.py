@@ -29,7 +29,7 @@ class GithubConnector:
     ):
         self.repo = github_client.get_repo(github_repository_name)
         self.branch = branch if branch is not None else self.repo.default_branch
-        assert_branch_exist(self.repo, self.branch)
+        self.assert_branch_exist(self.repo, self.branch)
         self.assignees = assignees if assignees is not None else []
 
     def assert_file_exists(self, file_path: str) -> Optional[ContentFile.ContentFile]:
@@ -81,6 +81,19 @@ class GithubConnector:
             else:
                 raise e
 
+    @staticmethod
+    def assert_branch_exist(repo: Repository.Repository, branch_name: str) -> None:
+        try:
+            branch = repo.get_branch(branch_name)
+        except:
+            branch = None
+
+        if not branch:
+            print(f"Branch {branch_name} doesn't exist, creating it...")
+            reported_branch = repo.get_branch(repo.default_branch)
+
+            repo.create_git_ref(f"refs/heads/{branch_name}", reported_branch.commit.sha)
+
 
 def store_table(
     *,
@@ -127,16 +140,15 @@ def store_table(
 
     repo = github_client.get_repo(github_repository_name)
     working_branch = branch if branch is not None else repo.default_branch
-    assert_branch_exist(repo, working_branch)
-    table_dataframe = sort_dataframe_on_first_column_and_assert_is_unique(
-        table_dataframe
-    )
-
     github_connector = GithubConnector(
         github_client=github_client,
         github_repository_name=github_repository_name,
         branch=branch,
         assignees=assignees,
+    )
+    github_connector.assert_branch_exist(repo, working_branch)
+    table_dataframe = sort_dataframe_on_first_column_and_assert_is_unique(
+        table_dataframe
     )
 
     push_metric(
@@ -263,7 +275,9 @@ def push_metric(
                             commit_message += "\n\n" + drift_summary_string
                         if drift_evaluation["should_alert"]:
                             if branch == default_branch:
-                                checkout_branch_from_default_branch(repo, drift_branch)
+                                checkout_branch_from_default_branch(
+                                    github_connector, repo, drift_branch
+                                )
                                 branch = drift_branch
                             pr_message = (
                                 pr_message
@@ -318,18 +332,6 @@ def update_file_with_retry(
     raise Exception(f"Failed to update file after {max_retries} retries")
 
 
-def assert_branch_exist(repo: Repository.Repository, branch_name: str) -> None:
-    try:
-        branch = repo.get_branch(branch_name)
-    except:
-        branch = None
-
-    # If the branch doesn't exist, create it
-    if not branch:
-        print(f"Branch {branch_name} doesn't exist, creating it...")
-        create_git_branch(repo, branch_name)
-
-
 def assert_assignees_exists(
     repo: Repository.Repository, assignees: List[str]
 ) -> List[str]:
@@ -366,19 +368,6 @@ def get_valid_branch_name(filepath: str) -> str:
     return branch_name
 
 
-def create_git_branch(repo: Repository.Repository, branch_name: str):
-    """
-    Creates a new Git branch with the given name in the given repository.
-    """
-    # Get the default branch of the repository
-    reported_branch = repo.get_branch(repo.default_branch)
-
-    # Create a new reference to the default branch
-    ref = repo.create_git_ref(f"refs/heads/{branch_name}", reported_branch.commit.sha)
-
-    return ref
-
-
 def find_date_column(df):
     date_columns = df.filter(like="date").columns
     if len(date_columns) > 0:
@@ -387,8 +376,10 @@ def find_date_column(df):
         return df.columns[0]
 
 
-def checkout_branch_from_default_branch(repo: Repository.Repository, branch_name: str):
-    assert_branch_exist(repo, branch_name)
+def checkout_branch_from_default_branch(
+    github_connector: GithubConnector, repo: Repository.Repository, branch_name: str
+):
+    github_connector.assert_branch_exist(repo, branch_name)
     try:
         ref = repo.get_git_ref(f"heads/{branch_name}")
         ref.delete()
