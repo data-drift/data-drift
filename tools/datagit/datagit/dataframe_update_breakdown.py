@@ -1,6 +1,8 @@
 from datagit.drift_evaluators import (
+    DefaultDriftEvaluator,
     DriftEvaluation,
     DriftEvaluator,
+    DriftEvaluatorAbstractClass,
     DriftEvaluatorContext,
     DriftSummary,
     auto_merge_drift,
@@ -28,7 +30,7 @@ class DataFrameUpdate(TypedDict):
 def dataframe_update_breakdown(
     initial_dataframe: pd.DataFrame,
     final_dataframe: pd.DataFrame,
-    drift_evaluator: DriftEvaluator = auto_merge_drift,
+    drift_evaluator: DriftEvaluatorAbstractClass = DefaultDriftEvaluator(),
 ) -> Dict[str, DataFrameUpdate]:
     if initial_dataframe.index.name != "unique_key":
         initial_dataframe = initial_dataframe.set_index("unique_key")
@@ -60,7 +62,9 @@ def dataframe_update_breakdown(
         drift_context = DriftEvaluatorContext(
             before=step2, after=step3, summary=drift_summary
         )
-        drift_evaluation = safe_drift_evaluator(drift_context, drift_evaluator)
+        drift_evaluation = safe_drift_evaluator(
+            drift_context, drift_evaluator.compute_drift_evaluation
+        )
 
     step4 = final_dataframe.reindex(index=step3.index)
 

@@ -1,5 +1,5 @@
 import time
-from typing import Optional, List, Callable, Dict
+from typing import Optional, List
 from datagit.dataframe_update_breakdown import (
     UpdateType,
     dataframe_update_breakdown,
@@ -7,7 +7,9 @@ from datagit.dataframe_update_breakdown import (
 import pandas as pd
 from github import Github, Repository, ContentFile, GithubException
 from datagit.drift_evaluators import (
+    DefaultDriftEvaluator,
     DriftEvaluator,
+    DriftEvaluatorAbstractClass,
     auto_merge_drift,
     drift_summary_to_string,
 )
@@ -19,14 +21,15 @@ import os
 import datetime
 
 
-def store_metric(
+def store_table(
     *,
-    ghClient: Github,
-    dataframe: pd.DataFrame,
-    filepath: str,
+    github_client: Github,
+    github_repository_name: str,
     branch: Optional[str] = None,
     assignees: Optional[List[str]] = None,
-    drift_evaluator: DriftEvaluator = auto_merge_drift,
+    table_dataframe: pd.DataFrame,
+    table_name: str,
+    drift_evaluator: DriftEvaluatorAbstractClass = DefaultDriftEvaluator(),
 ) -> None:
     """
     Store metrics into a specific repository file on GitHub.
@@ -58,16 +61,18 @@ def store_metric(
         assignees = []
 
     print("Storing metric...")
-    repo_orga, repo_name, file_path = filepath.split("/", 2)
+    file_path = table_name
     drift_branch = get_valid_branch_name(file_path)
 
-    repo = ghClient.get_repo(repo_orga + "/" + repo_name)
+    repo = github_client.get_repo(github_repository_name)
     working_branch = branch if branch is not None else repo.default_branch
     assert_branch_exist(repo, working_branch)
-    dataframe = sort_dataframe_on_first_column_and_assert_is_unique(dataframe)
+    table_dataframe = sort_dataframe_on_first_column_and_assert_is_unique(
+        table_dataframe
+    )
 
     push_metric(
-        dataframe,
+        table_dataframe,
         assignees,
         working_branch,
         drift_branch,
@@ -79,9 +84,10 @@ def store_metric(
 
 def partition_and_store_table(
     *,
-    ghClient: Github,
-    dataframe: pd.DataFrame,
-    filepath: str,
+    github_client: Github,
+    github_repository_name: str,
+    table_dataframe: pd.DataFrame,
+    table_name: str,
     branch: Optional[str] = None,
 ) -> None:
     """
@@ -108,18 +114,19 @@ def partition_and_store_table(
 
     print("Partitionning metric...")
 
-    dataframe["date"] = pd.to_datetime(dataframe["date"])
+    table_dataframe["date"] = pd.to_datetime(table_dataframe["date"])
 
-    grouped = dataframe.groupby(pd.Grouper(key="date", freq="M"))
+    grouped = table_dataframe.groupby(pd.Grouper(key="date", freq="M"))
 
     # Iterate over the groups and print the sub-dataframes
     for name, group in grouped:
         print(f"Storing metric for Month: {name}")
-        monthly_filepath = get_monthly_file_path(filepath, name.strftime("%Y-%m"))  # type: ignore
-        store_metric(
-            ghClient=ghClient,
-            dataframe=group,
-            filepath=monthly_filepath,
+        monthly_table_name = get_monthly_file_path(table_name, name.strftime("%Y-%m"))  # type: ignore
+        store_table(
+            github_client=github_client,
+            table_dataframe=group,
+            github_repository_name=github_repository_name,
+            table_name=monthly_table_name,
             branch=branch,
             assignees=None,
             drift_evaluator=auto_merge_drift,

@@ -3,7 +3,7 @@ from unittest import mock
 from unittest.mock import MagicMock, call
 import pandas as pd
 from github import GithubException
-from datagit.github_connector import store_metric
+from datagit.github_connector import store_table
 from unittest.mock import patch
 
 
@@ -32,15 +32,17 @@ class TestStoreMetric(unittest.TestCase):
         self.dataframe = pd.DataFrame(
             {"unique_key": [1, 2], "col2": [3, 4], "date": ["2021-01-01", "2022-02-02"]}
         )
-        self.filepath = "org/repo/path/to/file.csv"
+        self.github_repository_name = "org/repo"
+        self.table_name = "path/to/file.csv"
 
     def test_store_metric(self):
         with patch("pandas.read_csv", side_effect=mocked_read_csv):
-            store_metric(
-                ghClient=self.ghClient,
-                dataframe=self.dataframe,
-                filepath=self.filepath,
+            store_table(
+                github_client=self.ghClient,
+                table_dataframe=self.dataframe,
                 assignees=["jerome"],
+                github_repository_name=self.github_repository_name,
+                table_name=self.table_name,
             )
 
             self.repo.get_contents.assert_has_calls(
@@ -55,11 +57,12 @@ class TestStoreMetric(unittest.TestCase):
             self.repo.create_pull.side_effect = GithubException(
                 422, {"message": "A pull request already exists"}, None
             )
-            store_metric(
-                ghClient=self.ghClient,
-                dataframe=self.dataframe,
-                filepath=self.filepath,
+            store_table(
+                github_client=self.ghClient,
+                table_dataframe=self.dataframe,
                 assignees=["jerome"],
+                github_repository_name=self.github_repository_name,
+                table_name=self.table_name,
             )
 
             self.repo.get_contents.assert_has_calls(
@@ -71,11 +74,12 @@ class TestStoreMetric(unittest.TestCase):
 
     def test_store_metric_with_no_assignee(self):
         with patch("pandas.read_csv", side_effect=mocked_read_csv):
-            store_metric(
-                ghClient=self.ghClient,
-                dataframe=self.dataframe,
-                filepath=self.filepath,
+            store_table(
+                github_client=self.ghClient,
+                table_dataframe=self.dataframe,
                 assignees=[],
+                github_repository_name=self.github_repository_name,
+                table_name=self.table_name,
             )
 
             self.repo.get_contents.assert_has_calls(
