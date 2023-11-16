@@ -71,13 +71,13 @@ def store_table(
     pass
 
 
-def get_metric(*, store_name="default", metric_name: str) -> pd.DataFrame:
+def get_table(*, store_name="default", metric_name: str) -> pd.DataFrame:
     store_dir = get_or_init_repo(store_name=store_name).working_dir
     metric_file_name = f"{metric_name}.csv"
     return pd.read_csv(os.path.join(store_dir, metric_file_name))
 
 
-def get_metrics(*, store_name="default"):
+def get_tables(*, store_name="default"):
     repo = get_or_init_repo(store_name=store_name)
     csv_files = [
         os.path.splitext(f)[0]
@@ -87,10 +87,10 @@ def get_metrics(*, store_name="default"):
     return csv_files
 
 
-def delete_metric(*, store_name="default", metric_name: str):
+def delete_table(*, store_name="default", metric_name: str):
     # Getting commit history
     commit_history = list(
-        get_metric_history(store_name=store_name, metric_name=metric_name)
+        get_table_history(store_name=store_name, metric_name=metric_name)
     )
 
     # If there's no commit, exit
@@ -118,7 +118,7 @@ def delete_metric(*, store_name="default", metric_name: str):
     repo.git.branch("-D", tmp_branch)
 
 
-def get_metric_history(*, store_name="default", metric_name: str) -> Iterator[Commit]:
+def get_table_history(*, store_name="default", metric_name: str) -> Iterator[Commit]:
     repo = get_or_init_repo(store_name=store_name)
     metric_file_name = f"{metric_name}.csv"
     commits = repo.iter_commits(paths=metric_file_name)

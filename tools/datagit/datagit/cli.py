@@ -151,7 +151,7 @@ def snapshot():
         df = dbt_adapter_query(adapter, text_query)
         df["dbt_valid_from"] = pd.to_datetime(df["dbt_valid_from"])
 
-        metric_history = local_connector.get_metric_history(metric_name=metric_name)
+        metric_history = local_connector.get_table_history(metric_name=metric_name)
         latest_commit = next(metric_history, None)
         if latest_commit is not None:
             authored_date = latest_commit.authored_date
@@ -241,11 +241,11 @@ def create(table, row_number):
 )
 def update(table, row_number):
     if not table:
-        tables = local_connector.get_metrics()
+        tables = local_connector.get_tables()
         [table, table_index] = select_from_list("Please enter table number", tables)
 
     click.echo("Updating seed file...")
-    dataframe = local_connector.get_metric(metric_name=table)
+    dataframe = local_connector.get_table(metric_name=table)
     drifted_dataset = insert_drift(dataframe, row_number)
     local_connector.store_table(table_name=table, table_dataframe=drifted_dataset)
 
@@ -256,11 +256,11 @@ def update(table, row_number):
     help="name of your table",
 )
 def delete(table):
-    tables = local_connector.get_metrics()
+    tables = local_connector.get_tables()
     if not table:
-        tables = local_connector.get_metrics()
+        tables = local_connector.get_tables()
         [table, table_index] = select_from_list("Please enter table number", tables)
-    local_connector.delete_metric(metric_name=table)
+    local_connector.delete_table(metric_name=table)
 
 
 @cli_entrypoint.command()
@@ -279,7 +279,7 @@ def delete(table):
 )
 def load_csv(csvpathfile, table, unique_key_column, date_column):
     if not table:
-        tables = local_connector.get_metrics()
+        tables = local_connector.get_tables()
         table = click.prompt(
             "Please enter table name (exising or not)", type=click.Choice(tables)
         )
