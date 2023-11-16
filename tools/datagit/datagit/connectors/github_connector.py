@@ -64,7 +64,10 @@ class GithubConnector:
         print("Table created")
 
     def close_pullrequests(self, title: str):
-        pass
+        pulls = self.repo.get_pulls(state="open")
+        for pull in pulls:
+            if pull.title == title:
+                pull.edit(state="closed")
 
     def create_pullrequest(
         self, title: str, file_path: str, description_body: str, branch: str
@@ -207,6 +210,7 @@ class GithubConnector:
 
         if pr_message != "":
             title = "New drift detected " + table_name
+            self.close_pullrequests(title=title)
             self.create_pullrequest(
                 title=title,
                 file_path=table_name,
