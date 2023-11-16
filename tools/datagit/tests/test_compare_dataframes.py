@@ -29,9 +29,7 @@ class TestStoreMetric(unittest.TestCase):
             raise Exception("drift_context is None")
 
         # Call the function being tested
-        print("drift_context", drift_context)
         result = generate_drift_description(drift_context)
-        print("result", result)
 
         # Define the expected result
         expected_result = "- 🆕 1 addition\n- ♻️ 0 modification\n- 🗑️ 1 deletion"

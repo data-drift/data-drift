@@ -36,9 +36,6 @@ def dataframe_update_breakdown(
     if final_dataframe.index.name != "unique_key":
         final_dataframe = final_dataframe.set_index("unique_key")
 
-    common_index = final_dataframe.index.intersection(initial_dataframe.index)
-    initial_dataframe = initial_dataframe.reindex(index=common_index)
-
     columns_added = set(final_dataframe.columns) - set(initial_dataframe.columns)
     columns_removed = set(initial_dataframe.columns) - set(final_dataframe.columns)
 
@@ -112,36 +109,6 @@ class DriftBreakdownResult(TypedDict):
     with_deleted_and_added_and_modified: pd.DataFrame
 
 
-def drift_breakdown(
-    before_drift: pd.DataFrame, after_drift: pd.DataFrame
-) -> DriftBreakdownResult:
-    # If 'unique_key' is not the index yet, set it as the index
-    if before_drift.index.name != "unique_key":
-        before_drift = before_drift.set_index("unique_key")
-
-    if after_drift.index.name != "unique_key":
-        after_drift = after_drift.set_index("unique_key")
-
-    # Find keys that were deleted, added, or stayed the same
-    deleted_keys = before_drift.index.difference(after_drift.index)
-
-    added_keys = after_drift.index.difference(before_drift.index)
-
-    # DataFrame without deleted lines
-    without_deleted = before_drift.drop(deleted_keys).sort_index()
-
-    # DataFrame with added lines
-    with_added = pd.concat([without_deleted, after_drift.loc[added_keys]]).sort_index()
-    after_drift = after_drift.reindex(
-        index=with_added.index, columns=with_added.columns
-    )
-    return DriftBreakdownResult(
-        with_deleted=without_deleted,
-        with_deleted_and_added=with_added,
-        with_deleted_and_added_and_modified=after_drift,
-    )
-
-
 def summarize_dataframe_updates(
     initial_df: pd.DataFrame,
     final_df: pd.DataFrame,
@@ -169,8 +136,6 @@ def summarize_dataframe_updates(
 
     initial_df = initial_df.astype(str)
     final_df = final_df.astype(str)
-
-    final_df = final_df.reindex(index=initial_df.index)
 
     deleted_rows = initial_df[~initial_df.index.isin(final_df.index)]
 
