@@ -5,9 +5,7 @@ from typing import Iterator, Optional
 from datagit.dataset_helpers import sort_dataframe_on_first_column_and_assert_is_unique
 from datagit.drift_evaluators import (
     DefaultDriftEvaluator,
-    DriftEvaluator,
     DriftEvaluatorAbstractClass,
-    auto_merge_drift,
     drift_summary_to_string,
 )
 from .dataframe_update_breakdown import (

@@ -64,9 +64,6 @@ class DriftEvaluation(TypedDict):
     message: str
 
 
-DriftEvaluator = Callable[[DriftEvaluatorContext], DriftEvaluation]
-
-
 class DriftEvaluatorAbstractClass(ABC):
     @staticmethod
     @abstractmethod

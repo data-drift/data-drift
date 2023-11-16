@@ -1,11 +1,9 @@
 from datagit.drift_evaluators import (
     DefaultDriftEvaluator,
     DriftEvaluation,
-    DriftEvaluator,
     DriftEvaluatorAbstractClass,
     DriftEvaluatorContext,
     DriftSummary,
-    auto_merge_drift,
     safe_drift_evaluator,
 )
 import pandas as pd

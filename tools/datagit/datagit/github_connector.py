@@ -8,9 +8,7 @@ import pandas as pd
 from github import Github, Repository, ContentFile, GithubException
 from datagit.drift_evaluators import (
     DefaultDriftEvaluator,
-    DriftEvaluator,
     DriftEvaluatorAbstractClass,
-    auto_merge_drift,
     drift_summary_to_string,
 )
 from datagit.dataset_helpers import (
