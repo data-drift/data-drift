@@ -9,10 +9,18 @@ class TestStoreMetric(unittest.TestCase):
     def test_compare_dataframes_with_1_addition_and_1_deletion(self):
         # Define the test dataframes
         df1 = pd.DataFrame(
-            {"unique_key": [1, 2, 3], "name": ["Alice", "Bob", "Charlie"]}
+            {
+                "unique_key": [1, 2, 3],
+                "name": ["Alice", "Bob", "Charlie"],
+                "date": ["2022-01-01", "2022-01-01", "2022-01-01"],
+            }
         )
         df2 = pd.DataFrame(
-            {"unique_key": [2, 3, 4], "name": ["Bob", "Charlie", "Dave"]}
+            {
+                "unique_key": [2, 3, 4],
+                "name": ["Bob", "Charlie", "Dave"],
+                "date": ["2022-01-01", "2022-01-01", "2022-01-01"],
+            }
         )
 
         break_down = dataframe_update_breakdown(df1, df2)
@@ -21,7 +29,9 @@ class TestStoreMetric(unittest.TestCase):
             raise Exception("drift_context is None")
 
         # Call the function being tested
+        print("drift_context", drift_context)
         result = generate_drift_description(drift_context)
+        print("result", result)
 
         # Define the expected result
         expected_result = "- 🆕 1 addition\n- ♻️ 0 modification\n- 🗑️ 1 deletion"
@@ -32,9 +42,19 @@ class TestStoreMetric(unittest.TestCase):
     def test_compare_dataframes_with_2_deletions(self):
         # Define the test dataframes
         df1 = pd.DataFrame(
-            {"unique_key": [1, 2, 3], "name": ["Alice", "Bob", "Charlie"]}
+            {
+                "unique_key": [1, 2, 3],
+                "name": ["Alice", "Bob", "Charlie"],
+                "date": ["2022-01-01", "2022-01-01", "2022-01-01"],
+            }
         )
-        df2 = pd.DataFrame({"unique_key": [2], "name": ["Bob"]})
+        df2 = pd.DataFrame(
+            {
+                "unique_key": [2],
+                "name": ["Bob"],
+                "date": ["2022-01-01"],
+            }
+        )
 
         break_down = dataframe_update_breakdown(df1, df2)
         drift_context = break_down["DRIFT"]["drift_context"]
@@ -51,9 +71,19 @@ class TestStoreMetric(unittest.TestCase):
 
     def test_compare_dataframes_with_2_additions(self):
         # Define the test dataframes
-        df1 = pd.DataFrame({"unique_key": [2], "name": ["Bob"]})
+        df1 = pd.DataFrame(
+            {
+                "unique_key": [2],
+                "name": ["Bob"],
+                "date": ["2022-01-01"],
+            }
+        )
         df2 = pd.DataFrame(
-            {"unique_key": [1, 2, 3], "name": ["Alice", "Bob", "Charlie"]}
+            {
+                "unique_key": [1, 2, 3],
+                "name": ["Alice", "Bob", "Charlie"],
+                "date": ["2022-01-01", "2022-01-01", "2022-01-01"],
+            }
         )
 
         break_down = dataframe_update_breakdown(df1, df2)
@@ -72,10 +102,18 @@ class TestStoreMetric(unittest.TestCase):
     def test_compare_dataframes_with_2_modifications(self):
         # Define the test dataframes
         df1 = pd.DataFrame(
-            {"unique_key": [1, 2, 3], "name": ["Alice", "Bob", "Charlie"]}
+            {
+                "unique_key": [1, 2, 3],
+                "name": ["Alice", "Bob", "Charlie"],
+                "date": ["2022-01-01", "2022-01-01", "2022-01-01"],
+            }
         )
         df2 = pd.DataFrame(
-            {"unique_key": [1, 2, 3], "name": ["Alixe", "Bob", "Charles"]}
+            {
+                "unique_key": [1, 2, 3],
+                "name": ["Alixe", "Bob", "Charles"],
+                "date": ["2022-01-01", "2022-01-01", "2022-01-01"],
+            }
         )
 
         break_down = dataframe_update_breakdown(df1, df2)
@@ -94,10 +132,18 @@ class TestStoreMetric(unittest.TestCase):
     def test_compare_dataframes_with_additions_deletions_modifications(self):
         # Define the test dataframes
         df1 = pd.DataFrame(
-            {"unique_key": [1, 2, 3], "name": ["Alice", "Bob", "Charlie"]}
+            {
+                "unique_key": [1, 2, 3],
+                "name": ["Alice", "Bob", "Charlie"],
+                "date": ["2022-01-01", "2022-01-01", "2022-01-01"],
+            }
         )
         df2 = pd.DataFrame(
-            {"unique_key": [1, 3, 4], "name": ["Alixe", "Charles", "Dave"]}
+            {
+                "unique_key": [1, 3, 4],
+                "name": ["Alixe", "Charles", "Dave"],
+                "date": ["2022-01-01", "2022-01-01", "2022-01-01"],
+            }
         )
 
         break_down = dataframe_update_breakdown(df1, df2)

@@ -38,7 +38,6 @@ def dataframe_update_breakdown(
 
     common_index = final_dataframe.index.intersection(initial_dataframe.index)
     initial_dataframe = initial_dataframe.reindex(index=common_index)
-    print("common_index length", len(common_index))
 
     columns_added = set(final_dataframe.columns) - set(initial_dataframe.columns)
     columns_removed = set(initial_dataframe.columns) - set(final_dataframe.columns)
