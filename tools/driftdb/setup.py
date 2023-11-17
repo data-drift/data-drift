@@ -11,14 +11,14 @@ setup(
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     entry_points={"console_scripts": ["driftdb=driftdb.cli:cli_entrypoint"]},
-    url="https://github.com/data-drift/data-drift/tree/main/tools/datagit",
+    url="https://github.com/data-drift/data-drift/tree/main/tools/driftdb",
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
     package_data={
-        "datagit": [
+        "driftdb": [
             "bin/datadrift-mac-m1",
             "bin/datadrift-mac-intel",
             "bin/datadrift-linux",

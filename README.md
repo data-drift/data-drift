@@ -14,7 +14,7 @@
   <a href="https://github.com/data-drift/data-drift/stargazers"><img src="https://img.shields.io/github/stars/data-drift/data-drift?style=flat-square" alt="Github Stars"></a>
   <a href="https://github.com/data-drift/data-drift/actions/workflows/datadrift-build.yml"><img src="https://img.shields.io/github/actions/workflow/status/data-drift/data-drift/datadrift-build.yml?style=flat-square" alt="Data-Drift Build"></a>
   <a href="https://main--64be84b7fe2172aa386216b8.chromatic.com/?path=/story/drift-dualtable--simple-case"><img src="https://img.shields.io/badge/storybook-visit-FF4785.svg?style=flat-square&logo=storybook" alt="Storybook"></a>
-  <a href="https://pypi.org/project/datagit/"><img src="https://img.shields.io/pypi/v/datagit?style=flat-square" alt="DataGit version"></a>
+  <a href="https://pypi.org/project/driftdb/"><img src="https://img.shields.io/pypi/v/driftdb?style=flat-square" alt="DataGit version"></a>
 </p>
 
 <h1 align="center" >Metrics Observability & Troubleshooting</h1>
@@ -28,11 +28,11 @@
   </a>
 </p>
 
-Data monitoring tools fail by focusing on static tests (eg. null, unique, expected values) and metadata monitoring (eg. column-level). 
-</br> 
+Data monitoring tools fail by focusing on static tests (eg. null, unique, expected values) and metadata monitoring (eg. column-level).
+</br>
 **Data teams detect and solve data issues faster with Datadrift's row-level monitoring & troubleshooting.**
 
-</br> 
+</br>
 
 # 🚀 Quickstart
 
@@ -49,12 +49,13 @@ pip install driftdb
 Put the probe in your pipeline.
 
 ```python
->>> from datagit import connector
->>> connector.store_metric(dataframe=dataframe, filepath="data/act_metrics_finance/mrr")
+>>> from driftdb.connectors.workflow import snapshot_table
+>>> snapshot_table(connector, table_dataframe=dataframe, table_name="revenue")
+
 
 ```
 
-For a step-by-step guide on the python installation, see the [docs](https://pypi.org/project/datagit/).
+For a step-by-step guide on the python installation, see the [docs](https://pypi.org/project/driftdb/).
 
 ## Datadrift cloud
 
@@ -62,10 +63,11 @@ We are in development and we would love to do the installation with you. [Fill t
 
 </br>
 
-# ⚡️ Key Features 
+# ⚡️ Key Features
 
 ## 🔮 Metrics monitoring & custom alerting
-Get full visibility into metrics variation and pro-actively detect data quality issues. Become aware of unknown unknowns with metric drift custom alerting. 
+
+Get full visibility into metrics variation and pro-actively detect data quality issues. Become aware of unknown unknowns with metric drift custom alerting.
 
   <a href="https://www.data-drift.io">
     <img src="./datadrift-new-drift-alert.png" alt="DataDrift new drift custom alerting" width="800px"/>
@@ -74,6 +76,7 @@ Get full visibility into metrics variation and pro-actively detect data quality 
 </br>
 
 ## 🧑‍🎤 Automated troubleshooting & reconciliation
+
 Operationalize your monitoring and solve your underlying data quality issue with lineage drill-down to understand the root cause of the problem.
 
   <a href="https://www.data-drift.io">
@@ -83,6 +86,7 @@ Operationalize your monitoring and solve your underlying data quality issue with
 </br>
 
 ## 💎 Metric issues management & changelog
+
 Give visibility to data consumers with metric changelog and in-context explanations.
 
   <a href="https://www.data-drift.io">
@@ -92,6 +96,7 @@ Give visibility to data consumers with metric changelog and in-context explanati
 </br>
 
 ## 🧠 And much more
+
 We are in the early days of Datadrift. Just open a new [issue](https://github.com/data-drift/data-drift/issues) to tell us more about it and see how we could help!
 
 </br>

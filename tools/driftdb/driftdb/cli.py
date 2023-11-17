@@ -36,7 +36,7 @@ def dbt():
 @click.option(
     "--repo",
     default=lambda: os.environ.get("DATADRIFT_GITHUB_REPO", ""),
-    help="The datagit repo in the form org/repo",
+    help="The driftdb repo in the form org/repo",
 )
 @click.option(
     "--storage",

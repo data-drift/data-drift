@@ -77,7 +77,7 @@ The granularity of the dataframe depends on every use case:
 
 The unique_key is used to detect a modification in historical data
 
-In case you have duplicated lines, datagit will automatically rename them with `-duplicate-n`
+In case you have duplicated lines, driftdb will automatically rename them with `-duplicate-n`
 
 ```plaintext
   unique_key  value
