@@ -144,6 +144,7 @@ def summarize_dataframe_updates(
     common_indices = initial_df.index.intersection(final_df.index)
     common_rows_initial = initial_df.loc[common_indices]
     common_rows_final = final_df.loc[common_indices]
+    common_rows_final = common_rows_final.reindex(index=common_rows_initial.index)
 
     changes = common_rows_initial != common_rows_final
     changed_rows_index = changes[changes.any(axis=1)].index
