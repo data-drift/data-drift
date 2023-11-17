@@ -1,5 +1,5 @@
 import traceback
-from datagit.drift_evaluator.interface import DriftEvaluatorContext
+from driftdb.drift_evaluator.interface import DriftEvaluatorContext
 import pandas as pd
 
 

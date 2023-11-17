@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import Optional
 
-from datagit.connectors.abstract_connector import AbstractConnector
+from driftdb.connectors.abstract_connector import AbstractConnector
 from .common import find_date_column
 from ..dataframe.dataframe_update_breakdown import (
     dataframe_update_breakdown,
