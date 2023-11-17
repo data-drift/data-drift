@@ -1,13 +1,13 @@
 import click
 import json
-from datagit.dataset import generate_dataframe, insert_drift
+from .dataframe.seed import generate_dataframe, insert_drift
 from datagit.server import start_server
 import numpy as np
 import pandas as pd
 import os
-from datagit import github_connector
-from datagit import local_connector
-from datagit.drift_evaluators import auto_merge_drift
+from datagit.connectors.workflow import snapshot_table
+from datagit.connectors.github_connector import GithubConnector
+from datagit.connectors.local_connector import LocalConnector
 from github import Github
 from . import version
 
@@ -83,17 +83,21 @@ def run(token, repo, storage, project_dir):
             dataframe = dbt_adapter_query(adapter, query)
 
             if storage == "github":
-                github_connector.store_table(
-                    table_dataframe=dataframe,
+                github_connector = GithubConnector(
                     github_client=Github(token),
-                    branch="main",
                     github_repository_name=repo,
+                )
+                snapshot_table(
+                    connector=github_connector,
+                    table_dataframe=dataframe,
                     table_name="/dbt-drift/metrics/" + node["name"] + ".csv",
-                    drift_evaluator=auto_merge_drift,
                 )
             else:
-                local_connector.store_table(
-                    table_name=node["name"], table_dataframe=dataframe
+                local_connector = LocalConnector()
+                snapshot_table(
+                    connector=local_connector,
+                    table_name=node["name"],
+                    table_dataframe=dataframe,
                 )
 
 
@@ -151,7 +155,8 @@ def snapshot():
         df = dbt_adapter_query(adapter, text_query)
         df["dbt_valid_from"] = pd.to_datetime(df["dbt_valid_from"])
 
-        metric_history = local_connector.get_metric_history(metric_name=metric_name)
+        local_connector = LocalConnector()
+        metric_history = local_connector.get_table_history(table_name=metric_name)
         latest_commit = next(metric_history, None)
         if latest_commit is not None:
             authored_date = latest_commit.authored_date
@@ -190,7 +195,9 @@ def snapshot():
             local_tz = get_localzone()
             localized_date = date.replace(tzinfo=local_tz)
 
-            local_connector.store_table(
+            local_connector = LocalConnector()
+            snapshot_table(
+                connector=local_connector,
                 table_name=metric_name,
                 table_dataframe=data_as_of_date,
                 measure_date=localized_date,
@@ -224,8 +231,12 @@ def create(table, row_number):
         table = click.prompt("Table name")
     click.echo("Creating seed file...")
     dataframe = generate_dataframe(row_number)
-    click.echo(dataframe)
-    local_connector.store_table(table_name=table, table_dataframe=dataframe)
+
+    click.echo(dataframe.columns)
+    local_connector = LocalConnector()
+    snapshot_table(
+        connector=local_connector, table_name=table, table_dataframe=dataframe
+    )
     click.echo("Creating seed created...")
 
 
@@ -240,27 +251,36 @@ def create(table, row_number):
     help="Number of line to update",
 )
 def update(table, row_number):
+    local_connector = LocalConnector()
+
     if not table:
-        tables = local_connector.get_metrics()
+        tables = local_connector.get_tables()
         [table, table_index] = select_from_list("Please enter table number", tables)
 
     click.echo("Updating seed file...")
-    dataframe = local_connector.get_metric(metric_name=table)
+    dataframe = local_connector.get_table(table_name=table)
+    if dataframe is None:
+        raise Exception("Table not found")
     drifted_dataset = insert_drift(dataframe, row_number)
-    local_connector.store_table(table_name=table, table_dataframe=drifted_dataset)
+    local_connector = LocalConnector()
+
+    snapshot_table(
+        connector=local_connector, table_name=table, table_dataframe=drifted_dataset
+    )
 
 
-@cli_entrypoint.command()
+@cli_entrypoint.command(name="delete")
 @click.option(
     "--table",
     help="name of your table",
 )
-def delete(table):
-    tables = local_connector.get_metrics()
+def delete_table(table):
+    local_connector = LocalConnector()
+    tables = local_connector.get_tables()
     if not table:
-        tables = local_connector.get_metrics()
+        tables = local_connector.get_tables()
         [table, table_index] = select_from_list("Please enter table number", tables)
-    local_connector.delete_metric(metric_name=table)
+    local_connector.delete_table(table_name=table)
 
 
 @cli_entrypoint.command()
@@ -278,8 +298,9 @@ def delete(table):
     help="name of your date column",
 )
 def load_csv(csvpathfile, table, unique_key_column, date_column):
+    local_connector = LocalConnector()
     if not table:
-        tables = local_connector.get_metrics()
+        tables = local_connector.get_tables()
         table = click.prompt(
             "Please enter table name (exising or not)", type=click.Choice(tables)
         )
@@ -310,7 +331,10 @@ def load_csv(csvpathfile, table, unique_key_column, date_column):
         ), f"Column {date_column} does not exist in CSV file"
         dataframe.insert(1, "date", dataframe[date_column])
 
-    local_connector.store_table(table_name=table, table_dataframe=dataframe)
+    local_connector = LocalConnector()
+    snapshot_table(
+        connector=local_connector, table_name=table, table_dataframe=dataframe
+    )
 
 
 @cli_entrypoint.group()
@@ -318,14 +342,14 @@ def store():
     pass
 
 
-@store.command()
+@store.command(name="delete")
 @click.option(
     "--store",
     help="name of the store",
     default="default",
 )
-def delete(store):
-    local_connector.delete_store(store_name=store)
+def delete_store(store):
+    LocalConnector.delete_store(store_name=store)
 
 
 def select_from_list(prompt, choices):

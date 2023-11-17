@@ -1,16 +1,10 @@
-import json
 import traceback
 from typing import Callable, Optional, TypedDict
-from datagit.dataset_helpers import compare_dataframes
+
+from .interface import DriftEvaluation, DriftEvaluatorContext, DriftSummary
+from ..dataframe.helpers import generate_drift_description
 import pandas as pd
 from abc import ABC, abstractmethod
-
-
-class DriftSummary(TypedDict):
-    added_rows: pd.DataFrame
-    deleted_rows: pd.DataFrame
-    modified_rows_unique_keys: pd.Index
-    modified_patterns: pd.DataFrame
 
 
 def drift_summary_to_string(drift_summary: DriftSummary) -> str:
@@ -53,20 +47,6 @@ def parse_drift_summary(commit_message: str) -> DriftSummary:
     return drift_summary
 
 
-class DriftEvaluatorContext(TypedDict):
-    before: pd.DataFrame
-    after: pd.DataFrame
-    summary: Optional[DriftSummary]
-
-
-class DriftEvaluation(TypedDict):
-    should_alert: bool
-    message: str
-
-
-DriftEvaluator = Callable[[DriftEvaluatorContext], DriftEvaluation]
-
-
 class DriftEvaluatorAbstractClass(ABC):
     @staticmethod
     @abstractmethod
@@ -84,21 +64,21 @@ class DefaultDriftEvaluator(DriftEvaluatorAbstractClass):
         return auto_merge_drift(data_drift_context)
 
 
+class AlertDriftEvaluator(DriftEvaluatorAbstractClass):
+    @staticmethod
+    def compute_drift_evaluation(
+        data_drift_context: DriftEvaluatorContext,
+    ) -> DriftEvaluation:
+        return alert_drift(data_drift_context)
+
+
 def alert_drift(data_drift_context: DriftEvaluatorContext) -> DriftEvaluation:
-    message = f"Drift detected:\n" + compare_dataframes(
-        data_drift_context["before"],
-        data_drift_context["after"],
-        "unique_key",
-    )
+    message = f"Drift detected:\n" + generate_drift_description(data_drift_context)
     return {"should_alert": True, "message": message}
 
 
 def auto_merge_drift(data_drift_context: DriftEvaluatorContext) -> DriftEvaluation:
-    message = f"Drift detected:\n" + compare_dataframes(
-        data_drift_context["before"],
-        data_drift_context["after"],
-        "unique_key",
-    )
+    message = f"Drift detected:\n" + generate_drift_description(data_drift_context)
     return {
         "should_alert": False,
         "message": message,

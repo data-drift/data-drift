@@ -1,11 +1,9 @@
-from datagit.drift_evaluators import (
+from datagit.drift_evaluator.drift_evaluators import (
     DefaultDriftEvaluator,
     DriftEvaluation,
-    DriftEvaluator,
     DriftEvaluatorAbstractClass,
     DriftEvaluatorContext,
     DriftSummary,
-    auto_merge_drift,
     safe_drift_evaluator,
 )
 import pandas as pd
@@ -53,6 +51,7 @@ def dataframe_update_breakdown(
     step2 = pd.concat([step1, new_data[step1.columns]], axis=0)
 
     step3 = final_dataframe.drop(columns=list(columns_added))
+
     has_drift = not step2.equals(step3)
     drift_summary = None
     drift_context = None
@@ -110,36 +109,6 @@ class DriftBreakdownResult(TypedDict):
     with_deleted_and_added_and_modified: pd.DataFrame
 
 
-def drift_breakdown(
-    before_drift: pd.DataFrame, after_drift: pd.DataFrame
-) -> DriftBreakdownResult:
-    # If 'unique_key' is not the index yet, set it as the index
-    if before_drift.index.name != "unique_key":
-        before_drift = before_drift.set_index("unique_key")
-
-    if after_drift.index.name != "unique_key":
-        after_drift = after_drift.set_index("unique_key")
-
-    # Find keys that were deleted, added, or stayed the same
-    deleted_keys = before_drift.index.difference(after_drift.index)
-
-    added_keys = after_drift.index.difference(before_drift.index)
-
-    # DataFrame without deleted lines
-    without_deleted = before_drift.drop(deleted_keys).sort_index()
-
-    # DataFrame with added lines
-    with_added = pd.concat([without_deleted, after_drift.loc[added_keys]]).sort_index()
-    after_drift = after_drift.reindex(
-        index=with_added.index, columns=with_added.columns
-    )
-    return DriftBreakdownResult(
-        with_deleted=without_deleted,
-        with_deleted_and_added=with_added,
-        with_deleted_and_added_and_modified=after_drift,
-    )
-
-
 def summarize_dataframe_updates(
     initial_df: pd.DataFrame,
     final_df: pd.DataFrame,
@@ -165,7 +134,8 @@ def summarize_dataframe_updates(
     if final_df.index.name != "unique_key":
         final_df = final_df.set_index("unique_key")
 
-    final_df = final_df.reindex(index=initial_df.index)
+    initial_df = initial_df.astype(str)
+    final_df = final_df.astype(str)
 
     deleted_rows = initial_df[~initial_df.index.isin(final_df.index)]
 
@@ -174,12 +144,14 @@ def summarize_dataframe_updates(
     common_indices = initial_df.index.intersection(final_df.index)
     common_rows_initial = initial_df.loc[common_indices]
     common_rows_final = final_df.loc[common_indices]
+    common_rows_final = common_rows_final.reindex(index=common_rows_initial.index)
 
     changes = common_rows_initial != common_rows_final
-    changed_rows = changes[changes.any(axis=1)].index
+    changed_rows_index = changes[changes.any(axis=1)].index
 
+    # There may be rows that have not changed but pandas will consider them as changed
     pattern_changes = {}
-    for key in changed_rows:
+    for key in changed_rows_index:
         for col in common_rows_initial.columns:
             if common_rows_initial.at[key, col] != common_rows_final.at[key, col]:
                 old_value = common_rows_initial.at[key, col]
@@ -208,6 +180,6 @@ def summarize_dataframe_updates(
     return {
         "added_rows": added_rows,
         "deleted_rows": deleted_rows,
-        "modified_rows_unique_keys": changed_rows,
+        "modified_rows_unique_keys": changed_rows_index,
         "modified_patterns": patterns_df,
     }
