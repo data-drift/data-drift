@@ -1,8 +1,8 @@
 import unittest
-from datagit.dataframe.dataframe_update_breakdown import dataframe_update_breakdown
+from driftdb.dataframe.dataframe_update_breakdown import dataframe_update_breakdown
 import pandas as pd
 
-from datagit.dataframe.helpers import generate_drift_description
+from driftdb.dataframe.helpers import generate_drift_description
 
 
 class TestStoreMetric(unittest.TestCase):

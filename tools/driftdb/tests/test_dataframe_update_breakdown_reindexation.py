@@ -1,7 +1,7 @@
 import os
 import unittest
-from datagit.dataframe.dataframe_update_breakdown import dataframe_update_breakdown
-from datagit.dataframe.helpers import (
+from driftdb.dataframe.dataframe_update_breakdown import dataframe_update_breakdown
+from driftdb.dataframe.helpers import (
     sort_dataframe_on_first_column_and_assert_is_unique,
 )
 import pandas as pd

@@ -1,6 +1,6 @@
 import unittest
 import pandas as pd
-from datagit.dataframe.helpers import parse_date_column
+from driftdb.dataframe.helpers import parse_date_column
 
 
 class TestDateParsing(unittest.TestCase):

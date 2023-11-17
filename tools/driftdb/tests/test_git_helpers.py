@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import MagicMock
-from datagit.connectors.github_connector import get_alert_branch_name
+from driftdb.connectors.github_connector import get_alert_branch_name
 import re
 
 

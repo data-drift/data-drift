@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
-from datagit.version import version
+from driftdb.version import version
 
 setup(
     name="driftdb",
@@ -10,7 +10,7 @@ setup(
     description="Historical metric store",
     long_description=open("README-driftdb.md").read(),
     long_description_content_type="text/markdown",
-    entry_points={"console_scripts": ["driftdb=datagit.cli:cli_entrypoint"]},
+    entry_points={"console_scripts": ["driftdb=driftdb.cli:cli_entrypoint"]},
     url="https://github.com/data-drift/data-drift/tree/main/tools/datagit",
     classifiers=[
         "Programming Language :: Python :: 3",

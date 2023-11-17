@@ -3,8 +3,8 @@ from unittest import mock
 from unittest.mock import MagicMock, call
 import pandas as pd
 from github import GithubException
-from datagit.connectors.github_connector import GithubConnector
-from datagit.connectors.workflow import snapshot_table
+from driftdb.connectors.github_connector import GithubConnector
+from driftdb.connectors.workflow import snapshot_table
 from unittest.mock import patch
 
 

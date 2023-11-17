@@ -1,5 +1,5 @@
 import traceback
-from datagit.drift_evaluator.drift_evaluators import (
+from driftdb.drift_evaluator.drift_evaluators import (
     DriftEvaluatorContext,
     DriftEvaluator,
     parse_drift_summary,

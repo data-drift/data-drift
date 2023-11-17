@@ -1,13 +1,13 @@
 import click
 import json
 from .dataframe.seed import generate_dataframe, insert_drift
-from datagit.server import start_server
+from driftdb.server import start_server
 import numpy as np
 import pandas as pd
 import os
-from datagit.connectors.workflow import snapshot_table
-from datagit.connectors.github_connector import GithubConnector
-from datagit.connectors.local_connector import LocalConnector
+from driftdb.connectors.workflow import snapshot_table
+from driftdb.connectors.github_connector import GithubConnector
+from driftdb.connectors.local_connector import LocalConnector
 from github import Github
 from . import version
 
