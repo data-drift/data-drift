@@ -74,22 +74,16 @@ class LocalConnector(AbstractConnector):
         return csv_files
 
     def delete_table(self, table_name: str):
-        # Getting commit history
         commit_history = list(self.get_table_history(table_name=table_name))
-
-        # If there's no commit, exit
         if not commit_history:
             return
 
         repo = self.repo
         active_branch = repo.active_branch
-
-        # Create a new copy of main branch
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         keep_main = f"keep_main_{timestamp}"
         repo.git.checkout("HEAD", b=keep_main)
 
-        # Create a new temporary branch and checkout
         tmp_branch = f"tmp_branch_{timestamp}"
         repo.git.checkout("HEAD", b=tmp_branch)
 
