@@ -50,20 +50,17 @@ class GithubConnector(AbstractConnector):
             return old_dataframe
 
     def init_table(
-        self,
-        file_path: str,
-        dataframe: pd.DataFrame,
+        self, table_name: str, dataframe: pd.DataFrame, measure_date: datetime
     ):
         print("Creating table on branch: " + self.default_branch)
-        commit_message = "New data: " + file_path
+        commit_message = "New data: " + table_name
         print("Commit: " + commit_message)
         self.repo.create_file(
-            file_path,
+            table_name,
             commit_message,
             dataframe.to_csv(index=True, header=True),
             self.default_branch,
         )
-        print("Table created")
 
     def close_pullrequests(self, title: str):
         pulls = self.repo.get_pulls(state="open")
