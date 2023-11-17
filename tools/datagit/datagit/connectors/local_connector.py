@@ -102,8 +102,8 @@ class LocalConnector(AbstractConnector):
         repo.git.branch("-D", tmp_branch)
 
     def get_table_history(self, table_name: str) -> Iterator[Commit]:
-        table_name = f"{table_name}.csv"
-        commits = self.repo.iter_commits(paths=table_name)
+        [table_file_path, table_file_name] = self._get_table_file_path(table_name)
+        commits = self.repo.iter_commits(paths=table_file_name)
         return commits
 
     def _get_table_file_path(self, table_name: str) -> Tuple[str, str]:
