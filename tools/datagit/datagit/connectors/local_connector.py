@@ -1,6 +1,6 @@
 from datetime import datetime
 import os
-from typing import Dict, Iterator, List, Optional, Tuple
+from typing import Dict, Iterator, Optional, Tuple
 
 from .abstract_connector import AbstractConnector
 
