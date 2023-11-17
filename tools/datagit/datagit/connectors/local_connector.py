@@ -1,6 +1,6 @@
 from datetime import datetime
 import os
-from typing import Dict, Iterator, Optional
+from typing import Dict, Iterator, List, Optional
 
 from .abstract_connector import AbstractConnector
 
@@ -25,21 +25,23 @@ class LocalConnector(AbstractConnector):
         self.repo = self.get_or_init_repo(store_name=self.store_name)
         self.store_dir = self.repo.working_dir
 
-    def get_table(self, table_name: str) -> Optional[pd.DataFrame]:
-        store_dir = self.store_dir
+    def _get_table_file_path(self, table_name: str) -> str:
         table_file_name = f"{table_name}.csv"
-        table_file_path = os.path.join(store_dir, table_file_name)
+        table_file_path = os.path.join(self.store_dir, table_file_name)
+        return table_file_path
 
+    def get_table(self, table_name: str) -> Optional[pd.DataFrame]:
+        table_file_path = self._get_table_file_path(table_name)
         if not os.path.isfile(table_file_path):
             return None
-        return pd.read_csv(os.path.join(store_dir, table_file_name))
+        return pd.read_csv(table_file_path)
 
     def init_table(
         self, table_name: str, dataframe: pd.DataFrame, measure_date: datetime
     ):
-        store_dir = self.store_dir
         table_file_name = f"{table_name}.csv"
-        table_file_path = os.path.join(store_dir, table_file_name)
+        table_file_path = self._get_table_file_path(table_name)
+
         table_file_dir = os.path.dirname(table_file_path)
         os.makedirs(table_file_dir, exist_ok=True)
         dataframe.to_csv(table_file_path, index=True, na_rep="NA")
@@ -53,9 +55,8 @@ class LocalConnector(AbstractConnector):
         measure_date: datetime,
         update_breakdown: Dict[str, DataFrameUpdate],
     ):
-        store_dir = self.store_dir
         table_file_name = f"{table_name}.csv"
-        table_file_path = os.path.join(store_dir, table_file_name)
+        table_file_path = self._get_table_file_path(table_name)
         for key, value in update_breakdown.items():
             if value["has_update"]:
                 print("Update: " + key)
@@ -87,7 +88,7 @@ class LocalConnector(AbstractConnector):
         if not commit_history:
             return
 
-        repo = self.get_or_init_repo(store_name=self.store_name)
+        repo = self.repo
         active_branch = repo.active_branch
 
         # Create a new copy of main branch
@@ -108,9 +109,8 @@ class LocalConnector(AbstractConnector):
         repo.git.branch("-D", tmp_branch)
 
     def get_table_history(self, table_name: str) -> Iterator[Commit]:
-        repo = self.get_or_init_repo(store_name=self.store_name)
         table_name = f"{table_name}.csv"
-        commits = repo.iter_commits(paths=table_name)
+        commits = self.repo.iter_commits(paths=table_name)
         return commits
 
     @staticmethod
