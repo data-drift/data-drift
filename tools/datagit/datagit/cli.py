@@ -156,7 +156,7 @@ def snapshot():
         df["dbt_valid_from"] = pd.to_datetime(df["dbt_valid_from"])
 
         local_connector = LocalConnector()
-        metric_history = local_connector.get_table_history(metric_name=metric_name)
+        metric_history = local_connector.get_table_history(table_name=metric_name)
         latest_commit = next(metric_history, None)
         if latest_commit is not None:
             authored_date = latest_commit.authored_date
@@ -258,7 +258,7 @@ def update(table, row_number):
         [table, table_index] = select_from_list("Please enter table number", tables)
 
     click.echo("Updating seed file...")
-    dataframe = local_connector.get_table(metric_name=table)
+    dataframe = local_connector.get_table(table_name=table)
     if dataframe is None:
         raise Exception("Table not found")
     drifted_dataset = insert_drift(dataframe, row_number)
@@ -280,7 +280,7 @@ def delete_table(table):
     if not table:
         tables = local_connector.get_tables()
         [table, table_index] = select_from_list("Please enter table number", tables)
-    local_connector.delete_table(metric_name=table)
+    local_connector.delete_table(table_name=table)
 
 
 @cli_entrypoint.command()

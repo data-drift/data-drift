@@ -25,14 +25,14 @@ class LocalConnector(AbstractConnector):
         self.repo = self.get_or_init_repo(store_name=self.store_name)
         self.store_dir = self.repo.working_dir
 
-    def get_table(self, metric_name: str) -> Optional[pd.DataFrame]:
+    def get_table(self, table_name: str) -> Optional[pd.DataFrame]:
         store_dir = self.store_dir
-        metric_file_name = f"{metric_name}.csv"
-        table_file_path = os.path.join(store_dir, metric_file_name)
+        table_file_name = f"{table_name}.csv"
+        table_file_path = os.path.join(store_dir, table_file_name)
 
         if not os.path.isfile(table_file_path):
             return None
-        return pd.read_csv(os.path.join(store_dir, metric_file_name))
+        return pd.read_csv(os.path.join(store_dir, table_file_name))
 
     def init_table(
         self, table_name: str, dataframe: pd.DataFrame, measure_date: datetime
@@ -79,9 +79,9 @@ class LocalConnector(AbstractConnector):
         ]
         return csv_files
 
-    def delete_table(self, metric_name: str):
+    def delete_table(self, table_name: str):
         # Getting commit history
-        commit_history = list(self.get_table_history(metric_name=metric_name))
+        commit_history = list(self.get_table_history(table_name=table_name))
 
         # If there's no commit, exit
         if not commit_history:
@@ -107,10 +107,10 @@ class LocalConnector(AbstractConnector):
         repo.git.checkout("HEAD", b=active_branch)
         repo.git.branch("-D", tmp_branch)
 
-    def get_table_history(self, metric_name: str) -> Iterator[Commit]:
+    def get_table_history(self, table_name: str) -> Iterator[Commit]:
         repo = self.get_or_init_repo(store_name=self.store_name)
-        metric_file_name = f"{metric_name}.csv"
-        commits = repo.iter_commits(paths=metric_file_name)
+        table_name = f"{table_name}.csv"
+        commits = repo.iter_commits(paths=table_name)
         return commits
 
     @staticmethod
