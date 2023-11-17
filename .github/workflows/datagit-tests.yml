@@ -6,17 +6,17 @@ on:
       - main
       - "ci/*"
     paths:
-      - "tools/datagit/**"
+      - "tools/driftdb/**"
   pull_request:
     paths:
-      - "tools/datagit/**"
+      - "tools/driftdb/**"
 
 jobs:
   test:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: tools/datagit
+        working-directory: tools/driftdb
 
     steps:
       - uses: actions/checkout@v2
