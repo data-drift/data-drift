@@ -197,3 +197,48 @@ class MyDriftEvaluator(DriftEvaluatorAbstractClass):
           return {"should_alert": True, "message": "No this should not happen"}
         return {"should_alert": False, "message": ""}
 ```
+
+# CLI
+
+Instead of storing data on github, you can store data locally and explore it with the cli.
+
+# Getting started
+
+## From dbt snapshot (dbt >= 1.6)
+
+```shell
+pip install driftdb
+
+driftdb dbt snapshot
+driftdb start
+```
+
+## From generated seeds
+
+```shell
+pip install driftdb
+
+driftdb seed create
+driftdb seed update
+
+driftdb start
+```
+
+# Features
+
+## Metrics
+
+### Load a csv
+
+```
+driftdb load-csv path/to/csv
+```
+
+## Data visualization
+
+```
+driftdb start
+```
+
+Start the driftdb, and navigate to [localhost:9741/tables](http://localhost:9741/tables).
+Visualize how a metric evolved, given a period, in a waterfall chart.
