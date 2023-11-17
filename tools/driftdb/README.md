@@ -1,78 +1,72 @@
-# Datagit
+# Driftdb
 
 <p align="center">
-  <a href="https://pypi.org/project/datagit/">
-    <img src="https://img.shields.io/pypi/v/datagit?style=flat-square" alt="DataGit version">
+  <a href="https://pypi.org/project/drift/">
+    <img src="https://img.shields.io/pypi/v/drift?style=flat-square" alt="DriftDb version">
   </a>
-  <a href="https://pypi.org/project/datagit/">
-    <img src="https://img.shields.io/pypi/dm/datagit?style=flat-square" alt="DataGit monthly downloads">
+  <a href="https://pypi.org/project/driftdb/">
+    <img src="https://img.shields.io/pypi/dm/driftdb?style=flat-square" alt="DriftDb monthly downloads">
   </a>
 </p>
 
-**Datagit** is a git based metric store library
+**Driftdb** is a historical metric store
 
 ```python
->>> from datagit import github_connector
->>> from github import Github
+from driftdb.connectors.github_connector import GithubConnector
+from github import Github
 
->>> dataframe = bigquery.Client().query(query).to_dataframe()
+github_connector = GithubConnector(github_client=Github("gh_token"), github_repository_name="org/repo")
+
+
+from driftdb.connectors.workflow import snapshot_table
+
+dataframe = bigquery.Client().query(query).to_dataframe()
 {"unique_key": ['2022-01-01_FR', '2022-01-01_GB'...
->>> github_connector.store_metric(ghClient=Github("Token"), dataframe=dataframe, filepath="Samox/datagit/data/act_metrics_finance/mrr.csv", assignees=["Samox"])
+
+snapshot_table(connector=github_connector, table_dataframe=dataframe, table_name="revenue")
 '🎉 data/act_metrics_finance/mrr.csv Successfully stored!'
-'💩 Historical data change detected, Samox was assigned to it'
+'💩 Historical data change detected, Ammy was assigned to it'
 ```
 
 # Purpose
 
-Non-moving data is a journey, in reality, the data moves, or drifts.
-The purpose of this library is
+Non-moving data is a journey, in reality, the data moves and it has many impacts (Data Integrity and Reconciliation, Predictive Modeling, Historical Data Accuracy)
+The purpose of this library is:
 
-- to parse, sort, sanitize a metric dataset
-- to convert it to CSV
-- then to store it in a Github repository with clean commits for new data, or drifting data.
+- to snapshot the data, and parse the diff in chunks (schema update, new data collection, data duplication, drift...)
+- to store it using a connector
+- to trigger alerts
 
-# Getting Started
+# Getting Started (with Github as a store, it's free)
 
-To get started with Datagit, follow these steps:
+To get started with Driftdb, follow these steps:
 
-1. Create a new repository on GitHub called `datagit` (or whatever other name you prefer) with a README file.
-2. Generate a personal access token on GitHub that has access to the `datagit` repository. You can do this by going to your GitHub settings, selecting "Developer settings", and then "Personal access tokens". Click "Generate new token" and give it the necessary permissions (content and pull requests).
-3. In your data pipelines, when relevant, call `store_metric` with the following parameters
-   - a github client with your token Github("Token")
-   - your metric in a dataframe format
-   - the path of metric in a with a csv format: "your_orga/your_repo/path/to/your.csv"
-   - The owner of the metric
+1. Create a new repository on GitHub called `datadrift` (or whatever other name you prefer) with a README file.
+2. Generate a personal access token on GitHub that has access to the `datadrift` repository. You can do this by going to your GitHub settings, selecting "Developer settings", and then "Personal access tokens". Click "Generate new token" and give it the necessary permissions (content and pull requests).
+3. In your data pipelines, when relevant, call `snapshot_table` with the following parameters
+   - a connector (in this example a github connector)
+   - your table in a dataframe format
+   - the name of the table: "kpi/my_kpi"
 
 For instance
 
 ```python
->>> from datagit import github_connector
->>> github_connector.store_metric(ghClient=Github("Token"), dataframe=dataframe, filepath="Samox/datagit/data/act_metrics_finance/mrr.csv", assignee=["Samox"])
+>>> from driftdb.connectors.github_connector import GithubConnector
+>>> from driftdb.connectors.workflow import snapshot_table
+>>> github_connector = GithubConnector(github_client=Github("gh_token"), github_repository_name="org/repo")
+>>> snapshot_table(connector=github_connector, table_dataframe=dataframe, table_name="revenue")
 ```
 
-That's it! With these steps, you can start using Datagit to store and track your metrics over time.
+That's it! With these steps, you can start using Driftdb to store and track your metrics over time.
 
-## Example
+# Dataframe
 
-```python
->>> githubToken = "github_pat****"
->>> githubRepo = "ReplaceOrgaName/ReplaceRepoName"
->>> import pandas as pd
->>> from datetime import datetime
->>> dataframe = pd.DataFrame({'unique_key': ['a', 'b', 'c'], 'date': [datetime(2023,9,1), datetime(2023,9,1), datetime(2023,9,1)], 'amount': [1001, 1002, 1003], 'is_active': [True, False, True]})
->>> from github import Github
->>> from datagit import github_connector
->>> github_connector.store_metric(ghClient=Github(githubToken), dataframe=dataframe, filepath=githubRepo+"data/act_metrics_finance/mrr.csv")
-```
-
-# Dataset
-
-Datagit is base on the standard dataframe format from [Pandas](https://pandas.pydata.org/docs/).
+Driftdb is base on the standard dataframe format from [Pandas](https://pandas.pydata.org/docs/).
 One can use any library to get the data as long as the format fits the following requirements:
 
 1. The first column of the dataframe must be `unique_key`
 2. The first columns must have only unique keys
-3. The second column must be a date
+3. The second column must be a date (which is the collection date: the booking_date, the order_date etc)
 
 The granularity of the dataframe depends on every use case:
 
@@ -109,19 +103,7 @@ In case you have duplicated lines, datagit will automatically rename them with `
 
 ## 2nd column: Date
 
-The date key is used to detect new historical data, or deleted historical data
-
-## Query Builder
-
-Datagit provides a simple query builder to store a table:
-
-```python
->>> from datagit import query_builder
->>> query = query_builder.build_query(table_id="my_table", unique_key_columns=["organisation_id", "date_month"], date="date_month")
-'SELECT CONCAT(organisation_id, '__', date_month) AS unique_key, date_month as date, * FROM my_table WHERE TRUE ORDER BY 1'
-```
-
-More [examples here](tests/test_query_builder.py)
+The date key is used to detect new historical data, or deleted historical data. And differentiate if a new batch is being collected (which won't be a drift)
 
 # Large Dataset
 
@@ -130,11 +112,11 @@ More [examples here](tests/test_query_builder.py)
 In case of more than 1M rows, partitionning is recomanded using the `partition_and_store_table` function.
 
 ```python
->>> from datagit import github_connector
+>>> from driftdb.connectors.workflow import partition_and_snapshot_table
 
 >>> very_large_dataframe = bigquery.Client().query(query).to_dataframe()
 {"unique_key": ['2022-01-01_FR', '2022-01-01_GB'...
->>> github_connector.partition_and_store_table(ghClient=Github("Token"), dataframe=very_large_dataframe, filepath="Samox/datagit/data/act_metrics_finance/mrr.csv")
+>>> partition_and_snapshot_table(connector,table_dataframe=very_large_dataframe, table_name="act_metrics_finance/mrr.csv")
 '🎁 Partitionning data/act_metrics_finance/mrr.csv...'
 ```
 
@@ -142,27 +124,76 @@ In case of more than 1M rows, partitionning is recomanded using the `partition_a
 
 A drift is a modification of historical data. It can be a modification, addition or deletion in a table that is supposed to be "non-moving data".
 
-## Drift evaluator
+## Drift Evaluator
 
-When a drift is detected, the default behaviour is to trigger an alert and prompt the user to explain the drift before merging it to the dataset. But a custom function can be used to decide weather an alert should be triggered, or if the drift should be merged automatically.
+A drift evaluator is a class that implement the following abstract class:
 
-### Default drift evaluator
+```python
+class DriftEvaluatorAbstractClass(ABC):
+    @staticmethod
+    @abstractmethod
+    def compute_drift_evaluation(
+        data_drift_context: DriftEvaluatorContext,
+    ) -> DriftEvaluation:
+        pass
 
-The default drift evaluator will open a pull request with a message containing the number of addition, modifications and deletions of the drift.
+class DriftEvaluation(TypedDict):
+    should_alert: bool
+    message: str
+```
 
-### Custom drift evaluator
+### Default Drift Evaluator
 
-You can provide a custom evaluator which is a function with the following properties:
+The default drift evaluator will return `should_alert = False`
 
-- parameters:
-  - `data_drift_context``: a dictionnary with:
-  - before (the dataframe before, aka yesterday)
-  - after (the latest dataframe, aka today)
-- return value:
-  - A dictionnary containing:
-  - "should_alert": Boolean, If `True` a pull request will be opened, If `False` the drift will be merged
-  - "message": str, the message to display in the pull request, or the body message of the drift commit
+### Alert Drift Evaluator
 
-### No alert drift evaluator
+The Alert drift evaluator will reuturn `should_alert = True` for all drifts and a message containing the summary of the drift, example:
 
-In case you just want to store the metric in a git branch, this drift evaluator merge the drift in the reported branch without any alert.
+```
+Drift detected:
+- 🆕 0 addition
+- ♻️ 2 modifications
+- 🗑️ 0 deletion
+```
+
+To use the AlertDriftEvaluator, add it when you call snapshot_table like this:
+
+```python
+from driftdb.drift_evaluator.drift_evaluators import AlertDriftEvaluator
+
+snapshot_table(connector, table_dataframe, table_name, drift_evaluator=AlertDriftEvaluator)
+
+```
+
+### Custom Drift Evaluator
+
+You can provide a custom evaluator which is a function with a DriftEvaluatorContext containing the following properties:
+
+```python
+class DriftEvaluatorContext(TypedDict):
+    before: pd.DataFrame
+    after: pd.DataFrame
+    summary: DriftSummary
+
+class DriftSummary(TypedDict):
+    added_rows: pd.DataFrame
+    deleted_rows: pd.DataFrame
+    modified_rows_unique_keys: pd.Index
+    modified_patterns: pd.DataFrame
+
+```
+
+Then implement your class, and use it in snapshot_table.
+
+```python
+class MyDriftEvaluator(DriftEvaluatorAbstractClass):
+    @staticmethod
+    def compute_drift_evaluation(
+        data_drift_context: DriftEvaluatorContext,
+    ) -> DriftEvaluation:
+        # do what you want
+        if there_is_something_I_dont_like:
+          return {"should_alert": True, "message": "No this should not happen"}
+        return {"should_alert": False, "message": ""}
+```
