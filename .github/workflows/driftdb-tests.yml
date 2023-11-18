@@ -1,4 +1,4 @@
-name: Datagit Tests
+name: Driftdb Tests
 
 on:
   push:
