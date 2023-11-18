@@ -9,13 +9,7 @@ from github import Github
 import pandas as pd
 
 
-def run_drift_evaluator(
-    *,
-    drift_evaluator: DriftEvaluator,
-    gh_client: Github,
-    repo_name: str,
-    commit_sha: str
-):
+def run_drift_evaluator(*, drift_evaluator: DriftEvaluator, gh_client: Github, repo_name: str, commit_sha: str):
     #  get drift context from gh_client and commit_sha
     repo = gh_client.get_repo(repo_name)
     commit = repo.get_commit(commit_sha)

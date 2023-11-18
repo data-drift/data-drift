@@ -73,8 +73,7 @@ def run(token, repo, storage, project_dir):
     data_drift_nodes = [
         node
         for node in manifest["nodes"].values()
-        if (node["resource_type"] == "model")
-        & node["config"]["meta"].get("datadrift", False)
+        if (node["resource_type"] == "model") & node["config"]["meta"].get("datadrift", False)
     ]
 
     for node in data_drift_nodes:
@@ -120,11 +119,7 @@ def snapshot():
     with open(f"{project_path}/target/manifest.json") as manifest_file:
         manifest = json.load(manifest_file)
 
-    snapshot_nodes = [
-        node
-        for node in manifest["nodes"].values()
-        if (node["resource_type"] == "snapshot")
-    ]
+    snapshot_nodes = [node for node in manifest["nodes"].values() if (node["resource_type"] == "snapshot")]
 
     [snapshot_name, snapshot_index] = select_from_list(
         "Which snapshot do you want to process?",
@@ -138,9 +133,7 @@ def snapshot():
     default_date_column = "created_at"
 
     # prompt the user for a date column
-    date_column = click.prompt(
-        "Enter the date column name", default=default_date_column
-    )
+    date_column = click.prompt("Enter the date column name", default=default_date_column)
 
     unique_key = node["config"]["unique_key"]
     metric_name = node["name"]
@@ -234,9 +227,7 @@ def create(table, row_number):
 
     click.echo(dataframe.columns)
     local_connector = LocalConnector()
-    snapshot_table(
-        connector=local_connector, table_name=table, table_dataframe=dataframe
-    )
+    snapshot_table(connector=local_connector, table_name=table, table_dataframe=dataframe)
     click.echo("Creating seed created...")
 
 
@@ -264,9 +255,7 @@ def update(table, row_number):
     drifted_dataset = insert_drift(dataframe, row_number)
     local_connector = LocalConnector()
 
-    snapshot_table(
-        connector=local_connector, table_name=table, table_dataframe=drifted_dataset
-    )
+    snapshot_table(connector=local_connector, table_name=table, table_dataframe=drifted_dataset)
 
 
 @cli_entrypoint.command(name="delete")
@@ -301,9 +290,7 @@ def load_csv(csvpathfile, table, unique_key_column, date_column):
     local_connector = LocalConnector()
     if not table:
         tables = local_connector.get_tables()
-        table = click.prompt(
-            "Please enter table name (exising or not)", type=click.Choice(tables)
-        )
+        table = click.prompt("Please enter table name (exising or not)", type=click.Choice(tables))
 
     click.echo(f"Loading CSV file {csvpathfile}...")
     assert os.path.exists(csvpathfile), f"CSV file {csvpathfile} does not exist"
@@ -316,9 +303,7 @@ def load_csv(csvpathfile, table, unique_key_column, date_column):
                 type=click.Choice(dataframe.columns),  # type: ignore
             )
 
-        assert (
-            unique_key_column in dataframe.columns
-        ), f"Column {unique_key_column} does not exist in CSV file"
+        assert unique_key_column in dataframe.columns, f"Column {unique_key_column} does not exist in CSV file"
         dataframe.insert(0, "unique_key", dataframe[unique_key_column])
 
     if "date" not in dataframe.columns:
@@ -326,15 +311,11 @@ def load_csv(csvpathfile, table, unique_key_column, date_column):
             date_column = click.prompt(
                 "Please enter date column name", type=click.Choice(dataframe.columns)  # type: ignore
             )
-        assert (
-            date_column in dataframe.columns
-        ), f"Column {date_column} does not exist in CSV file"
+        assert date_column in dataframe.columns, f"Column {date_column} does not exist in CSV file"
         dataframe.insert(1, "date", dataframe[date_column])
 
     local_connector = LocalConnector()
-    snapshot_table(
-        connector=local_connector, table_name=table, table_dataframe=dataframe
-    )
+    snapshot_table(connector=local_connector, table_name=table, table_dataframe=dataframe)
 
 
 @cli_entrypoint.group()
@@ -365,8 +346,5 @@ def dbt_adapter_query(
     query: str,
 ) -> pd.DataFrame:
     _, table = adapter.execute(query, fetch=True)
-    data = {
-        column_name: table.columns[column_name].values()
-        for column_name in table.column_names
-    }
+    data = {column_name: table.columns[column_name].values() for column_name in table.column_names}
     return pd.DataFrame(data)

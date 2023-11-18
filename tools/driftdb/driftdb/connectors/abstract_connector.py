@@ -21,7 +21,5 @@ class AbstractConnector(ABC):
         pass
 
     @abstractmethod
-    def init_table(
-        self, table_name: str, dataframe: pd.DataFrame, measure_date: datetime
-    ):
+    def init_table(self, table_name: str, dataframe: pd.DataFrame, measure_date: datetime):
         pass

@@ -31,9 +31,7 @@ class LocalConnector(AbstractConnector):
             return None
         return pd.read_csv(table_file_path)
 
-    def init_table(
-        self, table_name: str, dataframe: pd.DataFrame, measure_date: datetime
-    ):
+    def init_table(self, table_name: str, dataframe: pd.DataFrame, measure_date: datetime):
         [table_file_path, table_file_name] = self._get_table_file_path(table_name)
 
         table_file_dir = os.path.dirname(table_file_path)
@@ -66,11 +64,7 @@ class LocalConnector(AbstractConnector):
 
     def get_tables(self):
         repo = self.repo
-        csv_files = [
-            os.path.splitext(f)[0]
-            for f in os.listdir(repo.working_dir)
-            if f.endswith(".csv")
-        ]
+        csv_files = [os.path.splitext(f)[0] for f in os.listdir(repo.working_dir) if f.endswith(".csv")]
         return csv_files
 
     def delete_table(self, table_name: str):

@@ -64,9 +64,7 @@ def rename_duplicates(df):
     counter = df[duplicates].groupby("unique_key").cumcount() + 1
 
     # Format the 'unique_key' for duplicates
-    df.loc[duplicates, "unique_key"] = (
-        df["unique_key"][duplicates] + "-duplicate-" + counter.astype(str)
-    )
+    df.loc[duplicates, "unique_key"] = df["unique_key"][duplicates] + "-duplicate-" + counter.astype(str)
 
     return df
 
@@ -96,9 +94,7 @@ def generate_drift_description(drift_context: DriftEvaluatorContext):
         else:
             result += f"- 🆕 0 addition\n"
         if modifications > 0:
-            result += (
-                f"- ♻️ {modifications} modification{'s' if modifications > 1 else ''}\n"
-            )
+            result += f"- ♻️ {modifications} modification{'s' if modifications > 1 else ''}\n"
         else:
             result += f"- ♻️ 0 modification\n"
         if deletions > 0:

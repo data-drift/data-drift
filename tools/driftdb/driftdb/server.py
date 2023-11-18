@@ -17,13 +17,9 @@ def start_server(open_browser_url="/tables"):
 
     if platform.system() == "Darwin":
         if platform.machine().startswith("arm"):
-            binary_path = pkg_resources.resource_filename(
-                "driftdb", "bin/datadrift-mac-m1"
-            )
+            binary_path = pkg_resources.resource_filename("driftdb", "bin/datadrift-mac-m1")
         else:
-            binary_path = pkg_resources.resource_filename(
-                "driftdb", "bin/datadrift-mac-intel"
-            )
+            binary_path = pkg_resources.resource_filename("driftdb", "bin/datadrift-mac-intel")
     elif platform.system() == "Linux":
         binary_path = pkg_resources.resource_filename("driftdb", "bin/datadrift-linux")
     else:
