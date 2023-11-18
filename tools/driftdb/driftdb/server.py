@@ -10,10 +10,14 @@ from threading import Timer
 
 import pkg_resources
 
+from .logger import get_logger
+
+logger = get_logger(__name__)
+
 
 def start_server(open_browser_url="/tables"):
     if is_port_in_use(9740) or is_port_in_use(9741):
-        print("Server(s) already running on port 9740 or 9741. Exiting.")
+        logger.warn("Server(s) already running on port 9740 or 9741. Exiting.")
         sys.exit()
 
     if platform.system() == "Darwin":
@@ -48,7 +52,7 @@ def start_server(open_browser_url="/tables"):
             super().__init__(*args, directory=DIRECTORY, **kwargs)
 
         def do_GET(self):
-            print(f"Request path: {self.path}")
+            logger.info(f"Request path: {self.path}")
             # If the requested URL maps to an existing file, serve that.
             if os.path.exists(self.translate_path(self.path)):
                 super().do_GET()
@@ -61,9 +65,9 @@ def start_server(open_browser_url="/tables"):
     httpd = socketserver.TCPServer(("", PORT), Handler)
 
     try:
-        print(f"Serving directory '{DIRECTORY}' on port {PORT}")
+        logger.info(f"Serving directory '{DIRECTORY}' on port {PORT}")
         url = f"http://localhost:{PORT}{open_browser_url}"
-        print("Opening browser...", url)
+        logger.info("Opening browser...", url)
 
         def open_url():
             webbrowser.open(url)
@@ -73,11 +77,11 @@ def start_server(open_browser_url="/tables"):
         server_process.wait()
 
     except KeyboardInterrupt:
-        print("Shutting down servers...")
+        logger.info("Shutting down servers...")
         httpd.shutdown()
-        print("Httpd shut down")
+        logger.info("Httpd shut down")
         server_process.terminate()
-        print("Server down")
+        logger.info("Server down")
         sys.exit()
 
 

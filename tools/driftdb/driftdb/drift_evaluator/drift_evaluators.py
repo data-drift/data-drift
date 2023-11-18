@@ -1,11 +1,14 @@
 import traceback
 from abc import ABC, abstractmethod
-from typing import Callable, Optional, TypedDict
+from typing import Callable
 
 import pandas as pd
 
 from ..dataframe.helpers import generate_drift_description
+from ..logger import get_logger
 from .interface import DriftEvaluation, DriftEvaluatorContext, DriftSummary
+
+logger = get_logger(__name__)
 
 
 def drift_summary_to_string(drift_summary: DriftSummary) -> str:
@@ -94,8 +97,8 @@ def safe_drift_evaluator(
         drift_evaluation = drift_evaluator(data_drift_context)
         return drift_evaluation
     except Exception as e:
-        print("Drift evaluator failed: " + str(e))
+        logger.warn("Drift evaluator failed: " + str(e))
         traceback.print_exc()
-        print("Using default drift evaluator")
+        logger.warn("Using default drift evaluator")
         drift_evaluation = auto_merge_drift(data_drift_context)
         return drift_evaluation

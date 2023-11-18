@@ -7,7 +7,10 @@ from git import Commit, Repo
 
 from ..dataframe.dataframe_update_breakdown import DataFrameUpdate
 from ..drift_evaluator.drift_evaluators import drift_summary_to_string
+from ..logger import get_logger
 from .abstract_connector import AbstractConnector
+
+logger = get_logger(__name__)
 
 
 class LocalConnector(AbstractConnector):
@@ -45,7 +48,7 @@ class LocalConnector(AbstractConnector):
         [table_file_path, table_file_name] = self._get_table_file_path(table_name)
         for key, value in update_breakdown.items():
             if value["has_update"]:
-                print("Update: " + key)
+                logger.info("Update: " + key)
                 value["df"].to_csv(table_file_path, na_rep="NA")
                 add_file = [table_file_name]
                 self.repo.index.add(add_file)
@@ -77,7 +80,7 @@ class LocalConnector(AbstractConnector):
         repo.git.checkout("HEAD", b=tmp_branch)
 
         for commit in commit_history:
-            print(f"Deleting commit {commit.hexsha}")
+            logger.info(f"Deleting commit {commit.hexsha}")
             repo.git.rebase("--onto", commit.hexsha + "^", commit.hexsha, tmp_branch)
 
         repo.git.branch("-D", active_branch)
@@ -103,7 +106,7 @@ class LocalConnector(AbstractConnector):
             repo = Repo(store_dir)
             return repo
         except:
-            print(f"The store {store_name} does not exist. Creating it now.")
+            logger.info(f"The store {store_name} does not exist. Creating it now.")
             repo = Repo.init(store_dir)
             repo.index.commit("Init DB")
             return repo

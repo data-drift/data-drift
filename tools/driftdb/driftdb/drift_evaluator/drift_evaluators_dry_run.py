@@ -1,17 +1,21 @@
 import traceback
 
 import pandas as pd
-from github import Github
-
 from driftdb.drift_evaluator.drift_evaluators import (
-    DriftEvaluator,
+    DriftEvaluatorAbstractClass,
     DriftEvaluatorContext,
     parse_drift_summary,
 )
+from github import Github
+
+from ..logger import get_logger
+
+logger = get_logger(__name__)
 
 
-def run_drift_evaluator(*, drift_evaluator: DriftEvaluator, gh_client: Github, repo_name: str, commit_sha: str):
-    #  get drift context from gh_client and commit_sha
+def run_drift_evaluator(
+    *, drift_evaluator: DriftEvaluatorAbstractClass, gh_client: Github, repo_name: str, commit_sha: str
+):
     repo = gh_client.get_repo(repo_name)
     commit = repo.get_commit(commit_sha)
     file = commit.files[0]
@@ -41,7 +45,7 @@ def run_drift_evaluator(*, drift_evaluator: DriftEvaluator, gh_client: Github, r
         commit_message = commit.commit.message
         drift_summary = parse_drift_summary(commit_message)
     except Exception as e:
-        print("Failed to parse drift summary: " + str(e))
+        logger.warn("Failed to parse drift summary: " + str(e))
         traceback.print_exc()
 
     #  run drift evaluator
@@ -53,9 +57,9 @@ def run_drift_evaluator(*, drift_evaluator: DriftEvaluator, gh_client: Github, r
         }
     )
     try:
-        drift_evaluation = drift_evaluator(data_drift_context)
+        drift_evaluation = drift_evaluator.compute_drift_evaluation(data_drift_context)
         #  return result
         return drift_evaluation
     except Exception as e:
-        print("Drift evaluator failed: " + str(e))
+        logger.warn("Drift evaluator failed: " + str(e))
         traceback.print_exc()

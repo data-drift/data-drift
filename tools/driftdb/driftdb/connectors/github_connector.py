@@ -7,8 +7,11 @@ from github import ContentFile, Github, GithubException, Repository
 
 from ..dataframe.dataframe_update_breakdown import DataFrameUpdate, UpdateType
 from ..drift_evaluator.drift_evaluators import drift_summary_to_string
+from ..logger import get_logger
 from .abstract_connector import AbstractConnector
 from .common import get_alert_branch_name
+
+logger = get_logger(__name__)
 
 
 class GithubConnector(AbstractConnector):
@@ -48,9 +51,9 @@ class GithubConnector(AbstractConnector):
             return old_dataframe
 
     def init_table(self, table_name: str, dataframe: pd.DataFrame, measure_date: datetime):
-        print("Creating table on branch: " + self.default_branch)
+        logger.info("Creating table on branch: " + self.default_branch)
         commit_message = "New data: " + table_name
-        print("Commit: " + commit_message)
+        logger.info("Commit: " + commit_message)
         self.repo.create_file(
             table_name,
             commit_message,
@@ -73,14 +76,14 @@ class GithubConnector(AbstractConnector):
                     head=branch,
                     base=self.default_branch,
                 )
-                print("Pull request created: " + pullrequest.html_url)
+                logger.info("Pull request created: " + pullrequest.html_url)
                 existing_assignees = self.assert_assignees_exists()
                 pullrequest.add_to_assignees(*existing_assignees)
             else:
-                print("No assignees, skipping pull request creation")
+                logger.info("No assignees, skipping pull request creation")
         except GithubException as e:
             if e.status == 422:
-                print("Pull request already exists, skipping...")
+                logger.info("Pull request already exists, skipping...")
             else:
                 raise e
 
@@ -92,7 +95,7 @@ class GithubConnector(AbstractConnector):
             branch = None
 
         if not branch:
-            print(f"Branch {branch_name} doesn't exist, creating it...")
+            logger.info(f"Branch {branch_name} doesn't exist, creating it...")
             reported_branch = repo.get_branch(repo.default_branch)
 
             repo.create_git_ref(f"refs/heads/{branch_name}", reported_branch.commit.sha)
@@ -102,7 +105,7 @@ class GithubConnector(AbstractConnector):
         exising_assignees = []
         for assignee in self.assignees:
             if assignee not in members:
-                print(f"Assignee {assignee} does not exist")
+                logger.info(f"Assignee {assignee} does not exist")
             else:
                 exising_assignees.append(assignee)
         return exising_assignees
@@ -120,7 +123,7 @@ class GithubConnector(AbstractConnector):
         """
         # Get the default branch of the repository
         default_branch = self.repo.get_branch(self.default_branch)
-        print(
+        logger.info(
             "Checkout branch: " + branch_name,
             " from branch:" + default_branch.name,
         )
@@ -148,10 +151,10 @@ class GithubConnector(AbstractConnector):
                 content = self.assert_file_exists(file_path)
                 if content is None:
                     response = self.repo.create_file(file_path, commit_message, data, branch)
-                    print(response["commit"].html_url)
+                    logger.info(response["commit"].html_url)
                 else:
                     response = self.repo.update_file(file_path, commit_message, data, content.sha, branch)
-                    print(response["commit"].html_url)
+                    logger.info(response["commit"].html_url)
                 return
             except GithubException as e:
                 if e.status == 409:
@@ -172,7 +175,7 @@ class GithubConnector(AbstractConnector):
         for key, value in update_breakdown.items():
             commit_message = key
             if value["has_update"]:
-                print("Update: " + key)
+                logger.info("Update: " + key)
                 if value["type"] == UpdateType.DRIFT and value["drift_context"] and value["drift_evaluation"]:
                     drift_evaluation = value["drift_evaluation"]
                     commit_message += "\n\n" + drift_evaluation["message"]
