@@ -1,20 +1,17 @@
 from datetime import datetime, timezone
 from typing import Optional
 
+import pandas as pd
+
 from driftdb.connectors.abstract_connector import AbstractConnector
-from .common import find_date_column
-from ..dataframe.dataframe_update_breakdown import (
-    dataframe_update_breakdown,
-)
-from ..dataframe.helpers import (
-    sort_dataframe_on_first_column_and_assert_is_unique,
-)
+
+from ..dataframe.dataframe_update_breakdown import dataframe_update_breakdown
+from ..dataframe.helpers import sort_dataframe_on_first_column_and_assert_is_unique
 from ..drift_evaluator.drift_evaluators import (
     DefaultDriftEvaluator,
     DriftEvaluatorAbstractClass,
 )
-
-import pandas as pd
+from .common import find_date_column
 
 
 def snapshot_table(

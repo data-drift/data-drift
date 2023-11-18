@@ -1,6 +1,8 @@
 import traceback
-from driftdb.drift_evaluator.interface import DriftEvaluatorContext
+
 import pandas as pd
+
+from driftdb.drift_evaluator.interface import DriftEvaluatorContext
 
 
 def assert_dataset_has_unique_key(dataset: pd.DataFrame) -> None:

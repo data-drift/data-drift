@@ -1,18 +1,13 @@
-from datetime import datetime
 import os
+from datetime import datetime
 from typing import Dict, Iterator, Optional, Tuple
 
-from .abstract_connector import AbstractConnector
-
-
-from ..drift_evaluator.drift_evaluators import (
-    drift_summary_to_string,
-)
-from ..dataframe.dataframe_update_breakdown import (
-    DataFrameUpdate,
-)
 import pandas as pd
 from git import Commit, Repo
+
+from ..dataframe.dataframe_update_breakdown import DataFrameUpdate
+from ..drift_evaluator.drift_evaluators import drift_summary_to_string
+from .abstract_connector import AbstractConnector
 
 
 class LocalConnector(AbstractConnector):

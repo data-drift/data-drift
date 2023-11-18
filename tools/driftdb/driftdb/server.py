@@ -1,13 +1,14 @@
 import http.server
 import os
-from threading import Timer
-import webbrowser
-import pkg_resources
 import platform
 import socket
 import socketserver
 import subprocess
 import sys
+import webbrowser
+from threading import Timer
+
+import pkg_resources
 
 
 def start_server(open_browser_url="/tables"):

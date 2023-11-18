@@ -1,7 +1,8 @@
+import random
+
+import numpy as np
 import pandas as pd
 from faker import Faker
-import random
-import numpy as np
 
 
 def generate_dataframe(num_rows=10):

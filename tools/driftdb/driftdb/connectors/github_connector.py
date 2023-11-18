@@ -1,14 +1,14 @@
-from datetime import datetime
 import time
-from typing import Dict, Optional, List
+from datetime import datetime
+from typing import Dict, List, Optional
 
+import pandas as pd
+from github import ContentFile, Github, GithubException, Repository
+
+from ..dataframe.dataframe_update_breakdown import DataFrameUpdate, UpdateType
+from ..drift_evaluator.drift_evaluators import drift_summary_to_string
 from .abstract_connector import AbstractConnector
 from .common import get_alert_branch_name
-
-from ..drift_evaluator.drift_evaluators import drift_summary_to_string
-from ..dataframe.dataframe_update_breakdown import DataFrameUpdate, UpdateType
-import pandas as pd
-from github import Github, Repository, ContentFile, GithubException
 
 
 class GithubConnector(AbstractConnector):

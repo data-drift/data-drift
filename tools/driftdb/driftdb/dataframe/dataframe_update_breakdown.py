@@ -1,3 +1,8 @@
+from enum import Enum
+from typing import Dict, Optional, TypedDict
+
+import pandas as pd
+
 from driftdb.drift_evaluator.drift_evaluators import (
     DefaultDriftEvaluator,
     DriftEvaluation,
@@ -6,9 +11,6 @@ from driftdb.drift_evaluator.drift_evaluators import (
     DriftSummary,
     safe_drift_evaluator,
 )
-import pandas as pd
-from typing import Dict, Optional, TypedDict
-from enum import Enum
 
 
 class UpdateType(Enum):

@@ -1,19 +1,20 @@
-import click
 import json
-from .dataframe.seed import generate_dataframe, insert_drift
-from driftdb.server import start_server
-import numpy as np
-import pandas as pd
 import os
-from driftdb.connectors.workflow import snapshot_table
-from driftdb.connectors.github_connector import GithubConnector
-from driftdb.connectors.local_connector import LocalConnector
-from github import Github
-from . import version
-
 from datetime import datetime
 
+import click
+import numpy as np
+import pandas as pd
+from github import Github
 from tzlocal import get_localzone
+
+from driftdb.connectors.github_connector import GithubConnector
+from driftdb.connectors.local_connector import LocalConnector
+from driftdb.connectors.workflow import snapshot_table
+from driftdb.server import start_server
+
+from . import version
+from .dataframe.seed import generate_dataframe, insert_drift
 
 
 @click.group()
@@ -45,9 +46,9 @@ def dbt():
 )
 @click.option("--project-dir", default=".", help="The dbt project dir")
 def run(token, repo, storage, project_dir):
-    from dbt.cli.main import dbtRunner
-    from dbt.config.runtime import load_profile, load_project, RuntimeConfig
     from dbt.adapters.factory import get_adapter
+    from dbt.cli.main import dbtRunner
+    from dbt.config.runtime import RuntimeConfig, load_profile, load_project
 
     if storage == "github":
         if not repo:
@@ -102,9 +103,9 @@ def run(token, repo, storage, project_dir):
 
 @dbt.command()
 def snapshot():
-    from dbt.cli.main import dbtRunner
-    from dbt.config.runtime import load_profile, load_project, RuntimeConfig
     from dbt.adapters.factory import get_adapter
+    from dbt.cli.main import dbtRunner
+    from dbt.config.runtime import RuntimeConfig, load_profile, load_project
 
     project_dir = "."
     project_path = project_dir

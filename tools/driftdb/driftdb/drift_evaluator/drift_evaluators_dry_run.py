@@ -1,12 +1,13 @@
 import traceback
-from driftdb.drift_evaluator.drift_evaluators import (
-    DriftEvaluatorContext,
-    DriftEvaluator,
-    parse_drift_summary,
-)
-from github import Github
 
 import pandas as pd
+from github import Github
+
+from driftdb.drift_evaluator.drift_evaluators import (
+    DriftEvaluator,
+    DriftEvaluatorContext,
+    parse_drift_summary,
+)
 
 
 def run_drift_evaluator(*, drift_evaluator: DriftEvaluator, gh_client: Github, repo_name: str, commit_sha: str):
