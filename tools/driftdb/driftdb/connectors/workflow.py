@@ -1,20 +1,17 @@
 from datetime import datetime, timezone
 from typing import Optional
 
+import pandas as pd
+
 from driftdb.connectors.abstract_connector import AbstractConnector
-from .common import find_date_column
-from ..dataframe.dataframe_update_breakdown import (
-    dataframe_update_breakdown,
-)
-from ..dataframe.helpers import (
-    sort_dataframe_on_first_column_and_assert_is_unique,
-)
+
+from ..dataframe.dataframe_update_breakdown import dataframe_update_breakdown
+from ..dataframe.helpers import sort_dataframe_on_first_column_and_assert_is_unique
 from ..drift_evaluator.drift_evaluators import (
     DefaultDriftEvaluator,
     DriftEvaluatorAbstractClass,
 )
-
-import pandas as pd
+from .common import find_date_column
 
 
 def snapshot_table(
@@ -27,9 +24,7 @@ def snapshot_table(
 ):
     if measure_date is None:
         measure_date = datetime.now(timezone.utc)
-    table_dataframe = sort_dataframe_on_first_column_and_assert_is_unique(
-        table_dataframe
-    )
+    table_dataframe = sort_dataframe_on_first_column_and_assert_is_unique(table_dataframe)
     if table_dataframe.index.name != "unique_key":
         table_dataframe = table_dataframe.set_index("unique_key")
     table_dataframe = table_dataframe.astype(str)
@@ -42,16 +37,12 @@ def snapshot_table(
 
     if latest_stored_snapshot is None:
         print("Table not found, creating it")
-        connector.init_table(
-            table_name=table_name, dataframe=table_dataframe, measure_date=measure_date
-        )
+        connector.init_table(table_name=table_name, dataframe=table_dataframe, measure_date=measure_date)
         print("Table stored")
         pass
     else:
         print("Table found, updating it")
-        update_breakdown = dataframe_update_breakdown(
-            latest_stored_snapshot, table_dataframe, drift_evaluator
-        )
+        update_breakdown = dataframe_update_breakdown(latest_stored_snapshot, table_dataframe, drift_evaluator)
         if any(item["has_update"] for item in update_breakdown.values()):
             print("Change detected")
             connector.handle_breakdown(

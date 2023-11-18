@@ -1,13 +1,14 @@
 import http.server
 import os
-from threading import Timer
-import webbrowser
-import pkg_resources
 import platform
 import socket
 import socketserver
 import subprocess
 import sys
+import webbrowser
+from threading import Timer
+
+import pkg_resources
 
 
 def start_server(open_browser_url="/tables"):
@@ -17,13 +18,9 @@ def start_server(open_browser_url="/tables"):
 
     if platform.system() == "Darwin":
         if platform.machine().startswith("arm"):
-            binary_path = pkg_resources.resource_filename(
-                "driftdb", "bin/datadrift-mac-m1"
-            )
+            binary_path = pkg_resources.resource_filename("driftdb", "bin/datadrift-mac-m1")
         else:
-            binary_path = pkg_resources.resource_filename(
-                "driftdb", "bin/datadrift-mac-intel"
-            )
+            binary_path = pkg_resources.resource_filename("driftdb", "bin/datadrift-mac-intel")
     elif platform.system() == "Linux":
         binary_path = pkg_resources.resource_filename("driftdb", "bin/datadrift-linux")
     else:

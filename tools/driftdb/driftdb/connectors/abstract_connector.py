@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Dict
-from ..dataframe.dataframe_update_breakdown import DataFrameUpdate
 
 import pandas as pd
+
+from ..dataframe.dataframe_update_breakdown import DataFrameUpdate
 
 
 class AbstractConnector(ABC):
@@ -21,7 +22,5 @@ class AbstractConnector(ABC):
         pass
 
     @abstractmethod
-    def init_table(
-        self, table_name: str, dataframe: pd.DataFrame, measure_date: datetime
-    ):
+    def init_table(self, table_name: str, dataframe: pd.DataFrame, measure_date: datetime):
         pass

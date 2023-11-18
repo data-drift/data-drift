@@ -1,14 +1,14 @@
-from datetime import datetime
 import time
-from typing import Dict, Optional, List
+from datetime import datetime
+from typing import Dict, List, Optional
 
+import pandas as pd
+from github import ContentFile, Github, GithubException, Repository
+
+from ..dataframe.dataframe_update_breakdown import DataFrameUpdate, UpdateType
+from ..drift_evaluator.drift_evaluators import drift_summary_to_string
 from .abstract_connector import AbstractConnector
 from .common import get_alert_branch_name
-
-from ..drift_evaluator.drift_evaluators import drift_summary_to_string
-from ..dataframe.dataframe_update_breakdown import DataFrameUpdate, UpdateType
-import pandas as pd
-from github import Github, Repository, ContentFile, GithubException
 
 
 class GithubConnector(AbstractConnector):
@@ -20,9 +20,7 @@ class GithubConnector(AbstractConnector):
         assignees: Optional[List[str]] = None,
     ):
         self.repo = github_client.get_repo(github_repository_name)
-        self.default_branch = (
-            default_branch if default_branch is not None else self.repo.default_branch
-        )
+        self.default_branch = default_branch if default_branch is not None else self.repo.default_branch
         self.assert_branch_exist(self.repo, self.default_branch)
         self.assignees = assignees if assignees is not None else []
 
@@ -49,9 +47,7 @@ class GithubConnector(AbstractConnector):
             )
             return old_dataframe
 
-    def init_table(
-        self, table_name: str, dataframe: pd.DataFrame, measure_date: datetime
-    ):
+    def init_table(self, table_name: str, dataframe: pd.DataFrame, measure_date: datetime):
         print("Creating table on branch: " + self.default_branch)
         commit_message = "New data: " + table_name
         print("Commit: " + commit_message)
@@ -132,9 +128,7 @@ class GithubConnector(AbstractConnector):
         # Create a new reference to the default branch
 
         try:
-            ref = self.repo.create_git_ref(
-                f"refs/heads/{branch_name}", default_branch.commit.sha
-            )
+            ref = self.repo.create_git_ref(f"refs/heads/{branch_name}", default_branch.commit.sha)
         except GithubException:
             pass
         return
@@ -153,14 +147,10 @@ class GithubConnector(AbstractConnector):
             try:
                 content = self.assert_file_exists(file_path)
                 if content is None:
-                    response = self.repo.create_file(
-                        file_path, commit_message, data, branch
-                    )
+                    response = self.repo.create_file(file_path, commit_message, data, branch)
                     print(response["commit"].html_url)
                 else:
-                    response = self.repo.update_file(
-                        file_path, commit_message, data, content.sha, branch
-                    )
+                    response = self.repo.update_file(file_path, commit_message, data, content.sha, branch)
                     print(response["commit"].html_url)
                 return
             except GithubException as e:
@@ -183,17 +173,11 @@ class GithubConnector(AbstractConnector):
             commit_message = key
             if value["has_update"]:
                 print("Update: " + key)
-                if (
-                    value["type"] == UpdateType.DRIFT
-                    and value["drift_context"]
-                    and value["drift_evaluation"]
-                ):
+                if value["type"] == UpdateType.DRIFT and value["drift_context"] and value["drift_evaluation"]:
                     drift_evaluation = value["drift_evaluation"]
                     commit_message += "\n\n" + drift_evaluation["message"]
                     if value["drift_summary"]:
-                        drift_summary_string = drift_summary_to_string(
-                            value["drift_summary"]
-                        )
+                        drift_summary_string = drift_summary_to_string(value["drift_summary"])
                         commit_message += "\n\n" + drift_summary_string
                     if drift_evaluation["should_alert"]:
                         if branch == self.default_branch:
