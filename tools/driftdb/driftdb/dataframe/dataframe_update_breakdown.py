@@ -2,11 +2,10 @@ from enum import Enum
 from typing import Dict, Optional, TypedDict
 
 import pandas as pd
-
 from driftdb.drift_evaluator.drift_evaluators import (
+    BaseDriftEvaluator,
     DefaultDriftEvaluator,
     DriftEvaluation,
-    DriftEvaluatorAbstractClass,
     DriftEvaluatorContext,
     DriftSummary,
     safe_drift_evaluator,
@@ -30,7 +29,7 @@ class DataFrameUpdate(TypedDict):
 def dataframe_update_breakdown(
     initial_dataframe: pd.DataFrame,
     final_dataframe: pd.DataFrame,
-    drift_evaluator: DriftEvaluatorAbstractClass = DefaultDriftEvaluator(),
+    drift_evaluator: BaseDriftEvaluator = DefaultDriftEvaluator(),
 ) -> Dict[str, DataFrameUpdate]:
     if initial_dataframe.index.name != "unique_key":
         initial_dataframe = initial_dataframe.set_index("unique_key")

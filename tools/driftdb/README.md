@@ -128,7 +128,7 @@ A drift is a modification of historical data. It can be a modification, addition
 A drift evaluator is a class that implement the following abstract class:
 
 ```python
-class DriftEvaluatorAbstractClass(ABC):
+class BaseDriftEvaluator(ABC):
     @staticmethod
     @abstractmethod
     def compute_drift_evaluation(
@@ -186,7 +186,7 @@ class DriftSummary(TypedDict):
 Then implement your class, and use it in snapshot_table.
 
 ```python
-class MyDriftEvaluator(DriftEvaluatorAbstractClass):
+class MyDriftEvaluator(BaseDriftEvaluator):
     @staticmethod
     def compute_drift_evaluation(
         data_drift_context: DriftEvaluatorContext,

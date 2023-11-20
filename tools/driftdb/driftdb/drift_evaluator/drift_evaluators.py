@@ -51,16 +51,15 @@ def parse_drift_summary(commit_message: str) -> DriftSummary:
     return drift_summary
 
 
-class DriftEvaluatorAbstractClass(ABC):
+class BaseDriftEvaluator(ABC):
     @staticmethod
-    @abstractmethod
     def compute_drift_evaluation(
         data_drift_context: DriftEvaluatorContext,
     ) -> DriftEvaluation:
-        pass
+        return {"should_alert": False, "message": ""}
 
 
-class DefaultDriftEvaluator(DriftEvaluatorAbstractClass):
+class DefaultDriftEvaluator(BaseDriftEvaluator):
     @staticmethod
     def compute_drift_evaluation(
         data_drift_context: DriftEvaluatorContext,
@@ -68,7 +67,7 @@ class DefaultDriftEvaluator(DriftEvaluatorAbstractClass):
         return auto_merge_drift(data_drift_context)
 
 
-class AlertDriftEvaluator(DriftEvaluatorAbstractClass):
+class AlertDriftEvaluator(BaseDriftEvaluator):
     @staticmethod
     def compute_drift_evaluation(
         data_drift_context: DriftEvaluatorContext,

@@ -1,11 +1,7 @@
 import traceback
 
 import pandas as pd
-from driftdb.drift_evaluator.drift_evaluators import (
-    DriftEvaluatorAbstractClass,
-    DriftEvaluatorContext,
-    parse_drift_summary,
-)
+from driftdb.drift_evaluator.drift_evaluators import BaseDriftEvaluator, DriftEvaluatorContext, parse_drift_summary
 from github import Github
 
 from ..logger import get_logger
@@ -13,9 +9,7 @@ from ..logger import get_logger
 logger = get_logger(__name__)
 
 
-def run_drift_evaluator(
-    *, drift_evaluator: DriftEvaluatorAbstractClass, gh_client: Github, repo_name: str, commit_sha: str
-):
+def run_drift_evaluator(*, drift_evaluator: BaseDriftEvaluator, gh_client: Github, repo_name: str, commit_sha: str):
     repo = gh_client.get_repo(repo_name)
     commit = repo.get_commit(commit_sha)
     file = commit.files[0]
@@ -61,5 +55,7 @@ def run_drift_evaluator(
         #  return result
         return drift_evaluation
     except Exception as e:
+        logger.warn("Drift evaluator failed: " + str(e))
+        traceback.print_exc()
         logger.warn("Drift evaluator failed: " + str(e))
         traceback.print_exc()
