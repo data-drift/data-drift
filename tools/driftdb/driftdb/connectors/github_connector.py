@@ -39,8 +39,16 @@ class GithubConnector(AbstractConnector):
             else:
                 raise e
 
+    @staticmethod
+    def get_table_file_path(table_name: str) -> str:
+        if table_name.endswith(".csv"):
+            return table_name
+        else:
+            return table_name + ".csv"
+
     def get_table(self, table_name: str) -> Optional[pd.DataFrame]:
-        table_file_content = self.assert_file_exists(table_name)
+        file_path = self.get_table_file_path(table_name)
+        table_file_content = self.assert_file_exists(file_path)
         if table_file_content is None:
             return None
         else:
@@ -55,8 +63,9 @@ class GithubConnector(AbstractConnector):
         logger.info("Creating table on branch: " + self.default_branch)
         commit_message = "New data: " + table_name
         logger.info("Commit: " + commit_message)
+        file_path = self.get_table_file_path(table_name)
         self.repo.create_file(
-            table_name,
+            file_path,
             commit_message,
             dataframe.to_csv(index=True, header=True),
             self.default_branch,
@@ -136,13 +145,15 @@ class GithubConnector(AbstractConnector):
 
     def update_file_with_retry(
         self,
-        file_path,
+        table_name: str,
         commit_message,
         data,
         branch,
         max_retries=3,
     ):
         retries = 0
+
+        file_path = self.get_table_file_path(table_name)
 
         while retries < max_retries:
             try:
@@ -160,7 +171,7 @@ class GithubConnector(AbstractConnector):
                     time.sleep(1)  # Wait for 1 second before retrying
                 else:
                     raise e
-        raise Exception(f"Failed to update file after {max_retries} retries")
+        raise Exception(f"Failed to update ${table_name} file after {max_retries} retries")
 
     def handle_breakdown(
         self,
@@ -188,7 +199,7 @@ class GithubConnector(AbstractConnector):
                         pr_message = pr_message + "\n\n" + drift_evaluation["message"]
 
                 self.update_file_with_retry(
-                    file_path=table_name,
+                    table_name=table_name,
                     commit_message=commit_message,
                     data=value["df"].to_csv(index=True, header=True),
                     branch=branch,

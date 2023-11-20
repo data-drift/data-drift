@@ -12,7 +12,7 @@
 **Driftdb** is a historical metric store
 
 ```python
-from driftdb.connectors.github_connector import GithubConnector
+from driftdb.connectors import GithubConnector
 from github import Github
 
 github_connector = GithubConnector(github_client=Github("gh_token"), github_repository_name="org/repo")
@@ -51,10 +51,9 @@ To get started with Driftdb, follow these steps:
 For instance
 
 ```python
->>> from driftdb.connectors.github_connector import GithubConnector
->>> from driftdb.connectors.workflow import snapshot_table
+>>> from driftdb.connectors import GithubConnector
 >>> github_connector = GithubConnector(github_client=Github("gh_token"), github_repository_name="org/repo")
->>> snapshot_table(connector=github_connector, table_dataframe=dataframe, table_name="revenue")
+>>> github_connector.snapshot_table(table_dataframe=dataframe, table_name="revenue")
 ```
 
 That's it! With these steps, you can start using Driftdb to store and track your metrics over time.
@@ -116,7 +115,7 @@ In case of more than 1M rows, partitionning is recomanded using the `partition_a
 
 >>> very_large_dataframe = bigquery.Client().query(query).to_dataframe()
 {"unique_key": ['2022-01-01_FR', '2022-01-01_GB'...
->>> partition_and_snapshot_table(connector,table_dataframe=very_large_dataframe, table_name="act_metrics_finance/mrr.csv")
+>>> connector.partition_and_snapshot_table(table_dataframe=very_large_dataframe, table_name="act_metrics_finance/mrr")
 '🎁 Partitionning data/act_metrics_finance/mrr.csv...'
 ```
 

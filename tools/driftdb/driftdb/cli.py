@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 from driftdb.connectors.github_connector import GithubConnector
 from driftdb.connectors.local_connector import LocalConnector
-from driftdb.connectors.workflow import snapshot_table
 from driftdb.server import start_server
 from github import Github
 from tzlocal import get_localzone
@@ -89,15 +88,13 @@ def run(token, repo, storage, project_dir):
                     github_client=Github(token),
                     github_repository_name=repo,
                 )
-                snapshot_table(
-                    connector=github_connector,
+                github_connector.snapshot_table(
                     table_dataframe=dataframe,
                     table_name="/dbt-drift/metrics/" + node["name"] + ".csv",
                 )
             else:
                 local_connector = LocalConnector()
-                snapshot_table(
-                    connector=local_connector,
+                local_connector.snapshot_table(
                     table_name=node["name"],
                     table_dataframe=dataframe,
                 )
@@ -229,7 +226,7 @@ def create(table, row_number):
 
     click.echo(dataframe.columns)
     local_connector = LocalConnector()
-    snapshot_table(connector=local_connector, table_name=table, table_dataframe=dataframe)
+    local_connector.snapshot_table(table_name=table, table_dataframe=dataframe)
     click.echo("Creating seed created...")
 
 
@@ -257,7 +254,7 @@ def update(table, row_number):
     drifted_dataset = insert_drift(dataframe, row_number)
     local_connector = LocalConnector()
 
-    snapshot_table(connector=local_connector, table_name=table, table_dataframe=drifted_dataset)
+    local_connector.snapshot_table(table_name=table, table_dataframe=drifted_dataset)
 
 
 @cli_entrypoint.command(name="delete")
@@ -317,7 +314,7 @@ def load_csv(csvpathfile, table, unique_key_column, date_column):
         dataframe.insert(1, "date", dataframe[date_column])
 
     local_connector = LocalConnector()
-    snapshot_table(connector=local_connector, table_name=table, table_dataframe=dataframe)
+    local_connector.snapshot_table(table_name=table, table_dataframe=dataframe)
 
 
 @cli_entrypoint.group()
