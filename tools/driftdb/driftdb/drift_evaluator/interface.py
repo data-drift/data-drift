@@ -16,6 +16,12 @@ class DriftEvaluatorContext(TypedDict):
     summary: Optional[DriftSummary]
 
 
+class NewDataEvaluatorContext(TypedDict):
+    before: pd.DataFrame
+    after: pd.DataFrame
+    added_rows: pd.DataFrame
+
+
 class DriftEvaluation(TypedDict):
     should_alert: bool
     message: str

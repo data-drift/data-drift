@@ -1,12 +1,11 @@
 import traceback
-from abc import ABC, abstractmethod
 from typing import Callable
 
 import pandas as pd
 
 from ..dataframe.helpers import generate_drift_description
 from ..logger import get_logger
-from .interface import DriftEvaluation, DriftEvaluatorContext, DriftSummary
+from .interface import DriftEvaluation, DriftEvaluatorContext, DriftSummary, NewDataEvaluatorContext
 
 logger = get_logger(__name__)
 
@@ -51,10 +50,16 @@ def parse_drift_summary(commit_message: str) -> DriftSummary:
     return drift_summary
 
 
-class BaseDriftEvaluator(ABC):
+class BaseDriftEvaluator:
     @staticmethod
     def compute_drift_evaluation(
         data_drift_context: DriftEvaluatorContext,
+    ) -> DriftEvaluation:
+        return {"should_alert": False, "message": ""}
+
+    @staticmethod
+    def compute_new_data_evaluation(
+        new_data_context: NewDataEvaluatorContext,
     ) -> DriftEvaluation:
         return {"should_alert": False, "message": ""}
 
