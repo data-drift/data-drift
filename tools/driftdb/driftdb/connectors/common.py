@@ -43,3 +43,8 @@ def get_monthly_file_path(file_path, month):
     new_file_path = os.path.join(directory, new_file_name)
 
     return new_file_path
+
+
+def assert_valid_table_name(table_name: str):
+    if table_name.startswith("/"):
+        raise ValueError("Table name cannot start with a '/'")
