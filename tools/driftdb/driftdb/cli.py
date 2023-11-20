@@ -5,16 +5,18 @@ from datetime import datetime
 import click
 import numpy as np
 import pandas as pd
-from github import Github
-from tzlocal import get_localzone
-
 from driftdb.connectors.github_connector import GithubConnector
 from driftdb.connectors.local_connector import LocalConnector
 from driftdb.connectors.workflow import snapshot_table
 from driftdb.server import start_server
+from github import Github
+from tzlocal import get_localzone
 
 from . import version
 from .dataframe.seed import generate_dataframe, insert_drift
+from .logger import get_logger
+
+logger = get_logger(__name__)
 
 
 @click.group()
@@ -128,8 +130,7 @@ def snapshot():
     )
 
     node = snapshot_nodes[snapshot_index]
-    print("Handling node:", node["unique_id"])
-
+    logger.info(f"Handling node: {node['unique_id']}")
     snapshot_table = node["relation_name"]
     default_date_column = "created_at"
 
@@ -158,11 +159,11 @@ def snapshot():
             # Compare only the second part, without the milliseconds, and take dates after the latest measure commit
             df = df.loc[df["dbt_valid_from"].dt.floor("S") > authored_datetime]
 
-        print("Snapshot dates to process:", df)
+        logger.info(f"Snapshot dates to process: {df}")
 
         for index, row in df.iterrows():
             date = row["dbt_valid_from"]
-            print(f"Processing data for date: {date}")
+            logger.info(f"Processing data for date: {date}")
             if pd.isna(date):
                 date = pd.Timestamp.now()
 
@@ -183,7 +184,7 @@ def snapshot():
             )
             data_as_of_date["date"] = data_as_of_date[date_column]
             data_as_of_date["unique_key"] = data_as_of_date[unique_key]
-            print(data_as_of_date)
+            logger.info(data_as_of_date)
 
             # Compute date in UTC format
             local_tz = get_localzone()

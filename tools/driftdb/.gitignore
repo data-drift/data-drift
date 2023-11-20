@@ -21,3 +21,4 @@ build/
 venv/
 
 bin/
+*.log

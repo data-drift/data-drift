@@ -2,16 +2,15 @@ from datetime import datetime, timezone
 from typing import Optional
 
 import pandas as pd
-
 from driftdb.connectors.abstract_connector import AbstractConnector
 
 from ..dataframe.dataframe_update_breakdown import dataframe_update_breakdown
 from ..dataframe.helpers import sort_dataframe_on_first_column_and_assert_is_unique
-from ..drift_evaluator.drift_evaluators import (
-    DefaultDriftEvaluator,
-    DriftEvaluatorAbstractClass,
-)
+from ..drift_evaluator.drift_evaluators import DefaultDriftEvaluator, DriftEvaluatorAbstractClass
+from ..logger import get_logger
 from .common import find_date_column
+
+logger = get_logger(__name__)
 
 
 def snapshot_table(
@@ -36,22 +35,22 @@ def snapshot_table(
     latest_stored_snapshot = connector.get_table(table_name)
 
     if latest_stored_snapshot is None:
-        print("Table not found, creating it")
+        logger.info("Table not found. Creating it")
         connector.init_table(table_name=table_name, dataframe=table_dataframe, measure_date=measure_date)
-        print("Table stored")
+        logger.info("Table stored")
         pass
     else:
-        print("Table found, updating it")
+        logger.info("Table found. Updating it")
         update_breakdown = dataframe_update_breakdown(latest_stored_snapshot, table_dataframe, drift_evaluator)
         if any(item["has_update"] for item in update_breakdown.values()):
-            print("Change detected")
+            logger.info("Change detected")
             connector.handle_breakdown(
                 table_name=table_name,
                 update_breakdown=update_breakdown,
                 measure_date=measure_date,
             )
         else:
-            print("Nothing to update")
+            logger.info("Nothing to update")
             pass
 
 
@@ -62,7 +61,7 @@ def partition_and_snapshot_table(
     measure_date: Optional[datetime] = None,
     table_name: str,
 ) -> None:
-    print("Partitionning table by month...")
+    logger.info("Partitionning table by month...")
 
     table_dataframe["date"] = pd.to_datetime(table_dataframe["date"])
 
@@ -70,7 +69,7 @@ def partition_and_snapshot_table(
 
     # Iterate over the groups and print the sub-dataframes
     for name, group in grouped:
-        print(f"Storing table for Month: {name}")
+        logger.info(f"Storing table for Month: {name}")
         monthly_table_name = get_monthly_file_path(table_name, name.strftime("%Y-%m"))  # type: ignore
         snapshot_table(
             table_dataframe=group,
