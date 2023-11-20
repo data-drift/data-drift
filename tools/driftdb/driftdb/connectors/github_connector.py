@@ -26,6 +26,7 @@ class GithubConnector(AbstractConnector):
         self.default_branch = default_branch if default_branch is not None else self.repo.default_branch
         self.assert_branch_exist(self.repo, self.default_branch)
         self.assignees = assignees if assignees is not None else []
+        self.logger = logger
 
     def assert_file_exists(self, file_path: str) -> Optional[ContentFile.ContentFile]:
         try:
