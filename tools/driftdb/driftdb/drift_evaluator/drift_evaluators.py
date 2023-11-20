@@ -57,6 +57,8 @@ class BaseDriftEvaluator:
     ) -> DriftEvaluation:
         return {"should_alert": False, "message": ""}
 
+
+class BaseNewDataEvaluator:
     @staticmethod
     def compute_new_data_evaluation(
         new_data_context: NewDataEvaluatorContext,
@@ -64,7 +66,11 @@ class BaseDriftEvaluator:
         return {"should_alert": False, "message": ""}
 
 
-class DefaultDriftEvaluator(BaseDriftEvaluator):
+class BaseUpdateEvaluator(BaseDriftEvaluator, BaseNewDataEvaluator):
+    pass
+
+
+class DefaultDriftEvaluator(BaseUpdateEvaluator):
     @staticmethod
     def compute_drift_evaluation(
         data_drift_context: DriftEvaluatorContext,

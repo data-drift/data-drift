@@ -1,10 +1,10 @@
 import traceback
 
 import pandas as pd
-from driftdb.drift_evaluator.drift_evaluators import BaseDriftEvaluator, DriftEvaluatorContext, parse_drift_summary
 from github import Github
 
 from ..logger import get_logger
+from .drift_evaluators import BaseDriftEvaluator, DriftEvaluatorContext, parse_drift_summary
 
 logger = get_logger(__name__)
 

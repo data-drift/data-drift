@@ -4,15 +4,11 @@ from typing import Dict, Optional
 
 import pandas as pd
 
-from ..dataframe.dataframe_update_breakdown import (DataFrameUpdate,
-                                                    dataframe_update_breakdown)
-from ..dataframe.helpers import \
-    sort_dataframe_on_first_column_and_assert_is_unique
-from ..drift_evaluator.drift_evaluators import (
-    BaseDriftEvaluator, DefaultDriftEvaluator)
+from ..dataframe.dataframe_update_breakdown import DataFrameUpdate, dataframe_update_breakdown
+from ..dataframe.helpers import sort_dataframe_on_first_column_and_assert_is_unique
+from ..drift_evaluator.drift_evaluators import BaseUpdateEvaluator, DefaultDriftEvaluator
 from ..logger import get_logger
-from .common import (assert_valid_table_name, find_date_column,
-                     get_monthly_file_path)
+from .common import assert_valid_table_name, find_date_column, get_monthly_file_path
 
 null_logger = get_logger(__name__)
 
@@ -43,7 +39,7 @@ class AbstractConnector(ABC):
         table_dataframe: pd.DataFrame,
         table_name: str,
         measure_date: Optional[datetime] = None,
-        drift_evaluator: BaseDriftEvaluator = DefaultDriftEvaluator(),
+        drift_evaluator: BaseUpdateEvaluator = DefaultDriftEvaluator(),
     ):
         assert_valid_table_name(table_name)
         if measure_date is None:
@@ -96,10 +92,6 @@ class AbstractConnector(ABC):
             self.logger.info(f"Storing table for Month: {name}")
             monthly_table_name = get_monthly_file_path(table_name, name.strftime("%Y-%m"))  # type: ignore
             self.snapshot_table(
-                table_dataframe=group,
-                table_name=monthly_table_name,
-                measure_date=measure_date,
-            )
                 table_dataframe=group,
                 table_name=monthly_table_name,
                 measure_date=measure_date,
