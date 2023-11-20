@@ -35,12 +35,12 @@ def snapshot_table(
     latest_stored_snapshot = connector.get_table(table_name)
 
     if latest_stored_snapshot is None:
-        logger.info("Table not found, creating it")
+        logger.info("Table not found. Creating it")
         connector.init_table(table_name=table_name, dataframe=table_dataframe, measure_date=measure_date)
         logger.info("Table stored")
         pass
     else:
-        logger.info("Table found, updating it")
+        logger.info("Table found. Updating it")
         update_breakdown = dataframe_update_breakdown(latest_stored_snapshot, table_dataframe, drift_evaluator)
         if any(item["has_update"] for item in update_breakdown.values()):
             logger.info("Change detected")

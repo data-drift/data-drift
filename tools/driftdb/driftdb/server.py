@@ -67,7 +67,7 @@ def start_server(open_browser_url="/tables"):
     try:
         logger.info(f"Serving directory '{DIRECTORY}' on port {PORT}")
         url = f"http://localhost:{PORT}{open_browser_url}"
-        logger.info("Opening browser...", url)
+        logger.info(f"Opening browser... {url}")
 
         def open_url():
             webbrowser.open(url)

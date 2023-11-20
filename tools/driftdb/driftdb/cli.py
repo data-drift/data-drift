@@ -130,8 +130,7 @@ def snapshot():
     )
 
     node = snapshot_nodes[snapshot_index]
-    logger.info("Handling node:", node["unique_id"])
-
+    logger.info(f"Handling node: {node['unique_id']}")
     snapshot_table = node["relation_name"]
     default_date_column = "created_at"
 
@@ -160,7 +159,7 @@ def snapshot():
             # Compare only the second part, without the milliseconds, and take dates after the latest measure commit
             df = df.loc[df["dbt_valid_from"].dt.floor("S") > authored_datetime]
 
-        logger.info("Snapshot dates to process:", df)
+        logger.info(f"Snapshot dates to process: {df}")
 
         for index, row in df.iterrows():
             date = row["dbt_valid_from"]

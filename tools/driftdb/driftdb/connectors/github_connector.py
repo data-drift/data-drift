@@ -80,10 +80,10 @@ class GithubConnector(AbstractConnector):
                 existing_assignees = self.assert_assignees_exists()
                 pullrequest.add_to_assignees(*existing_assignees)
             else:
-                logger.info("No assignees, skipping pull request creation")
+                logger.info("No assignees. skipping pull request creation")
         except GithubException as e:
             if e.status == 422:
-                logger.info("Pull request already exists, skipping...")
+                logger.info("Pull request already exists. skipping...")
             else:
                 raise e
 
@@ -95,7 +95,7 @@ class GithubConnector(AbstractConnector):
             branch = None
 
         if not branch:
-            logger.info(f"Branch {branch_name} doesn't exist, creating it...")
+            logger.info(f"Branch {branch_name} doesn't exist. Creating it...")
             reported_branch = repo.get_branch(repo.default_branch)
 
             repo.create_git_ref(f"refs/heads/{branch_name}", reported_branch.commit.sha)
@@ -123,10 +123,7 @@ class GithubConnector(AbstractConnector):
         """
         # Get the default branch of the repository
         default_branch = self.repo.get_branch(self.default_branch)
-        logger.info(
-            "Checkout branch: " + branch_name,
-            " from branch:" + default_branch.name,
-        )
+        logger.info(f"Checkout branch: {branch_name} from branch: {default_branch.name}")
 
         # Create a new reference to the default branch
 
