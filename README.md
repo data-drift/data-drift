@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://discord.gg/GNEyCsrEve"><img src="https://dcbadge.vercel.app/api/server/X2RUXFAm?style=flat-square&theme=discord" alt="Discord"></a>
+  <a href="https://discord.gg/GNEyCsrEve"><img src="https://dcbadge.vercel.app/api/server/GNEyCsrEve?style=flat-square&theme=discord" alt="Discord"></a>
   <a href="https://github.com/data-drift/data-drift/stargazers"><img src="https://img.shields.io/github/stars/data-drift/data-drift?style=flat-square" alt="Github Stars"></a>
   <a href="https://github.com/data-drift/data-drift/actions/workflows/datadrift-build.yml"><img src="https://img.shields.io/github/actions/workflow/status/data-drift/data-drift/datadrift-build.yml?style=flat-square" alt="Data-Drift Build"></a>
   <a href="https://main--64be84b7fe2172aa386216b8.chromatic.com/?path=/story/drift-dualtable--simple-case"><img src="https://img.shields.io/badge/storybook-visit-FF4785.svg?style=flat-square&logo=storybook" alt="Storybook"></a>
