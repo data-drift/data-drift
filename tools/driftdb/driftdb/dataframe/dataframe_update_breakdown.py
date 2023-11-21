@@ -11,6 +11,7 @@ from ..drift_evaluator.drift_evaluators import (
     safe_drift_evaluator,
 )
 from ..drift_evaluator.interface import NewDataEvaluatorContext
+from .helpers import reparse_dataframe
 from .summarize_dataframe_updates import summarize_dataframe_updates
 
 
@@ -61,7 +62,9 @@ def dataframe_update_breakdown(
     new_data_context = None
     new_data_evaluation = None
     if len(new_data) > 0:
-        new_data_context = NewDataEvaluatorContext(before=step1, after=step2, added_rows=new_data)
+        new_data_context = NewDataEvaluatorContext(
+            before=reparse_dataframe(step1), after=reparse_dataframe(step2), added_rows=reparse_dataframe(new_data)
+        )
         new_data_evaluation = drift_evaluator.compute_new_data_evaluation(new_data_context)
 
     step3 = final_dataframe.drop(columns=list(columns_added))
