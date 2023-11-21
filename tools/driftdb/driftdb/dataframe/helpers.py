@@ -1,7 +1,6 @@
 import traceback
 
 import pandas as pd
-
 from driftdb.drift_evaluator.interface import DriftEvaluatorContext
 
 
@@ -81,13 +80,14 @@ def convert_object_to_string(df):
 
 
 def generate_drift_description(drift_context: DriftEvaluatorContext):
-    if drift_context["summary"] is None:
+    if drift_context.summary is None:
         return f"Could not generate drift description"
     try:
-        additions = len(drift_context["summary"]["added_rows"])
-        deletions = len(drift_context["summary"]["deleted_rows"])
+        summary = drift_context.summary
+        additions = len(summary["added_rows"])
+        deletions = len(summary["deleted_rows"])
 
-        modifications = len(drift_context["summary"]["modified_rows_unique_keys"])
+        modifications = len(summary["modified_rows_unique_keys"])
 
         # Construct the result text
         result = ""

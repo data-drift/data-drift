@@ -10,10 +10,11 @@ class DriftSummary(TypedDict):
     modified_patterns: pd.DataFrame
 
 
-class DriftEvaluatorContext(TypedDict):
-    before: pd.DataFrame
-    after: pd.DataFrame
-    summary: Optional[DriftSummary]
+class DriftEvaluatorContext:
+    def __init__(self, before: pd.DataFrame, after: pd.DataFrame, summary: Optional[DriftSummary]):
+        self.before = before
+        self.after = after
+        self.summary = summary
 
 
 class NewDataEvaluatorContext(TypedDict):

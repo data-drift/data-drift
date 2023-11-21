@@ -55,8 +55,8 @@ class LocalConnector(AbstractConnector):
                 commit_message = f"{key}: {table_name}"
                 if value["drift_evaluation"] != None:
                     commit_message += f"\n{value['drift_evaluation']['message']}"
-                if value["drift_context"] != None and value["drift_context"]["summary"] != None:
-                    string_summary = drift_summary_to_string(value["drift_context"]["summary"])
+                if value["drift_context"] != None and value["drift_context"].summary != None:
+                    string_summary = drift_summary_to_string(value["drift_context"].summary)
                     commit_message += "\n\n" + string_summary
                 self.repo.index.commit(message=commit_message, author_date=measure_date)
 

@@ -44,11 +44,9 @@ def run_drift_evaluator(*, drift_evaluator: BaseDriftEvaluator, gh_client: Githu
 
     #  run drift evaluator
     data_drift_context = DriftEvaluatorContext(
-        {
-            "before": old_dataframe,
-            "after": new_dataframe,
-            "summary": drift_summary,
-        }
+        before=old_dataframe,
+        after=new_dataframe,
+        summary=drift_summary,
     )
     try:
         drift_evaluation = drift_evaluator.compute_drift_evaluation(data_drift_context)

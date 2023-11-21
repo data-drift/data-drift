@@ -37,7 +37,7 @@ class TestUpdateBreakdown(unittest.TestCase):
         drift_context = result["DRIFT"]["drift_context"]
         if drift_context is None:
             self.fail("drift_context is None")
-        summary = drift_context["summary"]
+        summary = drift_context.summary
 
         self.assertIsNotNone(summary, "modified_rows_unique_keys is None")
         if summary is not None:
