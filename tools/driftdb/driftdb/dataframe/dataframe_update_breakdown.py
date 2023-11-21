@@ -61,7 +61,7 @@ def dataframe_update_breakdown(
     new_data_context = None
     new_data_evaluation = None
     if len(new_data) > 0:
-        new_data_context = NewDataEvaluatorContext(before=step1, after=new_data, added_rows=new_data)
+        new_data_context = NewDataEvaluatorContext(before=step1, after=step2, added_rows=new_data)
         new_data_evaluation = drift_evaluator.compute_new_data_evaluation(new_data_context)
 
     step3 = final_dataframe.drop(columns=list(columns_added))
@@ -73,6 +73,13 @@ def dataframe_update_breakdown(
         drift_summary = summarize_dataframe_updates(initial_df=step2, final_df=step3)
         drift_context = DriftEvaluatorContext(before=step2, after=step3, summary=drift_summary)
         drift_evaluation = safe_drift_evaluator(drift_context, drift_evaluator.compute_drift_evaluation)
+        # Here, in case of wrongly detected drifts, we recheck the drifts
+        if (
+            len(drift_summary["added_rows"]) == 0
+            and len(drift_summary["deleted_rows"]) == 0
+            and len(drift_summary["modified_rows_unique_keys"]) == 0
+        ):
+            has_drift = False
 
     step4 = final_dataframe.reindex(index=step3.index)
 
@@ -93,7 +100,7 @@ def dataframe_update_breakdown(
         ),
         "DRIFT": DataFrameUpdate(
             df=step3,
-            has_update=not step2.equals(step3),
+            has_update=has_drift,
             type=UpdateType.DRIFT,
             update_context=drift_context,
             update_evaluation=drift_evaluation,
