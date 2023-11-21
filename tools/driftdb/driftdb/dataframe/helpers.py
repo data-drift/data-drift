@@ -1,7 +1,6 @@
 import traceback
 
 import pandas as pd
-
 from driftdb.drift_evaluator.interface import DriftEvaluatorContext
 
 
@@ -81,13 +80,14 @@ def convert_object_to_string(df):
 
 
 def generate_drift_description(drift_context: DriftEvaluatorContext):
-    if drift_context["summary"] is None:
+    if drift_context.summary is None:
         return f"Could not generate drift description"
     try:
-        additions = len(drift_context["summary"]["added_rows"])
-        deletions = len(drift_context["summary"]["deleted_rows"])
+        summary = drift_context.summary
+        additions = len(summary["added_rows"])
+        deletions = len(summary["deleted_rows"])
 
-        modifications = len(drift_context["summary"]["modified_rows_unique_keys"])
+        modifications = len(summary["modified_rows_unique_keys"])
 
         # Construct the result text
         result = ""
@@ -109,3 +109,23 @@ def generate_drift_description(drift_context: DriftEvaluatorContext):
     except Exception as e:
         traceback.print_exc()
         return f"Could not generate drift description: {e}"
+
+
+def reparse_dataframe(df):
+    df = df.copy()
+    for col in df.columns:
+        # Try to convert to numeric
+        df[col] = pd.to_numeric(df[col], errors="ignore")
+
+        # If the column is still object type, try to convert to datetime
+        if df[col].dtype == "object":
+            df[col] = pd.to_datetime(df[col], errors="ignore")
+
+        # Check for potential categorical data
+        if df[col].dtype == "object":
+            num_unique_values = len(df[col].unique())
+            num_total_values = len(df[col])
+            if num_unique_values / num_total_values < 0.2:  # Threshold for categorical data
+                df[col] = df[col].astype("category")
+
+    return df

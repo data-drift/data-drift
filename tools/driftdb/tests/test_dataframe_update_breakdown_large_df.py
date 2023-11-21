@@ -1,7 +1,8 @@
 import os
 import unittest
-from driftdb.dataframe.dataframe_update_breakdown import dataframe_update_breakdown
+
 import pandas as pd
+from driftdb.dataframe.dataframe_update_breakdown import dataframe_update_breakdown
 
 
 class TestUpdateBreakdown(unittest.TestCase):
@@ -16,29 +17,28 @@ class TestUpdateBreakdown(unittest.TestCase):
 
     def test_same_df(self):
         result = dataframe_update_breakdown(self.initial_df, self.initial_df)
-        all_false = all(not item["has_update"] for item in result.values())
+        all_false = all(not item.has_update for item in result.values())
         self.assertTrue(all_false)
 
     def test_same_df_with_different_index(self):
         result = dataframe_update_breakdown(self.initial_df, self.initial_df_again)
-        all_false = all(not item["has_update"] for item in result.values())
+        all_false = all(not item.has_update for item in result.values())
         self.assertTrue(all_false)
 
     def test_found_drift(self):
         result = dataframe_update_breakdown(self.initial_df, self.final_df)
-        self.assertTrue(result["DRIFT"]["has_update"])
+        self.assertTrue(result["DRIFT"].has_update)
 
     def test_drift_has_1_updates(self):
         # There is only one line that has changed in large df 2
         # dfc33511-d4f6-4ddc-ba16-49d77e312282,2008-08-03,1.29,HU,Category A
         # dfc33511-d4f6-4ddc-ba16-49d77e312282,2008-08-03,1.28,HU,Category A
         result = dataframe_update_breakdown(self.initial_df, self.final_df)
-        modified_rows_unique_keys = result["DRIFT"]["drift_summary"]
+        drift_context = result["DRIFT"].update_context
+        if drift_context is None:
+            self.fail("drift_context is None")
+        summary = drift_context.summary
 
-        self.assertIsNotNone(
-            modified_rows_unique_keys, "modified_rows_unique_keys is None"
-        )
-        if modified_rows_unique_keys is not None:
-            self.assertEqual(
-                len(modified_rows_unique_keys["modified_rows_unique_keys"]), 1
-            )
+        self.assertIsNotNone(summary, "modified_rows_unique_keys is None")
+        if summary is not None:
+            self.assertEqual(len(summary["modified_rows_unique_keys"]), 1)

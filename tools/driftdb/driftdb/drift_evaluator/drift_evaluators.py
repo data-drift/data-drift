@@ -1,12 +1,12 @@
 import traceback
-from abc import ABC, abstractmethod
 from typing import Callable
 
 import pandas as pd
 
+from ..dataframe.detect_outliers import detect_outliers
 from ..dataframe.helpers import generate_drift_description
 from ..logger import get_logger
-from .interface import DriftEvaluation, DriftEvaluatorContext, DriftSummary
+from .interface import DriftEvaluation, DriftEvaluatorContext, DriftSummary, NewDataEvaluatorContext
 
 logger = get_logger(__name__)
 
@@ -51,16 +51,27 @@ def parse_drift_summary(commit_message: str) -> DriftSummary:
     return drift_summary
 
 
-class DriftEvaluatorAbstractClass(ABC):
+class BaseDriftEvaluator:
     @staticmethod
-    @abstractmethod
     def compute_drift_evaluation(
         data_drift_context: DriftEvaluatorContext,
     ) -> DriftEvaluation:
-        pass
+        return DriftEvaluation(should_alert=False, message="")
 
 
-class DefaultDriftEvaluator(DriftEvaluatorAbstractClass):
+class BaseNewDataEvaluator:
+    @staticmethod
+    def compute_new_data_evaluation(
+        new_data_context: NewDataEvaluatorContext,
+    ) -> DriftEvaluation:
+        return DriftEvaluation(should_alert=False, message="")
+
+
+class BaseUpdateEvaluator(BaseDriftEvaluator, BaseNewDataEvaluator):
+    pass
+
+
+class DefaultDriftEvaluator(BaseUpdateEvaluator):
     @staticmethod
     def compute_drift_evaluation(
         data_drift_context: DriftEvaluatorContext,
@@ -68,7 +79,24 @@ class DefaultDriftEvaluator(DriftEvaluatorAbstractClass):
         return auto_merge_drift(data_drift_context)
 
 
-class AlertDriftEvaluator(DriftEvaluatorAbstractClass):
+class DetectOutlierNewDataEvaluator(BaseNewDataEvaluator):
+    @staticmethod
+    def compute_new_data_evaluation(
+        new_data_context: NewDataEvaluatorContext,
+    ) -> DriftEvaluation:
+        outliers = detect_outliers(
+            before=new_data_context.before,
+            after=new_data_context.after,
+            added_rows=new_data_context.added_rows,
+        )
+        if len(outliers) > 0:
+            return DriftEvaluation(
+                should_alert=True, message=f"Found {len(outliers)} outliers\n {outliers.to_markdown()}"
+            )
+        return DriftEvaluation(should_alert=False, message="")
+
+
+class AlertDriftEvaluator(BaseDriftEvaluator):
     @staticmethod
     def compute_drift_evaluation(
         data_drift_context: DriftEvaluatorContext,
@@ -78,15 +106,12 @@ class AlertDriftEvaluator(DriftEvaluatorAbstractClass):
 
 def alert_drift(data_drift_context: DriftEvaluatorContext) -> DriftEvaluation:
     message = f"Drift detected:\n" + generate_drift_description(data_drift_context)
-    return {"should_alert": True, "message": message}
+    return DriftEvaluation(should_alert=True, message=message)
 
 
 def auto_merge_drift(data_drift_context: DriftEvaluatorContext) -> DriftEvaluation:
     message = f"Drift detected:\n" + generate_drift_description(data_drift_context)
-    return {
-        "should_alert": False,
-        "message": message,
-    }
+    return DriftEvaluation(should_alert=False, message=message)
 
 
 def safe_drift_evaluator(

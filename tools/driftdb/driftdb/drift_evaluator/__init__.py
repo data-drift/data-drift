@@ -1,2 +1,2 @@
-from .drift_evaluators import AlertDriftEvaluator, DefaultDriftEvaluator, DriftEvaluatorAbstractClass
+from .drift_evaluators import AlertDriftEvaluator, BaseUpdateEvaluator, DefaultDriftEvaluator
 from .drift_evaluators_dry_run import run_drift_evaluator

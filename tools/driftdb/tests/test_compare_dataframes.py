@@ -1,13 +1,13 @@
 import unittest
-from driftdb.dataframe.dataframe_update_breakdown import dataframe_update_breakdown
-import pandas as pd
 
+import pandas as pd
+from driftdb.dataframe.dataframe_update_breakdown import dataframe_update_breakdown
 from driftdb.dataframe.helpers import generate_drift_description
+from driftdb.drift_evaluator.interface import DriftEvaluatorContext
 
 
 class TestStoreMetric(unittest.TestCase):
     def test_compare_dataframes_with_1_addition_and_1_deletion(self):
-        # Define the test dataframes
         df1 = pd.DataFrame(
             {
                 "unique_key": [1, 2, 3],
@@ -24,17 +24,14 @@ class TestStoreMetric(unittest.TestCase):
         )
 
         break_down = dataframe_update_breakdown(df1, df2)
-        drift_context = break_down["DRIFT"]["drift_context"]
-        if drift_context is None:
-            raise Exception("drift_context is None")
+        drift_context = break_down["DRIFT"].update_context
+        if not isinstance(drift_context, DriftEvaluatorContext):
+            raise Exception("drift_context is not the right type")
 
-        # Call the function being tested
         result = generate_drift_description(drift_context)
 
-        # Define the expected result
         expected_result = "- 🆕 1 addition\n- ♻️ 0 modification\n- 🗑️ 1 deletion"
 
-        # Assert that the actual result matches the expected result
         assert result == expected_result
 
     def test_compare_dataframes_with_2_deletions(self):
@@ -55,20 +52,17 @@ class TestStoreMetric(unittest.TestCase):
         )
 
         break_down = dataframe_update_breakdown(df1, df2)
-        drift_context = break_down["DRIFT"]["drift_context"]
-        if drift_context is None:
-            raise Exception("drift_context is None")
-        # Call the function being tested
+        drift_context = break_down["DRIFT"].update_context
+        if not isinstance(drift_context, DriftEvaluatorContext):
+            raise Exception("drift_context is not the right type")
+
         result = generate_drift_description(drift_context)
 
-        # Define the expected result
         expected_result = "- 🆕 0 addition\n- ♻️ 0 modification\n- 🗑️ 2 deletions"
 
-        # Assert that the actual result matches the expected result
         assert result == expected_result
 
     def test_compare_dataframes_with_2_additions(self):
-        # Define the test dataframes
         df1 = pd.DataFrame(
             {
                 "unique_key": [2],
@@ -85,16 +79,14 @@ class TestStoreMetric(unittest.TestCase):
         )
 
         break_down = dataframe_update_breakdown(df1, df2)
-        drift_context = break_down["DRIFT"]["drift_context"]
-        if drift_context is None:
-            raise Exception("drift_context is None")
-        # Call the function being tested
+        drift_context = break_down["DRIFT"].update_context
+        if not isinstance(drift_context, DriftEvaluatorContext):
+            raise Exception("drift_context is not the right type")
+
         result = generate_drift_description(drift_context)
 
-        # Define the expected result
         expected_result = "- 🆕 2 additions\n- ♻️ 0 modification\n- 🗑️ 0 deletion"
 
-        # Assert that the actual result matches the expected result
         assert result == expected_result
 
     def test_compare_dataframes_with_2_modifications(self):
@@ -115,20 +107,17 @@ class TestStoreMetric(unittest.TestCase):
         )
 
         break_down = dataframe_update_breakdown(df1, df2)
-        drift_context = break_down["DRIFT"]["drift_context"]
-        if drift_context is None:
-            raise Exception("drift_context is None")
-        # Call the function being tested
+        drift_context = break_down["DRIFT"].update_context
+        if not isinstance(drift_context, DriftEvaluatorContext):
+            raise Exception("drift_context is not the right type")
+
         result = generate_drift_description(drift_context)
 
-        # Define the expected result
         expected_result = "- 🆕 0 addition\n- ♻️ 2 modifications\n- 🗑️ 0 deletion"
 
-        # Assert that the actual result matches the expected result
         assert result == expected_result
 
     def test_compare_dataframes_with_additions_deletions_modifications(self):
-        # Define the test dataframes
         df1 = pd.DataFrame(
             {
                 "unique_key": [1, 2, 3],
@@ -145,14 +134,12 @@ class TestStoreMetric(unittest.TestCase):
         )
 
         break_down = dataframe_update_breakdown(df1, df2)
-        drift_context = break_down["DRIFT"]["drift_context"]
-        if drift_context is None:
-            raise Exception("drift_context is None")
-        # Call the function being tested
+        drift_context = break_down["DRIFT"].update_context
+        if not isinstance(drift_context, DriftEvaluatorContext):
+            raise Exception("drift_context is not the right type")
+
         result = generate_drift_description(drift_context)
 
-        # Define the expected result
         expected_result = "- 🆕 1 addition\n- ♻️ 2 modifications\n- 🗑️ 1 deletion"
 
-        # Assert that the actual result matches the expected result
         assert result == expected_result

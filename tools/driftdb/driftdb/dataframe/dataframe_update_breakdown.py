@@ -1,16 +1,18 @@
 from enum import Enum
-from typing import Dict, Optional, TypedDict
+from typing import Dict, Optional, Union
 
 import pandas as pd
 
-from driftdb.drift_evaluator.drift_evaluators import (
+from ..drift_evaluator.drift_evaluators import (
+    BaseUpdateEvaluator,
     DefaultDriftEvaluator,
     DriftEvaluation,
-    DriftEvaluatorAbstractClass,
     DriftEvaluatorContext,
-    DriftSummary,
     safe_drift_evaluator,
 )
+from ..drift_evaluator.interface import NewDataEvaluatorContext
+from .helpers import reparse_dataframe
+from .summarize_dataframe_updates import summarize_dataframe_updates
 
 
 class UpdateType(Enum):
@@ -18,19 +20,26 @@ class UpdateType(Enum):
     OTHER = "other"
 
 
-class DataFrameUpdate(TypedDict):
-    df: pd.DataFrame
-    has_update: bool
-    type: UpdateType
-    drift_context: Optional[DriftEvaluatorContext]
-    drift_evaluation: Optional[DriftEvaluation]
-    drift_summary: Optional[DriftSummary]
+class DataFrameUpdate:
+    def __init__(
+        self,
+        df: pd.DataFrame,
+        has_update: bool,
+        type: UpdateType,
+        update_context: Optional[Union[DriftEvaluatorContext, NewDataEvaluatorContext]],
+        update_evaluation: Optional[DriftEvaluation],
+    ):
+        self.df = df
+        self.has_update = has_update
+        self.type = type
+        self.update_context = update_context
+        self.update_evaluation = update_evaluation
 
 
 def dataframe_update_breakdown(
     initial_dataframe: pd.DataFrame,
     final_dataframe: pd.DataFrame,
-    drift_evaluator: DriftEvaluatorAbstractClass = DefaultDriftEvaluator(),
+    drift_evaluator: BaseUpdateEvaluator = DefaultDriftEvaluator(),
 ) -> Dict[str, DataFrameUpdate]:
     if initial_dataframe.index.name != "unique_key":
         initial_dataframe = initial_dataframe.set_index("unique_key")
@@ -50,16 +59,30 @@ def dataframe_update_breakdown(
 
     step2 = pd.concat([step1, new_data[step1.columns]], axis=0)
 
+    new_data_context = None
+    new_data_evaluation = None
+    if len(new_data) > 0:
+        new_data_context = NewDataEvaluatorContext(
+            before=reparse_dataframe(step1), after=reparse_dataframe(step2), added_rows=reparse_dataframe(new_data)
+        )
+        new_data_evaluation = drift_evaluator.compute_new_data_evaluation(new_data_context)
+
     step3 = final_dataframe.drop(columns=list(columns_added))
 
     has_drift = not step2.equals(step3)
-    drift_summary = None
     drift_context = None
     drift_evaluation = None
     if has_drift:
         drift_summary = summarize_dataframe_updates(initial_df=step2, final_df=step3)
         drift_context = DriftEvaluatorContext(before=step2, after=step3, summary=drift_summary)
         drift_evaluation = safe_drift_evaluator(drift_context, drift_evaluator.compute_drift_evaluation)
+        # Here, in case of wrongly detected drifts, we recheck the drifts
+        if (
+            len(drift_summary["added_rows"]) == 0
+            and len(drift_summary["deleted_rows"]) == 0
+            and len(drift_summary["modified_rows_unique_keys"]) == 0
+        ):
+            has_drift = False
 
     step4 = final_dataframe.reindex(index=step3.index)
 
@@ -68,114 +91,28 @@ def dataframe_update_breakdown(
             df=step1,
             has_update=not initial_dataframe.equals(step1),
             type=UpdateType.OTHER,
-            drift_context=None,
-            drift_evaluation=None,
-            drift_summary=None,
+            update_context=None,
+            update_evaluation=None,
         ),
         "NEW DATA": DataFrameUpdate(
             df=step2,
             has_update=not step1.equals(step2),
             type=UpdateType.OTHER,
-            drift_context=None,
-            drift_evaluation=None,
-            drift_summary=None,
+            update_context=new_data_context,
+            update_evaluation=new_data_evaluation,
         ),
         "DRIFT": DataFrameUpdate(
             df=step3,
-            has_update=not step2.equals(step3),
+            has_update=has_drift,
             type=UpdateType.DRIFT,
-            drift_context=drift_context,
-            drift_evaluation=drift_evaluation,
-            drift_summary=drift_summary,
+            update_context=drift_context,
+            update_evaluation=drift_evaluation,
         ),
         "MIGRATION Column Added": DataFrameUpdate(
             df=step4,
             has_update=not step3.equals(step4),
             type=UpdateType.OTHER,
-            drift_context=None,
-            drift_evaluation=None,
-            drift_summary=None,
+            update_context=None,
+            update_evaluation=None,
         ),
-    }
-
-
-class DriftBreakdownResult(TypedDict):
-    with_deleted: pd.DataFrame
-    with_deleted_and_added: pd.DataFrame
-    with_deleted_and_added_and_modified: pd.DataFrame
-
-
-def summarize_dataframe_updates(
-    initial_df: pd.DataFrame,
-    final_df: pd.DataFrame,
-) -> DriftSummary:
-    """
-    Summarize the updates made to a dataframe including added, deleted, and modified rows.
-    Group the modifications by the pattern of changes.
-
-    Parameters:
-    - initial_df (pd.DataFrame): The original dataframe before updates.
-    - final_df (pd.DataFrame): The updated dataframe after changes.
-    - key (str): The name of the column or index to use as the unique key for comparison.
-
-    Returns:
-    - A dictionary with three keys: 'added', 'deleted', and 'modified', each containing
-      a respective dataframe of changes, and 'modification_patterns', a dataframe summarizing
-      the patterns of modification.
-    """
-
-    if initial_df.index.name != "unique_key":
-        initial_df = initial_df.set_index("unique_key")
-
-    if final_df.index.name != "unique_key":
-        final_df = final_df.set_index("unique_key")
-
-    initial_df = initial_df.astype(str)
-    final_df = final_df.astype(str)
-
-    deleted_rows = initial_df[~initial_df.index.isin(final_df.index)]
-
-    added_rows = final_df[~final_df.index.isin(initial_df.index)]
-
-    common_indices = initial_df.index.intersection(final_df.index)
-    common_rows_initial = initial_df.loc[common_indices]
-    common_rows_final = final_df.loc[common_indices]
-    common_rows_final = common_rows_final.reindex(index=common_rows_initial.index)
-
-    changes = common_rows_initial != common_rows_final
-    changed_rows_index = changes[changes.any(axis=1)].index
-
-    # There may be rows that have not changed but pandas will consider them as changed
-    pattern_changes = {}
-    for key in changed_rows_index:
-        for col in common_rows_initial.columns:
-            if common_rows_initial.at[key, col] != common_rows_final.at[key, col]:
-                old_value = common_rows_initial.at[key, col]
-                new_value = common_rows_final.at[key, col]
-                change_pattern = (col, old_value, new_value)
-                if change_pattern not in pattern_changes:
-                    pattern_changes[change_pattern] = [key]
-                else:
-                    pattern_changes[change_pattern].append(key)
-
-    patterns_list = []
-    for pattern, keys in pattern_changes.items():
-        col, old, new = pattern
-        patterns_list.append(
-            {
-                "unique_keys": keys,
-                "column": col,
-                "old_value": old,
-                "new_value": new,
-                "pattern_id": hash(pattern),
-            }
-        )
-
-    patterns_df = pd.DataFrame(patterns_list)
-
-    return {
-        "added_rows": added_rows,
-        "deleted_rows": deleted_rows,
-        "modified_rows_unique_keys": changed_rows_index,
-        "modified_patterns": patterns_df,
     }
