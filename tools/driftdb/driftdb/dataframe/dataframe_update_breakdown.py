@@ -23,14 +23,14 @@ class DataFrameUpdate:
         df: pd.DataFrame,
         has_update: bool,
         type: UpdateType,
-        drift_context: Optional[DriftEvaluatorContext],
-        drift_evaluation: Optional[DriftEvaluation],
+        update_context: Optional[DriftEvaluatorContext],
+        update_evaluation: Optional[DriftEvaluation],
     ):
         self.df = df
         self.has_update = has_update
         self.type = type
-        self.drift_context = drift_context
-        self.drift_evaluation = drift_evaluation
+        self.update_context = update_context
+        self.update_evaluation = update_evaluation
 
 
 def dataframe_update_breakdown(
@@ -73,29 +73,29 @@ def dataframe_update_breakdown(
             df=step1,
             has_update=not initial_dataframe.equals(step1),
             type=UpdateType.OTHER,
-            drift_context=None,
-            drift_evaluation=None,
+            update_context=None,
+            update_evaluation=None,
         ),
         "NEW DATA": DataFrameUpdate(
             df=step2,
             has_update=not step1.equals(step2),
             type=UpdateType.OTHER,
-            drift_context=None,
-            drift_evaluation=None,
+            update_context=None,
+            update_evaluation=None,
         ),
         "DRIFT": DataFrameUpdate(
             df=step3,
             has_update=not step2.equals(step3),
             type=UpdateType.DRIFT,
-            drift_context=drift_context,
-            drift_evaluation=drift_evaluation,
+            update_context=drift_context,
+            update_evaluation=drift_evaluation,
         ),
         "MIGRATION Column Added": DataFrameUpdate(
             df=step4,
             has_update=not step3.equals(step4),
             type=UpdateType.OTHER,
-            drift_context=None,
-            drift_evaluation=None,
+            update_context=None,
+            update_evaluation=None,
         ),
     }
 

@@ -33,7 +33,7 @@ class TestUpdateBreakdown(unittest.TestCase):
 
     def test_comparison_on_same_index(self):
         result = dataframe_update_breakdown(self.initial_df, self.final_df)
-        drift_context = result["DRIFT"].drift_context
+        drift_context = result["DRIFT"].update_context
         if drift_context is None:
             self.fail("drift_context is None")
         modified_rows_unique_keys = drift_context.summary

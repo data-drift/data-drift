@@ -24,7 +24,7 @@ class TestStoreMetric(unittest.TestCase):
         )
 
         break_down = dataframe_update_breakdown(df1, df2)
-        drift_context = break_down["DRIFT"].drift_context
+        drift_context = break_down["DRIFT"].update_context
         if drift_context is None:
             raise Exception("drift_context is None")
 
@@ -55,7 +55,7 @@ class TestStoreMetric(unittest.TestCase):
         )
 
         break_down = dataframe_update_breakdown(df1, df2)
-        drift_context = break_down["DRIFT"].drift_context
+        drift_context = break_down["DRIFT"].update_context
         if drift_context is None:
             raise Exception("drift_context is None")
         # Call the function being tested
@@ -85,7 +85,7 @@ class TestStoreMetric(unittest.TestCase):
         )
 
         break_down = dataframe_update_breakdown(df1, df2)
-        drift_context = break_down["DRIFT"].drift_context
+        drift_context = break_down["DRIFT"].update_context
         if drift_context is None:
             raise Exception("drift_context is None")
         # Call the function being tested
@@ -115,7 +115,7 @@ class TestStoreMetric(unittest.TestCase):
         )
 
         break_down = dataframe_update_breakdown(df1, df2)
-        drift_context = break_down["DRIFT"].drift_context
+        drift_context = break_down["DRIFT"].update_context
         if drift_context is None:
             raise Exception("drift_context is None")
         # Call the function being tested
@@ -145,7 +145,7 @@ class TestStoreMetric(unittest.TestCase):
         )
 
         break_down = dataframe_update_breakdown(df1, df2)
-        drift_context = break_down["DRIFT"].drift_context
+        drift_context = break_down["DRIFT"].update_context
         if drift_context is None:
             raise Exception("drift_context is None")
         # Call the function being tested

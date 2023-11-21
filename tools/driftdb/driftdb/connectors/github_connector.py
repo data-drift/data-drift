@@ -185,10 +185,10 @@ class GithubConnector(AbstractConnector):
             commit_message = key
             if value.has_update:
                 logger.info("Update: " + key)
-                if value.type == UpdateType.DRIFT and value.drift_context and value.drift_evaluation:
-                    drift_evaluation = value.drift_evaluation
+                if value.type == UpdateType.DRIFT and value.update_context and value.update_evaluation:
+                    drift_evaluation = value.update_evaluation
                     commit_message += "\n\n" + drift_evaluation.message
-                    summary = value.drift_context.summary
+                    summary = value.update_context.summary
                     if summary:
                         drift_summary_string = drift_summary_to_string(summary)
                         commit_message += "\n\n" + drift_summary_string

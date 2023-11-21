@@ -34,7 +34,7 @@ class TestUpdateBreakdown(unittest.TestCase):
         # dfc33511-d4f6-4ddc-ba16-49d77e312282,2008-08-03,1.29,HU,Category A
         # dfc33511-d4f6-4ddc-ba16-49d77e312282,2008-08-03,1.28,HU,Category A
         result = dataframe_update_breakdown(self.initial_df, self.final_df)
-        drift_context = result["DRIFT"].drift_context
+        drift_context = result["DRIFT"].update_context
         if drift_context is None:
             self.fail("drift_context is None")
         summary = drift_context.summary
