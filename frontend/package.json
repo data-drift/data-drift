@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "build:pypi": "npm run build -- --mode pypi --outDir ../tools/datagit/datagit/bin/frontend/dist --emptyOutDir",
+    "build:pypi": "npm run build -- --mode pypi --outDir ../tools/driftdb/driftdb/bin/frontend/dist --emptyOutDir",
     "build:backend": "npm run build -- --mode docker --outDir ../backend/dist-app --emptyOutDir",
     "build:docker": "npm run build -- --mode docker",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",

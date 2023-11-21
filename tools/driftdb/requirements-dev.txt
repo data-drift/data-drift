@@ -1,0 +1,8 @@
+black
+click
+Faker
+GitPython
+isort
+pandas
+PyGithub
+tzlocal
