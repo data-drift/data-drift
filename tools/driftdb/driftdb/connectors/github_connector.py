@@ -183,12 +183,12 @@ class GithubConnector(AbstractConnector):
         pr_message = ""
         for key, value in update_breakdown.items():
             commit_message = key
-            if value["has_update"]:
+            if value.has_update:
                 logger.info("Update: " + key)
-                if value["type"] == UpdateType.DRIFT and value["drift_context"] and value["drift_evaluation"]:
-                    drift_evaluation = value["drift_evaluation"]
+                if value.type == UpdateType.DRIFT and value.drift_context and value.drift_evaluation:
+                    drift_evaluation = value.drift_evaluation
                     commit_message += "\n\n" + drift_evaluation.message
-                    summary = value["drift_context"].summary
+                    summary = value.drift_context.summary
                     if summary:
                         drift_summary_string = drift_summary_to_string(summary)
                         commit_message += "\n\n" + drift_summary_string
@@ -202,7 +202,7 @@ class GithubConnector(AbstractConnector):
                 self.update_file_with_retry(
                     table_name=table_name,
                     commit_message=commit_message,
-                    data=value["df"].to_csv(index=True, header=True),
+                    data=value.df.to_csv(index=True, header=True),
                     branch=branch,
                 )
 

@@ -63,7 +63,7 @@ class AbstractConnector(ABC):
         else:
             self.logger.info("Table found. Updating it")
             update_breakdown = dataframe_update_breakdown(latest_stored_snapshot, table_dataframe, drift_evaluator)
-            if any(item["has_update"] for item in update_breakdown.values()):
+            if any(item.has_update for item in update_breakdown.values()):
                 self.logger.info("Change detected")
                 self.handle_breakdown(
                     table_name=table_name,

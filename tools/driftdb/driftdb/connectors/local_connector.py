@@ -47,16 +47,16 @@ class LocalConnector(AbstractConnector):
     ):
         [table_file_path, table_file_name] = self._get_table_file_path(table_name)
         for key, value in update_breakdown.items():
-            if value["has_update"]:
+            if value.has_update:
                 logger.info("Update: " + key)
-                value["df"].to_csv(table_file_path, na_rep="NA")
+                value.df.to_csv(table_file_path, na_rep="NA")
                 add_file = [table_file_name]
                 self.repo.index.add(add_file)
                 commit_message = f"{key}: {table_name}"
-                if value["drift_evaluation"] != None:
-                    commit_message += f"\n{value['drift_evaluation'].message}"
-                if value["drift_context"] != None and value["drift_context"].summary != None:
-                    string_summary = drift_summary_to_string(value["drift_context"].summary)
+                if value.drift_evaluation != None:
+                    commit_message += f"\n{value.drift_evaluation.message}"
+                if value.drift_context != None and value.drift_context.summary != None:
+                    string_summary = drift_summary_to_string(value.drift_context.summary)
                     commit_message += "\n\n" + string_summary
                 self.repo.index.commit(message=commit_message, author_date=measure_date)
 

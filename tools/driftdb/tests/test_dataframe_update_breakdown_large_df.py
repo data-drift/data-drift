@@ -17,24 +17,24 @@ class TestUpdateBreakdown(unittest.TestCase):
 
     def test_same_df(self):
         result = dataframe_update_breakdown(self.initial_df, self.initial_df)
-        all_false = all(not item["has_update"] for item in result.values())
+        all_false = all(not item.has_update for item in result.values())
         self.assertTrue(all_false)
 
     def test_same_df_with_different_index(self):
         result = dataframe_update_breakdown(self.initial_df, self.initial_df_again)
-        all_false = all(not item["has_update"] for item in result.values())
+        all_false = all(not item.has_update for item in result.values())
         self.assertTrue(all_false)
 
     def test_found_drift(self):
         result = dataframe_update_breakdown(self.initial_df, self.final_df)
-        self.assertTrue(result["DRIFT"]["has_update"])
+        self.assertTrue(result["DRIFT"].has_update)
 
     def test_drift_has_1_updates(self):
         # There is only one line that has changed in large df 2
         # dfc33511-d4f6-4ddc-ba16-49d77e312282,2008-08-03,1.29,HU,Category A
         # dfc33511-d4f6-4ddc-ba16-49d77e312282,2008-08-03,1.28,HU,Category A
         result = dataframe_update_breakdown(self.initial_df, self.final_df)
-        drift_context = result["DRIFT"]["drift_context"]
+        drift_context = result["DRIFT"].drift_context
         if drift_context is None:
             self.fail("drift_context is None")
         summary = drift_context.summary

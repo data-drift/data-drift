@@ -1,7 +1,7 @@
 import unittest
-from driftdb.dataframe.dataframe_update_breakdown import dataframe_update_breakdown
-import pandas as pd
 
+import pandas as pd
+from driftdb.dataframe.dataframe_update_breakdown import dataframe_update_breakdown
 from driftdb.dataframe.helpers import generate_drift_description
 
 
@@ -24,7 +24,7 @@ class TestStoreMetric(unittest.TestCase):
         )
 
         break_down = dataframe_update_breakdown(df1, df2)
-        drift_context = break_down["DRIFT"]["drift_context"]
+        drift_context = break_down["DRIFT"].drift_context
         if drift_context is None:
             raise Exception("drift_context is None")
 
@@ -55,7 +55,7 @@ class TestStoreMetric(unittest.TestCase):
         )
 
         break_down = dataframe_update_breakdown(df1, df2)
-        drift_context = break_down["DRIFT"]["drift_context"]
+        drift_context = break_down["DRIFT"].drift_context
         if drift_context is None:
             raise Exception("drift_context is None")
         # Call the function being tested
@@ -85,7 +85,7 @@ class TestStoreMetric(unittest.TestCase):
         )
 
         break_down = dataframe_update_breakdown(df1, df2)
-        drift_context = break_down["DRIFT"]["drift_context"]
+        drift_context = break_down["DRIFT"].drift_context
         if drift_context is None:
             raise Exception("drift_context is None")
         # Call the function being tested
@@ -115,7 +115,7 @@ class TestStoreMetric(unittest.TestCase):
         )
 
         break_down = dataframe_update_breakdown(df1, df2)
-        drift_context = break_down["DRIFT"]["drift_context"]
+        drift_context = break_down["DRIFT"].drift_context
         if drift_context is None:
             raise Exception("drift_context is None")
         # Call the function being tested
@@ -145,7 +145,7 @@ class TestStoreMetric(unittest.TestCase):
         )
 
         break_down = dataframe_update_breakdown(df1, df2)
-        drift_context = break_down["DRIFT"]["drift_context"]
+        drift_context = break_down["DRIFT"].drift_context
         if drift_context is None:
             raise Exception("drift_context is None")
         # Call the function being tested

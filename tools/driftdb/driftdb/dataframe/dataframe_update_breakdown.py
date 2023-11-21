@@ -17,12 +17,20 @@ class UpdateType(Enum):
     OTHER = "other"
 
 
-class DataFrameUpdate(TypedDict):
-    df: pd.DataFrame
-    has_update: bool
-    type: UpdateType
-    drift_context: Optional[DriftEvaluatorContext]
-    drift_evaluation: Optional[DriftEvaluation]
+class DataFrameUpdate:
+    def __init__(
+        self,
+        df: pd.DataFrame,
+        has_update: bool,
+        type: UpdateType,
+        drift_context: Optional[DriftEvaluatorContext],
+        drift_evaluation: Optional[DriftEvaluation],
+    ):
+        self.df = df
+        self.has_update = has_update
+        self.type = type
+        self.drift_context = drift_context
+        self.drift_evaluation = drift_evaluation
 
 
 def dataframe_update_breakdown(
