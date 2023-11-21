@@ -5,11 +5,14 @@ from github import Github
 
 from ..logger import get_logger
 from .drift_evaluators import BaseDriftEvaluator, DriftEvaluatorContext, parse_drift_summary
+from .interface import DriftEvaluation
 
 logger = get_logger(__name__)
 
 
-def run_drift_evaluator(*, drift_evaluator: BaseDriftEvaluator, gh_client: Github, repo_name: str, commit_sha: str):
+def run_drift_evaluator(
+    *, drift_evaluator: BaseDriftEvaluator, gh_client: Github, repo_name: str, commit_sha: str
+) -> DriftEvaluation:
     repo = gh_client.get_repo(repo_name)
     commit = repo.get_commit(commit_sha)
     file = commit.files[0]
@@ -48,12 +51,5 @@ def run_drift_evaluator(*, drift_evaluator: BaseDriftEvaluator, gh_client: Githu
         after=new_dataframe,
         summary=drift_summary,
     )
-    try:
-        drift_evaluation = drift_evaluator.compute_drift_evaluation(data_drift_context)
-        #  return result
-        return drift_evaluation
-    except Exception as e:
-        logger.warn("Drift evaluator failed: " + str(e))
-        traceback.print_exc()
-        logger.warn("Drift evaluator failed: " + str(e))
-        traceback.print_exc()
+    drift_evaluation = drift_evaluator.compute_drift_evaluation(data_drift_context)
+    return drift_evaluation
