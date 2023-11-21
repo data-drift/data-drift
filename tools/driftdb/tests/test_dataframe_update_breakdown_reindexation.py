@@ -4,6 +4,7 @@ import unittest
 import pandas as pd
 from driftdb.dataframe.dataframe_update_breakdown import dataframe_update_breakdown
 from driftdb.dataframe.helpers import sort_dataframe_on_first_column_and_assert_is_unique
+from driftdb.drift_evaluator.interface import DriftEvaluatorContext
 
 
 def formatDF(dict):
@@ -34,8 +35,9 @@ class TestUpdateBreakdown(unittest.TestCase):
     def test_comparison_on_same_index(self):
         result = dataframe_update_breakdown(self.initial_df, self.final_df)
         drift_context = result["DRIFT"].update_context
-        if drift_context is None:
-            self.fail("drift_context is None")
+        if not isinstance(drift_context, DriftEvaluatorContext):
+            raise Exception("drift_context is not the right type")
+
         modified_rows_unique_keys = drift_context.summary
 
         self.assertIsNotNone(modified_rows_unique_keys, "modified_rows_unique_keys is None")

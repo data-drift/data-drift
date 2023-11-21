@@ -7,6 +7,7 @@ from git import Commit, Repo
 
 from ..dataframe.dataframe_update_breakdown import DataFrameUpdate
 from ..drift_evaluator.drift_evaluators import drift_summary_to_string
+from ..drift_evaluator.interface import DriftEvaluatorContext
 from ..logger import get_logger
 from .abstract_connector import AbstractConnector
 
@@ -55,7 +56,7 @@ class LocalConnector(AbstractConnector):
                 commit_message = f"{key}: {table_name}"
                 if value.update_evaluation != None:
                     commit_message += f"\n{value.update_evaluation.message}"
-                if value.update_context != None and value.update_context.summary != None:
+                if isinstance(value.update_context, DriftEvaluatorContext) and value.update_context.summary != None:
                     string_summary = drift_summary_to_string(value.update_context.summary)
                     commit_message += "\n\n" + string_summary
                 self.repo.index.commit(message=commit_message, author_date=measure_date)

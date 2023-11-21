@@ -7,6 +7,7 @@ from github import ContentFile, Github, GithubException, Repository
 
 from ..dataframe.dataframe_update_breakdown import DataFrameUpdate, UpdateType
 from ..drift_evaluator.drift_evaluators import drift_summary_to_string
+from ..drift_evaluator.interface import DriftEvaluatorContext
 from ..logger import get_logger
 from .abstract_connector import AbstractConnector
 from .common import get_alert_branch_name
@@ -185,19 +186,20 @@ class GithubConnector(AbstractConnector):
             commit_message = key
             if value.has_update:
                 logger.info("Update: " + key)
-                if value.type == UpdateType.DRIFT and value.update_context and value.update_evaluation:
-                    drift_evaluation = value.update_evaluation
-                    commit_message += "\n\n" + drift_evaluation.message
-                    summary = value.update_context.summary
-                    if summary:
+                if value.update_context and value.update_evaluation:
+                    update_evaluation = value.update_evaluation
+                    update_context = value.update_context
+                    commit_message += "\n\n" + update_evaluation.message
+                    if isinstance(update_context, DriftEvaluatorContext) and update_context.summary != None:
+                        summary = update_context.summary
                         drift_summary_string = drift_summary_to_string(summary)
                         commit_message += "\n\n" + drift_summary_string
-                    if drift_evaluation.should_alert:
+                    if update_evaluation.should_alert:
                         if branch == self.default_branch:
                             drift_branch = get_alert_branch_name(table_name)
                             self.checkout_branch_from_default_branch(drift_branch)
                             branch = drift_branch
-                        pr_message = pr_message + "\n\n" + drift_evaluation.message
+                        pr_message = pr_message + "\n\n" + update_evaluation.message
 
                 self.update_file_with_retry(
                     table_name=table_name,
