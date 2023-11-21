@@ -187,17 +187,17 @@ class GithubConnector(AbstractConnector):
                 logger.info("Update: " + key)
                 if value["type"] == UpdateType.DRIFT and value["drift_context"] and value["drift_evaluation"]:
                     drift_evaluation = value["drift_evaluation"]
-                    commit_message += "\n\n" + drift_evaluation["message"]
+                    commit_message += "\n\n" + drift_evaluation.message
                     summary = value["drift_context"].summary
                     if summary:
                         drift_summary_string = drift_summary_to_string(summary)
                         commit_message += "\n\n" + drift_summary_string
-                    if drift_evaluation["should_alert"]:
+                    if drift_evaluation.should_alert:
                         if branch == self.default_branch:
                             drift_branch = get_alert_branch_name(table_name)
                             self.checkout_branch_from_default_branch(drift_branch)
                             branch = drift_branch
-                        pr_message = pr_message + "\n\n" + drift_evaluation["message"]
+                        pr_message = pr_message + "\n\n" + drift_evaluation.message
 
                 self.update_file_with_retry(
                     table_name=table_name,

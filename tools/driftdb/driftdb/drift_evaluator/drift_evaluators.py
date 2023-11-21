@@ -55,7 +55,7 @@ class BaseDriftEvaluator:
     def compute_drift_evaluation(
         data_drift_context: DriftEvaluatorContext,
     ) -> DriftEvaluation:
-        return {"should_alert": False, "message": ""}
+        return DriftEvaluation(should_alert=False, message="")
 
 
 class BaseNewDataEvaluator:
@@ -63,7 +63,7 @@ class BaseNewDataEvaluator:
     def compute_new_data_evaluation(
         new_data_context: NewDataEvaluatorContext,
     ) -> DriftEvaluation:
-        return {"should_alert": False, "message": ""}
+        return DriftEvaluation(should_alert=False, message="")
 
 
 class BaseUpdateEvaluator(BaseDriftEvaluator, BaseNewDataEvaluator):
@@ -88,15 +88,12 @@ class AlertDriftEvaluator(BaseDriftEvaluator):
 
 def alert_drift(data_drift_context: DriftEvaluatorContext) -> DriftEvaluation:
     message = f"Drift detected:\n" + generate_drift_description(data_drift_context)
-    return {"should_alert": True, "message": message}
+    return DriftEvaluation(should_alert=True, message=message)
 
 
 def auto_merge_drift(data_drift_context: DriftEvaluatorContext) -> DriftEvaluation:
     message = f"Drift detected:\n" + generate_drift_description(data_drift_context)
-    return {
-        "should_alert": False,
-        "message": message,
-    }
+    return DriftEvaluation(should_alert=False, message=message)
 
 
 def safe_drift_evaluator(
