@@ -23,7 +23,6 @@ class DataFrameUpdate(TypedDict):
     type: UpdateType
     drift_context: Optional[DriftEvaluatorContext]
     drift_evaluation: Optional[DriftEvaluation]
-    drift_summary: Optional[DriftSummary]
 
 
 def dataframe_update_breakdown(
@@ -52,7 +51,6 @@ def dataframe_update_breakdown(
     step3 = final_dataframe.drop(columns=list(columns_added))
 
     has_drift = not step2.equals(step3)
-    drift_summary = None
     drift_context = None
     drift_evaluation = None
     if has_drift:
@@ -69,7 +67,6 @@ def dataframe_update_breakdown(
             type=UpdateType.OTHER,
             drift_context=None,
             drift_evaluation=None,
-            drift_summary=None,
         ),
         "NEW DATA": DataFrameUpdate(
             df=step2,
@@ -77,7 +74,6 @@ def dataframe_update_breakdown(
             type=UpdateType.OTHER,
             drift_context=None,
             drift_evaluation=None,
-            drift_summary=None,
         ),
         "DRIFT": DataFrameUpdate(
             df=step3,
@@ -85,7 +81,6 @@ def dataframe_update_breakdown(
             type=UpdateType.DRIFT,
             drift_context=drift_context,
             drift_evaluation=drift_evaluation,
-            drift_summary=drift_summary,
         ),
         "MIGRATION Column Added": DataFrameUpdate(
             df=step4,
@@ -93,7 +88,6 @@ def dataframe_update_breakdown(
             type=UpdateType.OTHER,
             drift_context=None,
             drift_evaluation=None,
-            drift_summary=None,
         ),
     }
 

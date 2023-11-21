@@ -1,7 +1,8 @@
 import os
 import unittest
-from driftdb.dataframe.dataframe_update_breakdown import dataframe_update_breakdown
+
 import pandas as pd
+from driftdb.dataframe.dataframe_update_breakdown import dataframe_update_breakdown
 
 
 class TestUpdateBreakdown(unittest.TestCase):
@@ -33,12 +34,11 @@ class TestUpdateBreakdown(unittest.TestCase):
         # dfc33511-d4f6-4ddc-ba16-49d77e312282,2008-08-03,1.29,HU,Category A
         # dfc33511-d4f6-4ddc-ba16-49d77e312282,2008-08-03,1.28,HU,Category A
         result = dataframe_update_breakdown(self.initial_df, self.final_df)
-        modified_rows_unique_keys = result["DRIFT"]["drift_summary"]
+        drift_context = result["DRIFT"]["drift_context"]
+        if drift_context is None:
+            self.fail("drift_context is None")
+        summary = drift_context["summary"]
 
-        self.assertIsNotNone(
-            modified_rows_unique_keys, "modified_rows_unique_keys is None"
-        )
-        if modified_rows_unique_keys is not None:
-            self.assertEqual(
-                len(modified_rows_unique_keys["modified_rows_unique_keys"]), 1
-            )
+        self.assertIsNotNone(summary, "modified_rows_unique_keys is None")
+        if summary is not None:
+            self.assertEqual(len(summary["modified_rows_unique_keys"]), 1)

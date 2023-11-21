@@ -1,10 +1,9 @@
 import os
 import unittest
-from driftdb.dataframe.dataframe_update_breakdown import dataframe_update_breakdown
-from driftdb.dataframe.helpers import (
-    sort_dataframe_on_first_column_and_assert_is_unique,
-)
+
 import pandas as pd
+from driftdb.dataframe.dataframe_update_breakdown import dataframe_update_breakdown
+from driftdb.dataframe.helpers import sort_dataframe_on_first_column_and_assert_is_unique
 
 
 def formatDF(dict):
@@ -18,9 +17,7 @@ def formatDF(dict):
 class TestUpdateBreakdown(unittest.TestCase):
     def setUp(self):
         base_dir = os.path.dirname(__file__)  # get the directory of the current script
-        initial_csv_file = os.path.join(
-            base_dir, "./datasets/test_dataframe_update_breakdown_reindexation1.csv"
-        )
+        initial_csv_file = os.path.join(base_dir, "./datasets/test_dataframe_update_breakdown_reindexation1.csv")
         self.initial_df = pd.read_csv(
             initial_csv_file,
             dtype="string",
@@ -32,21 +29,18 @@ class TestUpdateBreakdown(unittest.TestCase):
             "date": ["2022-12", "2023-01", "2023-01"],
             "age": [25, 30, 35],
         }
-        self.final_df = sort_dataframe_on_first_column_and_assert_is_unique(
-            formatDF(final_data)
-        )
+        self.final_df = sort_dataframe_on_first_column_and_assert_is_unique(formatDF(final_data))
 
     def test_comparison_on_same_index(self):
         result = dataframe_update_breakdown(self.initial_df, self.final_df)
-        modified_rows_unique_keys = result["DRIFT"]["drift_summary"]
+        drift_context = result["DRIFT"]["drift_context"]
+        if drift_context is None:
+            self.fail("drift_context is None")
+        modified_rows_unique_keys = drift_context["summary"]
 
-        self.assertIsNotNone(
-            modified_rows_unique_keys, "modified_rows_unique_keys is None"
-        )
+        self.assertIsNotNone(modified_rows_unique_keys, "modified_rows_unique_keys is None")
         if modified_rows_unique_keys is not None:
-            self.assertEqual(
-                len(modified_rows_unique_keys["modified_rows_unique_keys"]), 1
-            )
+            self.assertEqual(len(modified_rows_unique_keys["modified_rows_unique_keys"]), 1)
             self.assertEqual(
                 modified_rows_unique_keys["modified_rows_unique_keys"][0],
                 "2023-01-Charlie",
