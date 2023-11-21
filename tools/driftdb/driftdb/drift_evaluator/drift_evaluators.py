@@ -3,6 +3,7 @@ from typing import Callable
 
 import pandas as pd
 
+from ..dataframe.detect_outliers import detect_outliers
 from ..dataframe.helpers import generate_drift_description
 from ..logger import get_logger
 from .interface import DriftEvaluation, DriftEvaluatorContext, DriftSummary, NewDataEvaluatorContext
@@ -76,6 +77,23 @@ class DefaultDriftEvaluator(BaseUpdateEvaluator):
         data_drift_context: DriftEvaluatorContext,
     ) -> DriftEvaluation:
         return auto_merge_drift(data_drift_context)
+
+
+class DetectOutlierNewDataEvaluator(BaseNewDataEvaluator):
+    @staticmethod
+    def compute_new_data_evaluation(
+        new_data_context: NewDataEvaluatorContext,
+    ) -> DriftEvaluation:
+        outliers = detect_outliers(
+            before=new_data_context.before,
+            after=new_data_context.after,
+            added_rows=new_data_context.added_rows,
+        )
+        if len(outliers) > 0:
+            return DriftEvaluation(
+                should_alert=True, message=f"Found {len(outliers)} outliers\n {outliers.to_markdown()}"
+            )
+        return DriftEvaluation(should_alert=False, message="")
 
 
 class AlertDriftEvaluator(BaseDriftEvaluator):
