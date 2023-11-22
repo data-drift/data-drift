@@ -5,12 +5,11 @@ from typing import Dict, List, Optional
 import pandas as pd
 from github import ContentFile, Github, GithubException, Repository
 
-from ..dataframe.dataframe_update_breakdown import DataFrameUpdate, UpdateType
+from ..dataframe.dataframe_update_breakdown import DataFrameUpdate
 from ..drift_evaluator.drift_evaluators import drift_summary_to_string
 from ..drift_evaluator.interface import DriftEvaluatorContext
 from ..logger import get_logger
 from .abstract_connector import AbstractConnector
-from .common import get_alert_branch_name
 
 logger = get_logger(__name__)
 
@@ -26,7 +25,7 @@ class GithubConnector(AbstractConnector):
         self.repo = github_client.get_repo(github_repository_name)
         self.default_branch = default_branch if default_branch is not None else self.repo.default_branch
         self.assert_branch_exist(self.repo, self.default_branch)
-        self.assignees = assignees if assignees is not None else []
+        self.assignees = self.assert_assignees_exists(assignees if assignees is not None else [])
         self.logger = logger
 
     def assert_file_exists(self, file_path: str) -> Optional[ContentFile.ContentFile]:
@@ -72,29 +71,17 @@ class GithubConnector(AbstractConnector):
             self.default_branch,
         )
 
-    def close_pullrequests(self, title: str):
-        pulls = self.repo.get_pulls(state="open")
-        for pull in pulls:
-            if pull.title == title:
-                pull.edit(state="closed")
-
-    def create_pullrequest(self, title: str, description_body: str, branch: str):
+    def open_issue(self, title: str, description_body: str):
         try:
-            if len(self.assignees) > 0:
-                pullrequest = self.repo.create_pull(
-                    title=title,
-                    body=description_body,
-                    head=branch,
-                    base=self.default_branch,
-                )
-                logger.info("Pull request created: " + pullrequest.html_url)
-                existing_assignees = self.assert_assignees_exists()
-                pullrequest.add_to_assignees(*existing_assignees)
-            else:
-                logger.info("No assignees. skipping pull request creation")
+            issue = self.repo.create_issue(
+                title=title,
+                body=description_body,
+                assignees=self.assignees,
+            )
+            logger.info("Issue created: " + issue.html_url)
         except GithubException as e:
             if e.status == 422:
-                logger.info("Pull request already exists. skipping...")
+                logger.info("Issue already exists. skipping...")
             else:
                 raise e
 
@@ -111,12 +98,12 @@ class GithubConnector(AbstractConnector):
 
             repo.create_git_ref(f"refs/heads/{branch_name}", reported_branch.commit.sha)
 
-    def assert_assignees_exists(self) -> List[str]:
+    def assert_assignees_exists(self, maybe_assignees: List[str]) -> List[str]:
         members = [collaborator.login for collaborator in self.repo.get_collaborators()]
         exising_assignees = []
-        for assignee in self.assignees:
+        for assignee in maybe_assignees:
             if assignee not in members:
-                logger.info(f"Assignee {assignee} does not exist")
+                logger.warn(f"Assignee {assignee} does not exist")
             else:
                 exising_assignees.append(assignee)
         return exising_assignees
@@ -151,21 +138,23 @@ class GithubConnector(AbstractConnector):
         data,
         branch,
         max_retries=3,
-    ):
+    ) -> str:
         retries = 0
 
         file_path = self.get_table_file_path(table_name)
-
+        commit_sha = ""
         while retries < max_retries:
             try:
                 content = self.assert_file_exists(file_path)
                 if content is None:
                     response = self.repo.create_file(file_path, commit_message, data, branch)
                     logger.info(response["commit"].html_url)
+                    commit_sha = response["commit"].sha
                 else:
                     response = self.repo.update_file(file_path, commit_message, data, content.sha, branch)
                     logger.info(response["commit"].html_url)
-                return
+                    commit_sha = response["commit"].sha
+                return commit_sha
             except GithubException as e:
                 if e.status == 409:
                     retries += 1
@@ -181,38 +170,32 @@ class GithubConnector(AbstractConnector):
         measure_date: datetime,
     ):
         branch = self.default_branch
-        pr_message = ""
+        alert_message = ""
+        has_alert = False
         for key, value in update_breakdown.items():
             commit_message = key
             if value.has_update:
                 logger.info("Update: " + key)
-                if value.update_context and value.update_evaluation:
-                    update_evaluation = value.update_evaluation
-                    update_context = value.update_context
+                update_evaluation = value.update_evaluation
+                update_context = value.update_context
+                if update_context and update_evaluation:
                     commit_message += "\n\n" + update_evaluation.message
                     if isinstance(update_context, DriftEvaluatorContext) and update_context.summary != None:
                         summary = update_context.summary
                         drift_summary_string = drift_summary_to_string(summary)
                         commit_message += "\n\n" + drift_summary_string
-                    if update_evaluation.should_alert:
-                        if branch == self.default_branch:
-                            drift_branch = get_alert_branch_name(table_name)
-                            self.checkout_branch_from_default_branch(drift_branch)
-                            branch = drift_branch
-                        pr_message = pr_message + "\n\n" + update_evaluation.message
 
-                self.update_file_with_retry(
+                update_commit_sha = self.update_file_with_retry(
                     table_name=table_name,
                     commit_message=commit_message,
                     data=value.df.to_csv(index=True, header=True),
                     branch=branch,
                 )
+                if update_evaluation and update_evaluation.should_alert:
+                    has_alert = True
+                    alert_message = alert_message + "\n" + "Commit: " + update_commit_sha
+                    alert_message = alert_message + "\n\n" + update_evaluation.message
 
-        if pr_message != "":
-            title = "New drift detected " + table_name
-            self.close_pullrequests(title=title)
-            self.create_pullrequest(
-                title=title,
-                description_body=pr_message,
-                branch=branch,
-            )
+        if has_alert:
+            title = "Alert " + table_name
+            self.open_issue(title=title, description_body=alert_message)
