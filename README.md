@@ -22,6 +22,15 @@
 <p align="center">Datadrift is an open-source monitoring and incident management platform to help data teams deliver trusted and reliable metrics.
 </p>
 
+<h3 align="center">
+  <a href="https://www.data-drift.io/">Website</a> |
+  <a href="https://github.com/data-drift/data-drift/issues">Issues</a> |
+  <a href="https://www.data-drift.io/blog">Blog</a> |
+  <a href="https://pypi.org/project/driftdb/">Doc</a> |
+  <a href="https://github.com/orgs/data-drift/projects/3">Roadmap</a> |
+  <a href="">Discord</a>
+</h3>
+
 <p align="center">
   <a href="https://www.data-drift.io">
     <img src="./datadrift-overview.png" alt="DataDrift " />
