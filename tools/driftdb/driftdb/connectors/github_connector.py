@@ -25,7 +25,7 @@ class GithubConnector(AbstractConnector):
         self.repo = github_client.get_repo(github_repository_name)
         self.default_branch = default_branch if default_branch is not None else self.repo.default_branch
         self.assert_branch_exist(self.repo, self.default_branch)
-        self.assignees = assignees if assignees is not None else []
+        self.assignees = self.assert_assignees_exists(assignees if assignees is not None else [])
         self.logger = logger
 
     def assert_file_exists(self, file_path: str) -> Optional[ContentFile.ContentFile]:
@@ -123,12 +123,12 @@ class GithubConnector(AbstractConnector):
 
             repo.create_git_ref(f"refs/heads/{branch_name}", reported_branch.commit.sha)
 
-    def assert_assignees_exists(self) -> List[str]:
+    def assert_assignees_exists(self, maybe_assignees: List[str]) -> List[str]:
         members = [collaborator.login for collaborator in self.repo.get_collaborators()]
         exising_assignees = []
-        for assignee in self.assignees:
+        for assignee in maybe_assignees:
             if assignee not in members:
-                logger.info(f"Assignee {assignee} does not exist")
+                logger.warn(f"Assignee {assignee} does not exist")
             else:
                 exising_assignees.append(assignee)
         return exising_assignees
