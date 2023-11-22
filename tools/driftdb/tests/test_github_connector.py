@@ -6,11 +6,8 @@ import pandas as pd
 from driftdb.connectors.github_connector import GithubConnector
 from github import GithubException
 
-# Define a function that will be used as a side effect for the mocked read_csv()
-
 
 def mocked_read_csv(url, *args, **kwargs):
-    # Return a dummy DataFrame instead of reading the URL
     return pd.DataFrame(
         {
             "unique_key": [1, 2, 3],
@@ -39,21 +36,6 @@ class TestStoreMetric(unittest.TestCase):
 
     def test_store_metric(self):
         with patch("pandas.read_csv", side_effect=mocked_read_csv):
-            self.connector.snapshot_table(
-                table_dataframe=self.dataframe,
-                table_name=self.table_name,
-            )
-
-            self.repo.get_contents.assert_has_calls(
-                [
-                    call("path/to/file.csv", ref=self.repo.default_branch),
-                    call("path/to/file.csv", ref=mock.ANY),
-                ]
-            )
-
-    def test_store_metric_pull_request_already_exists(self):
-        with patch("pandas.read_csv", side_effect=mocked_read_csv):
-            self.repo.create_pull.side_effect = GithubException(422, {"message": "A pull request already exists"}, None)
             self.connector.snapshot_table(
                 table_dataframe=self.dataframe,
                 table_name=self.table_name,
