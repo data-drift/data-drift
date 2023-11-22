@@ -172,7 +172,7 @@ class GithubConnector(AbstractConnector):
         branch = self.default_branch
         alert_message = ""
         for key, value in update_breakdown.items():
-            commit_message = key
+            commit_message = f"{key}: {table_name}"
             if value.has_update:
                 logger.info("Update: " + key)
                 update_evaluation = value.update_evaluation

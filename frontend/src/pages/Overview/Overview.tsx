@@ -1,6 +1,6 @@
 import Lineage from "../../components/Lineage/Lineage";
 import { DualTableProps } from "../../components/Table/DualTable";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Edge, Node } from "reactflow";
 
 import {
@@ -31,10 +31,25 @@ const Overview = () => {
   const config = useOverviewLoaderData();
   const searchParams = new URLSearchParams(window.location.search);
 
-  const initialSelectedMetric = Number(searchParams.get("metric")) || 0;
-  const [selectedMetric, setSelectedMetric] = useState(
-    config.config.metrics[initialSelectedMetric]
-  );
+  const tableName = searchParams.get("tableName") || "";
+  const initialSelectedMetricNumber = Number(searchParams.get("metric")) || 0;
+
+  const initialSelectedMetric = useMemo(() => {
+    if (tableName.length > 0) {
+      return {
+        filepath: tableName,
+        dateColumnName: "",
+        KPIColumnName: "",
+        metricName: tableName,
+        timeGrains: [],
+        dimensions: [],
+      };
+    } else {
+      return config.config.metrics[initialSelectedMetricNumber];
+    }
+  }, [tableName, config.config.metrics, initialSelectedMetricNumber]);
+
+  const [selectedMetric, setSelectedMetric] = useState(initialSelectedMetric);
   const handleSetSelectedMetric = useCallback(
     (newMetricIndex: number) => {
       const searchParams = new URLSearchParams(window.location.search);
@@ -225,23 +240,28 @@ const Overview = () => {
           <StyledDateButton onClick={incrementDate}>{">"}</StyledDateButton>
         </StyledDate>
 
-        <StyledSelect
-          value={selectedMetric.filepath}
-          onChange={(e) => {
-            const selectedMetric = config.config.metrics.findIndex(
-              (metric) => metric.filepath === e.target.value
-            );
-            if (typeof selectedMetric === "number" && !isNaN(selectedMetric)) {
-              handleSetSelectedMetric(selectedMetric);
-            }
-          }}
-        >
-          {config.config.metrics.map((metric) => (
-            <option key={metric.filepath} value={metric.filepath}>
-              {metric.filepath}
-            </option>
-          ))}
-        </StyledSelect>
+        {config.config.metrics.length > 0 && (
+          <StyledSelect
+            value={selectedMetric.filepath}
+            onChange={(e) => {
+              const selectedMetric = config.config.metrics.findIndex(
+                (metric) => metric.filepath === e.target.value
+              );
+              if (
+                typeof selectedMetric === "number" &&
+                !isNaN(selectedMetric)
+              ) {
+                handleSetSelectedMetric(selectedMetric);
+              }
+            }}
+          >
+            {config.config.metrics.map((metric) => (
+              <option key={metric.filepath} value={metric.filepath}>
+                {metric.filepath}
+              </option>
+            ))}
+          </StyledSelect>
+        )}
         <StarUs />
       </StyledHeader>
 
