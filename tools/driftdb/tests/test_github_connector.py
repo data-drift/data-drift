@@ -4,7 +4,6 @@ from unittest.mock import MagicMock, call, patch
 
 import pandas as pd
 from driftdb.connectors.github_connector import GithubConnector
-from github import GithubException
 
 
 def mocked_read_csv(url, *args, **kwargs):
