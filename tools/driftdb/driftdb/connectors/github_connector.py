@@ -71,32 +71,6 @@ class GithubConnector(AbstractConnector):
             self.default_branch,
         )
 
-    def close_pullrequests(self, title: str):
-        pulls = self.repo.get_pulls(state="open")
-        for pull in pulls:
-            if pull.title == title:
-                pull.edit(state="closed")
-
-    def create_pullrequest(self, title: str, description_body: str, branch: str):
-        try:
-            if len(self.assignees) > 0:
-                pullrequest = self.repo.create_pull(
-                    title=title,
-                    body=description_body,
-                    head=branch,
-                    base=self.default_branch,
-                )
-                logger.info("Pull request created: " + pullrequest.html_url)
-                existing_assignees = self.assert_assignees_exists()
-                pullrequest.add_to_assignees(*existing_assignees)
-            else:
-                logger.info("No assignees. skipping pull request creation")
-        except GithubException as e:
-            if e.status == 422:
-                logger.info("Pull request already exists. skipping...")
-            else:
-                raise e
-
     def open_issue(self, title: str, description_body: str):
         try:
             issue = self.repo.create_issue(
