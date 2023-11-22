@@ -171,7 +171,6 @@ class GithubConnector(AbstractConnector):
     ):
         branch = self.default_branch
         alert_message = ""
-        has_alert = False
         for key, value in update_breakdown.items():
             commit_message = key
             if value.has_update:
@@ -192,10 +191,7 @@ class GithubConnector(AbstractConnector):
                     branch=branch,
                 )
                 if update_evaluation and update_evaluation.should_alert:
-                    has_alert = True
                     alert_message = alert_message + "\n" + "Commit: " + update_commit_sha
                     alert_message = alert_message + "\n\n" + update_evaluation.message
-
-        if has_alert:
-            title = "Alert " + table_name
-            self.open_issue(title=title, description_body=alert_message)
+                    title = table_name + " - " + key
+                    self.open_issue(title=title, description_body=alert_message)
