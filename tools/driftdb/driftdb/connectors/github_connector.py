@@ -76,6 +76,7 @@ class GithubConnector(AbstractConnector):
             issue = self.repo.create_issue(
                 title=title,
                 body=description_body,
+                assignees=self.assignees,
             )
             logger.info("Issue created: " + issue.html_url)
         except GithubException as e:
