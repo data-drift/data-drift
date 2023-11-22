@@ -28,7 +28,12 @@ export const loader = async ({
 }) => {
   assertParamsIsDefined(params);
 
-  const config = await getConfig(params);
+  const config = await getConfig(params).catch((err) => {
+    console.error(err);
+    return {
+      metrics: [],
+    };
+  });
 
   return {
     params,
