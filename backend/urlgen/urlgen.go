@@ -24,8 +24,12 @@ func BuildReportDiffBaseUrl(installationId, repoOwner, repoName string) string {
 	return reportBaseUrl
 }
 
-func BuildOverviewUrl(installationId, repoOwner, repoName string) string {
-	url := fmt.Sprintf("https://app.data-drift.io/%s/%s/%s/overview", installationId, repoOwner, repoName)
+func BuildOverviewUrl(installationId, repoOwner, repoName, snapshotDate, tableName string) string {
+	queryString := url.Values{
+		"snapshotDate": {snapshotDate},
+		"tableName":    {tableName},
+	}
+	url := fmt.Sprintf("https://app.data-drift.io/%s/%s/%s/overview?%s", installationId, repoOwner, repoName, queryString.Encode())
 	return url
 }
 
