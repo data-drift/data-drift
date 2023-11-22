@@ -51,7 +51,8 @@ Data monitoring tools fail by focusing on static tests (eg. null, unique, expect
 pip install driftdb
 ```
 
-[Check the video](https://app.claap.io/sammyt/demo-beta-integration-dbt-c-ApwBh9kt4p-Qp4wXE2MfCzG)
+[Here is a quick demo](https://app.claap.io/sammyt/drift-db-demo-a18-c-ApwBh9kt4p-07oQMdsIzt_e).
+For a step-by-step guide on the dbt installation, see the [docs](https://pypi.org/project/driftdb/).
 
 ## Python installation
 
@@ -59,9 +60,8 @@ Put the probe in your pipeline.
 
 ```python
 >>> from driftdb.connectors.workflow import snapshot_table
+
 >>> snapshot_table(connector, table_dataframe=dataframe, table_name="revenue")
-
-
 ```
 
 For a step-by-step guide on the python installation, see the [docs](https://pypi.org/project/driftdb/).
