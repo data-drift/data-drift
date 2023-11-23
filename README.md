@@ -56,7 +56,7 @@ For a step-by-step guide on the dbt installation, see the [docs](https://pypi.or
 
 ## Python installation
 
-Put the probe in your pipeline.
+Install the monitor in your pipeline.
 
 ```python
 >>> from driftdb.connectors.workflow import snapshot_table
