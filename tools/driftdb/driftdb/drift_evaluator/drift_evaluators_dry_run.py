@@ -1,6 +1,7 @@
 import traceback
 
 import pandas as pd
+from driftdb.dataframe.summarize_dataframe_updates import summarize_dataframe_updates
 from github import Github
 
 from ..logger import get_logger
@@ -37,13 +38,7 @@ def run_drift_evaluator(
         keep_default_na=False,
     )
 
-    drift_summary = None
-    try:
-        commit_message = commit.commit.message
-        drift_summary = parse_drift_summary(commit_message)
-    except Exception as e:
-        logger.warn("Failed to parse drift summary: " + str(e))
-        traceback.print_exc()
+    drift_summary = summarize_dataframe_updates(initial_df=old_dataframe, final_df=new_dataframe)
 
     #  run drift evaluator
     data_drift_context = DriftEvaluatorContext(
