@@ -6,3 +6,5 @@ isort
 pandas
 PyGithub
 tzlocal
+pandas-stubs
+mypy

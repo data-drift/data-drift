@@ -3,11 +3,12 @@ from datetime import datetime
 from typing import Dict, Iterator, Optional, Tuple
 
 import pandas as pd
-from git import Commit, Repo
+from git import Repo
+from git.objects.commit import Commit
 
 from ..dataframe.dataframe_update_breakdown import DataFrameUpdate
 from ..drift_evaluator.drift_evaluators import drift_summary_to_string
-from ..drift_evaluator.interface import DriftEvaluatorContext
+from ..drift_evaluator.interface import DriftEvaluation, DriftEvaluatorContext
 from ..logger import get_logger
 from .abstract_connector import AbstractConnector
 
@@ -43,8 +44,8 @@ class LocalConnector(AbstractConnector):
     def handle_breakdown(
         self,
         table_name: str,
-        measure_date: datetime,
         update_breakdown: Dict[str, DataFrameUpdate],
+        measure_date: datetime,
     ):
         [table_file_path, table_file_name] = self._get_table_file_path(table_name)
         for key, value in update_breakdown.items():
@@ -54,8 +55,9 @@ class LocalConnector(AbstractConnector):
                 add_file = [table_file_name]
                 self.repo.index.add(add_file)
                 commit_message = f"{key}: {table_name}"
-                if value.update_evaluation != None:
-                    commit_message += f"\n{value.update_evaluation.message}"
+                update_evaluation = value.update_evaluation
+                if isinstance(update_evaluation, DriftEvaluation):
+                    commit_message += f"\n{update_evaluation.message}"
                 if isinstance(value.update_context, DriftEvaluatorContext) and value.update_context.summary != None:
                     string_summary = drift_summary_to_string(value.update_context.summary)
                     commit_message += "\n\n" + string_summary
