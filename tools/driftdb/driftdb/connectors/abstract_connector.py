@@ -26,7 +26,7 @@ class AbstractConnector(ABC):
         pass
 
     @abstractmethod
-    def get_table(self, table_name: str) -> pd.DataFrame:
+    def get_table(self, table_name: str) -> Optional[pd.DataFrame]:
         pass
 
     @abstractmethod

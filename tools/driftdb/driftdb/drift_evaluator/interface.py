@@ -11,7 +11,7 @@ class DriftSummary(TypedDict):
 
 
 class DriftEvaluatorContext:
-    def __init__(self, before: pd.DataFrame, after: pd.DataFrame, summary: Optional[DriftSummary]):
+    def __init__(self, before: pd.DataFrame, after: pd.DataFrame, summary: DriftSummary):
         self.before = before
         self.after = after
         self.summary = summary
