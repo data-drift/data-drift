@@ -8,3 +8,4 @@ PyGithub
 tzlocal
 pandas-stubs
 mypy
+dbt-core
