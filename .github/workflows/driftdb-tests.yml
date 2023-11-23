@@ -33,3 +33,6 @@ jobs:
 
       - name: Run tests
         run: python -m unittest discover -s tests
+
+      - name: Run lint
+        run: mypy driftdb
