@@ -17,13 +17,10 @@ from github import Github
 
 github_connector = GithubConnector(github_client=Github("gh_token"), github_repository_name="org/repo")
 
-
-from driftdb.connectors.workflow import snapshot_table
-
 dataframe = bigquery.Client().query(query).to_dataframe()
 {"unique_key": ['2022-01-01_FR', '2022-01-01_GB'...
 
-snapshot_table(connector=github_connector, table_dataframe=dataframe, table_name="revenue")
+github_connector.snapshot_table(connector=github_connector, table_dataframe=dataframe, table_name="revenue")
 '🎉 data/act_metrics_finance/mrr.csv Successfully stored!'
 '💩 Historical data change detected, Ammy was assigned to it'
 ```
@@ -161,7 +158,7 @@ To use the AlertDriftEvaluator, add it when you call snapshot_table like this:
 ```python
 from driftdb.drift_evaluator.drift_evaluators import AlertDriftEvaluator
 
-snapshot_table(connector, table_dataframe, table_name, drift_evaluator=AlertDriftEvaluator)
+connector.snapshot_table(table_dataframe, table_name, drift_evaluator=AlertDriftEvaluator)
 
 ```
 
