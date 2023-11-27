@@ -5,48 +5,31 @@ from datetime import datetime
 import click
 import numpy as np
 import pandas as pd
+import typer
+from driftdb.cli.server import start_server
 from driftdb.connectors.github_connector import GithubConnector
 from driftdb.connectors.local_connector import LocalConnector
-from driftdb.server import start_server
 from github.MainClass import Github
 from tzlocal import get_localzone
 
-from . import version
-from .dataframe.seed import generate_dataframe, insert_drift
-from .logger import get_logger
+from ..logger import get_logger
+from .common import dbt_adapter_query, prompt_from_list
+
+app = typer.Typer()
 
 logger = get_logger(__name__)
 
 
-@click.group()
-@click.version_option(version=version.version, prog_name="driftdb")
-def cli_entrypoint():
-    pass
-
-
-@cli_entrypoint.group()
-def dbt():
-    pass
-
-
-@dbt.command()
-@click.option(
-    "--token",
-    default=lambda: os.environ.get("DATADRIFT_GITHUB_TOKEN", ""),
-    help="Token to access your repo. With PR and Content read and write rights",
-)
-@click.option(
-    "--repo",
-    default=lambda: os.environ.get("DATADRIFT_GITHUB_REPO", ""),
-    help="The driftdb repo in the form org/repo",
-)
-@click.option(
-    "--storage",
-    default="local",
-    help="Wether to use local or github storage",
-)
-@click.option("--project-dir", default=".", help="The dbt project dir")
-def run(token, repo, storage, project_dir):
+@app.command()
+def run(
+    token: str = typer.Option(
+        os.environ.get("DATADRIFT_GITHUB_TOKEN", ""),
+        help="Token to access your repo. With PR and Content read and write rights",
+    ),
+    repo: str = typer.Option(os.environ.get("DATADRIFT_GITHUB_REPO", ""), help="The driftdb repo in the form org/repo"),
+    storage: str = typer.Option("local", help="Whether to use local or github storage"),
+    project_dir: str = typer.Option(".", help="The dbt project dir"),
+):
     from dbt.adapters.factory import get_adapter
     from dbt.cli.main import dbtRunner
     from dbt.config.runtime import RuntimeConfig, load_profile, load_project
@@ -100,7 +83,7 @@ def run(token, repo, storage, project_dir):
                 )
 
 
-@dbt.command()
+@app.command()
 def snapshot():
     from dbt.adapters.factory import get_adapter
     from dbt.cli.main import dbtRunner
@@ -121,7 +104,7 @@ def snapshot():
 
     snapshot_nodes = [node for node in manifest["nodes"].values() if (node["resource_type"] == "snapshot")]
 
-    [snapshot_name, snapshot_index] = select_from_list(
+    [snapshot_name, snapshot_index] = prompt_from_list(
         "Which snapshot do you want to process?",
         [node["name"] for node in snapshot_nodes],
     )
@@ -188,162 +171,9 @@ def snapshot():
             localized_date = date.replace(tzinfo=local_tz)
 
             local_connector = LocalConnector()
-            snapshot_table(
-                connector=local_connector,
+            local_connector.snapshot_table(
                 table_name=metric_name,
                 table_dataframe=data_as_of_date,
                 measure_date=localized_date,
             )
     start_server("/tables/" + metric_name)
-
-
-@cli_entrypoint.command()
-def start():
-    click.echo("Starting the application...")
-    start_server()
-
-
-@cli_entrypoint.group()
-def seed():
-    pass
-
-
-@seed.command()
-@click.option(
-    "--table",
-    help="name of your table",
-)
-@click.option(
-    "--row-number",
-    default=10000,
-    help="Number of line to generate",
-)
-def create(table, row_number):
-    if not table:
-        table = click.prompt("Table name")
-    click.echo("Creating seed file...")
-    dataframe = generate_dataframe(row_number)
-
-    click.echo(dataframe.columns)
-    local_connector = LocalConnector()
-    local_connector.snapshot_table(table_name=table, table_dataframe=dataframe)
-    click.echo("Creating seed created...")
-
-
-@seed.command()
-@click.option(
-    "--table",
-    help="name of your table",
-)
-@click.option(
-    "--row-number",
-    default=100,
-    help="Number of line to update",
-)
-def update(table, row_number):
-    local_connector = LocalConnector()
-
-    if not table:
-        tables = local_connector.get_tables()
-        [table, table_index] = select_from_list("Please enter table number", tables)
-
-    click.echo("Updating seed file...")
-    dataframe = local_connector.get_table(table_name=table)
-    if dataframe is None:
-        raise Exception("Table not found")
-    drifted_dataset = insert_drift(dataframe, row_number)
-    local_connector = LocalConnector()
-
-    local_connector.snapshot_table(table_name=table, table_dataframe=drifted_dataset)
-
-
-@cli_entrypoint.command(name="delete")
-@click.option(
-    "--table",
-    help="name of your table",
-)
-def delete_table(table):
-    local_connector = LocalConnector()
-    tables = local_connector.get_tables()
-    if not table:
-        tables = local_connector.get_tables()
-        [table, table_index] = select_from_list("Please enter table number", tables)
-    local_connector.delete_table(table_name=table)
-
-
-@cli_entrypoint.command()
-@click.argument("csvpathfile")
-@click.option(
-    "--table",
-    help="name of your table",
-)
-@click.option(
-    "--unique-key-column",
-    help="name of your unique key column",
-)
-@click.option(
-    "--date-column",
-    help="name of your date column",
-)
-def load_csv(csvpathfile, table, unique_key_column, date_column):
-    local_connector = LocalConnector()
-    if not table:
-        tables = local_connector.get_tables()
-        table = click.prompt("Please enter table name (exising or not)", type=click.Choice(tables))
-
-    click.echo(f"Loading CSV file {csvpathfile}...")
-    assert os.path.exists(csvpathfile), f"CSV file {csvpathfile} does not exist"
-    dataframe = pd.read_csv(csvpathfile)
-
-    if "unique_key" not in dataframe.columns:
-        if not unique_key_column:
-            unique_key_column = click.prompt(
-                "Please enter unique key column name",
-                type=click.Choice(dataframe.columns),  # type: ignore
-            )
-
-        assert unique_key_column in dataframe.columns, f"Column {unique_key_column} does not exist in CSV file"
-        dataframe.insert(0, "unique_key", dataframe[unique_key_column])
-
-    if "date" not in dataframe.columns:
-        if not date_column:
-            date_column = click.prompt(
-                "Please enter date column name", type=click.Choice(dataframe.columns)  # type: ignore
-            )
-        assert date_column in dataframe.columns, f"Column {date_column} does not exist in CSV file"
-        dataframe.insert(1, "date", dataframe[date_column])
-
-    local_connector = LocalConnector()
-    local_connector.snapshot_table(table_name=table, table_dataframe=dataframe)
-
-
-@cli_entrypoint.group()
-def store():
-    pass
-
-
-@store.command(name="delete")
-@click.option(
-    "--store",
-    help="name of the store",
-    default="default",
-)
-def delete_store(store):
-    LocalConnector.delete_store(store_name=store)
-
-
-def select_from_list(prompt, choices):
-    for idx, item in enumerate(choices, 1):
-        click.echo(f"{idx}: {item}")
-    selection = click.prompt(prompt, type=click.IntRange(1, len(choices)))
-    index = selection - 1
-    return [choices[index], index]
-
-
-def dbt_adapter_query(
-    adapter,
-    query: str,
-) -> pd.DataFrame:
-    _, table = adapter.execute(query, fetch=True)
-    data = {column_name: table.columns[column_name].values() for column_name in table.column_names}
-    return pd.DataFrame(data)
