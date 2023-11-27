@@ -1,11 +1,11 @@
 black
 click
+dbt-core
 Faker
 GitPython
 isort
+mypy
 pandas
+pandas-stubs
 PyGithub
 tzlocal
-pandas-stubs
-mypy
-dbt-core
