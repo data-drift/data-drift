@@ -13,7 +13,8 @@
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "test": "jest"
+    "test": "jest",
+    "build-spa-snapshot": "vite build src/spas/snapshot "
   },
   "dependencies": {
     "@emotion/styled": "^11.11.0",
@@ -53,6 +54,7 @@
     "storybook": "^7.4.6",
     "ts-jest": "^29.1.1",
     "typescript": "^5.0.2",
-    "vite": "^4.4.0"
+    "vite": "^4.4.0",
+    "vite-plugin-singlefile": "^0.13.5"
   }
 }
