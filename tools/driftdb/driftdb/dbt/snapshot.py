@@ -23,7 +23,7 @@ def get_snapshot_nodes() -> List[SnapshotNode]:
         return snapshot_nodes
 
 
-def get_snapshot_dates(snapshot_node: SnapshotNode) -> List[datetime]:
+def get_snapshot_dates(snapshot_node: SnapshotNode) -> List[str]:
     from dbt.adapters.factory import get_adapter
     from dbt.cli.main import dbtRunner
     from dbt.config.runtime import RuntimeConfig, load_profile, load_project
@@ -47,11 +47,11 @@ def get_snapshot_dates(snapshot_node: SnapshotNode) -> List[datetime]:
         """
 
         df = dbt_adapter_query(adapter, text_query)
-        df["dbt_valid_from"] = pd.to_datetime(df["dbt_valid_from"])
-        return df["dbt_valid_from"].tolist()
+        date_strings = df["dbt_valid_from"].dt.strftime("%Y-%m-%d %H:%M:%S.%f").tolist()
+        return date_strings
 
 
-def get_snapshot_diff(snapshot_node: SnapshotNode, snapshot_date: datetime):
+def get_snapshot_diff(snapshot_node: SnapshotNode, snapshot_date: str):
     from dbt.adapters.factory import get_adapter
     from dbt.cli.main import dbtRunner
     from dbt.config.runtime import RuntimeConfig, load_profile, load_project
@@ -72,19 +72,20 @@ def get_snapshot_diff(snapshot_node: SnapshotNode, snapshot_date: datetime):
         valid_from AS(
             SELECT *,
                 'after' AS record_status
-            FROM bookings_snapshot
-            WHERE dbt_valid_from = '2023-11-28 14:44:49.444532'
+            FROM {snapshot_node["relation_name"]}
+            WHERE dbt_valid_from = '{snapshot_date}'
         ),
         valid_to AS (
             SELECT *,
                 'before' AS record_status
-            FROM bookings_snapshot
-            WHERE dbt_valid_to = '2023-11-28 14:44:49.444532'
+            FROM {snapshot_node["relation_name"]}
+            WHERE dbt_valid_to = '{snapshot_date}'
         )
 
         SELECT * FROM valid_to 
         UNION ALL
         SELECT * FROM valid_from;
         """
+
         df = dbt_adapter_query(adapter, text_query)
         return df

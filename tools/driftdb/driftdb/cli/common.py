@@ -27,7 +27,7 @@ def dbt_adapter_query(
     return pd.DataFrame(data)
 
 
-def get_user_date_selection(dates: List[datetime]) -> datetime:
+def get_user_date_selection(dates: List[str]) -> str:
     page_size = 10
     page = 0
 
@@ -56,5 +56,4 @@ def get_user_date_selection(dates: List[datetime]) -> datetime:
             page += 1
             continue
         else:
-            timestamp_ns = answers["date"]
-            return datetime.fromtimestamp(timestamp_ns / 1_000_000_000)
+            return answers["date"]

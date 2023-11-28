@@ -33,6 +33,7 @@ def show(snapshot_id: str = typer.Option(None, help="id of your snapshot")):
     snapshot_dates = get_snapshot_dates(snapshot_node)
 
     snapshot_date = get_user_date_selection(snapshot_dates)
+
     diff = get_snapshot_diff(snapshot_node, snapshot_date)
     with open("diff.html", "w") as f:
         f.write(diff.to_html())
