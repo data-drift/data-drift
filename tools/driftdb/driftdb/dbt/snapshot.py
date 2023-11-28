@@ -71,13 +71,13 @@ def get_snapshot_diff(snapshot_node: SnapshotNode, snapshot_date: datetime):
         WITH 
         valid_from AS(
             SELECT *,
-                'added' AS record_status
+                'after' AS record_status
             FROM bookings_snapshot
             WHERE dbt_valid_from = '2023-11-28 14:44:49.444532'
         ),
         valid_to AS (
             SELECT *,
-                'deleted' AS record_status
+                'before' AS record_status
             FROM bookings_snapshot
             WHERE dbt_valid_to = '2023-11-28 14:44:49.444532'
         )

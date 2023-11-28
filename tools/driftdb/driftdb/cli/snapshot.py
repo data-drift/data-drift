@@ -1,3 +1,5 @@
+import os
+import webbrowser
 from datetime import date, timedelta
 
 import inquirer
@@ -31,7 +33,12 @@ def show(snapshot_id: str = typer.Option(None, help="id of your snapshot")):
     snapshot_dates = get_snapshot_dates(snapshot_node)
 
     snapshot_date = get_user_date_selection(snapshot_dates)
-    print(snapshot_date)
-    print(type(snapshot_date))
     diff = get_snapshot_diff(snapshot_node, snapshot_date)
-    print(diff)
+    with open("diff.html", "w") as f:
+        f.write(diff.to_html())
+
+    # Get the absolute path of the HTML file
+    html_file_path = os.path.abspath("diff.html")
+
+    # Open the HTML file in the default web browser
+    webbrowser.open("file://" + html_file_path)
