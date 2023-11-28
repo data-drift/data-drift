@@ -1,9 +1,12 @@
 import { DualTable } from "../../components/Table/DualTable";
-import { generated_diff } from "./generatedDiff";
+import { sample_generated_diff } from "./generatedDiff";
 
-console.log("generated_diff", generated_diff);
+// @ts-ignore
+const diff = window.generated_diff || sample_generated_diff;
 
-const headers = Object.keys(generated_diff);
+console.log(diff);
+
+const headers = Object.keys(diff);
 
 const tableProps1 = {
   diffType: "removed",

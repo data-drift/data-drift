@@ -1,4 +1,4 @@
-export const generated_diff = {
+export const sample_generated_diff = {
   unique_key: {
     0: "38c5f2ff-df60-46a7-b4c5-c5b0fee1d96f",
     1: "c427b416-f07c-495b-a1e5-b7f4b8e4a1f9",
@@ -14,7 +14,6 @@ export const generated_diff = {
     4: 1699488000000,
   },
   metric_value: { 0: 8.93, 1: 4.64, 2: 7.93, 3: 2.76, 4: 5.64 },
-  country_code: { 0: "BN", 1: "KN", 2: "BN", 3: "US", 4: "KN" },
   created_at: {
     0: 1701085940365,
     1: 1701085940365,

@@ -37,22 +37,20 @@ def show(snapshot_id: str = typer.Option(None, help="id of your snapshot")):
 
     diff = get_snapshot_diff(snapshot_node, snapshot_date)
 
-    template_html_path = pkg_resources.resource_filename(__name__, "snapshot.html")
+    spa_html_path = pkg_resources.resource_filename(__name__, "snapshot.html")
 
-    with open(template_html_path, "r", encoding="utf-8") as template_html_file:
-        template_html_code = template_html_file.read()
+    with open(spa_html_path, "r", encoding="utf-8") as spa_html_file:
+        spa_html_code = spa_html_file.read()
 
     encoded_diff = base64.b64encode(diff.to_json().encode("utf-8"))
     decoded_diff = encoded_diff.decode("utf-8")
     compiled_output_html = (
-        f"<script>" f"window.generated_diff = JSON.parse(atob('{decoded_diff}'));" f"</script>" f"{template_html_code}"
+        f"<script>" f"window.generated_diff = JSON.parse(atob('{decoded_diff}'));" f"</script>" f"{spa_html_code}"
     )
 
     with open("diff.html", "w") as f:
         f.write(compiled_output_html)
 
-    # Get the absolute path of the HTML file
     html_file_path = os.path.abspath("diff.html")
 
-    # Open the HTML file in the default web browser
     webbrowser.open("file://" + html_file_path)
