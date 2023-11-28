@@ -1,19 +1,19 @@
 import inquirer
 import typer
-from driftdb.dbt.snapshot import get_snapshot_nodes
+from driftdb.dbt.snapshot import get_snapshot_dates, get_snapshot_nodes
 
 app = typer.Typer()
 
 
 @app.command()
-def show(name: str = typer.Option(None, help="name of your snapshot")):
-    if not name:
-        snapshot_nodes = get_snapshot_nodes()
+def show(snapshot_id: str = typer.Option(None, help="id of your snapshot")):
+    snapshot_nodes = get_snapshot_nodes()
+    if not snapshot_id:
         questions = [
             inquirer.List(
                 "choice",
                 message="Please choose a snapshot to show",
-                choices=snapshot_nodes,
+                choices=[node["unique_id"] for node in snapshot_nodes],
             ),
         ]
         answers = inquirer.prompt(questions)
@@ -21,6 +21,8 @@ def show(name: str = typer.Option(None, help="name of your snapshot")):
             typer.echo("No choice selected. Exiting.")
             raise typer.Exit(code=1)
 
-        name = answers["choice"]
+        snapshot_id = answers["choice"]
 
-    typer.echo(name)
+    snapshot_node = [node for node in snapshot_nodes if node["unique_id"] == snapshot_id][0]
+    snapshot_dates = get_snapshot_dates(snapshot_node)
+    print(snapshot_dates)
