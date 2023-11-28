@@ -3,6 +3,7 @@ click
 dbt-core
 Faker
 GitPython
+inquirer
 isort
 mypy
 pandas
