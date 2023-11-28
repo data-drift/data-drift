@@ -1,4 +1,9 @@
 import { DualTable } from "../../components/Table/DualTable";
+import { generated_diff } from "./generatedDiff";
+
+console.log("generated_diff", generated_diff);
+
+const headers = Object.keys(generated_diff);
 
 const tableProps1 = {
   diffType: "removed",
@@ -9,7 +14,7 @@ const tableProps1 = {
       value: `Old ${i}-${j}`,
     })),
   })),
-  headers: Array.from({ length: 10 }).map((_, j) => `Header ${j}`),
+  headers,
 } as const;
 const tableProps2 = {
   diffType: "added",
@@ -20,7 +25,7 @@ const tableProps2 = {
       value: `New ${i}-${j}`,
     })),
   })),
-  headers: Array.from({ length: 10 }).map((_, j) => `Header ${j}`),
+  headers,
 } as const;
 
 const App = () => {
