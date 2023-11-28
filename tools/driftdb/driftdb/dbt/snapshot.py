@@ -49,3 +49,42 @@ def get_snapshot_dates(snapshot_node: SnapshotNode) -> List[datetime]:
         df = dbt_adapter_query(adapter, text_query)
         df["dbt_valid_from"] = pd.to_datetime(df["dbt_valid_from"])
         return df["dbt_valid_from"].tolist()
+
+
+def get_snapshot_diff(snapshot_node: SnapshotNode, snapshot_date: datetime):
+    from dbt.adapters.factory import get_adapter
+    from dbt.cli.main import dbtRunner
+    from dbt.config.runtime import RuntimeConfig, load_profile, load_project
+
+    project_dir = "."
+    project_path = project_dir
+    dbtRunner().invoke(["-q", "debug"], project_dir=str(project_path))
+    profile = load_profile(str(project_path), {})
+    project = load_project(str(project_path), version_check=False, profile=profile)
+
+    runtime_config = RuntimeConfig.from_parts(project, profile, {})
+
+    adapter = get_adapter(runtime_config)
+
+    with adapter.connection_named("default"):  # type: ignore
+        text_query = f"""
+        WITH 
+        valid_from AS(
+            SELECT *,
+                'added' AS record_status
+            FROM bookings_snapshot
+            WHERE dbt_valid_from = '2023-11-28 14:44:49.444532'
+        ),
+        valid_to AS (
+            SELECT *,
+                'deleted' AS record_status
+            FROM bookings_snapshot
+            WHERE dbt_valid_to = '2023-11-28 14:44:49.444532'
+        )
+
+        SELECT * FROM valid_to 
+        UNION ALL
+        SELECT * FROM valid_from;
+        """
+        df = dbt_adapter_query(adapter, text_query)
+        return df

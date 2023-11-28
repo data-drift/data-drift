@@ -2,7 +2,7 @@ from datetime import date, timedelta
 
 import inquirer
 import typer
-from driftdb.dbt.snapshot import get_snapshot_dates, get_snapshot_nodes
+from driftdb.dbt.snapshot import get_snapshot_dates, get_snapshot_diff, get_snapshot_nodes
 
 from .common import get_user_date_selection
 
@@ -33,3 +33,5 @@ def show(snapshot_id: str = typer.Option(None, help="id of your snapshot")):
     snapshot_date = get_user_date_selection(snapshot_dates)
     print(snapshot_date)
     print(type(snapshot_date))
+    diff = get_snapshot_diff(snapshot_node, snapshot_date)
+    print(diff)
