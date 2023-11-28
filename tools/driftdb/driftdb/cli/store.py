@@ -1,3 +1,6 @@
+import os
+
+import pandas as pd
 import typer
 from driftdb.connectors.local_connector import LocalConnector
 
