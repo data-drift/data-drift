@@ -43,7 +43,7 @@ def get_snapshot_dates(snapshot_node: SnapshotNode) -> List[datetime]:
         SELECT DISTINCT dbt_valid_from
         FROM {snapshot_node["relation_name"]}
         WHERE dbt_valid_from IS NOT NULL
-        ORDER BY dbt_valid_from;
+        ORDER BY dbt_valid_from DESC;
         """
 
         df = dbt_adapter_query(adapter, text_query)
