@@ -1,8 +1,9 @@
+import base64
 import os
 import webbrowser
-from datetime import date, timedelta
 
 import inquirer
+import pkg_resources
 import typer
 from driftdb.dbt.snapshot import get_snapshot_dates, get_snapshot_diff, get_snapshot_nodes
 
@@ -35,8 +36,20 @@ def show(snapshot_id: str = typer.Option(None, help="id of your snapshot")):
     snapshot_date = get_user_date_selection(snapshot_dates)
 
     diff = get_snapshot_diff(snapshot_node, snapshot_date)
+
+    template_html_path = pkg_resources.resource_filename(__name__, "snapshot.html")
+
+    with open(template_html_path, "r", encoding="utf-8") as template_html_file:
+        template_html_code = template_html_file.read()
+
+    encoded_diff = base64.b64encode(diff.to_json().encode("utf-8"))
+    decoded_diff = encoded_diff.decode("utf-8")
+    compiled_output_html = (
+        f"<script>" f"window.generated_diff = JSON.parse(atob('{decoded_diff}'));" f"</script>" f"{template_html_code}"
+    )
+
     with open("diff.html", "w") as f:
-        f.write(diff.to_html())
+        f.write(compiled_output_html)
 
     # Get the absolute path of the HTML file
     html_file_path = os.path.abspath("diff.html")
