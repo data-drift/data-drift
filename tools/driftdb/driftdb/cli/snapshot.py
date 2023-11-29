@@ -45,9 +45,9 @@ def show(snapshot_id: str = typer.Option(None, help="id of your snapshot")):
     json_diff = diff.to_json(date_format="iso")
 
     encoded_diff = base64.b64encode(json_diff.encode("utf-8"))
-    decoded_diff = encoded_diff.decode("utf-8")
+    b64string_diff = encoded_diff.decode("utf-8")
     compiled_output_html = (
-        f"<script>" f"window.generated_diff = JSON.parse(atob('{decoded_diff}'));" f"</script>" f"{spa_html_code}"
+        f"<script>" f"window.generated_diff = JSON.parse(atob('{b64string_diff}'));" f"</script>" f"{spa_html_code}"
     )
 
     with open("diff.html", "w") as f:
