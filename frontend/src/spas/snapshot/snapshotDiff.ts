@@ -40,7 +40,9 @@ export const getHeaders = (diff: SnapshotDiff): string[] => {
 export const mapSnapshotDiffToRows = (
   diff: SnapshotDiff
 ): { removedRows: Row[]; addedRows: Row[] } => {
-  return { removedRows: [], addedRows: [] };
+  const headers = getHeaders(diff);
+  const removedRows: Row[] = [];
+  return { removedRows: removedRows, addedRows: [] };
 };
 
 export const mapSnapshotDiffToDualTableProps = (

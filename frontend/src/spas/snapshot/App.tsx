@@ -2,7 +2,7 @@ import { DualTable } from "../../components/Table/DualTable";
 import {
   mapSnapshotDiffToDualTableProps,
   sampleSnapshotDiff,
-} from "./generatedDiff";
+} from "./snapshotDiff";
 
 const diff = window.generated_diff || sampleSnapshotDiff;
 

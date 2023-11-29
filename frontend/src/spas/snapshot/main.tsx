@@ -4,7 +4,7 @@ import App from "./App.tsx";
 import { GlobalStyles } from "../../GlobalStyles.tsx";
 import { ThemeProvider } from "@emotion/react";
 import { theme } from "../../theme.ts";
-import { SnapshotDiff } from "./generatedDiff.ts";
+import { SnapshotDiff } from "./snapshotDiff.ts";
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 ReactDOM.createRoot(document.getElementById("root")!).render(
