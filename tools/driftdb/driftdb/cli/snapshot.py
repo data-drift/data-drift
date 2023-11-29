@@ -42,7 +42,9 @@ def show(snapshot_id: str = typer.Option(None, help="id of your snapshot")):
     with open(spa_html_path, "r", encoding="utf-8") as spa_html_file:
         spa_html_code = spa_html_file.read()
 
-    encoded_diff = base64.b64encode(diff.to_json().encode("utf-8"))
+    json_diff = diff.to_json(date_format="iso")
+
+    encoded_diff = base64.b64encode(json_diff.encode("utf-8"))
     decoded_diff = encoded_diff.decode("utf-8")
     compiled_output_html = (
         f"<script>" f"window.generated_diff = JSON.parse(atob('{decoded_diff}'));" f"</script>" f"{spa_html_code}"
