@@ -2,7 +2,7 @@ import traceback
 
 import pandas as pd
 from driftdb.dataframe.summarize_dataframe_updates import summarize_dataframe_updates
-from github import Github
+from github.MainClass import Github
 
 from ..logger import get_logger
 from .drift_evaluators import BaseDriftEvaluator, BaseNewDataEvaluator, DriftEvaluatorContext, parse_drift_summary
