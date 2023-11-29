@@ -4,7 +4,7 @@ import App from "./App.tsx";
 import { GlobalStyles } from "../../GlobalStyles.tsx";
 import { ThemeProvider } from "@emotion/react";
 import { theme } from "../../theme.ts";
-import { GeneratedDiff } from "./generatedDiff.ts";
+import { SnapshotDiff } from "./generatedDiff.ts";
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 ReactDOM.createRoot(document.getElementById("root")!).render(
@@ -18,6 +18,6 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 
 declare global {
   interface Window {
-    generated_diff: GeneratedDiff;
+    generated_diff: SnapshotDiff;
   }
 }
