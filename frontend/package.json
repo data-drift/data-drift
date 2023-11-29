@@ -14,7 +14,8 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "test": "jest",
-    "build-spa-snapshot": "vite build src/spas/snapshot "
+    "dev-spa-snapshot": "vite src/spas/snapshot",
+    "build-spa-snapshot": "vite build src/spas/snapshot"
   },
   "dependencies": {
     "@emotion/styled": "^11.11.0",

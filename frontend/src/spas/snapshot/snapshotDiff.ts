@@ -1,5 +1,6 @@
 import { DualTableProps } from "../../components/Table/DualTable";
-import { Row } from "../../components/Table/Table";
+import { Datum, Row } from "../../components/Table/Table";
+import { emptyRow } from "../../services/patch.mapper";
 
 export type SnapshotDiff = {
   unique_key: {
@@ -41,8 +42,65 @@ export const mapSnapshotDiffToRows = (
   diff: SnapshotDiff
 ): { removedRows: Row[]; addedRows: Row[] } => {
   const headers = getHeaders(diff);
-  const removedRows: Row[] = [];
-  return { removedRows: removedRows, addedRows: [] };
+  const uniqueKeys = diff["unique_key"];
+  const recordStatus = diff["record_status"];
+  const uniqueKeyIndex = Object.keys(uniqueKeys).reduce(
+    (acc, _value: string, index: number) => {
+      const uniqueKey = uniqueKeys[index];
+      const status = recordStatus[index];
+
+      if (!acc[uniqueKey]) {
+        acc[uniqueKey] = { before: null, after: null };
+      }
+
+      if (status === "before") {
+        acc[uniqueKey].before = index;
+      } else if (status === "after") {
+        acc[uniqueKey].after = index;
+      }
+
+      return acc;
+    },
+    {} as Record<string, { before: number | null; after: number | null }>
+  );
+
+  const removedRows = Object.values(uniqueKeyIndex).map((value) => {
+    const index = value.before;
+    const oppositeIndex = value.after;
+    if (index === null) {
+      return emptyRow(headers.length);
+    } else {
+      return {
+        data: headers.map((header) => ({
+          value: diff[header][index] as string,
+          isEmphasized:
+            oppositeIndex === null
+              ? false
+              : diff[header][index] != diff[header][oppositeIndex],
+        })),
+        isEmphasized: oppositeIndex === null,
+      };
+    }
+  });
+  const addedRows = Object.values(uniqueKeyIndex).map((value) => {
+    const index = value.after;
+    const oppositeIndex = value.before;
+    if (index === null) {
+      return emptyRow(headers.length);
+    } else {
+      return {
+        data: headers.map((header) => ({
+          value: diff[header][index] as string,
+          isEmphasized:
+            oppositeIndex === null
+              ? false
+              : diff[header][index] != diff[header][oppositeIndex],
+        })),
+        isEmphasized: oppositeIndex === null,
+      };
+    }
+  });
+  return { removedRows: removedRows, addedRows: addedRows };
 };
 
 export const mapSnapshotDiffToDualTableProps = (

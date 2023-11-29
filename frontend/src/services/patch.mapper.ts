@@ -137,7 +137,7 @@ const getUniqueKey = (line: string) => {
   return line.split(",")[0];
 };
 
-const emptyRow = (csvColumnsLength: number): Row => ({
+export const emptyRow = (csvColumnsLength: number): Row => ({
   data: Array.from({ length: csvColumnsLength }).map(() => ({ value: "_" })),
   isEmphasized: false,
 });
