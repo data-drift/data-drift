@@ -3,7 +3,8 @@ from datetime import datetime
 from typing import Dict, List, Optional
 
 import pandas as pd
-from github import ContentFile, Github, GithubException, Repository
+from github import ContentFile, GithubException, Repository
+from github.MainClass import Github
 
 from ..dataframe.dataframe_update_breakdown import DataFrameUpdate
 from ..drift_evaluator.drift_evaluators import drift_summary_to_string

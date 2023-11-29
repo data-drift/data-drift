@@ -8,7 +8,7 @@ import pandas as pd
 from driftdb.connectors.github_connector import GithubConnector
 from driftdb.connectors.local_connector import LocalConnector
 from driftdb.server import start_server
-from github import Github
+from github.MainClass import Github
 from tzlocal import get_localzone
 
 from . import version
