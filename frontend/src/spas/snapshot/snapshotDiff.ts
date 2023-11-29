@@ -1,5 +1,5 @@
 import { DualTableProps } from "../../components/Table/DualTable";
-import { Datum, Row } from "../../components/Table/Table";
+import { Row } from "../../components/Table/Table";
 import { emptyRow } from "../../services/patch.mapper";
 
 export type SnapshotDiff = {
@@ -81,25 +81,38 @@ export const mapSnapshotDiffToRows = (
         isEmphasized: oppositeIndex === null,
       };
     }
-  });
-  const addedRows = Object.values(uniqueKeyIndex).map((value) => {
-    const index = value.after;
-    const oppositeIndex = value.before;
+  }) satisfies Row[];
+  const addedRows = Object.values(uniqueKeyIndex).map((uniqueKey) => {
+    const index = uniqueKey.after;
+    const oppositeIndex = uniqueKey.before;
     if (index === null) {
       return emptyRow(headers.length);
     } else {
+      const isNewLine = oppositeIndex === null;
+
       return {
-        data: headers.map((header) => ({
-          value: diff[header][index] as string,
-          isEmphasized:
-            oppositeIndex === null
-              ? false
-              : diff[header][index] != diff[header][oppositeIndex],
-        })),
+        data: headers.map((header) => {
+          let diffValue: number | undefined = undefined;
+          const value = diff[header][index];
+          const oppositeValue = !isNewLine && diff[header][oppositeIndex];
+          if (
+            !isNewLine &&
+            typeof value == "number" &&
+            typeof oppositeValue == "number"
+          ) {
+            diffValue = value - oppositeValue;
+          }
+          return {
+            value: value as string,
+            type: Number.isNaN(Number(uniqueKey)) ? "string" : "number",
+            diffValue: diffValue,
+            isEmphasized: isNewLine ? false : value != oppositeValue,
+          };
+        }),
         isEmphasized: oppositeIndex === null,
       };
     }
-  });
+  }) satisfies Row[];
   return { removedRows: removedRows, addedRows: addedRows };
 };
 
