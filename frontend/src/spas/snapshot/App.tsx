@@ -1,7 +1,6 @@
 import { DualTable } from "../../components/Table/DualTable";
 import { sample_generated_diff } from "./generatedDiff";
 
-// @ts-ignore
 const diff = window.generated_diff || sample_generated_diff;
 
 console.log(diff);

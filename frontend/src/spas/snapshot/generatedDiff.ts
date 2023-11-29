@@ -1,3 +1,15 @@
+export type GeneratedDiff = {
+  unique_key: {
+    [key: number]: string;
+  };
+  record_status: {
+    [key: number]: "before" | "after";
+  };
+  [key: string]: {
+    [key: number]: string;
+  };
+};
+
 export const sample_generated_diff = {
   unique_key: {
     0: "38c5f2ff-df60-46a7-b4c5-c5b0fee1d96f",
