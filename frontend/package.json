@@ -15,7 +15,7 @@
     "build-storybook": "storybook build",
     "test": "jest",
     "dev-spa-snapshot": "vite src/spas/snapshot",
-    "build-spa-snapshot": "vite build src/spas/snapshot"
+    "build-spa-snapshot": "vite build src/spas/snapshot --outDir ../../../../tools/driftdb/driftdb/spa/snapshot"
   },
   "dependencies": {
     "@emotion/styled": "^11.11.0",
