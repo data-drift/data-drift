@@ -10,7 +10,7 @@ from threading import Timer
 
 import pkg_resources
 
-from .logger import get_logger
+from ..logger import get_logger
 
 logger = get_logger(__name__)
 
