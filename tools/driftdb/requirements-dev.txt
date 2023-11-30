@@ -10,4 +10,3 @@ pandas
 pandas-stubs
 PyGithub
 typer[all]
-tzlocal

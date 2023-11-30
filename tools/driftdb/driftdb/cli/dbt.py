@@ -5,12 +5,12 @@ from datetime import datetime
 import click
 import numpy as np
 import pandas as pd
+import pytz
 import typer
 from driftdb.cli.server import start_server
 from driftdb.connectors.github_connector import GithubConnector
 from driftdb.connectors.local_connector import LocalConnector
 from github.MainClass import Github
-from tzlocal import get_localzone
 
 from ..logger import get_logger
 from .common import dbt_adapter_query, prompt_from_list
@@ -167,8 +167,7 @@ def snapshot():
             logger.info(data_as_of_date)
 
             # Compute date in UTC format
-            local_tz = get_localzone()
-            localized_date = date.replace(tzinfo=local_tz)
+            localized_date = date.replace(tzinfo=pytz.UTC)
 
             local_connector = LocalConnector()
             local_connector.snapshot_table(
