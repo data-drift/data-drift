@@ -59,9 +59,8 @@ For a step-by-step guide on the dbt installation, see the [docs](https://pypi.or
 Install the monitor in your pipeline.
 
 ```python
->>> from driftdb.connectors.workflow import snapshot_table
-
->>> snapshot_table(connector, table_dataframe=dataframe, table_name="revenue")
+>>> from driftdb.connectors import LocalConnector
+>>> LocalConnector().snapshot_table(table_dataframe=dataframe, table_name="revenue")
 ```
 
 For a step-by-step guide on the python installation, see the [docs](https://pypi.org/project/driftdb/).
