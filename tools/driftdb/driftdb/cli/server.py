@@ -45,7 +45,7 @@ def start_server(open_browser_url="/tables"):
     PORT = 9741
 
     SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-    DIRECTORY = os.path.join(SCRIPT_DIR, "bin/frontend/dist")
+    DIRECTORY = os.path.join(SCRIPT_DIR, "../bin/frontend/dist")
 
     class Handler(http.server.SimpleHTTPRequestHandler):
         def __init__(self, *args, **kwargs):
