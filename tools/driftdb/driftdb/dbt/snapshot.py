@@ -1,6 +1,5 @@
 import json
-
-from typing_extensions import List, TypedDict
+from typing import List, TypedDict
 
 from ..cli.common import dbt_adapter_query
 

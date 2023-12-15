@@ -1,28 +1,34 @@
+from typing import Optional
+
 import pandas as pd
 
 
-def detect_outliers(before: pd.DataFrame, after: pd.DataFrame, added_rows: pd.DataFrame):
+def detect_outliers(
+    before: pd.DataFrame,
+    after: pd.DataFrame,
+    added_rows: pd.DataFrame,
+    numerical_cols: list[str],
+    categorical_cols: list[str],
+):
     old_df = before
     new_lines = added_rows
     outliers = pd.DataFrame()
 
-    numerical_cols = old_df.select_dtypes(include=["number"]).columns
-    print("numerical_cols", numerical_cols)
     for col in numerical_cols:
-        Q1 = old_df[col].quantile(0.25)
-        Q3 = old_df[col].quantile(0.75)
+        old_col = pd.to_numeric(old_df[col], errors="coerce")
+        Q1 = old_col.quantile(0.25)
+        Q3 = old_col.quantile(0.75)
         IQR = Q3 - Q1
 
         lower_bound = Q1 - 1.5 * IQR
         upper_bound = Q3 + 1.5 * IQR
 
-        is_outlier = (new_lines[col] < lower_bound) | (new_lines[col] > upper_bound)
+        new_col = pd.to_numeric(new_lines[col], errors="coerce")
+        is_outlier = (new_col < lower_bound) | (new_col > upper_bound)
         col_outliers = new_lines[is_outlier].copy()
         col_outliers["Reason"] = f"Column {col} out of boundaries"
         outliers = pd.concat([outliers, col_outliers])
 
-    categorical_cols = old_df.select_dtypes(include=["object", "category"]).columns
-    print("numerical_cols", numerical_cols)
     for col in categorical_cols:
         if col == "unique_key":
             continue

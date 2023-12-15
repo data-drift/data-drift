@@ -60,8 +60,8 @@ class BaseDriftEvaluator:
 
 
 class BaseNewDataEvaluator:
-    @staticmethod
     def compute_new_data_evaluation(
+        self,
         new_data_context: NewDataEvaluatorContext,
     ) -> DriftEvaluation:
         return DriftEvaluation(should_alert=False, message="")
@@ -80,14 +80,20 @@ class DefaultDriftEvaluator(BaseUpdateEvaluator):
 
 
 class DetectOutlierNewDataEvaluator(BaseNewDataEvaluator):
-    @staticmethod
+    def __init__(self, numerical_cols: list[str] = [], categorical_cols: list[str] = []):
+        self.numerical_cols = numerical_cols
+        self.categorical_cols = categorical_cols
+
     def compute_new_data_evaluation(
+        self,
         new_data_context: NewDataEvaluatorContext,
     ) -> DriftEvaluation:
         outliers = detect_outliers(
             before=new_data_context.before,
             after=new_data_context.after,
             added_rows=new_data_context.added_rows,
+            numerical_cols=self.numerical_cols,
+            categorical_cols=self.categorical_cols,
         )
         if len(outliers) > 0:
             return DriftEvaluation(
