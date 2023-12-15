@@ -1,8 +1,6 @@
 import json
-from datetime import datetime
-from typing import List, TypedDict
 
-import pandas as pd
+from typing_extensions import List, TypedDict
 
 from ..cli.common import dbt_adapter_query
 
