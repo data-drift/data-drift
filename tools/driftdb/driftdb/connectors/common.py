@@ -34,7 +34,7 @@ def find_date_column(df):
         return df.columns[0]
 
 
-def get_monthly_file_path(file_path, month):
+def get_partition_file_path(file_path, month):
     directory, file_name = os.path.split(file_path)
     file_name, extension = os.path.splitext(file_name)
 
