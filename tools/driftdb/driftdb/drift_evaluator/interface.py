@@ -1,6 +1,5 @@
-from typing import Optional, TypedDict
-
 import pandas as pd
+from typing_extensions import TypedDict
 
 
 class DriftSummary(TypedDict):
