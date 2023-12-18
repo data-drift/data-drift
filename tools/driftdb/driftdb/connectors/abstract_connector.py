@@ -8,7 +8,7 @@ from ..dataframe.dataframe_update_breakdown import DataFrameUpdate, dataframe_up
 from ..dataframe.helpers import sort_dataframe_on_first_column_and_assert_is_unique
 from ..drift_evaluator.drift_evaluators import BaseUpdateEvaluator, DefaultDriftEvaluator
 from ..logger import get_logger
-from .common import assert_valid_table_name, find_date_column, get_monthly_file_path
+from .common import assert_valid_table_name, find_date_column, get_partition_file_path
 
 null_logger = get_logger(__name__)
 
@@ -80,17 +80,18 @@ class AbstractConnector(ABC):
         table_dataframe: pd.DataFrame,
         measure_date: Optional[datetime] = None,
         table_name: str,
+        freq: str = "M",
     ) -> None:
         self.logger.info("Partitionning table by month...")
 
         table_dataframe["date"] = pd.to_datetime(table_dataframe["date"])
 
-        grouped = table_dataframe.groupby(pd.Grouper(key="date", freq="M"))
+        grouped = table_dataframe.groupby(pd.Grouper(key="date", freq=freq))
 
         # Iterate over the groups and print the sub-dataframes
         for name, group in grouped:
-            self.logger.info(f"Storing table for Month: {name}")
-            monthly_table_name = get_monthly_file_path(table_name, name.strftime("%Y-%m"))  # type: ignore
+            self.logger.info(f"Storing table for: {name}")
+            monthly_table_name = get_partition_file_path(table_name, name.strftime("%Y-%m-%d"))  # type: ignore
             self.snapshot_table(
                 table_dataframe=group,
                 table_name=monthly_table_name,
