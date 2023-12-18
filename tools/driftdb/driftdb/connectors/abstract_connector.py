@@ -82,6 +82,18 @@ class AbstractConnector(ABC):
         table_name: str,
         freq: str = "M",
     ) -> None:
+        """
+        Partitions and snapshots a table.
+
+        Args:
+            table_dataframe (pd.DataFrame): The DataFrame representing the table to be partitioned and snapshotted.
+            measure_date (Optional[datetime]): The date to be used for measuring. If not provided, the current date is used.
+            table_name (str): The name of the table.
+            freq (str, optional): The frequency for partitioning. Defaults to 'M' for monthly frequency. 'W' for weekly. Follows Pandas groupby date frequency alias. https://pandas.pydata.org/docs/user_guide/timeseries.html#offset-aliases
+
+        Returns:
+            None
+        """
         self.logger.info("Partitionning table by month...")
 
         table_dataframe["date"] = pd.to_datetime(table_dataframe["date"])
