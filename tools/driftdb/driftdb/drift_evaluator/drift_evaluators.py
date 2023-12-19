@@ -1,5 +1,5 @@
 import traceback
-from typing import Callable
+from typing import Callable, List
 
 import pandas as pd
 
@@ -80,7 +80,7 @@ class DefaultDriftEvaluator(BaseUpdateEvaluator):
 
 
 class DetectOutlierNewDataEvaluator(BaseNewDataEvaluator):
-    def __init__(self, numerical_cols: list[str] = [], categorical_cols: list[str] = []):
+    def __init__(self, numerical_cols: List[str] = [], categorical_cols: List[str] = []):
         self.numerical_cols = numerical_cols
         self.categorical_cols = categorical_cols
 
