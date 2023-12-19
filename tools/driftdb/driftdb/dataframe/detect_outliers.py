@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 import pandas as pd
 
@@ -7,8 +7,8 @@ def detect_outliers(
     before: pd.DataFrame,
     after: pd.DataFrame,
     added_rows: pd.DataFrame,
-    numerical_cols: list[str],
-    categorical_cols: list[str],
+    numerical_cols: List[str],
+    categorical_cols: List[str],
 ):
     old_df = before
     new_lines = added_rows

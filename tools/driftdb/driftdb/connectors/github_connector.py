@@ -34,8 +34,8 @@ class GithubConnector(AbstractConnector):
             contents = self.repo.get_contents(file_path, ref=self.default_branch)
             assert not isinstance(contents, list), "pathfile returned multiple contents"
             return contents
-        except GithubException as e:
-            if e.status == 404:
+        except Exception as e:
+            if e.status == 404:  # type: ignore
                 return None
             else:
                 raise e
