@@ -10,6 +10,9 @@ from .interface import DriftEvaluation, DriftEvaluatorContext, DriftSummary, New
 
 logger = get_logger(__name__)
 
+DriftHandler = Callable[[DriftEvaluatorContext], DriftEvaluation]
+NewDataHandler = Callable[[NewDataEvaluatorContext], DriftEvaluation]
+
 
 def drift_summary_to_string(drift_summary: DriftSummary) -> str:
     return (
@@ -51,12 +54,20 @@ def parse_drift_summary(commit_message: str) -> DriftSummary:
     return drift_summary
 
 
+def null_drift_handler(drift_context: DriftEvaluatorContext) -> DriftEvaluation:
+    return DriftEvaluation(should_alert=False, message="")
+
+
 class BaseDriftEvaluator:
     @staticmethod
     def compute_drift_evaluation(
         data_drift_context: DriftEvaluatorContext,
     ) -> DriftEvaluation:
         return DriftEvaluation(should_alert=False, message="")
+
+
+def null_new_data_handler(new_data_context: NewDataEvaluatorContext) -> DriftEvaluation:
+    return DriftEvaluation(should_alert=False, message="")
 
 
 class BaseNewDataEvaluator:
@@ -77,6 +88,24 @@ class DefaultDriftEvaluator(BaseUpdateEvaluator):
         data_drift_context: DriftEvaluatorContext,
     ) -> DriftEvaluation:
         return auto_merge_drift(data_drift_context)
+
+
+def DetectOutlierHandlerFactory(numerical_cols: List[str] = [], categorical_cols: List[str] = []) -> NewDataHandler:
+    def handler(new_data_context: NewDataEvaluatorContext):
+        outliers = detect_outliers(
+            before=new_data_context.before,
+            after=new_data_context.after,
+            added_rows=new_data_context.added_rows,
+            numerical_cols=numerical_cols,
+            categorical_cols=categorical_cols,
+        )
+        if len(outliers) > 0:
+            return DriftEvaluation(
+                should_alert=True, message=f"Found {len(outliers)} outliers\n {outliers.to_markdown()}"
+            )
+        return DriftEvaluation(should_alert=False, message="")
+
+    return handler
 
 
 class DetectOutlierNewDataEvaluator(BaseNewDataEvaluator):
