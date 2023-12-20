@@ -161,7 +161,7 @@ Drift detected:
 To use the `alert_drift_handler`, add it when you call snapshot_table like this:
 
 ```python
-from driftdb.drift_evaluator import alert_drift_handler
+from driftdb.alerting import alert_drift_handler
 
 connector.snapshot_table(table_dataframe, table_name, drift_handler=alert_drift_handler)
 ```
@@ -217,7 +217,7 @@ For category columns, if a new category is detected, it will trigger an alert.
 To use the `detect_outlier_handler`, add it when you call snapshot_table like this:
 
 ```python
-from driftdb.drift_evaluator import DetectOutlierHandlerFactory
+from driftdb.alerting import DetectOutlierHandlerFactory
 new_data_handler = DetectOutlierHandlerFactory(numerical_cols=["age"], categorical_cols=[])
 
 connector.snapshot_table(table_dataframe, table_name, new_data_handler=new_data_handler)
