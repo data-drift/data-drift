@@ -3,6 +3,7 @@ from .handlers import (
     DetectOutlierHandlerFactory,
     DriftHandler,
     NewDataHandler,
+    TresholdDriftHandlerFactory,
     alert_drift_handler,
     auto_merge_drift,
     drift_summary_to_string,

@@ -80,6 +80,37 @@ def DetectOutlierHandlerFactory(numerical_cols: List[str] = [], categorical_cols
     return handler
 
 
+def TresholdDriftHandlerFactory(
+    numerical_cols: List[str] = [],
+    treshold: float = 0.1,
+) -> DriftHandler:
+    def handler(drift_context: DriftEvaluatorContext):
+        modified_patterns = drift_context.summary["modified_patterns"]
+        outliers = pd.DataFrame()
+        if modified_patterns.empty:
+            return DriftEvaluation(should_alert=False, message="No modified rows in drift summary")
+
+        for col in numerical_cols:
+            col_outliers = modified_patterns[
+                (modified_patterns["column"] == col)
+                & (modified_patterns["old_value"] != 0)
+                & (
+                    abs(modified_patterns["new_value"].astype(float) - modified_patterns["old_value"].astype(float))
+                    / modified_patterns["old_value"].astype(float)
+                    > treshold
+                )
+            ]
+            outliers = pd.concat([outliers, col_outliers])
+
+        if len(outliers) > 0:
+            return DriftEvaluation(
+                should_alert=True, message=f"Found {len(outliers)} outliers\n {outliers.to_markdown()}"
+            )
+        return DriftEvaluation(should_alert=False, message="")
+
+    return handler
+
+
 def alert_drift_handler(data_drift_context: DriftEvaluatorContext) -> DriftEvaluation:
     message = f"Drift detected:\n" + generate_drift_description(data_drift_context)
     return DriftEvaluation(should_alert=True, message=message)
