@@ -7,4 +7,4 @@ from .drift_evaluators import (
     null_drift_handler,
     null_new_data_handler,
 )
-from .drift_evaluators_dry_run import run_drift_evaluator, run_new_data_evaluator
+from .dry_run_alert_handler import run_drift_evaluator, run_new_data_evaluator
