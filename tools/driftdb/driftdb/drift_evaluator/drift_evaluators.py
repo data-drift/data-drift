@@ -58,36 +58,8 @@ def null_drift_handler(drift_context: DriftEvaluatorContext) -> DriftEvaluation:
     return DriftEvaluation(should_alert=False, message="")
 
 
-class BaseDriftEvaluator:
-    @staticmethod
-    def compute_drift_evaluation(
-        data_drift_context: DriftEvaluatorContext,
-    ) -> DriftEvaluation:
-        return DriftEvaluation(should_alert=False, message="")
-
-
 def null_new_data_handler(new_data_context: NewDataEvaluatorContext) -> DriftEvaluation:
     return DriftEvaluation(should_alert=False, message="")
-
-
-class BaseNewDataEvaluator:
-    def compute_new_data_evaluation(
-        self,
-        new_data_context: NewDataEvaluatorContext,
-    ) -> DriftEvaluation:
-        return DriftEvaluation(should_alert=False, message="")
-
-
-class BaseUpdateEvaluator(BaseDriftEvaluator, BaseNewDataEvaluator):
-    pass
-
-
-class DefaultDriftEvaluator(BaseUpdateEvaluator):
-    @staticmethod
-    def compute_drift_evaluation(
-        data_drift_context: DriftEvaluatorContext,
-    ) -> DriftEvaluation:
-        return auto_merge_drift(data_drift_context)
 
 
 def DetectOutlierHandlerFactory(numerical_cols: List[str] = [], categorical_cols: List[str] = []) -> NewDataHandler:
@@ -106,37 +78,6 @@ def DetectOutlierHandlerFactory(numerical_cols: List[str] = [], categorical_cols
         return DriftEvaluation(should_alert=False, message="")
 
     return handler
-
-
-class DetectOutlierNewDataEvaluator(BaseNewDataEvaluator):
-    def __init__(self, numerical_cols: List[str] = [], categorical_cols: List[str] = []):
-        self.numerical_cols = numerical_cols
-        self.categorical_cols = categorical_cols
-
-    def compute_new_data_evaluation(
-        self,
-        new_data_context: NewDataEvaluatorContext,
-    ) -> DriftEvaluation:
-        outliers = detect_outliers(
-            before=new_data_context.before,
-            after=new_data_context.after,
-            added_rows=new_data_context.added_rows,
-            numerical_cols=self.numerical_cols,
-            categorical_cols=self.categorical_cols,
-        )
-        if len(outliers) > 0:
-            return DriftEvaluation(
-                should_alert=True, message=f"Found {len(outliers)} outliers\n {outliers.to_markdown()}"
-            )
-        return DriftEvaluation(should_alert=False, message="")
-
-
-class AlertDriftEvaluator(BaseDriftEvaluator):
-    @staticmethod
-    def compute_drift_evaluation(
-        data_drift_context: DriftEvaluatorContext,
-    ) -> DriftEvaluation:
-        return alert_drift(data_drift_context)
 
 
 def alert_drift(data_drift_context: DriftEvaluatorContext) -> DriftEvaluation:
