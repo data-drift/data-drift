@@ -1,5 +1,6 @@
-import pandas as pd
 from typing import TypedDict
+
+import pandas as pd
 
 
 class DriftSummary(TypedDict):

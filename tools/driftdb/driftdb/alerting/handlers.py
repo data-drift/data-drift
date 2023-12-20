@@ -4,8 +4,8 @@ from typing import Callable, List
 import pandas as pd
 
 from ..dataframe.detect_outliers import detect_outliers
-from ..dataframe.helpers import generate_drift_description
 from ..logger import get_logger
+from .helpers import generate_drift_description
 from .interface import DriftEvaluation, DriftEvaluatorContext, DriftSummary, NewDataEvaluatorContext
 
 logger = get_logger(__name__)

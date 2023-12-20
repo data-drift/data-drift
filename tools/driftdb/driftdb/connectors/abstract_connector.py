@@ -4,9 +4,9 @@ from typing import Dict, Optional
 
 import pandas as pd
 
+from ..alerting import DriftHandler, NewDataHandler, auto_merge_drift, null_new_data_handler
 from ..dataframe.dataframe_update_breakdown import DataFrameUpdate, dataframe_update_breakdown
 from ..dataframe.helpers import sort_dataframe_on_first_column_and_assert_is_unique
-from ..drift_evaluator.drift_evaluators import DriftHandler, NewDataHandler, auto_merge_drift, null_new_data_handler
 from ..logger import get_logger
 from .common import assert_valid_table_name, find_date_column, get_partition_file_path
 

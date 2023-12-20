@@ -1,9 +1,9 @@
 import pandas as pd
-from driftdb.dataframe.summarize_dataframe_updates import summarize_dataframe_updates
 from github.MainClass import Github
 
+from .summarize_dataframe_updates import summarize_dataframe_updates
 from ..logger import get_logger
-from .drift_evaluators import DriftEvaluatorContext, DriftHandler, NewDataHandler
+from .handlers import DriftEvaluatorContext, DriftHandler, NewDataHandler
 from .interface import DriftEvaluation, NewDataEvaluatorContext
 
 logger = get_logger(__name__)

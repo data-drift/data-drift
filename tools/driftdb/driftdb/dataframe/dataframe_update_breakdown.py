@@ -3,16 +3,18 @@ from typing import Dict, Optional, Union
 
 import pandas as pd
 
-from ..drift_evaluator.drift_evaluators import (
+from ..alerting import (
     DriftEvaluation,
     DriftEvaluatorContext,
     DriftHandler,
+    NewDataEvaluatorContext,
     NewDataHandler,
+    auto_merge_drift,
+    null_new_data_handler,
     safe_drift_evaluator,
+    summarize_dataframe_updates,
 )
-from ..drift_evaluator.interface import NewDataEvaluatorContext
 from .helpers import reparse_dataframe
-from .summarize_dataframe_updates import summarize_dataframe_updates
 
 
 class UpdateType(Enum):
@@ -39,8 +41,8 @@ class DataFrameUpdate:
 def dataframe_update_breakdown(
     initial_dataframe: pd.DataFrame,
     final_dataframe: pd.DataFrame,
-    drift_handler: DriftHandler,
-    new_data_handler: NewDataHandler,
+    drift_handler: DriftHandler = auto_merge_drift,
+    new_data_handler: NewDataHandler = null_new_data_handler,
 ) -> Dict[str, DataFrameUpdate]:
     if initial_dataframe.index.name != "unique_key":
         initial_dataframe = initial_dataframe.set_index("unique_key")

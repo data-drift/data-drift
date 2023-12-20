@@ -6,9 +6,8 @@ import pandas as pd
 from github import ContentFile, GithubException, Repository
 from github.MainClass import Github
 
+from ..alerting import DriftEvaluatorContext, drift_summary_to_string
 from ..dataframe.dataframe_update_breakdown import DataFrameUpdate
-from ..drift_evaluator.drift_evaluators import drift_summary_to_string
-from ..drift_evaluator.interface import DriftEvaluatorContext
 from ..logger import get_logger
 from .abstract_connector import AbstractConnector
 
