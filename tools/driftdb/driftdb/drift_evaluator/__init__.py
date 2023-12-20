@@ -2,6 +2,7 @@ from .drift_evaluators import (
     DetectOutlierHandlerFactory,
     DriftHandler,
     NewDataHandler,
+    alert_drift_handler,
     auto_merge_drift,
     null_drift_handler,
     null_new_data_handler,

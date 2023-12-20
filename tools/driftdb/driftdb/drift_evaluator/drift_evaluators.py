@@ -80,7 +80,7 @@ def DetectOutlierHandlerFactory(numerical_cols: List[str] = [], categorical_cols
     return handler
 
 
-def alert_drift(data_drift_context: DriftEvaluatorContext) -> DriftEvaluation:
+def alert_drift_handler(data_drift_context: DriftEvaluatorContext) -> DriftEvaluation:
     message = f"Drift detected:\n" + generate_drift_description(data_drift_context)
     return DriftEvaluation(should_alert=True, message=message)
 
