@@ -4,11 +4,14 @@ from typing import Callable, List
 import pandas as pd
 
 from ..dataframe.detect_outliers import detect_outliers
-from ..dataframe.helpers import generate_drift_description
 from ..logger import get_logger
+from .helpers import generate_drift_description
 from .interface import DriftEvaluation, DriftEvaluatorContext, DriftSummary, NewDataEvaluatorContext
 
 logger = get_logger(__name__)
+
+DriftHandler = Callable[[DriftEvaluatorContext], DriftEvaluation]
+NewDataHandler = Callable[[NewDataEvaluatorContext], DriftEvaluation]
 
 
 def drift_summary_to_string(drift_summary: DriftSummary) -> str:
@@ -51,49 +54,22 @@ def parse_drift_summary(commit_message: str) -> DriftSummary:
     return drift_summary
 
 
-class BaseDriftEvaluator:
-    @staticmethod
-    def compute_drift_evaluation(
-        data_drift_context: DriftEvaluatorContext,
-    ) -> DriftEvaluation:
-        return DriftEvaluation(should_alert=False, message="")
+def null_drift_handler(drift_context: DriftEvaluatorContext) -> DriftEvaluation:
+    return DriftEvaluation(should_alert=False, message="")
 
 
-class BaseNewDataEvaluator:
-    def compute_new_data_evaluation(
-        self,
-        new_data_context: NewDataEvaluatorContext,
-    ) -> DriftEvaluation:
-        return DriftEvaluation(should_alert=False, message="")
+def null_new_data_handler(new_data_context: NewDataEvaluatorContext) -> DriftEvaluation:
+    return DriftEvaluation(should_alert=False, message="")
 
 
-class BaseUpdateEvaluator(BaseDriftEvaluator, BaseNewDataEvaluator):
-    pass
-
-
-class DefaultDriftEvaluator(BaseUpdateEvaluator):
-    @staticmethod
-    def compute_drift_evaluation(
-        data_drift_context: DriftEvaluatorContext,
-    ) -> DriftEvaluation:
-        return auto_merge_drift(data_drift_context)
-
-
-class DetectOutlierNewDataEvaluator(BaseNewDataEvaluator):
-    def __init__(self, numerical_cols: List[str] = [], categorical_cols: List[str] = []):
-        self.numerical_cols = numerical_cols
-        self.categorical_cols = categorical_cols
-
-    def compute_new_data_evaluation(
-        self,
-        new_data_context: NewDataEvaluatorContext,
-    ) -> DriftEvaluation:
+def DetectOutlierHandlerFactory(numerical_cols: List[str] = [], categorical_cols: List[str] = []) -> NewDataHandler:
+    def handler(new_data_context: NewDataEvaluatorContext):
         outliers = detect_outliers(
             before=new_data_context.before,
             after=new_data_context.after,
             added_rows=new_data_context.added_rows,
-            numerical_cols=self.numerical_cols,
-            categorical_cols=self.categorical_cols,
+            numerical_cols=numerical_cols,
+            categorical_cols=categorical_cols,
         )
         if len(outliers) > 0:
             return DriftEvaluation(
@@ -101,16 +77,41 @@ class DetectOutlierNewDataEvaluator(BaseNewDataEvaluator):
             )
         return DriftEvaluation(should_alert=False, message="")
 
-
-class AlertDriftEvaluator(BaseDriftEvaluator):
-    @staticmethod
-    def compute_drift_evaluation(
-        data_drift_context: DriftEvaluatorContext,
-    ) -> DriftEvaluation:
-        return alert_drift(data_drift_context)
+    return handler
 
 
-def alert_drift(data_drift_context: DriftEvaluatorContext) -> DriftEvaluation:
+def TresholdDriftHandlerFactory(
+    numerical_cols: List[str] = [],
+    treshold: float = 0.1,
+) -> DriftHandler:
+    def handler(drift_context: DriftEvaluatorContext):
+        modified_patterns = drift_context.summary["modified_patterns"]
+        outliers = pd.DataFrame()
+        if modified_patterns.empty:
+            return DriftEvaluation(should_alert=False, message="No modified rows in drift summary")
+
+        for col in numerical_cols:
+            col_outliers = modified_patterns[
+                (modified_patterns["column"] == col)
+                & (modified_patterns["old_value"] != 0)
+                & (
+                    abs(modified_patterns["new_value"].astype(float) - modified_patterns["old_value"].astype(float))
+                    / modified_patterns["old_value"].astype(float)
+                    > treshold
+                )
+            ]
+            outliers = pd.concat([outliers, col_outliers])
+
+        if len(outliers) > 0:
+            return DriftEvaluation(
+                should_alert=True, message=f"Found {len(outliers)} outliers\n {outliers.to_markdown()}"
+            )
+        return DriftEvaluation(should_alert=False, message="")
+
+    return handler
+
+
+def alert_drift_handler(data_drift_context: DriftEvaluatorContext) -> DriftEvaluation:
     message = f"Drift detected:\n" + generate_drift_description(data_drift_context)
     return DriftEvaluation(should_alert=True, message=message)
 

@@ -1,18 +1,16 @@
-import traceback
-
 import pandas as pd
-from driftdb.dataframe.summarize_dataframe_updates import summarize_dataframe_updates
 from github.MainClass import Github
 
+from .summarize_dataframe_updates import summarize_dataframe_updates
 from ..logger import get_logger
-from .drift_evaluators import BaseDriftEvaluator, BaseNewDataEvaluator, DriftEvaluatorContext, parse_drift_summary
+from .handlers import DriftEvaluatorContext, DriftHandler, NewDataHandler
 from .interface import DriftEvaluation, NewDataEvaluatorContext
 
 logger = get_logger(__name__)
 
 
 def run_drift_evaluator(
-    *, drift_evaluator: BaseDriftEvaluator, gh_client: Github, repo_name: str, commit_sha: str
+    *, drift_handler: DriftHandler, gh_client: Github, repo_name: str, commit_sha: str
 ) -> DriftEvaluation:
     repo = gh_client.get_repo(repo_name)
     commit = repo.get_commit(commit_sha)
@@ -46,12 +44,12 @@ def run_drift_evaluator(
         after=new_dataframe,
         summary=drift_summary,
     )
-    drift_evaluation = drift_evaluator.compute_drift_evaluation(data_drift_context)
+    drift_evaluation = drift_handler(data_drift_context)
     return drift_evaluation
 
 
 def run_new_data_evaluator(
-    *, drift_evaluator: BaseNewDataEvaluator, gh_client: Github, repo_name: str, commit_sha: str
+    *, new_data_handler: NewDataHandler, gh_client: Github, repo_name: str, commit_sha: str
 ) -> DriftEvaluation:
     repo = gh_client.get_repo(repo_name)
     commit = repo.get_commit(commit_sha)
@@ -85,5 +83,5 @@ def run_new_data_evaluator(
         after=new_dataframe,
         added_rows=new_data,
     )
-    drift_evaluation = drift_evaluator.compute_new_data_evaluation(data_drift_context)
+    drift_evaluation = new_data_handler(data_drift_context)
     return drift_evaluation

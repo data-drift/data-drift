@@ -3,16 +3,18 @@ from typing import Dict, Optional, Union
 
 import pandas as pd
 
-from ..drift_evaluator.drift_evaluators import (
-    BaseUpdateEvaluator,
-    DefaultDriftEvaluator,
+from ..alerting import (
     DriftEvaluation,
     DriftEvaluatorContext,
+    DriftHandler,
+    NewDataEvaluatorContext,
+    NewDataHandler,
+    auto_merge_drift,
+    null_new_data_handler,
     safe_drift_evaluator,
+    summarize_dataframe_updates,
 )
-from ..drift_evaluator.interface import NewDataEvaluatorContext
 from .helpers import reparse_dataframe
-from .summarize_dataframe_updates import summarize_dataframe_updates
 
 
 class UpdateType(Enum):
@@ -39,7 +41,8 @@ class DataFrameUpdate:
 def dataframe_update_breakdown(
     initial_dataframe: pd.DataFrame,
     final_dataframe: pd.DataFrame,
-    drift_evaluator: BaseUpdateEvaluator = DefaultDriftEvaluator(),
+    drift_handler: DriftHandler = auto_merge_drift,
+    new_data_handler: NewDataHandler = null_new_data_handler,
 ) -> Dict[str, DataFrameUpdate]:
     if initial_dataframe.index.name != "unique_key":
         initial_dataframe = initial_dataframe.set_index("unique_key")
@@ -65,7 +68,7 @@ def dataframe_update_breakdown(
         new_data_context = NewDataEvaluatorContext(
             before=reparse_dataframe(step1), after=reparse_dataframe(step2), added_rows=reparse_dataframe(new_data)
         )
-        new_data_evaluation = drift_evaluator.compute_new_data_evaluation(new_data_context)
+        new_data_evaluation = new_data_handler(new_data_context)
 
     step3 = final_dataframe.drop(columns=list(columns_added))
 
@@ -75,7 +78,7 @@ def dataframe_update_breakdown(
     if has_drift:
         drift_summary = summarize_dataframe_updates(initial_df=step2, final_df=step3)
         drift_context = DriftEvaluatorContext(before=step2, after=step3, summary=drift_summary)
-        drift_evaluation = safe_drift_evaluator(drift_context, drift_evaluator.compute_drift_evaluation)
+        drift_evaluation = safe_drift_evaluator(drift_context, drift_handler)
         # Here, in case of wrongly detected drifts, we recheck the drifts
         if (
             len(drift_summary["added_rows"]) == 0

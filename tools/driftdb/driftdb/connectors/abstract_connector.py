@@ -4,9 +4,9 @@ from typing import Dict, Optional
 
 import pandas as pd
 
+from ..alerting import DriftHandler, NewDataHandler, auto_merge_drift, null_new_data_handler
 from ..dataframe.dataframe_update_breakdown import DataFrameUpdate, dataframe_update_breakdown
 from ..dataframe.helpers import sort_dataframe_on_first_column_and_assert_is_unique
-from ..drift_evaluator.drift_evaluators import BaseUpdateEvaluator, DefaultDriftEvaluator
 from ..logger import get_logger
 from .common import assert_valid_table_name, find_date_column, get_partition_file_path
 
@@ -39,7 +39,8 @@ class AbstractConnector(ABC):
         table_dataframe: pd.DataFrame,
         table_name: str,
         measure_date: Optional[datetime] = None,
-        drift_evaluator: BaseUpdateEvaluator = DefaultDriftEvaluator(),
+        drift_handler: DriftHandler = auto_merge_drift,
+        new_data_handler: NewDataHandler = null_new_data_handler,
     ):
         assert_valid_table_name(table_name)
         if measure_date is None:
@@ -62,7 +63,9 @@ class AbstractConnector(ABC):
             pass
         else:
             self.logger.info("Table found. Updating it")
-            update_breakdown = dataframe_update_breakdown(latest_stored_snapshot, table_dataframe, drift_evaluator)
+            update_breakdown = dataframe_update_breakdown(
+                latest_stored_snapshot, table_dataframe, drift_handler, new_data_handler
+            )
             if any(item.has_update for item in update_breakdown.values()):
                 self.logger.info("Change detected")
                 self.handle_breakdown(
@@ -81,6 +84,8 @@ class AbstractConnector(ABC):
         measure_date: Optional[datetime] = None,
         table_name: str,
         freq: str = "M",
+        drift_handler: DriftHandler = auto_merge_drift,
+        new_data_handler: NewDataHandler = null_new_data_handler,
     ) -> None:
         """
         Partitions and snapshots a table.
@@ -108,4 +113,6 @@ class AbstractConnector(ABC):
                 table_dataframe=group,
                 table_name=monthly_table_name,
                 measure_date=measure_date,
+                drift_handler=drift_handler,
+                new_data_handler=new_data_handler,
             )

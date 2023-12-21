@@ -1,5 +1,6 @@
 import pandas as pd
-from driftdb.drift_evaluator.drift_evaluators import DriftSummary
+
+from .interface import DriftSummary
 
 
 def summarize_dataframe_updates(

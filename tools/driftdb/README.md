@@ -116,35 +116,40 @@ In case of more than 1M rows, partitionning is recomanded using the `partition_a
 '🎁 Partitionning data/act_metrics_finance/mrr.csv...'
 ```
 
-# Drift
+# Alerting
+
+## Drift
 
 A drift is a modification of historical data. It can be a modification, addition or deletion in a table that is supposed to be "non-moving data".
 
-## Drift Evaluator
+## Drift Handler
 
-A drift evaluator is a class that implement the following abstract class:
+A drift handler is a function that conforms the type `DriftHandler`:
 
 ```python
-class BaseDriftEvaluator(ABC):
-    @staticmethod
-    @abstractmethod
-    def compute_drift_evaluation(
-        data_drift_context: DriftEvaluatorContext,
-    ) -> DriftEvaluation:
-        pass
+
+DriftHandler = Callable[[DriftEvaluatorContext], DriftEvaluation]
+
+# With DriftEvaluatorContext and DriftEvaluation being
+
+class DriftEvaluatorContext:
+    def __init__(self, before: pd.DataFrame, after: pd.DataFrame, summary: DriftSummary):
+        self.before = before
+        self.after = after
+        self.summary = summary
 
 class DriftEvaluation(TypedDict):
     should_alert: bool
     message: str
 ```
 
-### Default Drift Evaluator
+### Default Drift Handler
 
-The default drift evaluator will return `should_alert = False`
+The default drift evaluator never triggers any alert, it returns `should_alert = False`.
 
-### Alert Drift Evaluator
+### Alert Drift Handler
 
-The Alert drift evaluator will reuturn `should_alert = True` for all drifts and a message containing the summary of the drift, example:
+The `alert_drift_handler` will trigger an alert if there is a drifts, and an alert message containing the summary of the drift, example:
 
 ```
 Drift detected:
@@ -153,16 +158,19 @@ Drift detected:
 - 🗑️ 0 deletion
 ```
 
-To use the AlertDriftEvaluator, add it when you call snapshot_table like this:
+To use the `alert_drift_handler`, add it when you call snapshot_table like this:
 
 ```python
-from driftdb.drift_evaluator.drift_evaluators import AlertDriftEvaluator
+from driftdb.alerting import alert_drift_handler
 
-connector.snapshot_table(table_dataframe, table_name, drift_evaluator=AlertDriftEvaluator)
-
+connector.snapshot_table(table_dataframe, table_name, drift_handler=alert_drift_handler)
 ```
 
-### Custom Drift Evaluator
+### Threshold Drift Handler
+
+WIP (This hanlder triggers an alert when a metric is modified, and the impact is over the treshold)
+
+### Custom Drift Handler
 
 You can provide a custom evaluator which is a function with a DriftEvaluatorContext containing the following properties:
 
@@ -180,18 +188,64 @@ class DriftSummary(TypedDict):
 
 ```
 
-Then implement your class, and use it in snapshot_table.
+Then implement your handler, and use it in snapshot_table.
 
 ```python
-class MyDriftEvaluator(BaseDriftEvaluator):
-    @staticmethod
-    def compute_drift_evaluation(
-        data_drift_context: DriftEvaluatorContext,
-    ) -> DriftEvaluation:
-        # do what you want
-        if there_is_something_I_dont_like:
-          return {"should_alert": True, "message": "No this should not happen"}
-        return {"should_alert": False, "message": ""}
+def my_drift_handler(
+    data_drift_context: DriftEvaluatorContext,
+) -> DriftEvaluation:
+    # do what you want
+    if there_is_something_I_dont_like:
+      return {"should_alert": True, "message": "No this should not happen"}
+    return {"should_alert": False, "message": ""}
+```
+
+## New Data
+
+When there is a new batch of data in a table, e.g. the results of last week. This addition is considered new data. It should not be confused with a new row entry of historical data. For instance, if a new transaction with a paying_date from a month ago is registered today, it will be considered a drift, not a new data.
+
+## New Data Handler
+
+You can also add alerting when inserting new data in the table.
+
+## Detect Outlier Handler
+
+You can create a `detect_outlier_handler` with the `DetectOutlierHandlerFactory` that takes 2 arguments, the numerical columns and the category columns.
+For numerical columns, if the new data is an outlier (using the [interquartil method](https://en.wikipedia.org/wiki/Interquartile_range#Outliers)) it will trigger an alert.
+For category columns, if a new category is detected, it will trigger an alert.
+
+To use the `detect_outlier_handler`, add it when you call snapshot_table like this:
+
+```python
+from driftdb.alerting import DetectOutlierHandlerFactory
+new_data_handler = DetectOutlierHandlerFactory(numerical_cols=["age"], categorical_cols=[])
+
+connector.snapshot_table(table_dataframe, table_name, new_data_handler=new_data_handler)
+```
+
+### Custom New Data Handler
+
+You can provide a custom handler which is a function with a NewDataEvaluatorContext containing the following properties:
+
+```python
+class NewDataEvaluatorContext:
+    def __init__(self, before: pd.DataFrame, after: pd.DataFrame, added_rows: pd.DataFrame):
+        self.before = before
+        self.after = after
+        self.added_rows = added_rows
+
+```
+
+Then implement your handler, and use it in snapshot_table.
+
+```python
+def my_new_data_handler(
+    new_data_context: NewDataEvaluatorContext,
+) -> DriftEvaluation:
+    # do what you want
+    if there_is_something_I_dont_like:
+      return {"should_alert": True, "message": "No this should not happen"}
+    return {"should_alert": False, "message": ""}
 ```
 
 # CLI

@@ -7,8 +7,8 @@ from git import Repo
 from git.objects.commit import Commit
 
 from ..dataframe.dataframe_update_breakdown import DataFrameUpdate
-from ..drift_evaluator.drift_evaluators import drift_summary_to_string
-from ..drift_evaluator.interface import DriftEvaluation, DriftEvaluatorContext
+from ..alerting.handlers import drift_summary_to_string
+from ..alerting.interface import DriftEvaluation, DriftEvaluatorContext
 from ..logger import get_logger
 from .abstract_connector import AbstractConnector
 
