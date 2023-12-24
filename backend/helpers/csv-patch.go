@@ -69,7 +69,6 @@ func GenerateCsvPatch(currentCsv [][]string, previousCsv [][]string) (string, er
 }
 
 type CsvRecord struct {
-	Date      string
 	UniqueKey string
 	OtherData []string
 }
@@ -79,22 +78,19 @@ func sortCsvData(csvData [][]string) ([][]string, error) {
 		return csvData, nil
 	}
 
-	dateIndex, uniqueKeyIndex := -1, -1
+	uniqueKeyIndex := -1
 	for i, columnName := range csvData[0] {
-		if columnName == "date" {
-			dateIndex = i
-		} else if columnName == "unique_key" {
+		if columnName == "unique_key" {
 			uniqueKeyIndex = i
 		}
 	}
-	if dateIndex == -1 || uniqueKeyIndex == -1 {
+	if uniqueKeyIndex == -1 {
 		return csvData, nil
 	}
 
 	var records []CsvRecord
 	for _, row := range csvData[1:] {
 		record := CsvRecord{
-			Date:      row[dateIndex],
 			UniqueKey: row[uniqueKeyIndex],
 			OtherData: append([]string{}, row...),
 		}
@@ -102,10 +98,7 @@ func sortCsvData(csvData [][]string) ([][]string, error) {
 	}
 
 	sort.Slice(records, func(i, j int) bool {
-		if records[i].Date == records[j].Date {
-			return records[i].UniqueKey < records[j].UniqueKey
-		}
-		return records[i].Date < records[j].Date
+		return records[i].UniqueKey < records[j].UniqueKey
 	})
 
 	sortedCsvData := [][]string{csvData[0]}
