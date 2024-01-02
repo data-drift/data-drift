@@ -168,7 +168,19 @@ connector.snapshot_table(table_dataframe, table_name, drift_handler=alert_drift_
 
 ### Threshold Drift Handler
 
-WIP (This hanlder triggers an alert when a metric is modified, and the impact is over the treshold)
+The Threshold Drift Handler is designed to monitor changes in numerical values. It triggers an alert when a numerical value is updated and the absolute difference, when divided by the old value, exceeds a specified threshold.
+
+Here's how you can use the Threshold Drift Handler:
+
+```python
+from driftdb.alerting import TresholdDriftHandlerFactory
+
+# Set your desired threshold
+threshold = 0.1  # Alert if the change is over 10%
+threshold_handler = TresholdDriftHandlerFactory(numerical_cols=['metric_column_name'], threshold=threshold)
+
+connector.snapshot_table(table_dataframe, table_name, drift_handler=threshold_handler)
+```
 
 ### Custom Drift Handler
 
