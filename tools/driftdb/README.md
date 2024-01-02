@@ -220,7 +220,7 @@ When there is a new batch of data in a table, e.g. the results of last week. Thi
 
 You can also add alerting when inserting new data in the table.
 
-## Detect Outlier Handler
+### Detect Outlier Handler
 
 You can create a `detect_outlier_handler` with the `DetectOutlierHandlerFactory` that takes 2 arguments, the numerical columns and the category columns.
 For numerical columns, if the new data is an outlier (using the [interquartil method](https://en.wikipedia.org/wiki/Interquartile_range#Outliers)) it will trigger an alert.
