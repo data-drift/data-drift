@@ -17,6 +17,7 @@ export const getFileCommits = (
   filepath: DDConfigMetric["filepath"],
   selectCommit: (commit: string) => void
 ): LineageEvent[] => {
+  filepath = filepath.replace(/\.csv/g, "");
   const metricCommits = commitList.filter((commit) => {
     return commit.commit.message.includes(filepath);
   });
