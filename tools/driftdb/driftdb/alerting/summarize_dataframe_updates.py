@@ -1,6 +1,9 @@
 import pandas as pd
 
+from ..logger import get_logger
 from .interface import DriftSummary
+
+logger = get_logger("summarize_dataframe_updates")
 
 
 def summarize_dataframe_updates(
@@ -47,14 +50,17 @@ def summarize_dataframe_updates(
     pattern_changes = {}
     for key in changed_rows_index:
         for col in common_rows_initial.columns:
-            if common_rows_initial.at[key, col] != common_rows_final.at[key, col]:
-                old_value = common_rows_initial.at[key, col]
-                new_value = common_rows_final.at[key, col]
-                change_pattern = (col, old_value, new_value)
-                if change_pattern not in pattern_changes:
-                    pattern_changes[change_pattern] = [key]
-                else:
-                    pattern_changes[change_pattern].append(key)
+            try:
+                if common_rows_initial.at[key, col] != common_rows_final.at[key, col]:
+                    old_value = common_rows_initial.at[key, col]
+                    new_value = common_rows_final.at[key, col]
+                    change_pattern = (col, old_value, new_value)
+                    if change_pattern not in pattern_changes:
+                        pattern_changes[change_pattern] = [key]
+                    else:
+                        pattern_changes[change_pattern].append(key)
+            except:
+                logger.warn(f"Error while processing pattern change in row {key} and column {col}")
 
     patterns_list = []
     for pattern, keys in pattern_changes.items():
