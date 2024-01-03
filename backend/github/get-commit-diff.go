@@ -1,8 +1,10 @@
 package github
 
 import (
+	"context"
 	"encoding/csv"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -113,11 +115,20 @@ func CompareCommit(c *gin.Context) {
 	baseCommitSha := c.Param("base-commit-sha")
 	headCommitSha := c.Param("head-commit-sha")
 	table := c.Query("table")
-	fmt.Println("table:", table)
-	client, err := CreateClientFromGithubApp(int64(InstallationId))
+	jsonData, err := compareCommit(InstallationId, owner, repo, baseCommitSha, headCommitSha, table)
 	if err != nil {
+
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+	c.Data(http.StatusOK, "application/json", jsonData)
+}
+
+func compareCommit(InstallationId int64, owner string, repo string, baseCommitSha string, headCommitSha string, table string) ([]byte, error) {
+	c := context.Background()
+	client, err := CreateClientFromGithubApp(int64(InstallationId))
+	if err != nil {
+		return nil, err
 	}
 
 	opts := &github.ListOptions{}
@@ -125,8 +136,7 @@ func CompareCommit(c *gin.Context) {
 	comparison, _, ghErr := client.Repositories.CompareCommits(c, owner, repo, baseCommitSha, headCommitSha, opts)
 	if ghErr != nil {
 		fmt.Println(ghErr.Error())
-		c.JSON(http.StatusBadRequest, gin.H{"error": ghErr})
-		return
+		return nil, err
 	}
 	fmt.Println("Number of files:", len(comparison.Files))
 	var csvFile *github.CommitFile
@@ -140,37 +150,32 @@ func CompareCommit(c *gin.Context) {
 	fmt.Println("csvFile:", csvFile.Patch)
 	content, _, _, err := client.Repositories.GetContents(c, owner, repo, csvFile.GetFilename(), &github.RepositoryContentGetOptions{Ref: headCommitSha})
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		return nil, err
 	}
 	stringContentUrl := content.GetDownloadURL()
 
 	resp, err := http.Get(stringContentUrl)
 	if err != nil {
-		fmt.Println("Error:", err)
-		return
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	csvReader := csv.NewReader(resp.Body)
 	records, err := csvReader.ReadAll()
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		return nil, err
 	}
 
 	if len(records) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "no records in CSV file"})
-		return
+		return nil, errors.New("no records in CSV file")
 	}
 
 	firstRecord := records[0]
 	jsonData, err := json.Marshal(gin.H{"patch": csvFile.Patch, "headers": firstRecord, "filename": csvFile.GetFilename(), "patchToLarge": ""})
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		return nil, err
 	}
-	c.Data(http.StatusOK, "application/json", jsonData)
+	return jsonData, nil
 }
 
 func getPatchIfEmpty(client *github.Client, ctx *gin.Context, owner string, repo string, commit *github.RepositoryCommit, file *github.CommitFile, currentRecord [][]string) (string, error) {
