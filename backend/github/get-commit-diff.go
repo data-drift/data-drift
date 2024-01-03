@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -124,6 +125,69 @@ func CompareCommit(c *gin.Context) {
 	c.Data(http.StatusOK, "application/json", jsonData)
 }
 
+func CompareCommitBetweenDates(c *gin.Context) {
+	InstallationId, err := strconv.ParseInt(c.Request.Header.Get("Installation-Id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "error parsing Installation-Id header"})
+		return
+	}
+	client, err := CreateClientFromGithubApp(int64(InstallationId))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	owner := c.Param("owner")
+	repo := c.Param("repo")
+	startDateStr := c.Query("start-date")
+	table := c.Query("table")
+	if table == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "table query param is required"})
+		return
+	}
+	endDateStr := c.Query("end-date")
+	beginDate, err := time.Parse("2006-01-02", startDateStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	endDate, err := time.Parse("2006-01-02", endDateStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	opt := &github.CommitsListOptions{
+		ListOptions: github.ListOptions{
+			PerPage: 100,
+			Page:    1,
+		},
+		Since: beginDate,
+		Until: endDate,
+	}
+	commits, _, err := client.Repositories.ListCommits(c, owner, repo, opt)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	var firstCommit, latestCommit *github.RepositoryCommit
+	if len(commits) > 0 {
+		firstCommit = commits[0]
+		latestCommit = commits[len(commits)-1]
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No commits between dates"})
+		return
+	}
+
+	log.Println("firstCommit:", firstCommit.GetSHA())
+	log.Println("latestCommit:", latestCommit.GetSHA())
+
+	jsonData, err := compareCommit(InstallationId, owner, repo, *firstCommit.SHA, *latestCommit.SHA, table)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.Data(http.StatusOK, "application/json", jsonData)
+}
+
 func compareCommit(InstallationId int64, owner string, repo string, baseCommitSha string, headCommitSha string, table string) ([]byte, error) {
 	c := context.Background()
 	client, err := CreateClientFromGithubApp(int64(InstallationId))
@@ -139,6 +203,7 @@ func compareCommit(InstallationId int64, owner string, repo string, baseCommitSh
 		return nil, err
 	}
 	fmt.Println("Number of files:", len(comparison.Files))
+	fmt.Println("Comparison:", comparison.String())
 	var csvFile *github.CommitFile
 
 	for _, file := range comparison.Files {
@@ -146,6 +211,9 @@ func compareCommit(InstallationId int64, owner string, repo string, baseCommitSh
 			csvFile = file
 			break
 		}
+	}
+	if csvFile == nil {
+		return nil, fmt.Errorf("table %s not updated between those dates", table)
 	}
 	fmt.Println("csvFile:", csvFile.Patch)
 	content, _, _, err := client.Repositories.GetContents(c, owner, repo, csvFile.GetFilename(), &github.RepositoryContentGetOptions{Ref: headCommitSha})
