@@ -1,3 +1,5 @@
+import traceback
+
 import pandas as pd
 
 from ..logger import get_logger
@@ -60,7 +62,9 @@ def summarize_dataframe_updates(
                     else:
                         pattern_changes[change_pattern].append(key)
             except:
-                logger.warn(f"Error while processing pattern change in row {key} and column {col}")
+                logger.warn(
+                    f"Error while processing pattern change in row {key} and column {col} \n {traceback.format_exc()}"
+                )
 
     patterns_list = []
     for pattern, keys in pattern_changes.items():
