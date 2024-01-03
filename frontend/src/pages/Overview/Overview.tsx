@@ -255,11 +255,17 @@ const Overview = () => {
               }
             }}
           >
-            {config.config.metrics.map((metric) => (
-              <option key={metric.filepath} value={metric.filepath}>
-                {metric.filepath}
-              </option>
-            ))}
+            {config.config.metrics
+              .reduce((unique, metric) => {
+                return unique.some((item) => item.filepath === metric.filepath)
+                  ? unique
+                  : [...unique, metric];
+              }, [] as typeof config.config.metrics)
+              .map((metric) => (
+                <option key={metric.filepath} value={metric.filepath}>
+                  {metric.filepath}
+                </option>
+              ))}
           </StyledSelect>
         )}
         <StarUs />
