@@ -88,7 +88,7 @@ func GetCommitDiff(c *gin.Context) {
 
 	if patch == "" {
 		patchToLarge = true
-		patch, err = getPatchIfEmpty(client, c, owner, repo, commit, csvFile, records)
+		patch, err = getPatchIfEmpty(client, owner, repo, commit.Parents[0].GetSHA(), csvFile, records)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "error getting patch when patch is empty"})
 			return
@@ -246,8 +246,9 @@ func compareCommit(InstallationId int64, owner string, repo string, baseCommitSh
 	return jsonData, nil
 }
 
-func getPatchIfEmpty(client *github.Client, ctx *gin.Context, owner string, repo string, commit *github.RepositoryCommit, file *github.CommitFile, currentRecord [][]string) (string, error) {
-	previousRecords, err := getPreviousRecords(commit, client, ctx, owner, repo, file)
+func getPatchIfEmpty(client *github.Client, owner string, repo string, parentCommitSha string, file *github.CommitFile, currentRecord [][]string) (string, error) {
+	ctx := context.Background()
+	previousRecords, err := getPreviousRecords(parentCommitSha, client, ctx, owner, repo, file)
 
 	if err != nil {
 		fmt.Println("Error getting PreviousRecords:", err)
@@ -262,8 +263,7 @@ func getPatchIfEmpty(client *github.Client, ctx *gin.Context, owner string, repo
 	return patch, err
 }
 
-func getPreviousRecords(commit *github.RepositoryCommit, client *github.Client, ctx *gin.Context, owner string, repo string, file *github.CommitFile) ([][]string, error) {
-	parentCommitSha := commit.Parents[0].GetSHA()
+func getPreviousRecords(parentCommitSha string, client *github.Client, ctx context.Context, owner string, repo string, file *github.CommitFile) ([][]string, error) {
 	previousFileContent, _, _, err := client.Repositories.GetContents(ctx, owner, repo, *file.Filename, &github.RepositoryContentGetOptions{Ref: parentCommitSha})
 	if err != nil {
 		fmt.Println("Error getting github file content:", err)
