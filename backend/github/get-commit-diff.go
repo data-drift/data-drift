@@ -161,6 +161,7 @@ func CompareCommitBetweenDates(c *gin.Context) {
 		},
 		Since: beginDate,
 		Until: endDate,
+		Path:  table,
 	}
 	commits, _, err := client.Repositories.ListCommits(c, owner, repo, opt)
 	if err != nil {
@@ -179,7 +180,7 @@ func CompareCommitBetweenDates(c *gin.Context) {
 	log.Println("firstCommit:", firstCommit.GetSHA())
 	log.Println("latestCommit:", latestCommit.GetSHA())
 
-	jsonData, err := compareCommit(InstallationId, owner, repo, *firstCommit.SHA, *latestCommit.SHA, table)
+	jsonData, err := compareCommit(InstallationId, owner, repo, *latestCommit.SHA, *firstCommit.SHA, table)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -201,8 +202,6 @@ func compareCommit(InstallationId int64, owner string, repo string, baseCommitSh
 		fmt.Println(ghErr.Error())
 		return nil, ghErr
 	}
-	fmt.Println("Number of files:", len(comparison.Files))
-	fmt.Println("Comparison:", comparison.String())
 	var csvFile *github.CommitFile
 
 	for _, file := range comparison.Files {
@@ -238,8 +237,13 @@ func compareCommit(InstallationId int64, owner string, repo string, baseCommitSh
 	}
 
 	firstRecord := records[0]
-	patchToLarge := csvFile.Patch == nil
-	jsonData, err := json.Marshal(gin.H{"patch": csvFile.Patch, "headers": firstRecord, "filename": csvFile.GetFilename(), "patchToLarge": patchToLarge})
+
+	patchToLarge := true
+	patch, err := getPatchIfEmpty(client, owner, repo, baseCommitSha, csvFile, records)
+	if err != nil {
+		return nil, fmt.Errorf("error getting patch when patch is empty: %v", err)
+	}
+	jsonData, err := json.Marshal(gin.H{"patch": patch, "headers": firstRecord, "filename": csvFile.GetFilename(), "patchToLarge": patchToLarge})
 	if err != nil {
 		return nil, err
 	}
