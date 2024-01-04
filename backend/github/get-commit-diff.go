@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/csv"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -200,7 +199,7 @@ func compareCommit(InstallationId int64, owner string, repo string, baseCommitSh
 	comparison, _, ghErr := client.Repositories.CompareCommits(c, owner, repo, baseCommitSha, headCommitSha, opts)
 	if ghErr != nil {
 		fmt.Println(ghErr.Error())
-		return nil, err
+		return nil, ghErr
 	}
 	fmt.Println("Number of files:", len(comparison.Files))
 	fmt.Println("Comparison:", comparison.String())
@@ -235,11 +234,12 @@ func compareCommit(InstallationId int64, owner string, repo string, baseCommitSh
 	}
 
 	if len(records) == 0 {
-		return nil, errors.New("no records in CSV file")
+		return nil, fmt.Errorf("no records in CSV file")
 	}
 
 	firstRecord := records[0]
-	jsonData, err := json.Marshal(gin.H{"patch": csvFile.Patch, "headers": firstRecord, "filename": csvFile.GetFilename(), "patchToLarge": ""})
+	patchToLarge := csvFile.Patch == nil
+	jsonData, err := json.Marshal(gin.H{"patch": csvFile.Patch, "headers": firstRecord, "filename": csvFile.GetFilename(), "patchToLarge": patchToLarge})
 	if err != nil {
 		return nil, err
 	}
