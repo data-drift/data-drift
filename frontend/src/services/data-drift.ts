@@ -369,3 +369,31 @@ export const getMetricHistory = async (params: {
   });
   return result;
 };
+
+export const getTableComparisonFromApi = async (params: {
+  installationId: string;
+  owner: string;
+  repo: string;
+  beginDate: string;
+  endDate: string;
+  table: string;
+}) => {
+  const { installationId, owner, repo, beginDate, endDate, table } = params;
+  try {
+    const comparison = await axios.get<{
+      patch: string;
+      headers: string[];
+      filename: string;
+      patchToLarge: boolean;
+    }>(
+      `${DATA_DRIFT_API_URL}/gh/${owner}/${repo}/compare-between-date?start-date=${beginDate}&end-date=${endDate}&table=${table}`,
+      { headers: { "Installation-Id": installationId } }
+    );
+    return comparison;
+  } catch (err) {
+    if (err?.response?.data?.error) {
+      throw new Error(err?.response?.data?.error);
+    }
+    throw err;
+  }
+};

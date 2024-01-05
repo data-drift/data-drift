@@ -139,6 +139,9 @@ func CompareCommitBetweenDates(c *gin.Context) {
 	repo := c.Param("repo")
 	startDateStr := c.Query("start-date")
 	table := c.Query("table")
+	if !strings.HasSuffix(table, ".csv") {
+		table += ".csv"
+	}
 	if table == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "table query param is required"})
 		return
@@ -173,7 +176,7 @@ func CompareCommitBetweenDates(c *gin.Context) {
 		firstCommit = commits[0]
 		latestCommit = commits[len(commits)-1]
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "No commits between dates"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No commits between dates for table " + table})
 		return
 	}
 
