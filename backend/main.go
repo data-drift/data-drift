@@ -52,6 +52,8 @@ func main() {
 
 	router.POST("webhooks/github", github.HandleWebhook)
 	router.GET("gh/:owner/:repo/commit/:commit-sha", github.GetCommitDiff)
+	router.GET("gh/:owner/:repo/compare/:base-commit-sha/:head-commit-sha", github.CompareCommit)
+	router.GET("gh/:owner/:repo/compare-between-date", github.CompareCommitBetweenDates)
 	router.GET("gh/:owner/:repo/commits", github.GetCommitList)
 
 	router.GET("metrics/:metric-name/cohorts/:timegrain", metrics.GetMetricCohort)

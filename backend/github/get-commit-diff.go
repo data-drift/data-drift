@@ -1,9 +1,11 @@
 package github
 
 import (
+	"context"
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -86,7 +88,7 @@ func GetCommitDiff(c *gin.Context) {
 
 	if patch == "" {
 		patchToLarge = true
-		patch, err = getPatchIfEmpty(client, c, owner, repo, commit, csvFile, records)
+		patch, err = getPatchIfEmpty(client, owner, repo, commit.Parents[0].GetSHA(), csvFile, records)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "error getting patch when patch is empty"})
 			return
@@ -102,8 +104,155 @@ func GetCommitDiff(c *gin.Context) {
 	c.Data(http.StatusOK, "application/json", jsonData)
 }
 
-func getPatchIfEmpty(client *github.Client, ctx *gin.Context, owner string, repo string, commit *github.RepositoryCommit, file *github.CommitFile, currentRecord [][]string) (string, error) {
-	previousRecords, err := getPreviousRecords(commit, client, ctx, owner, repo, file)
+func CompareCommit(c *gin.Context) {
+	InstallationId, err := strconv.ParseInt(c.Request.Header.Get("Installation-Id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "error parsing Installation-Id header"})
+		return
+	}
+	owner := c.Param("owner")
+	repo := c.Param("repo")
+	baseCommitSha := c.Param("base-commit-sha")
+	headCommitSha := c.Param("head-commit-sha")
+	table := c.Query("table")
+	jsonData, err := compareCommit(InstallationId, owner, repo, baseCommitSha, headCommitSha, table)
+	if err != nil {
+
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.Data(http.StatusOK, "application/json", jsonData)
+}
+
+func CompareCommitBetweenDates(c *gin.Context) {
+	InstallationId, err := strconv.ParseInt(c.Request.Header.Get("Installation-Id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "error parsing Installation-Id header"})
+		return
+	}
+	client, err := CreateClientFromGithubApp(int64(InstallationId))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	owner := c.Param("owner")
+	repo := c.Param("repo")
+	startDateStr := c.Query("start-date")
+	table := c.Query("table")
+	if table == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "table query param is required"})
+		return
+	}
+	endDateStr := c.Query("end-date")
+	beginDate, err := time.Parse("2006-01-02", startDateStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	endDate, err := time.Parse("2006-01-02", endDateStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	opt := &github.CommitsListOptions{
+		ListOptions: github.ListOptions{
+			PerPage: 100,
+			Page:    1,
+		},
+		Since: beginDate,
+		Until: endDate,
+		Path:  table,
+	}
+	commits, _, err := client.Repositories.ListCommits(c, owner, repo, opt)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	var firstCommit, latestCommit *github.RepositoryCommit
+	if len(commits) > 0 {
+		firstCommit = commits[0]
+		latestCommit = commits[len(commits)-1]
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No commits between dates"})
+		return
+	}
+
+	log.Println("firstCommit:", firstCommit.GetSHA())
+	log.Println("latestCommit:", latestCommit.GetSHA())
+
+	jsonData, err := compareCommit(InstallationId, owner, repo, *latestCommit.SHA, *firstCommit.SHA, table)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.Data(http.StatusOK, "application/json", jsonData)
+}
+
+func compareCommit(InstallationId int64, owner string, repo string, baseCommitSha string, headCommitSha string, table string) ([]byte, error) {
+	c := context.Background()
+	client, err := CreateClientFromGithubApp(int64(InstallationId))
+	if err != nil {
+		return nil, err
+	}
+
+	opts := &github.ListOptions{}
+
+	comparison, _, ghErr := client.Repositories.CompareCommits(c, owner, repo, baseCommitSha, headCommitSha, opts)
+	if ghErr != nil {
+		fmt.Println(ghErr.Error())
+		return nil, ghErr
+	}
+	var csvFile *github.CommitFile
+
+	for _, file := range comparison.Files {
+		if file.GetFilename() == table {
+			csvFile = file
+			break
+		}
+	}
+	if csvFile == nil {
+		return nil, fmt.Errorf("table %s not updated between those dates", table)
+	}
+	fmt.Println("csvFile:", csvFile.Patch)
+	content, _, _, err := client.Repositories.GetContents(c, owner, repo, csvFile.GetFilename(), &github.RepositoryContentGetOptions{Ref: headCommitSha})
+	if err != nil {
+		return nil, err
+	}
+	stringContentUrl := content.GetDownloadURL()
+
+	resp, err := http.Get(stringContentUrl)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	csvReader := csv.NewReader(resp.Body)
+	records, err := csvReader.ReadAll()
+	if err != nil {
+		return nil, err
+	}
+
+	if len(records) == 0 {
+		return nil, fmt.Errorf("no records in CSV file")
+	}
+
+	firstRecord := records[0]
+
+	patchToLarge := true
+	patch, err := getPatchIfEmpty(client, owner, repo, baseCommitSha, csvFile, records)
+	if err != nil {
+		return nil, fmt.Errorf("error getting patch when patch is empty: %v", err)
+	}
+	jsonData, err := json.Marshal(gin.H{"patch": patch, "headers": firstRecord, "filename": csvFile.GetFilename(), "patchToLarge": patchToLarge})
+	if err != nil {
+		return nil, err
+	}
+	return jsonData, nil
+}
+
+func getPatchIfEmpty(client *github.Client, owner string, repo string, parentCommitSha string, file *github.CommitFile, currentRecord [][]string) (string, error) {
+	ctx := context.Background()
+	previousRecords, err := getPreviousRecords(parentCommitSha, client, ctx, owner, repo, file)
 
 	if err != nil {
 		fmt.Println("Error getting PreviousRecords:", err)
@@ -118,8 +267,7 @@ func getPatchIfEmpty(client *github.Client, ctx *gin.Context, owner string, repo
 	return patch, err
 }
 
-func getPreviousRecords(commit *github.RepositoryCommit, client *github.Client, ctx *gin.Context, owner string, repo string, file *github.CommitFile) ([][]string, error) {
-	parentCommitSha := commit.Parents[0].GetSHA()
+func getPreviousRecords(parentCommitSha string, client *github.Client, ctx context.Context, owner string, repo string, file *github.CommitFile) ([][]string, error) {
 	previousFileContent, _, _, err := client.Repositories.GetContents(ctx, owner, repo, *file.Filename, &github.RepositoryContentGetOptions{Ref: parentCommitSha})
 	if err != nil {
 		fmt.Println("Error getting github file content:", err)

@@ -22,6 +22,11 @@ export const router = createBrowserRouter([
     loader: Overview.loader,
   },
   {
+    path: "/:installationId/:owner/:repo/compare/:baseCommitSHA/:headCommitSHA",
+    element: <Overview />,
+    loader: Overview.loader,
+  },
+  {
     path: "/ghform",
     element: <GithubForm />,
   },
