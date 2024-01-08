@@ -9,6 +9,7 @@ const StyledDatePicker = styled.div`
   display: flex;
   align-items: center;
   align-self: flex-start;
+  margin: 0 8px;
 `;
 
 const StyledDateInput = styled.input`
@@ -84,6 +85,7 @@ const DualTableHeader = ({
 
   return (
     <StyledDatePicker>
+      <StyledDivider>Filters rows from</StyledDivider>
       <StyledDateInput
         type="date"
         value={startDate}
