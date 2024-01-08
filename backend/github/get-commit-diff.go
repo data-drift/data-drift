@@ -270,7 +270,7 @@ func compareCommit(InstallationId int64, owner string, repo string, baseCommitSh
 	if err != nil {
 		return nil, fmt.Errorf("error getting patch when patch is empty: %v", err)
 	}
-	jsonData, err := json.Marshal(gin.H{"patch": patch, "headers": firstRecord, "filename": csvFile.GetFilename(), "patchToLarge": patchToLarge, "fromCommitDate": baseCommit.Commit.Committer.Date, "toCommitDate": headCommit.Commit.Committer.Date})
+	jsonData, err := json.Marshal(gin.H{"patch": patch, "headers": firstRecord, "filename": csvFile.GetFilename(), "patchToLarge": patchToLarge, "baseCommitDateISO8601": baseCommit.Commit.Committer.Date, "headCommitDateISO8601": headCommit.Commit.Committer.Date})
 	if err != nil {
 		return nil, err
 	}
