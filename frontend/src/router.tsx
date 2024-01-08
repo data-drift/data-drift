@@ -10,6 +10,7 @@ import TableList from "./pages/TableList";
 import TablePage from "./pages/TablePage";
 import MetricPage from "./pages/MetricPage";
 import DriftOverviewPage from "./pages/DriftOverviewPage";
+import CompareCommits from "./pages/CompareCommits";
 
 export const router = createBrowserRouter([
   {
@@ -22,9 +23,9 @@ export const router = createBrowserRouter([
     loader: Overview.loader,
   },
   {
-    path: "/:installationId/:owner/:repo/compare/:baseCommitSHA/:headCommitSHA",
-    element: <Overview />,
-    loader: Overview.loader,
+    path: "/:installationId/:owner/:repo/compare",
+    element: <CompareCommits />,
+    loader: CompareCommits.loader,
   },
   {
     path: "/ghform",

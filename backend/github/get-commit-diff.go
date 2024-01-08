@@ -5,7 +5,6 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -139,48 +138,73 @@ func CompareCommitBetweenDates(c *gin.Context) {
 	repo := c.Param("repo")
 	startDateStr := c.Query("start-date")
 	table := c.Query("table")
+	if !strings.HasSuffix(table, ".csv") {
+		table += ".csv"
+	}
 	if table == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "table query param is required"})
 		return
 	}
 	endDateStr := c.Query("end-date")
 	beginDate, err := time.Parse("2006-01-02", startDateStr)
+
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	inclusiveBeginDate := beginDate.AddDate(0, 0, 1)
+
 	endDate, err := time.Parse("2006-01-02", endDateStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	opt := &github.CommitsListOptions{
+	inclusiveEndDate := endDate.AddDate(0, 0, 1)
+	var firstCommit, latestCommit string
+
+	optBefore := &github.CommitsListOptions{
+		ListOptions: github.ListOptions{
+			PerPage: 100,
+			Page:    1,
+		},
+		Until: inclusiveBeginDate,
+		Path:  table,
+	}
+	commitsBefore, _, err := client.Repositories.ListCommits(c, owner, repo, optBefore)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if len(commitsBefore) > 0 {
+		firstCommit = commitsBefore[0].GetSHA()
+
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No commits before date for table " + table})
+		return
+	}
+
+	optAfter := &github.CommitsListOptions{
 		ListOptions: github.ListOptions{
 			PerPage: 100,
 			Page:    1,
 		},
 		Since: beginDate,
-		Until: endDate,
+		Until: inclusiveEndDate,
 		Path:  table,
 	}
-	commits, _, err := client.Repositories.ListCommits(c, owner, repo, opt)
+	commitsAfter, _, err := client.Repositories.ListCommits(c, owner, repo, optAfter)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	var firstCommit, latestCommit *github.RepositoryCommit
-	if len(commits) > 0 {
-		firstCommit = commits[0]
-		latestCommit = commits[len(commits)-1]
+	if len(commitsAfter) > 0 {
+		latestCommit = commitsAfter[0].GetSHA()
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "No commits between dates"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No commits between dates for table " + table})
 		return
 	}
 
-	log.Println("firstCommit:", firstCommit.GetSHA())
-	log.Println("latestCommit:", latestCommit.GetSHA())
-
-	jsonData, err := compareCommit(InstallationId, owner, repo, *latestCommit.SHA, *firstCommit.SHA, table)
+	jsonData, err := compareCommit(InstallationId, owner, repo, firstCommit, latestCommit, table)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -189,11 +213,15 @@ func CompareCommitBetweenDates(c *gin.Context) {
 }
 
 func compareCommit(InstallationId int64, owner string, repo string, baseCommitSha string, headCommitSha string, table string) ([]byte, error) {
+
 	c := context.Background()
 	client, err := CreateClientFromGithubApp(int64(InstallationId))
 	if err != nil {
 		return nil, err
 	}
+
+	baseCommit, _, _ := client.Repositories.GetCommit(c, owner, repo, baseCommitSha, nil)
+	headCommit, _, _ := client.Repositories.GetCommit(c, owner, repo, headCommitSha, nil)
 
 	opts := &github.ListOptions{}
 
@@ -213,7 +241,6 @@ func compareCommit(InstallationId int64, owner string, repo string, baseCommitSh
 	if csvFile == nil {
 		return nil, fmt.Errorf("table %s not updated between those dates", table)
 	}
-	fmt.Println("csvFile:", csvFile.Patch)
 	content, _, _, err := client.Repositories.GetContents(c, owner, repo, csvFile.GetFilename(), &github.RepositoryContentGetOptions{Ref: headCommitSha})
 	if err != nil {
 		return nil, err
@@ -243,7 +270,7 @@ func compareCommit(InstallationId int64, owner string, repo string, baseCommitSh
 	if err != nil {
 		return nil, fmt.Errorf("error getting patch when patch is empty: %v", err)
 	}
-	jsonData, err := json.Marshal(gin.H{"patch": patch, "headers": firstRecord, "filename": csvFile.GetFilename(), "patchToLarge": patchToLarge})
+	jsonData, err := json.Marshal(gin.H{"patch": patch, "headers": firstRecord, "filename": csvFile.GetFilename(), "patchToLarge": patchToLarge, "fromCommitDate": baseCommit.Commit.Committer.Date, "toCommitDate": headCommit.Commit.Committer.Date})
 	if err != nil {
 		return nil, err
 	}
