@@ -391,9 +391,10 @@ export const getTableComparisonFromApi = async (params: {
     );
     return comparison;
   } catch (err) {
-    if (err?.response?.data?.error) {
+    if (axios.isAxiosError<{ error: string }>(err)) {
       throw new Error(err?.response?.data?.error);
     }
+
     throw err;
   }
 };
