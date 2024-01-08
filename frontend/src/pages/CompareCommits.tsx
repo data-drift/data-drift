@@ -2,11 +2,24 @@ import { Params, useLoaderData } from "react-router-dom";
 import { getTableComparisonFromApi } from "../services/data-drift";
 import { parsePatch } from "../services/patch.mapper";
 import { DiffTable } from "./DisplayCommit/DiffTable";
-import { DualTableProps } from "../components/Table/DualTable";
 
 const CompareCommits = () => {
-  const loaderData = useLoaderData() as DualTableProps;
-  return <DiffTable dualTableProps={loaderData} />;
+  const loaderData = useLoaderData() as LoaderData;
+  return (
+    <>
+      <p>
+        Comparing data from{" "}
+        <span title={loaderData.fromDate.toString()}>
+          {loaderData.fromDate.toLocaleDateString()}
+        </span>
+        {" to "}
+        <span title={loaderData.toDate.toString()}>
+          {loaderData.toDate.toLocaleDateString()}
+        </span>
+      </p>
+      <DiffTable dualTableProps={loaderData.dualTableProps} />
+    </>
+  );
 };
 
 const loader = async ({
@@ -37,8 +50,14 @@ const loader = async ({
     tableProps1: oldData,
     tableProps2: newData,
   };
-  return dualTableProps;
+  return {
+    dualTableProps,
+    fromDate: new Date(comparison.data.baseCommitDateISO8601),
+    toDate: new Date(comparison.data.headCommitDateISO8601),
+  };
 };
+
+type LoaderData = Awaited<ReturnType<typeof loader>>;
 
 CompareCommits.loader = loader;
 

@@ -385,6 +385,8 @@ export const getTableComparisonFromApi = async (params: {
       headers: string[];
       filename: string;
       patchToLarge: boolean;
+      baseCommitDateISO8601: string;
+      headCommitDateISO8601: string;
     }>(
       `${DATA_DRIFT_API_URL}/gh/${owner}/${repo}/compare-between-date?start-date=${beginDate}&end-date=${endDate}&table=${table}`,
       { headers: { "Installation-Id": installationId } }
