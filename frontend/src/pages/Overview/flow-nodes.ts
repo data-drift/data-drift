@@ -82,6 +82,7 @@ export const getNodesFromConfig = (
       events: metricEvents,
     },
   } satisfies Node;
+  let upstreamNodesOffset = 0;
   const upstreamNodes = metric.upstreamFiles
     ? metric.upstreamFiles.map((upstreamMetric, i) => {
         const upstreamEvents = getFileCommits(
@@ -89,15 +90,18 @@ export const getNodesFromConfig = (
           upstreamMetric,
           selectCommit
         );
-        return {
+        const upstreamNode: Node = {
           ...baseNode,
-          position: { x: 50, y: 10 + i * 100 },
+          position: { x: 50, y: 10 + i * 110 + upstreamNodesOffset },
           id: `upstream-${i}`,
           data: {
             label: extractFileNameAndPath(upstreamMetric).fileName,
             events: upstreamEvents,
           },
         } satisfies Node;
+        upstreamNodesOffset += 30 * upstreamEvents.length;
+
+        return upstreamNode;
       })
     : [];
 

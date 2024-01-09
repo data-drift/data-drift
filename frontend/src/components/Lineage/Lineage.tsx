@@ -10,12 +10,12 @@ const CustomMetricNode: ComponentType<
   NodeProps<{ label: string; events: LineageEvent[] }>
 > = ({ data, sourcePosition, targetPosition }) => {
   return (
-    <>
+    <div>
       {targetPosition && <Handle type="target" position={targetPosition} />}
       <MetricNode metricName={data.label} events={data.events} />
 
       {sourcePosition && <Handle type="source" position={sourcePosition} />}
-    </>
+    </div>
   );
 };
 
@@ -33,19 +33,19 @@ const StyledContainer = styled.div`
   }
 `;
 
-function Lineage({ nodes, edges }: LineageProps) {
+function Lineage({ nodes: nodes, edges }: LineageProps) {
   const nodeTypes = useMemo(() => ({ metricNode: CustomMetricNode }), []);
 
   return (
     <StyledContainer>
       <ReactFlow
         preventScrolling={false}
-        draggable={false}
+        draggable={true}
         zoomOnScroll={false}
-        zoomOnPinch={false}
+        zoomOnPinch={true}
         zoomOnDoubleClick={false}
         zoomActivationKeyCode={null}
-        panOnDrag={false}
+        panOnDrag={true}
         nodes={nodes}
         edges={edges}
         style={{ width: "600px", height: "300px" }}
