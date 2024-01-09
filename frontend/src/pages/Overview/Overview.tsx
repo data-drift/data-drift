@@ -36,8 +36,8 @@ const Overview = () => {
 
   const initialSelectedMetric = useMemo(() => {
     if (tableName.length > 0) {
-      const metric = config.config.metrics.find(
-        (metric) => metric.filepath === tableName
+      const metric = config.config.metrics.find((metric) =>
+        tableName.includes(metric.filepath.replace(".csv", ""))
       );
       return (
         metric || {
