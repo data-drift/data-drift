@@ -26,7 +26,10 @@ def detect_outliers(
         new_col = pd.to_numeric(new_lines[col], errors="coerce")
         is_outlier = (new_col < lower_bound) | (new_col > upper_bound)
         col_outliers = new_lines[is_outlier].copy()
-        col_outliers["Reason"] = f"Column {col} out of boundaries"
+        col_outliers = col_outliers[[col]]
+        col_outliers = col_outliers.rename(columns={col: "new_data"})
+        col_outliers["col"] = col
+        col_outliers["reason"] = f"Column **{col}** out of boundaries"
         outliers = pd.concat([outliers, col_outliers])
 
     for col in categorical_cols:
@@ -39,7 +42,10 @@ def detect_outliers(
         new_categories = set(new_lines[col].unique()) - old_categories
         is_new_category = new_lines[col].isin(new_categories)
         cat_outliers = new_lines[is_new_category].copy()
-        cat_outliers["Reason"] = f"Column {col} new unkown category"
+        cat_outliers = cat_outliers[[col]]
+        cat_outliers = cat_outliers.rename(columns={col: "new_data"})
+        cat_outliers["col"] = col
+        cat_outliers["reason"] = f"Column **{col}** new unkown category"
 
         outliers = pd.concat([outliers, cat_outliers])
 
