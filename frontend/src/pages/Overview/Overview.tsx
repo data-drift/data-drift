@@ -36,14 +36,19 @@ const Overview = () => {
 
   const initialSelectedMetric = useMemo(() => {
     if (tableName.length > 0) {
-      return {
-        filepath: tableName,
-        dateColumnName: "",
-        KPIColumnName: "",
-        metricName: tableName,
-        timeGrains: [],
-        dimensions: [],
-      };
+      const metric = config.config.metrics.find(
+        (metric) => metric.filepath === tableName
+      );
+      return (
+        metric || {
+          filepath: tableName,
+          dateColumnName: "",
+          KPIColumnName: "",
+          metricName: tableName,
+          timeGrains: [],
+          dimensions: [],
+        }
+      );
     } else {
       return config.config.metrics[initialSelectedMetricNumber];
     }
