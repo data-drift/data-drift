@@ -57,10 +57,11 @@ export const parsePatch = (patch: string, headers: string[]) => {
     const lineData = line.substring(1);
     const uniqueKey = getUniqueKey(lineData);
     if (line.startsWith("-")) {
-      oldData.data.push(csvStringLineToRowData(lineData, true));
       if (!rowByUniqueKeyAfter[uniqueKey]) {
+        oldData.data.push(csvStringLineToRowData(lineData, true, true));
         newData.data.push(emptyRow(csvColumnsLength));
       } else {
+        oldData.data.push(csvStringLineToRowData(lineData, true, false));
         const emphasizedCellIndexes = getCellIndexesToEmphasize(
           csvStringLineToRowData(lineData, true),
           rowByUniqueKeyAfter[uniqueKey],
@@ -75,10 +76,11 @@ export const parsePatch = (patch: string, headers: string[]) => {
         firstAddedLineShouldBeSkiped = false;
         continue;
       }
-      newData.data.push(csvStringLineToRowData(lineData, true));
       if (!rowByUniqueKeyBefore[uniqueKey]) {
+        newData.data.push(csvStringLineToRowData(lineData, true, true));
         oldData.data.push(emptyRow(csvColumnsLength));
       } else {
+        newData.data.push(csvStringLineToRowData(lineData, true, false));
         const emphasizedCellIndexes = getCellIndexesToEmphasize(
           csvStringLineToRowData(lineData, true),
           rowByUniqueKeyBefore[uniqueKey],
@@ -142,7 +144,11 @@ export const emptyRow = (csvColumnsLength: number): Row => ({
   isEmphasized: false,
 });
 
-const csvStringLineToRowData = (line: string, isEmphasized = false): Row => {
+const csvStringLineToRowData = (
+  line: string,
+  isEmphasized = false,
+  isAllCellEmphasized = false
+): Row => {
   let fields: string[] = [];
 
   if (!line.includes('"')) {
@@ -168,6 +174,7 @@ const csvStringLineToRowData = (line: string, isEmphasized = false): Row => {
           ? value.slice(1, -1)
           : value,
       type: Number.isNaN(Number(value)) ? "string" : "number",
+      isEmphasized: isAllCellEmphasized,
     })),
     isEmphasized,
   };
