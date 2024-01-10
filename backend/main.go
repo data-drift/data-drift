@@ -27,13 +27,6 @@ func init() {
 	flag.Parse()
 }
 
-type GithubConnection struct {
-	gorm.Model
-	Owner          string
-	Repository     string
-	InstallationID int
-}
-
 func main() {
 	godotenv.Load()
 
@@ -52,7 +45,9 @@ func main() {
 		panic("failed to connect database")
 	}
 
-	db.AutoMigrate(&GithubConnection{})
+	db.AutoMigrate(&github.GithubConnection{})
+
+	GituhbService := github.NewGithubService(db)
 
 	port := defaultIfEmpty(os.Getenv("PORT"), "8080")
 
@@ -72,7 +67,7 @@ func main() {
 	router.GET("/ghhealth", github.HealthCheck)
 	router.GET("/ghhealth/:installation-id", github.HealthCheckInstallation)
 
-	router.POST("webhooks/github", github.HandleWebhook)
+	router.POST("webhooks/github", GituhbService.HandleWebhook)
 	router.GET("gh/:owner/:repo/commit/:commit-sha", github.GetCommitDiff)
 	router.GET("gh/:owner/:repo/compare/:base-commit-sha/:head-commit-sha", github.CompareCommit)
 	router.GET("gh/:owner/:repo/compare-between-date", github.CompareCommitBetweenDates)

@@ -17,11 +17,27 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-github/v56/github"
 	"github.com/xeipuuv/gojsonschema"
+	"gorm.io/gorm"
 )
 
 const configFilePath = "datadrift-config.json"
 
-func HandleWebhook(c *gin.Context) {
+type GithubConnection struct {
+	gorm.Model
+	Owner          string
+	Repository     string
+	InstallationID int64
+}
+
+type GithubService struct {
+	DB *gorm.DB
+}
+
+func NewGithubService(db *gorm.DB) *GithubService {
+	return &GithubService{DB: db}
+}
+
+func (h *GithubService) HandleWebhook(c *gin.Context) {
 	payload, err := github.ValidatePayload(c.Request, []byte(""))
 
 	if err != nil {
@@ -82,6 +98,8 @@ func HandleWebhook(c *gin.Context) {
 
 		ownerName := *event.Installation.Account.Login
 		repoName := *event.Repositories[0].Name
+
+		h.DB.Create(&GithubConnection{Owner: ownerName, Repository: repoName, InstallationID: InstallationId})
 
 		config, err := VerifyConfigFile(client, ownerName, repoName, ctx)
 
