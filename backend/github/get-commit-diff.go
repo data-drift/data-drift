@@ -16,20 +16,21 @@ import (
 )
 
 func GetCommitDiff(c *gin.Context) {
-	InstallationId, err := strconv.ParseInt(c.Request.Header.Get("Installation-Id"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "error parsing Installation-Id header"})
+	clientValue, exists := c.Get("github_client")
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "GitHub client not found"})
 		return
 	}
+
+	client, ok := clientValue.(*github.Client)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid GitHub client"})
+		return
+	}
+
 	owner := c.Param("owner")
 	repo := c.Param("repo")
 	commitSha := c.Param("commit-sha")
-
-	client, err := CreateClientFromGithubApp(int64(InstallationId))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
 
 	commit, _, ghErr := client.Repositories.GetCommit(c, owner, repo, commitSha, nil)
 	if ghErr != nil {

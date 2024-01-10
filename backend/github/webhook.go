@@ -2,11 +2,14 @@ package github
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/data-drift/data-drift/common"
@@ -17,11 +20,97 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-github/v56/github"
 	"github.com/xeipuuv/gojsonschema"
+	"gorm.io/gorm"
 )
 
 const configFilePath = "datadrift-config.json"
 
-func HandleWebhook(c *gin.Context) {
+type GithubConnection struct {
+	gorm.Model
+	Owner          string
+	Repository     string
+	InstallationID int64 `gorm:"uniqueIndex"`
+	AuthRequired   bool  `gorm:"not null;default:false"`
+	Password       string
+}
+
+type GithubService struct {
+	DB *gorm.DB
+}
+
+func NewGithubService(db *gorm.DB) *GithubService {
+	return &GithubService{DB: db}
+}
+
+func parseAuthHeader(authHeader string) (string, string, error) {
+	if authHeader == "" {
+		return "", "", errors.New("authorization header required")
+	}
+
+	parts := strings.SplitN(authHeader, " ", 2)
+	if len(parts) != 2 || parts[0] != "Basic" {
+		return "", "", errors.New("invalid Authorization header")
+	}
+
+	payload, err := base64.StdEncoding.DecodeString(parts[1])
+	if err != nil {
+		return "", "", errors.New("invalid Authorization header")
+	}
+
+	userAndPassword := strings.SplitN(string(payload), ":", 2)
+	if len(userAndPassword) != 2 {
+		return "", "", errors.New("invalid Authorization header")
+	}
+
+	user := userAndPassword[0]
+	password := userAndPassword[1]
+	return user, password, nil
+}
+
+func (h *GithubService) GithubClientGuard() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		owner := strings.ToLower(c.Param("owner"))
+		repo := strings.ToLower(c.Param("repo"))
+
+		var githubConnection GithubConnection
+		result := h.DB.Where("LOWER(owner) = ? AND LOWER(repository) = ?", owner, repo).First(&githubConnection)
+
+		if result.Error != nil {
+			if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "User not found"})
+				return
+			} else {
+				log.Printf("Error occurred while querying the database: %v", result.Error)
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+				return
+			}
+		} else {
+			if githubConnection.AuthRequired {
+				authHeader := c.Request.Header.Get("Authorization")
+				username, password, err := parseAuthHeader(authHeader)
+				if err != nil {
+					c.Header("WWW-Authenticate", `Basic realm="DataDrift"`)
+					c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Authorization required"})
+				}
+				if username != githubConnection.Owner+"/"+githubConnection.Repository || password != githubConnection.Password {
+					c.Header("WWW-Authenticate", `Basic realm="DataDrift"`)
+					c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Authorization required"})
+				}
+				return
+			}
+			client, err := CreateClientFromGithubApp(githubConnection.InstallationID)
+			if err != nil {
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "failed to create GitHub client"})
+				return
+			}
+			c.Set("github_client", client)
+		}
+
+		c.Next()
+	}
+}
+
+func (h *GithubService) HandleWebhook(c *gin.Context) {
 	payload, err := github.ValidatePayload(c.Request, []byte(""))
 
 	if err != nil {
@@ -49,6 +138,7 @@ func HandleWebhook(c *gin.Context) {
 
 		ownerName := *event.Repo.Owner.Name
 		repoName := *event.Repo.Name
+		h.DB.Create(&GithubConnection{Owner: ownerName, Repository: repoName, InstallationID: InstallationId})
 
 		config, err := VerifyConfigFile(client, ownerName, repoName, ctx)
 
@@ -82,6 +172,8 @@ func HandleWebhook(c *gin.Context) {
 
 		ownerName := *event.Installation.Account.Login
 		repoName := *event.Repositories[0].Name
+
+		h.DB.Create(&GithubConnection{Owner: ownerName, Repository: repoName, InstallationID: InstallationId})
 
 		config, err := VerifyConfigFile(client, ownerName, repoName, ctx)
 

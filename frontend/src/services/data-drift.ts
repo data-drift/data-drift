@@ -3,6 +3,33 @@ import { CommitParam } from "../pages/DisplayCommit/DisplayCommit";
 import { MetricCohortsResults } from "./data-drift.types";
 import { Endpoints } from "@octokit/types";
 
+const encodedPassword = localStorage.getItem("basic_auth");
+
+if (encodedPassword) {
+  axios.defaults.headers.common["Authorization"] = `Basic ${encodedPassword}`;
+}
+
+axios.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if (error.response && error.response.status === 401) {
+      const password = window.prompt("Enter password");
+      if (password) {
+        const encodedPassword = btoa(password);
+        localStorage.setItem("basic_auth", encodedPassword);
+        axios.defaults.headers.common[
+          "Authorization"
+        ] = `Basic ${encodedPassword}`;
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
 const DATA_DRIFT_API_URL =
   String(import.meta.env.VITE_DATADRIFT_SERVER_URL) || "";
 

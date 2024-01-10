@@ -14,6 +14,8 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 var debugEnabled bool
@@ -32,6 +34,20 @@ func main() {
 		return
 	}
 
+	databaseURL := os.Getenv("DATABASE_URL")
+	if databaseURL == "" {
+		panic("DATABASE_URL is not set")
+	}
+
+	db, err := gorm.Open(postgres.Open(databaseURL), &gorm.Config{})
+	if err != nil {
+		panic("failed to connect database")
+	}
+
+	db.AutoMigrate(&github.GithubConnection{})
+
+	GithubService := github.NewGithubService(db)
+
 	port := defaultIfEmpty(os.Getenv("PORT"), "8080")
 
 	go github.ProcessWebhooks()
@@ -43,6 +59,7 @@ func main() {
 	config.AllowAllOrigins = true
 	// config.AllowOrigins = []string{"http://localhost:5173"}
 	config.AllowHeaders = append(config.AllowHeaders, "Installation-Id")
+	config.AllowHeaders = append(config.AllowHeaders, "Authorization")
 	router.Use(cors.New(config))
 
 	router.Use(gin.Logger())
@@ -50,11 +67,11 @@ func main() {
 	router.GET("/ghhealth", github.HealthCheck)
 	router.GET("/ghhealth/:installation-id", github.HealthCheckInstallation)
 
-	router.POST("webhooks/github", github.HandleWebhook)
-	router.GET("gh/:owner/:repo/commit/:commit-sha", github.GetCommitDiff)
-	router.GET("gh/:owner/:repo/compare/:base-commit-sha/:head-commit-sha", github.CompareCommit)
-	router.GET("gh/:owner/:repo/compare-between-date", github.CompareCommitBetweenDates)
-	router.GET("gh/:owner/:repo/commits", github.GetCommitList)
+	router.POST("webhooks/github", GithubService.HandleWebhook)
+	router.GET("gh/:owner/:repo/commit/:commit-sha", GithubService.GithubClientGuard(), github.GetCommitDiff)
+	router.GET("gh/:owner/:repo/compare/:base-commit-sha/:head-commit-sha", GithubService.GithubClientGuard(), github.CompareCommit)
+	router.GET("gh/:owner/:repo/compare-between-date", GithubService.GithubClientGuard(), github.CompareCommitBetweenDates)
+	router.GET("gh/:owner/:repo/commits", GithubService.GithubClientGuard(), github.GetCommitList)
 
 	router.GET("metrics/:metric-name/cohorts/:timegrain", metrics.GetMetricCohort)
 	router.GET("metrics/:metric-name/reports", metrics.GetMetricReport)
