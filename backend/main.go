@@ -59,6 +59,7 @@ func main() {
 	config.AllowAllOrigins = true
 	// config.AllowOrigins = []string{"http://localhost:5173"}
 	config.AllowHeaders = append(config.AllowHeaders, "Installation-Id")
+	config.AllowHeaders = append(config.AllowHeaders, "Authorization")
 	router.Use(cors.New(config))
 
 	router.Use(gin.Logger())
