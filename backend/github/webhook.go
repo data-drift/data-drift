@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/data-drift/data-drift/common"
@@ -35,6 +36,30 @@ type GithubService struct {
 
 func NewGithubService(db *gorm.DB) *GithubService {
 	return &GithubService{DB: db}
+}
+
+func (h *GithubService) GithubClientGuard() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		owner := strings.ToLower(c.Param("owner"))
+		repo := strings.ToLower(c.Param("repo"))
+
+		var githubConnection GithubConnection
+		h.DB.Where("LOWER(owner) = ? AND LOWER(repository) = ?", owner, repo).First(&githubConnection)
+		installationID := githubConnection.InstallationID
+		if installationID != 0 {
+			client, err := CreateClientFromGithubApp(installationID)
+			if err != nil {
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "failed to create GitHub client"})
+				return
+			}
+			c.Set("github_client", client)
+		} else {
+			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Repository not found"})
+			return
+		}
+
+		c.Next()
+	}
 }
 
 func (h *GithubService) HandleWebhook(c *gin.Context) {

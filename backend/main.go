@@ -3,7 +3,6 @@ package main
 
 import (
 	"flag"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -37,7 +36,7 @@ func main() {
 
 	databaseURL := os.Getenv("DATABASE_URL")
 	if databaseURL == "" {
-		log.Fatal("DATABASE_URL is not set")
+		panic("DATABASE_URL is not set")
 	}
 
 	db, err := gorm.Open(postgres.Open(databaseURL), &gorm.Config{})
@@ -47,7 +46,7 @@ func main() {
 
 	db.AutoMigrate(&github.GithubConnection{})
 
-	GituhbService := github.NewGithubService(db)
+	GithubService := github.NewGithubService(db)
 
 	port := defaultIfEmpty(os.Getenv("PORT"), "8080")
 
@@ -67,8 +66,8 @@ func main() {
 	router.GET("/ghhealth", github.HealthCheck)
 	router.GET("/ghhealth/:installation-id", github.HealthCheckInstallation)
 
-	router.POST("webhooks/github", GituhbService.HandleWebhook)
-	router.GET("gh/:owner/:repo/commit/:commit-sha", github.GetCommitDiff)
+	router.POST("webhooks/github", GithubService.HandleWebhook)
+	router.GET("gh/:owner/:repo/commit/:commit-sha", GithubService.GithubClientGuard(), github.GetCommitDiff)
 	router.GET("gh/:owner/:repo/compare/:base-commit-sha/:head-commit-sha", github.CompareCommit)
 	router.GET("gh/:owner/:repo/compare-between-date", github.CompareCommitBetweenDates)
 	router.GET("gh/:owner/:repo/commits", github.GetCommitList)
