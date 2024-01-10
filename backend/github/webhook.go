@@ -3,6 +3,7 @@ package github
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -45,18 +46,24 @@ func (h *GithubService) GithubClientGuard() gin.HandlerFunc {
 		repo := strings.ToLower(c.Param("repo"))
 
 		var githubConnection GithubConnection
-		h.DB.Where("LOWER(owner) = ? AND LOWER(repository) = ?", owner, repo).First(&githubConnection)
-		installationID := githubConnection.InstallationID
-		if installationID != 0 {
-			client, err := CreateClientFromGithubApp(installationID)
+		result := h.DB.Where("LOWER(owner) = ? AND LOWER(repository) = ?", owner, repo).First(&githubConnection)
+
+		if result.Error != nil {
+			if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "User not found"})
+				return
+			} else {
+				log.Printf("Error occurred while querying the database: %v", result.Error)
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+				return
+			}
+		} else {
+			client, err := CreateClientFromGithubApp(githubConnection.InstallationID)
 			if err != nil {
 				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "failed to create GitHub client"})
 				return
 			}
 			c.Set("github_client", client)
-		} else {
-			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Repository not found"})
-			return
 		}
 
 		c.Next()
