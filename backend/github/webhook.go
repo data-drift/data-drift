@@ -28,6 +28,7 @@ type GithubConnection struct {
 	Owner          string
 	Repository     string
 	InstallationID int64 `gorm:"uniqueIndex"`
+	AuthRequired   bool  `gorm:"not null;default:false"`
 }
 
 type GithubService struct {
