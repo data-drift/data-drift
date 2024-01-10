@@ -2,7 +2,10 @@ module github.com/data-drift/data-drift
 
 go 1.20
 
-require github.com/joho/godotenv v1.5.1
+require (
+	github.com/joho/godotenv v1.5.1
+	gorm.io/gorm v1.25.5
+)
 
 require (
 	dario.cat/mergo v1.0.0 // indirect
@@ -28,7 +31,12 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-github/v29 v29.0.2 // indirect
+	github.com/jackc/pgpassfile v1.0.0 // indirect
+	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
+	github.com/jackc/pgx/v5 v5.4.3 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
+	github.com/jinzhu/inflection v1.0.0 // indirect
+	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.4 // indirect
@@ -72,4 +80,5 @@ require (
 	github.com/snabb/isoweek v1.0.3
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/oauth2 v0.7.0
+	gorm.io/driver/postgres v1.5.4
 )

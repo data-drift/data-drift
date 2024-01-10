@@ -3,6 +3,7 @@ package main
 
 import (
 	"flag"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -14,6 +15,8 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 var debugEnabled bool
@@ -24,6 +27,13 @@ func init() {
 	flag.Parse()
 }
 
+type GithubConnection struct {
+	gorm.Model
+	Owner          string
+	Repository     string
+	InstallationID int
+}
+
 func main() {
 	godotenv.Load()
 
@@ -31,6 +41,18 @@ func main() {
 		debug.DebugFunction()
 		return
 	}
+
+	databaseURL := os.Getenv("DATABASE_URL")
+	if databaseURL == "" {
+		log.Fatal("DATABASE_URL is not set")
+	}
+
+	db, err := gorm.Open(postgres.Open(databaseURL), &gorm.Config{})
+	if err != nil {
+		panic("failed to connect database")
+	}
+
+	db.AutoMigrate(&GithubConnection{})
 
 	port := defaultIfEmpty(os.Getenv("PORT"), "8080")
 
