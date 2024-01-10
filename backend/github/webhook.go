@@ -2,6 +2,7 @@ package github
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -30,6 +31,7 @@ type GithubConnection struct {
 	Repository     string
 	InstallationID int64 `gorm:"uniqueIndex"`
 	AuthRequired   bool  `gorm:"not null;default:false"`
+	Password       string
 }
 
 type GithubService struct {
@@ -38,6 +40,31 @@ type GithubService struct {
 
 func NewGithubService(db *gorm.DB) *GithubService {
 	return &GithubService{DB: db}
+}
+
+func parseAuthHeader(authHeader string) (string, string, error) {
+	if authHeader == "" {
+		return "", "", errors.New("authorization header required")
+	}
+
+	parts := strings.SplitN(authHeader, " ", 2)
+	if len(parts) != 2 || parts[0] != "Basic" {
+		return "", "", errors.New("invalid Authorization header")
+	}
+
+	payload, err := base64.StdEncoding.DecodeString(parts[1])
+	if err != nil {
+		return "", "", errors.New("invalid Authorization header")
+	}
+
+	userAndPassword := strings.SplitN(string(payload), ":", 2)
+	if len(userAndPassword) != 2 {
+		return "", "", errors.New("invalid Authorization header")
+	}
+
+	user := userAndPassword[0]
+	password := userAndPassword[1]
+	return user, password, nil
 }
 
 func (h *GithubService) GithubClientGuard() gin.HandlerFunc {
@@ -58,6 +85,19 @@ func (h *GithubService) GithubClientGuard() gin.HandlerFunc {
 				return
 			}
 		} else {
+			if githubConnection.AuthRequired {
+				authHeader := c.Request.Header.Get("Authorization")
+				username, password, err := parseAuthHeader(authHeader)
+				if err != nil {
+					c.Header("WWW-Authenticate", `Basic realm="DataDrift"`)
+					c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Authorization required"})
+				}
+				if username != githubConnection.Owner+"/"+githubConnection.Repository || password != githubConnection.Password {
+					c.Header("WWW-Authenticate", `Basic realm="DataDrift"`)
+					c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Authorization required"})
+				}
+				return
+			}
 			client, err := CreateClientFromGithubApp(githubConnection.InstallationID)
 			if err != nil {
 				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "failed to create GitHub client"})
