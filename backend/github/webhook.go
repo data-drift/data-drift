@@ -26,7 +26,7 @@ type GithubConnection struct {
 	gorm.Model
 	Owner          string
 	Repository     string
-	InstallationID int64
+	InstallationID int64 `gorm:"uniqueIndex"`
 }
 
 type GithubService struct {
@@ -65,6 +65,7 @@ func (h *GithubService) HandleWebhook(c *gin.Context) {
 
 		ownerName := *event.Repo.Owner.Name
 		repoName := *event.Repo.Name
+		h.DB.Create(&GithubConnection{Owner: ownerName, Repository: repoName, InstallationID: InstallationId})
 
 		config, err := VerifyConfigFile(client, ownerName, repoName, ctx)
 
