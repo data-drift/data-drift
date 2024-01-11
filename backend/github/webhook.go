@@ -253,7 +253,7 @@ func processWebhookInTheBackground(config common.Config, InstallationId int, cli
 
 		}
 
-		chartResults := reducers.ProcessMetricHistory(filepath, metric, common.GithubInstallationId(fmt.Sprint(InstallationId)))
+		chartResults := reducers.ProcessMetricHistory(filepath, metric, ownerName, repoName)
 
 		for _, chartResult := range chartResults {
 			err = reports.CreateReport(common.SyncConfig{NotionAPIKey: config.NotionAPIToken, NotionDatabaseID: config.NotionDatabaseID}, chartResult)

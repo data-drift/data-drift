@@ -7,12 +7,12 @@ import (
 	"github.com/data-drift/data-drift/common"
 )
 
-func MetricCohortUrl(installationId string, metricName string, timegrain common.TimeGrain) string {
-	return fmt.Sprintf("https://app.data-drift.io/report/%s/metrics/%s/cohorts/%s", installationId, metricName, timegrain)
+func MetricCohortUrl(owner string, repo string, metricName string, timegrain common.TimeGrain) string {
+	return fmt.Sprintf("https://app.data-drift.io/report/%s/%s/metrics/%s/cohorts/%s", owner, repo, metricName, timegrain)
 }
 
-func MetricReportUrl(installationId common.GithubInstallationId, metricName string, period common.PeriodKey, dimensionValue string) string {
-	url := fmt.Sprintf("https://app.data-drift.io/report/%s/metrics/%s/report/%s", string(installationId), metricName, string(period))
+func MetricReportUrl(owner string, repo string, metricName string, period common.PeriodKey, dimensionValue string) string {
+	url := fmt.Sprintf("https://app.data-drift.io/report/%s/%s/metrics/%s/report/%s", owner, repo, metricName, string(period))
 	if dimensionValue != "" {
 		url += fmt.Sprintf("?dimensionValue=%s", dimensionValue)
 	}

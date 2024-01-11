@@ -14,7 +14,7 @@ type ChartResponse struct {
 	URL     string `json:"url"`
 }
 
-func ProcessMetricHistory(historyFilepath common.MetricStorageKey, metric common.MetricConfig, githubInstallationId common.GithubInstallationId) []common.KPIReport {
+func ProcessMetricHistory(historyFilepath common.MetricStorageKey, metric common.MetricConfig, ownerName string, repoName string) []common.KPIReport {
 
 	data, err := common.ReadMetricKPI(historyFilepath)
 	if err != nil {
@@ -28,14 +28,14 @@ func ProcessMetricHistory(historyFilepath common.MetricStorageKey, metric common
 		// Access the value associated with the key: data[key]
 		// Additional logic for processing the value
 		// ...
-		kpi := OrderDataAndCreateChart(metric.MetricName+" "+key, datum.Period, datum.History, datum.DimensionValue, githubInstallationId, metric.MetricName)
+		kpi := OrderDataAndCreateChart(metric.MetricName+" "+key, datum.Period, datum.History, datum.DimensionValue, ownerName, repoName, metric.MetricName)
 		kpiInfos = append(kpiInfos, kpi)
 	}
 
 	return kpiInfos
 }
 
-func OrderDataAndCreateChart(KPIName string, periodId common.PeriodKey, unsortedResults common.MetricHistory, dimensionValue common.DimensionValue, githubInstallationId common.GithubInstallationId, metricName string) common.KPIReport {
+func OrderDataAndCreateChart(KPIName string, periodId common.PeriodKey, unsortedResults common.MetricHistory, dimensionValue common.DimensionValue, ownerName, repoName, metricName string) common.KPIReport {
 	// Extract the values from the map into a slice of struct objects
 	var dataSortableArray []common.CommitData
 
@@ -103,7 +103,7 @@ func OrderDataAndCreateChart(KPIName string, periodId common.PeriodKey, unsorted
 	if dimensionValue != common.NoDimensionValue {
 		dimensionValueForUrl = string(dimensionValue)
 	}
-	waterfallChartUrl := urlgen.MetricReportUrl(githubInstallationId, metricName, periodId, dimensionValueForUrl)
+	waterfallChartUrl := urlgen.MetricReportUrl(ownerName, repoName, metricName, periodId, dimensionValueForUrl)
 	kpi1 := common.KPIReport{
 		KPIName:           KPIName,
 		PeriodId:          periodId,
