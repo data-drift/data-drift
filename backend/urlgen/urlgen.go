@@ -19,8 +19,8 @@ func MetricReportUrl(installationId common.GithubInstallationId, metricName stri
 	return url
 }
 
-func BuildReportDiffBaseUrl(installationId, repoOwner, repoName string) string {
-	reportBaseUrl := fmt.Sprintf("https://app.data-drift.io/report/%s/%s/%s/commit", installationId, repoOwner, repoName)
+func BuildReportDiffBaseUrl(repoOwner, repoName string) string {
+	reportBaseUrl := fmt.Sprintf("https://app.data-drift.io/report/%s/%s/commit", repoOwner, repoName)
 	return reportBaseUrl
 }
 
