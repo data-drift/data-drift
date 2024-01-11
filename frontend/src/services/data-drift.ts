@@ -86,13 +86,23 @@ export const getMeasurement = async (
 
 export const getMetricCohorts = async ({
   installationId,
+  owner,
+  repo,
   metricName,
   timegrain,
 }: {
-  installationId: string;
+  installationId?: string;
+  owner?: string;
+  repo?: string;
   metricName: string;
   timegrain: Timegrain;
 }) => {
+  if (owner && repo) {
+    const result = await axios.get<MetricCohortsResults>(
+      `${DATA_DRIFT_API_URL}/gh/${owner}/${repo}/metrics/${metricName}/cohorts/${timegrain}`
+    );
+    return result;
+  }
   const result = await axios.get<MetricCohortsResults>(
     `${DATA_DRIFT_API_URL}/metrics/${metricName}/cohorts/${timegrain}`,
     { headers: { "Installation-Id": installationId } }

@@ -22,17 +22,24 @@ const getMetricCohortsData = async ({
 };
 
 function assertParamsHasNeededProperties(params: Params<string>): {
-  installationId: string;
+  owner?: string;
+  repo?: string;
+  installationId?: string;
   metricName: string;
   timegrain: Timegrain;
 } {
-  const { installationId, metricName, timegrain } = params;
-  if (!installationId || !metricName || !timegrain) {
+  const { installationId, owner, repo, metricName, timegrain } = params;
+  if (!metricName || !timegrain) {
     throw new Error("Invalid params");
+  }
+  if (!installationId && (!owner || !repo)) {
+    throw new Error(
+      "Either installationId or both owner and repo must be defined"
+    );
   }
   assertTimegrain(timegrain);
 
-  return { installationId, metricName, timegrain };
+  return { installationId, owner, repo, metricName, timegrain };
 }
 
 const ScrollableContainer = styled.div`
