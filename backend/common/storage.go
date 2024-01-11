@@ -13,8 +13,6 @@ import (
 
 type MetricStorageKey string
 
-var ctx = context.Background()
-
 var redisClient *redis.Client
 
 func getRedisClient() (*redis.Client, error) {
@@ -50,6 +48,7 @@ func ReadMetricKPI(path MetricStorageKey) (Metrics, error) {
 
 		return data, nil
 	} else {
+		var ctx = context.Background() // TODO: use context from gin
 
 		jsonData, err := rdb.Get(ctx, string(path)).Bytes()
 		if err != nil {
@@ -90,6 +89,8 @@ func WriteMetricKPI(installationId int, metricName string, lineCountAndKPIByDate
 		if err != nil {
 			fmt.Printf("Error occurred during marshaling. Err: %s", err)
 		}
+		var ctx = context.Background() // TODO: use context from gin
+
 		err = rdb.Set(ctx, string(metricStoredFilePath), jsonData, 0).Err()
 		if err != nil {
 			fmt.Printf("Could not set key. Err: %s", err)
