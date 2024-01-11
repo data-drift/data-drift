@@ -16,12 +16,11 @@ func handleIssueOpened(event *github.IssuesEvent) error {
 	}
 	owner := event.GetRepo().GetOwner().GetLogin()
 	repo := event.GetRepo().GetName()
-	installationId := event.GetInstallation().GetID()
 	log.Printf("Issue opened: owner=%s, repo=%s, installation_id=%d, number=%d, title=%s, url=%s", event.Repo.Owner.GetLogin(), event.Repo.GetName(), event.Installation.GetID(), *event.Issue.Number, event.Issue.GetTitle(), event.Issue.GetHTMLURL())
 	snapshotDate := event.GetIssue().GetCreatedAt().Format("2006-01-02")
 	title := event.GetIssue().GetTitle()
 	tableName := strings.SplitN(title, " - ", 2)[0]
-	overviewUrl := urlgen.BuildOverviewUrl(fmt.Sprint(installationId), owner, repo, snapshotDate, tableName)
+	overviewUrl := urlgen.BuildOverviewUrl(owner, repo, snapshotDate, tableName)
 	log.Printf("commitDiffUrl: %s", overviewUrl)
 	comment := &github.IssueComment{
 		Body: github.String(fmt.Sprintf("The diff is available [here](%s).", overviewUrl)),
