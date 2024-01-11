@@ -70,8 +70,8 @@ func ReadMetricKPI(path MetricStorageKey) (Metrics, error) {
 	}
 }
 
-func WriteMetricKPI(installationId int, metricName string, lineCountAndKPIByDateByVersion Metrics) MetricStorageKey {
-	metricStoredFilePath := GetMetricStorageKey(fmt.Sprint(installationId), metricName)
+func WriteMetricKPI(repoOwner string, repoName string, metricName string, lineCountAndKPIByDateByVersion Metrics) MetricStorageKey {
+	metricStoredFilePath := NewGetMetricStorageKey(repoOwner, repoName, metricName)
 	rdb, redisErr := getRedisClient()
 
 	if redisErr != nil {
@@ -104,8 +104,15 @@ func WriteMetricKPI(installationId int, metricName string, lineCountAndKPIByDate
 	return metricStoredFilePath
 }
 
-func GetMetricStorageKey(installationId string, metricName string) MetricStorageKey {
+func LegacyGetMetricStorageKey(installationId string, metricName string) MetricStorageKey {
 	metricNameEncoded := url.PathEscape(metricName)
 	filepath := fmt.Sprintf("dist/%s_%s_lineCountAndKPIByDateByVersion.json", installationId, metricNameEncoded)
+	log.Println("Using legacy storage key" + filepath)
+	return MetricStorageKey(filepath)
+}
+
+func NewGetMetricStorageKey(owner, repo, metricName string) MetricStorageKey {
+	metricNameEncoded := url.PathEscape(metricName)
+	filepath := fmt.Sprintf("%s/%s/%s", owner, repo, metricNameEncoded)
 	return MetricStorageKey(filepath)
 }

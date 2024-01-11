@@ -13,7 +13,9 @@ import (
 func GetMetricCohort(c *gin.Context) {
 
 	InstallationId := c.Request.Header.Get("Installation-Id")
-
+	metricName := c.Param("metric-name")
+	timeGrain := c.Param("timegrain")
+	var filepath common.MetricStorageKey
 	if InstallationId == "" {
 		githubConnectionValue, exists := c.Get("github_connection")
 		if !exists {
@@ -25,13 +27,10 @@ func GetMetricCohort(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid GitHub client"})
 			return
 		}
-		InstallationId = fmt.Sprintf("%d", githubConnection.InstallationID)
+		filepath = common.NewGetMetricStorageKey(githubConnection.Owner, githubConnection.Repository, metricName)
+	} else {
+		filepath = common.LegacyGetMetricStorageKey(InstallationId, metricName)
 	}
-
-	metricName := c.Param("metric-name")
-	timeGrain := c.Param("timegrain")
-
-	filepath := common.GetMetricStorageKey(InstallationId, metricName)
 
 	metricHistory, err := common.ReadMetricKPI(filepath)
 	if err != nil {
@@ -47,6 +46,8 @@ func GetMetricCohort(c *gin.Context) {
 func GetMetricReport(c *gin.Context) {
 
 	InstallationId := c.Request.Header.Get("Installation-Id")
+	metricName := c.Param("metric-name")
+	var filepath common.MetricStorageKey
 
 	if InstallationId == "" {
 		githubConnectionValue, exists := c.Get("github_connection")
@@ -59,12 +60,10 @@ func GetMetricReport(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid GitHub client"})
 			return
 		}
-		InstallationId = fmt.Sprintf("%d", githubConnection.InstallationID)
+		filepath = common.NewGetMetricStorageKey(githubConnection.Owner, githubConnection.Repository, metricName)
+	} else {
+		filepath = common.LegacyGetMetricStorageKey(InstallationId, metricName)
 	}
-
-	metricName := c.Param("metric-name")
-
-	filepath := common.GetMetricStorageKey(InstallationId, metricName)
 
 	metricHistory, err := common.ReadMetricKPI(filepath)
 	if err != nil {
