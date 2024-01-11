@@ -64,12 +64,12 @@ export const router = createBrowserRouter([
   {
     path: "report/:installationId/metrics/:metricName/report/:timegrainValue", // legacy route
     element: <MetricReportWaterfall />,
-    loader: MetricReportWaterfall.loader,
+    loader: MetricReportWaterfall.legacyLoader,
   },
   {
     path: "report/:owner/:repo/metrics/:metricName/report/:timegrainValue",
     element: <MetricReportWaterfall />,
-    loader: MetricReportWaterfall.loader,
+    loader: MetricReportWaterfall.legacyLoader,
   },
   {
     path: "report/:installationId/:owner/:repo/commits", // legacy route

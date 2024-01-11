@@ -220,11 +220,21 @@ export function getTimegrainFromString(str: TimegrainString): Timegrain {
 export const getMetricReport = async ({
   installationId,
   metricName,
+  owner,
+  repo,
 }: {
-  installationId: string;
+  installationId?: string;
+  owner?: string;
+  repo?: string;
   metricName: string;
   timegrain: Timegrain;
 }) => {
+  if (owner && repo) {
+    const result = await axios.get<MetricReport>(
+      `${DATA_DRIFT_API_URL}/${owner}/${repo}/metrics/${metricName}/reports`
+    );
+    return result;
+  }
   const result = await axios.get<MetricReport>(
     `${DATA_DRIFT_API_URL}/metrics/${metricName}/reports`,
     { headers: { "Installation-Id": installationId } }

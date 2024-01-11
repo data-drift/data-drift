@@ -16,6 +16,28 @@ import {
 import { getNiceTickValues } from "recharts-scale";
 import styled from "@emotion/styled";
 
+const legacyGetMetricCohortsData = async ({
+  params,
+}: {
+  params: Params<string>;
+}): Promise<WaterfallChartProps> => {
+  const typedParams = legacyAssertParamsHasNeededProperties(params);
+  const result = await getMetricReport(typedParams);
+
+  const searchParams = new URLSearchParams(location.search);
+  const dimensionValue = searchParams.get("dimensionValue");
+  const resultKey = dimensionValue
+    ? (`${typedParams.timegrainValue} ${dimensionValue}` as TimegrainAndDimensionString)
+    : typedParams.timegrainValue;
+  const metricMetadata = result.data[resultKey];
+  if (!metricMetadata)
+    throw new Error(
+      `Could not find metric metadata for ${typedParams.metricName} ${typedParams.timegrainValue}`
+    );
+  const { data } = getWaterfallChartPropsFromMetadata(metricMetadata);
+  return { data };
+};
+
 const getMetricCohortsData = async ({
   params,
 }: {
@@ -92,7 +114,7 @@ const getWaterfallChartPropsFromMetadata = (
   return { data };
 };
 
-function assertParamsHasNeededProperties(params: Params<string>): {
+function legacyAssertParamsHasNeededProperties(params: Params<string>): {
   installationId: string;
   metricName: string;
   timegrain: Timegrain;
@@ -106,6 +128,23 @@ function assertParamsHasNeededProperties(params: Params<string>): {
   const timegrain = getTimegrainFromString(timegrainValue);
 
   return { installationId, metricName, timegrain, timegrainValue };
+}
+
+function assertParamsHasNeededProperties(params: Params<string>): {
+  owner: string;
+  repo: string;
+  metricName: string;
+  timegrain: Timegrain;
+  timegrainValue: TimegrainString;
+} {
+  const { owner, repo, metricName, timegrainValue } = params;
+  if (!owner || !repo || !metricName || !timegrainValue) {
+    throw new Error("Invalid params");
+  }
+  assertStringIsTimgrainString(timegrainValue);
+  const timegrain = getTimegrainFromString(timegrainValue);
+
+  return { owner, repo, metricName, timegrain, timegrainValue };
 }
 
 const ScrollableContainer = styled.div`
@@ -124,6 +163,7 @@ const MetricReportWaterfall = () => {
   );
 };
 
+MetricReportWaterfall.legacyLoader = legacyGetMetricCohortsData;
 MetricReportWaterfall.loader = getMetricCohortsData;
 
 export default MetricReportWaterfall;
