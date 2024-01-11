@@ -57,7 +57,17 @@ export const router = createBrowserRouter([
     loader: MetricCohort.loader,
   },
   {
+    path: "report/:owner/:repo/metrics/:metricName/cohorts/:timegrain",
+    element: <MetricCohort />,
+    loader: MetricCohort.loader,
+  },
+  {
     path: "report/:installationId/metrics/:metricName/report/:timegrainValue",
+    element: <MetricReportWaterfall />,
+    loader: MetricReportWaterfall.loader,
+  },
+  {
+    path: "report/:owner/:repo/metrics/:metricName/report/:timegrainValue",
     element: <MetricReportWaterfall />,
     loader: MetricReportWaterfall.loader,
   },
