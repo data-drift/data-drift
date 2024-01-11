@@ -120,5 +120,3 @@ type MetricConfig struct {
 	Dimensions     []string    `json:"dimensions"`
 	UpstreamFiles  []string    `json:"upstreamFiles"`
 }
-
-type GithubInstallationId string
