@@ -31,7 +31,7 @@ func GetMetricCohort(c *gin.Context) {
 	metricName := c.Param("metric-name")
 	timeGrain := c.Param("timegrain")
 
-	filepath := common.GetMetricStorageKey(InstallationId, metricName)
+	filepath := common.LegacyGetMetricStorageKey(InstallationId, metricName)
 
 	metricHistory, err := common.ReadMetricKPI(filepath)
 	if err != nil {
@@ -64,7 +64,7 @@ func GetMetricReport(c *gin.Context) {
 
 	metricName := c.Param("metric-name")
 
-	filepath := common.GetMetricStorageKey(InstallationId, metricName)
+	filepath := common.LegacyGetMetricStorageKey(InstallationId, metricName)
 
 	metricHistory, err := common.ReadMetricKPI(filepath)
 	if err != nil {
