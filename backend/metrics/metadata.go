@@ -20,7 +20,7 @@ func GetMetricCohort(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "GitHub client not found"})
 			return
 		}
-		githubConnection, ok := githubConnectionValue.(*github.GithubConnection)
+		githubConnection, ok := githubConnectionValue.(github.GithubConnection)
 		if !ok {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid GitHub client"})
 			return
@@ -54,7 +54,7 @@ func GetMetricReport(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "GitHub client not found"})
 			return
 		}
-		githubConnection, ok := githubConnectionValue.(*github.GithubConnection)
+		githubConnection, ok := githubConnectionValue.(github.GithubConnection)
 		if !ok {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid GitHub client"})
 			return
