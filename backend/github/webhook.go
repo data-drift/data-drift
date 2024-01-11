@@ -104,6 +104,7 @@ func (h *GithubService) GithubClientGuard(c *gin.Context) {
 			return
 		}
 		c.Set("github_client", client)
+		c.Set("github_connection", githubConnection)
 	}
 
 	c.Next()

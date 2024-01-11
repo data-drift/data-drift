@@ -231,7 +231,7 @@ export const getMetricReport = async ({
 }) => {
   if (owner && repo) {
     const result = await axios.get<MetricReport>(
-      `${DATA_DRIFT_API_URL}/${owner}/${repo}/metrics/${metricName}/reports`
+      `${DATA_DRIFT_API_URL}/gh/${owner}/${repo}/metrics/${metricName}/reports`
     );
     return result;
   }

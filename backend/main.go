@@ -72,6 +72,8 @@ func main() {
 	router.GET("gh/:owner/:repo/compare/:base-commit-sha/:head-commit-sha", GithubService.GithubClientGuard, github.CompareCommit)
 	router.GET("gh/:owner/:repo/compare-between-date", GithubService.GithubClientGuard, github.CompareCommitBetweenDates)
 	router.GET("gh/:owner/:repo/commits", GithubService.GithubClientGuard, github.GetCommitList)
+	router.GET("gh/:owner/:repo/metrics/:metric-name/cohorts/:timegrain", GithubService.GithubClientGuard, metrics.GetMetricCohort)
+	router.GET("gh/:owner/:repo/metrics/:metric-name/reports", GithubService.GithubClientGuard, metrics.GetMetricReport)
 
 	router.GET("metrics/:metric-name/cohorts/:timegrain", metrics.GetMetricCohort)
 	router.GET("metrics/:metric-name/reports", metrics.GetMetricReport)
