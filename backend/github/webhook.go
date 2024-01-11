@@ -90,12 +90,13 @@ func (h *GithubService) GithubClientGuard(c *gin.Context) {
 			if err != nil {
 				c.Header("WWW-Authenticate", `Basic realm="DataDrift"`)
 				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Authorization required"})
+				return
 			}
 			if username != githubConnection.Owner+"/"+githubConnection.Repository || password != githubConnection.Password {
 				c.Header("WWW-Authenticate", `Basic realm="DataDrift"`)
 				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Authorization required"})
+				return
 			}
-			return
 		}
 		client, err := CreateClientFromGithubApp(githubConnection.InstallationID)
 		if err != nil {
