@@ -122,17 +122,15 @@ function DisplayCommit() {
                 <a href={resultsData.commitInfo.commitLink}>
                   <StyledIcon src="/github-mark.svg" alt="GitHub" />
                 </a>
-                {"installationId" in resultsParam && (
-                  <a
-                    href={ddCommitListUrlFactory(resultsParam, {
-                      periodKey,
-                      filepath: resultsData.commitInfo.filename,
-                      driftDate: resultsData.commitInfo.date.toISOString(),
-                    })}
-                  >
-                    <StyledButton>View list of commits</StyledButton>
-                  </a>
-                )}
+                <a
+                  href={ddCommitListUrlFactory(resultsParam, {
+                    periodKey,
+                    filepath: resultsData.commitInfo.filename,
+                    driftDate: resultsData.commitInfo.date.toISOString(),
+                  })}
+                >
+                  <StyledButton>View list of commits</StyledButton>
+                </a>
               </StyledSpan>
               <DiffTable dualTableProps={resultsData} />
             </>
