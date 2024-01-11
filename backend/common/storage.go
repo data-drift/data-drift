@@ -19,7 +19,11 @@ func getRedisClient() (*redis.Client, error) {
 	if redisClient != nil {
 		return redisClient, nil
 	}
-	var redisURL = os.Getenv("REDIS_URL")
+	var redisURL = os.Getenv("REDIS_TLS_URL")
+	if redisURL == "" {
+		redisURL = os.Getenv("REDIS_URL")
+	}
+
 	redisOpt, redisErr := redis.ParseURL(redisURL)
 	redisOpt.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 
