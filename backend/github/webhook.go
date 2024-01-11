@@ -67,47 +67,45 @@ func parseAuthHeader(authHeader string) (string, string, error) {
 	return user, password, nil
 }
 
-func (h *GithubService) GithubClientGuard() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		owner := strings.ToLower(c.Param("owner"))
-		repo := strings.ToLower(c.Param("repo"))
+func (h *GithubService) GithubClientGuard(c *gin.Context) {
+	owner := strings.ToLower(c.Param("owner"))
+	repo := strings.ToLower(c.Param("repo"))
 
-		var githubConnection GithubConnection
-		result := h.DB.Where("LOWER(owner) = ? AND LOWER(repository) = ?", owner, repo).First(&githubConnection)
+	var githubConnection GithubConnection
+	result := h.DB.Where("LOWER(owner) = ? AND LOWER(repository) = ?", owner, repo).First(&githubConnection)
 
-		if result.Error != nil {
-			if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "User not found"})
-				return
-			} else {
-				log.Printf("Error occurred while querying the database: %v", result.Error)
-				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
-				return
-			}
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "User not found"})
+			return
 		} else {
-			if githubConnection.AuthRequired {
-				authHeader := c.Request.Header.Get("Authorization")
-				username, password, err := parseAuthHeader(authHeader)
-				if err != nil {
-					c.Header("WWW-Authenticate", `Basic realm="DataDrift"`)
-					c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Authorization required"})
-				}
-				if username != githubConnection.Owner+"/"+githubConnection.Repository || password != githubConnection.Password {
-					c.Header("WWW-Authenticate", `Basic realm="DataDrift"`)
-					c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Authorization required"})
-				}
-				return
-			}
-			client, err := CreateClientFromGithubApp(githubConnection.InstallationID)
-			if err != nil {
-				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "failed to create GitHub client"})
-				return
-			}
-			c.Set("github_client", client)
+			log.Printf("Error occurred while querying the database: %v", result.Error)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+			return
 		}
-
-		c.Next()
+	} else {
+		if githubConnection.AuthRequired {
+			authHeader := c.Request.Header.Get("Authorization")
+			username, password, err := parseAuthHeader(authHeader)
+			if err != nil {
+				c.Header("WWW-Authenticate", `Basic realm="DataDrift"`)
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Authorization required"})
+			}
+			if username != githubConnection.Owner+"/"+githubConnection.Repository || password != githubConnection.Password {
+				c.Header("WWW-Authenticate", `Basic realm="DataDrift"`)
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Authorization required"})
+			}
+			return
+		}
+		client, err := CreateClientFromGithubApp(githubConnection.InstallationID)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "failed to create GitHub client"})
+			return
+		}
+		c.Set("github_client", client)
 	}
+
+	c.Next()
 }
 
 func (h *GithubService) HandleWebhook(c *gin.Context) {
