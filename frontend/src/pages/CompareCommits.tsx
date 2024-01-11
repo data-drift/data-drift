@@ -34,7 +34,6 @@ const loader = async ({
   if (!beginDate || !endDate || !table || !installationId || !owner || !repo)
     throw new Error("Missing params");
   const comparison = await getTableComparisonFromApi({
-    installationId,
     owner,
     repo,
     table,

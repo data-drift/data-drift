@@ -46,7 +46,7 @@ const getPatchFromApi = async ({
       repo,
       commitSHA,
     }),
-    getConfig({ installationId, owner, repo }),
+    getConfig({ owner, repo }),
   ]);
 
   if (patchToLarge) {

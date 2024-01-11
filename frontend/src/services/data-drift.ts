@@ -33,9 +33,7 @@ axios.interceptors.response.use(
 const DATA_DRIFT_API_URL =
   String(import.meta.env.VITE_DATADRIFT_SERVER_URL) || "";
 
-export const getPatchAndHeader = async (
-  params: CommitParam & { installationId: string }
-) => {
+export const getPatchAndHeader = async (params: CommitParam) => {
   const result = await axios.get<{
     patch: string;
     headers: string[];
@@ -44,8 +42,7 @@ export const getPatchAndHeader = async (
     filename: string;
     patchToLarge: boolean;
   }>(
-    `${DATA_DRIFT_API_URL}/gh/${params.owner}/${params.repo}/commit/${params.commitSHA}`,
-    { headers: { "Installation-Id": params.installationId } }
+    `${DATA_DRIFT_API_URL}/gh/${params.owner}/${params.repo}/commit/${params.commitSHA}`
   );
   return {
     patch: result.data.patch,
@@ -106,15 +103,12 @@ const githubCommitListCache = new Map<
 
 export const getCommitList = async (
   params: {
-    installationId: string;
     owner: string;
     repo: string;
   },
   date?: string
 ) => {
-  const cacheKey = `${params.owner}-${params.repo}-${params.installationId}-${
-    date || "no-date"
-  }`;
+  const cacheKey = `${params.owner}-${params.repo}-${date || "no-date"}`;
 
   if (githubCommitListCache.has(cacheKey)) {
     const cachedResult = githubCommitListCache.get(cacheKey);
@@ -125,7 +119,6 @@ export const getCommitList = async (
   const result = await axios.get<
     Endpoints["GET /repos/{owner}/{repo}/commits"]["response"]["data"]
   >(`${DATA_DRIFT_API_URL}/gh/${params.owner}/${params.repo}/commits`, {
-    headers: { "Installation-Id": params.installationId },
     params: { date },
   });
 
@@ -285,14 +278,9 @@ export type DDConfig = {
   metrics: DDConfigMetric[];
 };
 
-const getConfigFromApi = async (params: {
-  installationId: string;
-  owner: string;
-  repo: string;
-}) => {
+const getConfigFromApi = async (params: { owner: string; repo: string }) => {
   const result = await axios.get<{ config: DDConfig }>(
-    `${DATA_DRIFT_API_URL}/config/${params.owner}/${params.repo}`,
-    { headers: { "Installation-Id": params.installationId } }
+    `${DATA_DRIFT_API_URL}/config/${params.owner}/${params.repo}`
   );
   return result.data.config;
 };
@@ -324,11 +312,7 @@ const storeConfigInSessionStorage = (
   );
 };
 
-export const getConfig = async (params: {
-  installationId: string;
-  owner: string;
-  repo: string;
-}) => {
+export const getConfig = async (params: { owner: string; repo: string }) => {
   const configFromStorage = getConfigFromSessionStorage(
     params.owner,
     params.repo
@@ -398,14 +382,13 @@ export const getMetricHistory = async (params: {
 };
 
 export const getTableComparisonFromApi = async (params: {
-  installationId: string;
   owner: string;
   repo: string;
   beginDate: string;
   endDate: string;
   table: string;
 }) => {
-  const { installationId, owner, repo, beginDate, endDate, table } = params;
+  const { owner, repo, beginDate, endDate, table } = params;
   try {
     const comparison = await axios.get<{
       patch: string;
@@ -415,8 +398,7 @@ export const getTableComparisonFromApi = async (params: {
       baseCommitDateISO8601: string;
       headCommitDateISO8601: string;
     }>(
-      `${DATA_DRIFT_API_URL}/gh/${owner}/${repo}/compare-between-date?start-date=${beginDate}&end-date=${endDate}&table=${table}`,
-      { headers: { "Installation-Id": installationId } }
+      `${DATA_DRIFT_API_URL}/gh/${owner}/${repo}/compare-between-date?start-date=${beginDate}&end-date=${endDate}&table=${table}`
     );
     return comparison;
   } catch (err) {
