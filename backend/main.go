@@ -60,7 +60,7 @@ func main() {
 
 	port := defaultIfEmpty(os.Getenv("PORT"), "8080")
 
-	go github.ProcessWebhooks()
+	go github.ProcessWebhooks(redisClient)
 
 	router := gin.New()
 

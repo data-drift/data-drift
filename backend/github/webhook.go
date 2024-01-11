@@ -35,8 +35,7 @@ type GithubConnection struct {
 }
 
 type GithubService struct {
-	DB          *gorm.DB
-	RedisClient *redis.Client
+	DB *gorm.DB
 }
 
 func NewGithubService(db *gorm.DB) *GithubService {
@@ -221,18 +220,17 @@ type WebhookToProcess struct {
 	client         *github.Client
 	ownerName      string
 	repoName       string
-	redisClient    *redis.Client
 }
 
 var webhookChannel = make(chan WebhookToProcess, 100)
 
-func ProcessWebhooks() {
+func ProcessWebhooks(redisClient *redis.Client) {
 	log.Println("Starting to consume the channel")
 	for {
 		webhookData := <-webhookChannel
 
 		log.Println("Consuming the channel", webhookData.InstallationId, webhookData.client, webhookData.ownerName, webhookData.repoName)
-		processWebhookInTheBackground(webhookData.config, webhookData.redisClient, webhookData.InstallationId, webhookData.client, webhookData.ownerName, webhookData.repoName)
+		processWebhookInTheBackground(webhookData.config, redisClient, webhookData.InstallationId, webhookData.client, webhookData.ownerName, webhookData.repoName)
 		time.Sleep(10 * time.Second)
 	}
 }
