@@ -12,12 +12,13 @@ import (
 	"github.com/data-drift/data-drift/common"
 	"github.com/data-drift/data-drift/reducers"
 	"github.com/data-drift/data-drift/urlgen"
+	"github.com/go-redis/redis/v8"
 	"github.com/google/go-github/v56/github"
 	"github.com/shopspring/decimal"
 )
 
-func ProcessHistory(client *github.Client, repoOwner string, repoName string, metric common.MetricConfig, installationId int) (common.MetricStorageKey, error) {
-
+func ProcessHistory(client *github.Client, redisClient *redis.Client, repoOwner string, repoName string, metric common.MetricConfig, installationId int) (common.MetricStorageKey, error) {
+	kpiRepository := common.NewKpiRepository(redisClient)
 	reportBaseUrl := urlgen.BuildReportDiffBaseUrl(repoOwner, repoName)
 	fmt.Println(reportBaseUrl)
 	ctx := context.Background()
@@ -182,7 +183,7 @@ func ProcessHistory(client *github.Client, repoOwner string, repoName string, me
 	// Generate a timestamp to include in the JSON file name.
 	// Open a file to write the line counts by date by version in JSON format.
 	// Write the line counts and KPI values to the JSON file.
-	metricStoredFilePath := common.WriteMetricKPI(repoOwner, repoName, metricName, lineCountAndKPIByDateByVersion)
+	metricStoredFilePath := kpiRepository.WriteMetricKPI(repoOwner, repoName, metricName, lineCountAndKPIByDateByVersion)
 	return metricStoredFilePath, nil
 }
 

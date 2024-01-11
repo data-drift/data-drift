@@ -10,6 +10,7 @@ import (
 
 	"github.com/data-drift/data-drift/common"
 	"github.com/data-drift/data-drift/helpers"
+	"github.com/go-redis/redis/v8"
 	"github.com/shopspring/decimal"
 )
 
@@ -27,8 +28,10 @@ type MetricMetadata struct {
 	RelativeHistory map[time.Duration]RelativeHistoricalEvent
 }
 
-func ProcessMetricMetadataCharts(filepath common.MetricStorageKey, metricConfig common.MetricConfig) (map[common.TimeGrain]string, error) {
-	metrics, marshelingError := common.ReadMetricKPI(filepath)
+func ProcessMetricMetadataCharts(filepath common.MetricStorageKey, metricConfig common.MetricConfig, redisClient *redis.Client) (map[common.TimeGrain]string, error) {
+	kpiRepository := common.NewKpiRepository(redisClient)
+
+	metrics, marshelingError := kpiRepository.ReadMetricKPI(filepath)
 	if marshelingError != nil {
 		fmt.Println("[DATADRIFT ERROR]: marshaling data", marshelingError.Error())
 		return nil, marshelingError

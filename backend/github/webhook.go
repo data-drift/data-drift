@@ -17,6 +17,7 @@ import (
 	"github.com/data-drift/data-drift/reducers"
 	"github.com/data-drift/data-drift/reports"
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis/v8"
 	"github.com/google/go-github/v56/github"
 	"github.com/xeipuuv/gojsonschema"
 	"gorm.io/gorm"
@@ -34,7 +35,8 @@ type GithubConnection struct {
 }
 
 type GithubService struct {
-	DB *gorm.DB
+	DB          *gorm.DB
+	RedisClient *redis.Client
 }
 
 func NewGithubService(db *gorm.DB) *GithubService {
@@ -219,6 +221,7 @@ type WebhookToProcess struct {
 	client         *github.Client
 	ownerName      string
 	repoName       string
+	redisClient    *redis.Client
 }
 
 var webhookChannel = make(chan WebhookToProcess, 100)
@@ -229,12 +232,12 @@ func ProcessWebhooks() {
 		webhookData := <-webhookChannel
 
 		log.Println("Consuming the channel", webhookData.InstallationId, webhookData.client, webhookData.ownerName, webhookData.repoName)
-		processWebhookInTheBackground(webhookData.config, webhookData.InstallationId, webhookData.client, webhookData.ownerName, webhookData.repoName)
+		processWebhookInTheBackground(webhookData.config, webhookData.redisClient, webhookData.InstallationId, webhookData.client, webhookData.ownerName, webhookData.repoName)
 		time.Sleep(10 * time.Second)
 	}
 }
 
-func processWebhookInTheBackground(config common.Config, InstallationId int, client *github.Client, ownerName string, repoName string) bool {
+func processWebhookInTheBackground(config common.Config, redisClient *redis.Client, InstallationId int, client *github.Client, ownerName string, repoName string) bool {
 
 	fmt.Println("starting sync")
 
@@ -246,13 +249,13 @@ func processWebhookInTheBackground(config common.Config, InstallationId int, cli
 
 	for _, metric := range config.Metrics {
 
-		filepath, err := history.ProcessHistory(client, ownerName, repoName, metric, InstallationId)
+		filepath, err := history.ProcessHistory(client, redisClient, ownerName, repoName, metric, InstallationId)
 		if err != nil {
 			fmt.Println("[DATADRIFT_ERROR] process history", err.Error())
 
 		}
 
-		chartResults := reducers.ProcessMetricHistory(filepath, metric, ownerName, repoName)
+		chartResults := reducers.ProcessMetricHistory(filepath, redisClient, metric, ownerName, repoName)
 
 		for _, chartResult := range chartResults {
 			err = reports.CreateReport(common.SyncConfig{NotionAPIKey: config.NotionAPIToken, NotionDatabaseID: config.NotionDatabaseID}, chartResult)
@@ -261,7 +264,7 @@ func processWebhookInTheBackground(config common.Config, InstallationId int, cli
 			}
 		}
 
-		metadataChartResults, metadataChartError := reducers.ProcessMetricMetadataCharts(filepath, metric)
+		metadataChartResults, metadataChartError := reducers.ProcessMetricMetadataCharts(filepath, metric, redisClient)
 		if metadataChartError != nil {
 			fmt.Println("[DATADRIFT_ERROR] create summary report", metadataChartError.Error())
 		} else {

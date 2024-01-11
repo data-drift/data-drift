@@ -30,6 +30,8 @@ func DebugFunction() {
 	filepath := common.MetricStorageKey(os.Getenv("DEFAULT_FILE_PATH"))
 	githubApplicationId, _ := strconv.ParseInt(githubApplicationIdStr, 10, 64)
 
+	redisClient, _ := common.GetRedisClient()
+
 	_ = notion_database.AssertDatabaseHasDatadriftProperties(notionDatabaseID, notionAPIKey)
 
 	metricConfig := common.MetricConfig{
@@ -45,7 +47,7 @@ func DebugFunction() {
 		if client == nil {
 			panic("Client not configured")
 		}
-		newFilepath, err := history.ProcessHistory(client, githubRepoOwner, githubRepoName, metricConfig, int(githubApplicationId))
+		newFilepath, err := history.ProcessHistory(client, redisClient, githubRepoOwner, githubRepoName, metricConfig, int(githubApplicationId))
 
 		if err != nil {
 			println(err)
@@ -65,7 +67,7 @@ func DebugFunction() {
 	// 	panic("Stop execution here")
 	// }
 
-	chartResults := reducers.ProcessMetricHistory(filepath, common.MetricConfig{MetricName: "Default metric name"}, githubRepoOwner, githubRepoName)
+	chartResults := reducers.ProcessMetricHistory(filepath, redisClient, common.MetricConfig{MetricName: "Default metric name"}, githubRepoOwner, githubRepoName)
 
 	for _, chartResult := range chartResults {
 		err := reports.CreateReport(notionSyncConfig, chartResult)
@@ -74,7 +76,7 @@ func DebugFunction() {
 		}
 	}
 
-	metadataChartResults, metadataChartError := reducers.ProcessMetricMetadataCharts(filepath, metricConfig)
+	metadataChartResults, metadataChartError := reducers.ProcessMetricMetadataCharts(filepath, metricConfig, redisClient)
 	if metadataChartError != nil {
 		fmt.Println("[DATADRIFT_ERROR] create summary report", metadataChartError.Error())
 	} else {

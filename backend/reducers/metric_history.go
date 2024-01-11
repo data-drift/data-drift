@@ -6,6 +6,7 @@ import (
 
 	"github.com/data-drift/data-drift/common"
 	"github.com/data-drift/data-drift/urlgen"
+	"github.com/go-redis/redis/v8"
 	"github.com/shopspring/decimal"
 )
 
@@ -14,9 +15,10 @@ type ChartResponse struct {
 	URL     string `json:"url"`
 }
 
-func ProcessMetricHistory(historyFilepath common.MetricStorageKey, metric common.MetricConfig, ownerName string, repoName string) []common.KPIReport {
+func ProcessMetricHistory(historyFilepath common.MetricStorageKey, redisClient *redis.Client, metric common.MetricConfig, ownerName string, repoName string) []common.KPIReport {
+	kpiRepository := common.NewKpiRepository(redisClient)
 
-	data, err := common.ReadMetricKPI(historyFilepath)
+	data, err := kpiRepository.ReadMetricKPI(historyFilepath)
 	if err != nil {
 		fmt.Println("Error:", err.Error())
 	}
