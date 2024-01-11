@@ -18,7 +18,7 @@ export const router = createBrowserRouter([
     element: <HomePage />,
   },
   {
-    path: "/:installationId/:owner/:repo/overview",
+    path: "/:installationId/:owner/:repo/overview", // legacy route
     element: <Overview />,
     loader: Overview.loader,
   },
@@ -28,7 +28,7 @@ export const router = createBrowserRouter([
     loader: Overview.loader,
   },
   {
-    path: "/:installationId/:owner/:repo/compare",
+    path: "/:installationId/:owner/:repo/compare", // legacy route
     element: <CompareCommits />,
     loader: CompareCommits.loader,
   },
@@ -42,7 +42,7 @@ export const router = createBrowserRouter([
     element: <GithubForm />,
   },
   {
-    path: "report/:installationId/:owner/:repo/commit/:commitSHA",
+    path: "report/:installationId/:owner/:repo/commit/:commitSHA", // legacy route
     element: <DisplayCommit />,
     loader: DisplayCommit.dataDriftLoader,
   },
@@ -52,7 +52,7 @@ export const router = createBrowserRouter([
     loader: DisplayCommit.dataDriftLoader,
   },
   {
-    path: "report/:installationId/metrics/:metricName/cohorts/:timegrain",
+    path: "report/:installationId/metrics/:metricName/cohorts/:timegrain", // legacy route
     element: <MetricCohort />,
     loader: MetricCohort.loader,
   },
@@ -62,7 +62,7 @@ export const router = createBrowserRouter([
     loader: MetricCohort.loader,
   },
   {
-    path: "report/:installationId/metrics/:metricName/report/:timegrainValue",
+    path: "report/:installationId/metrics/:metricName/report/:timegrainValue", // legacy route
     element: <MetricReportWaterfall />,
     loader: MetricReportWaterfall.loader,
   },
@@ -72,7 +72,7 @@ export const router = createBrowserRouter([
     loader: MetricReportWaterfall.loader,
   },
   {
-    path: "report/:installationId/:owner/:repo/commits",
+    path: "report/:installationId/:owner/:repo/commits", // legacy route
     element: <DriftListPage />,
     loader: DriftListPage.loader,
   },
