@@ -18,7 +18,7 @@ import (
 
 func ProcessHistory(client *github.Client, repoOwner string, repoName string, metric common.MetricConfig, installationId int) (common.MetricStorageKey, error) {
 
-	reportBaseUrl := urlgen.BuildReportDiffBaseUrl(fmt.Sprint(installationId), repoOwner, repoName)
+	reportBaseUrl := urlgen.BuildReportDiffBaseUrl(repoOwner, repoName)
 	fmt.Println(reportBaseUrl)
 	ctx := context.Background()
 

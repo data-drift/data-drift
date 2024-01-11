@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/data-drift/data-drift/common"
+	"github.com/data-drift/data-drift/github"
 	"github.com/data-drift/data-drift/reducers"
 	"github.com/gin-gonic/gin"
 )
@@ -14,8 +15,17 @@ func GetMetricCohort(c *gin.Context) {
 	InstallationId := c.Request.Header.Get("Installation-Id")
 
 	if InstallationId == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "No installation id provided"})
-		return
+		githubConnectionValue, exists := c.Get("github_connection")
+		if !exists {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "GitHub client not found"})
+			return
+		}
+		githubConnection, ok := githubConnectionValue.(github.GithubConnection)
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid GitHub client"})
+			return
+		}
+		InstallationId = fmt.Sprintf("%d", githubConnection.InstallationID)
 	}
 
 	metricName := c.Param("metric-name")
@@ -35,11 +45,21 @@ func GetMetricCohort(c *gin.Context) {
 }
 
 func GetMetricReport(c *gin.Context) {
+
 	InstallationId := c.Request.Header.Get("Installation-Id")
 
 	if InstallationId == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "No installation id provided"})
-		return
+		githubConnectionValue, exists := c.Get("github_connection")
+		if !exists {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "GitHub client not found"})
+			return
+		}
+		githubConnection, ok := githubConnectionValue.(github.GithubConnection)
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid GitHub client"})
+			return
+		}
+		InstallationId = fmt.Sprintf("%d", githubConnection.InstallationID)
 	}
 
 	metricName := c.Param("metric-name")

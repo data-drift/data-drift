@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
@@ -104,6 +103,7 @@ func (h *GithubService) GithubClientGuard(c *gin.Context) {
 			return
 		}
 		c.Set("github_client", client)
+		c.Set("github_connection", githubConnection)
 	}
 
 	c.Next()
@@ -252,7 +252,7 @@ func processWebhookInTheBackground(config common.Config, InstallationId int, cli
 
 		}
 
-		chartResults := reducers.ProcessMetricHistory(filepath, metric, common.GithubInstallationId(fmt.Sprint(InstallationId)))
+		chartResults := reducers.ProcessMetricHistory(filepath, metric, ownerName, repoName)
 
 		for _, chartResult := range chartResults {
 			err = reports.CreateReport(common.SyncConfig{NotionAPIKey: config.NotionAPIToken, NotionDatabaseID: config.NotionDatabaseID}, chartResult)
@@ -317,18 +317,21 @@ func VerifyConfigFile(client *github.Client, RepoOwner string, RepoName string, 
 }
 
 func GetConfigHandler(c *gin.Context) {
-	InstallationId, err := strconv.ParseInt(c.Request.Header.Get("Installation-Id"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err})
+	clientValue, exists := c.Get("github_client")
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "GitHub client not found"})
 		return
 	}
+
+	client, ok := clientValue.(*github.Client)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid GitHub client"})
+		return
+	}
+
 	owner := c.Param("owner")
 	repo := c.Param("repo")
-	client, err := CreateClientFromGithubApp(InstallationId)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err})
-		return
-	}
+
 	ctx := context.Background()
 
 	config, err := VerifyConfigFile(client, owner, repo, ctx)

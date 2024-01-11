@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/url"
 	"os"
 
@@ -56,7 +57,7 @@ func ReadMetricKPI(path MetricStorageKey) (Metrics, error) {
 
 		jsonData, err := rdb.Get(ctx, string(path)).Bytes()
 		if err != nil {
-			fmt.Printf("Could not get key. Err: %s", err)
+			log.Printf("Could not get key. Err: %s", err)
 			return nil, err
 		}
 

@@ -93,19 +93,26 @@ const getWaterfallChartPropsFromMetadata = (
 };
 
 function assertParamsHasNeededProperties(params: Params<string>): {
-  installationId: string;
+  owner?: string;
+  repo?: string;
+  installationId?: string; // @TODO remove when old urls are removed
   metricName: string;
   timegrain: Timegrain;
   timegrainValue: TimegrainString;
 } {
-  const { installationId, metricName, timegrainValue } = params;
-  if (!installationId || !metricName || !timegrainValue) {
+  const { owner, repo, installationId, metricName, timegrainValue } = params;
+  if (!metricName || !timegrainValue) {
     throw new Error("Invalid params");
+  }
+  if (!installationId && (!owner || !repo)) {
+    throw new Error(
+      "Either installationId or both owner and repo must be defined"
+    );
   }
   assertStringIsTimgrainString(timegrainValue);
   const timegrain = getTimegrainFromString(timegrainValue);
 
-  return { installationId, metricName, timegrain, timegrainValue };
+  return { owner, repo, installationId, metricName, timegrain, timegrainValue };
 }
 
 const ScrollableContainer = styled.div`
