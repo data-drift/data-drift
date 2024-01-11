@@ -68,10 +68,10 @@ func main() {
 	router.GET("/ghhealth/:installation-id", github.HealthCheckInstallation)
 
 	router.POST("webhooks/github", GithubService.HandleWebhook)
-	router.GET("gh/:owner/:repo/commit/:commit-sha", GithubService.GithubClientGuard(), github.GetCommitDiff)
-	router.GET("gh/:owner/:repo/compare/:base-commit-sha/:head-commit-sha", GithubService.GithubClientGuard(), github.CompareCommit)
-	router.GET("gh/:owner/:repo/compare-between-date", GithubService.GithubClientGuard(), github.CompareCommitBetweenDates)
-	router.GET("gh/:owner/:repo/commits", GithubService.GithubClientGuard(), github.GetCommitList)
+	router.GET("gh/:owner/:repo/commit/:commit-sha", GithubService.GithubClientGuard, github.GetCommitDiff)
+	router.GET("gh/:owner/:repo/compare/:base-commit-sha/:head-commit-sha", GithubService.GithubClientGuard, github.CompareCommit)
+	router.GET("gh/:owner/:repo/compare-between-date", GithubService.GithubClientGuard, github.CompareCommitBetweenDates)
+	router.GET("gh/:owner/:repo/commits", GithubService.GithubClientGuard, github.GetCommitList)
 
 	router.GET("metrics/:metric-name/cohorts/:timegrain", metrics.GetMetricCohort)
 	router.GET("metrics/:metric-name/reports", metrics.GetMetricReport)

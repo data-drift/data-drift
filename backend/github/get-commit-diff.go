@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
@@ -105,9 +104,15 @@ func GetCommitDiff(c *gin.Context) {
 }
 
 func CompareCommit(c *gin.Context) {
-	InstallationId, err := strconv.ParseInt(c.Request.Header.Get("Installation-Id"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "error parsing Installation-Id header"})
+	clientValue, exists := c.Get("github_client")
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "GitHub client not found"})
+		return
+	}
+
+	client, ok := clientValue.(*github.Client)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid GitHub client"})
 		return
 	}
 	owner := c.Param("owner")
@@ -115,7 +120,7 @@ func CompareCommit(c *gin.Context) {
 	baseCommitSha := c.Param("base-commit-sha")
 	headCommitSha := c.Param("head-commit-sha")
 	table := c.Query("table")
-	jsonData, err := compareCommit(InstallationId, owner, repo, baseCommitSha, headCommitSha, table)
+	jsonData, err := compareCommit(client, c, owner, repo, baseCommitSha, headCommitSha, table)
 	if err != nil {
 
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -125,14 +130,15 @@ func CompareCommit(c *gin.Context) {
 }
 
 func CompareCommitBetweenDates(c *gin.Context) {
-	InstallationId, err := strconv.ParseInt(c.Request.Header.Get("Installation-Id"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "error parsing Installation-Id header"})
+	clientValue, exists := c.Get("github_client")
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "GitHub client not found"})
 		return
 	}
-	client, err := CreateClientFromGithubApp(int64(InstallationId))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+
+	client, ok := clientValue.(*github.Client)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid GitHub client"})
 		return
 	}
 	owner := c.Param("owner")
@@ -205,7 +211,7 @@ func CompareCommitBetweenDates(c *gin.Context) {
 		return
 	}
 
-	jsonData, err := compareCommit(InstallationId, owner, repo, firstCommit, latestCommit, table)
+	jsonData, err := compareCommit(client, c, owner, repo, firstCommit, latestCommit, table)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -213,13 +219,7 @@ func CompareCommitBetweenDates(c *gin.Context) {
 	c.Data(http.StatusOK, "application/json", jsonData)
 }
 
-func compareCommit(InstallationId int64, owner string, repo string, baseCommitSha string, headCommitSha string, table string) ([]byte, error) {
-
-	c := context.Background()
-	client, err := CreateClientFromGithubApp(int64(InstallationId))
-	if err != nil {
-		return nil, err
-	}
+func compareCommit(client *github.Client, c context.Context, owner string, repo string, baseCommitSha string, headCommitSha string, table string) ([]byte, error) {
 
 	baseCommit, _, _ := client.Repositories.GetCommit(c, owner, repo, baseCommitSha, nil)
 	headCommit, _, _ := client.Repositories.GetCommit(c, owner, repo, headCommitSha, nil)
@@ -323,19 +323,19 @@ func getPreviousRecords(parentCommitSha string, client *github.Client, ctx conte
 }
 
 func GetCommitList(c *gin.Context) {
-	InstallationId, err := strconv.ParseInt(c.Request.Header.Get("Installation-Id"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "error parsing Installation-Id header"})
+	clientValue, exists := c.Get("github_client")
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "GitHub client not found"})
+		return
+	}
+
+	client, ok := clientValue.(*github.Client)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid GitHub client"})
 		return
 	}
 	owner := c.Param("owner")
 	repo := c.Param("repo")
-
-	client, err := CreateClientFromGithubApp(int64(InstallationId))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
 
 	opt := &github.CommitsListOptions{
 		ListOptions: github.ListOptions{

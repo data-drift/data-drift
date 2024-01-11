@@ -6,11 +6,9 @@ enum Strategy {
   Local = "local",
 }
 function assertParamsIsDefined(
-  params: Params<"installationId" | "owner" | "repo">
-): asserts params is { installationId: string; owner: string; repo: string } {
+  params: Params<"owner" | "repo">
+): asserts params is { owner: string; repo: string } {
   if (
-    typeof params.installationId === "string" &&
-    params.installationId.trim() !== "" &&
     typeof params.owner === "string" &&
     params.owner.trim() !== "" &&
     typeof params.repo === "string" &&
@@ -24,7 +22,7 @@ function assertParamsIsDefined(
 export const loader = async ({
   params,
 }: {
-  params: Params<"installationId" | "owner" | "repo">;
+  params: Params<"owner" | "repo">;
 }) => {
   assertParamsIsDefined(params);
 
