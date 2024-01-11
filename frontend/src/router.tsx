@@ -23,7 +23,17 @@ export const router = createBrowserRouter([
     loader: Overview.loader,
   },
   {
+    path: "/:owner/:repo/overview",
+    element: <Overview />,
+    loader: Overview.loader,
+  },
+  {
     path: "/:installationId/:owner/:repo/compare",
+    element: <CompareCommits />,
+    loader: CompareCommits.loader,
+  },
+  {
+    path: "/:owner/:repo/compare",
     element: <CompareCommits />,
     loader: CompareCommits.loader,
   },
@@ -33,6 +43,11 @@ export const router = createBrowserRouter([
   },
   {
     path: "report/:installationId/:owner/:repo/commit/:commitSHA",
+    element: <DisplayCommit />,
+    loader: DisplayCommit.dataDriftLoader,
+  },
+  {
+    path: "report/:owner/:repo/commit/:commitSHA",
     element: <DisplayCommit />,
     loader: DisplayCommit.dataDriftLoader,
   },
@@ -48,6 +63,11 @@ export const router = createBrowserRouter([
   },
   {
     path: "report/:installationId/:owner/:repo/commits",
+    element: <DriftListPage />,
+    loader: DriftListPage.loader,
+  },
+  {
+    path: "report/:owner/:repo/commits",
     element: <DriftListPage />,
     loader: DriftListPage.loader,
   },

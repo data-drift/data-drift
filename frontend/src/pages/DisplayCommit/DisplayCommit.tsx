@@ -12,7 +12,6 @@ export interface CommitParam {
   owner: string;
   repo: string;
   commitSHA: string;
-  installationId: string;
 }
 
 const StyledButton = styled.button`
@@ -23,25 +22,17 @@ const StyledButton = styled.button`
   border: 1px solid ${(props) => props.theme.colors.text};
 `;
 
-function assertParamsHasInstallationIs(
-  params: Params<string>
-): CommitParam & { installationId: string } {
-  const { installationId, owner, repo, commitSHA } = params;
-  if (!installationId || !owner || !repo || !commitSHA) {
+function assertParamsIsCommitParam(params: Params<string>): CommitParam {
+  const { owner, repo, commitSHA } = params;
+  if (!owner || !repo || !commitSHA) {
     throw new Error("Invalid params");
   }
-  return { installationId, owner, repo, commitSHA };
+  return { owner, repo, commitSHA };
 }
 
-const getPatchFromApi = async ({
-  installationId,
-  owner,
-  repo,
-  commitSHA,
-}: CommitParam) => {
+const getPatchFromApi = async ({ owner, repo, commitSHA }: CommitParam) => {
   const [{ patch, headers, patchToLarge, ...commitInfo }] = await Promise.all([
     getPatchAndHeader({
-      installationId,
       owner,
       repo,
       commitSHA,
@@ -62,14 +53,13 @@ const getPatchFromApi = async ({
 };
 
 const getCommitDiffFromDataDrift = ({ params }: { params: Params<string> }) => {
-  const { installationId, owner, repo, commitSHA } =
-    assertParamsHasInstallationIs(params);
+  const { owner, repo, commitSHA } = assertParamsIsCommitParam(params);
 
-  const data = getPatchFromApi({ installationId, owner, repo, commitSHA });
+  const data = getPatchFromApi({ owner, repo, commitSHA });
 
   return defer({
     data: data,
-    params: { owner, repo, commitSHA, installationId },
+    params: { owner, repo, commitSHA },
   });
 };
 
@@ -95,13 +85,12 @@ const StyledIcon = styled.img`
 
 const ddCommitListUrlFactory = (
   params: {
-    installationId: string;
     owner: string;
     repo: string;
   },
   queryParams?: { periodKey: string; filepath: string; driftDate: string }
 ) => {
-  const url = `/report/${params.installationId}/${params.owner}/${params.repo}/commits`;
+  const url = `/report/${params.owner}/${params.repo}/commits`;
   if (queryParams) {
     const urlQueryParams = new URLSearchParams(queryParams).toString();
     return url + "?" + urlQueryParams;

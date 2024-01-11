@@ -122,7 +122,6 @@ const Overview = () => {
           setDualTableData({ dualTableProps: undefined, loading: true });
           const patchAndHeader = await getPatchAndHeader(
             {
-              installationId: config.params.installationId,
               owner: config.params.owner,
               repo: config.params.repo,
               commitSHA: selectedCommit,

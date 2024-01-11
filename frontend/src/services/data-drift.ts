@@ -264,12 +264,11 @@ interface CommitComment {
 }
 
 export const ddCommitDiffUrlFactory = (params: {
-  installationId: string;
   owner: string;
   repo: string;
   commitSha: string;
 }) => {
-  return `/report/${params.installationId}/${params.owner}/${params.repo}/commit/${params.commitSha}`;
+  return `/report/${params.owner}/${params.repo}/commit/${params.commitSha}`;
 };
 
 export type DDConfigMetric = {
