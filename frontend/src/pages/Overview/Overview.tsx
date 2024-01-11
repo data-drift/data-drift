@@ -96,6 +96,7 @@ const Overview = () => {
     loading: false,
   });
   useEffect(() => {
+    const controller = new AbortController();
     const fetchPatchData = async () => {
       if (!selectedCommit) return;
       switch (config.strategy) {
@@ -119,12 +120,15 @@ const Overview = () => {
         }
         case "github": {
           setDualTableData({ dualTableProps: undefined, loading: true });
-          const patchAndHeader = await getPatchAndHeader({
-            installationId: config.params.installationId,
-            owner: config.params.owner,
-            repo: config.params.repo,
-            commitSHA: selectedCommit,
-          });
+          const patchAndHeader = await getPatchAndHeader(
+            {
+              installationId: config.params.installationId,
+              owner: config.params.owner,
+              repo: config.params.repo,
+              commitSHA: selectedCommit,
+            },
+            controller
+          );
           const { oldData, newData } = parsePatch(
             patchAndHeader.patch,
             patchAndHeader.headers
@@ -138,9 +142,13 @@ const Overview = () => {
       }
     };
     void fetchPatchData();
+    return () => {
+      controller.abort();
+    };
   }, [selectedCommit, config.params, config.strategy]);
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchCommit = async () => {
       switch (config.strategy) {
         case "local": {
@@ -178,7 +186,8 @@ const Overview = () => {
         case "github": {
           const result = await getCommitList(
             config.params,
-            currentDate.toISOString().substring(0, 10)
+            currentDate.toISOString().substring(0, 10),
+            controller
           );
           const { nodes, edges } = getNodesFromConfig(
             selectedMetric,
@@ -195,6 +204,9 @@ const Overview = () => {
       }
     };
     void fetchCommit();
+    return () => {
+      controller.abort();
+    };
   }, [
     currentDate,
     config.params,

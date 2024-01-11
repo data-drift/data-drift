@@ -33,7 +33,10 @@ axios.interceptors.response.use(
 const DATA_DRIFT_API_URL =
   String(import.meta.env.VITE_DATADRIFT_SERVER_URL) || "";
 
-export const getPatchAndHeader = async (params: CommitParam) => {
+export const getPatchAndHeader = async (
+  params: CommitParam,
+  controller?: AbortController
+) => {
   const result = await axios.get<{
     patch: string;
     headers: string[];
@@ -42,7 +45,10 @@ export const getPatchAndHeader = async (params: CommitParam) => {
     filename: string;
     patchToLarge: boolean;
   }>(
-    `${DATA_DRIFT_API_URL}/gh/${params.owner}/${params.repo}/commit/${params.commitSHA}`
+    `${DATA_DRIFT_API_URL}/gh/${params.owner}/${params.repo}/commit/${params.commitSHA}`,
+    {
+      signal: controller?.signal,
+    }
   );
   return {
     patch: result.data.patch,
@@ -106,7 +112,8 @@ export const getCommitList = async (
     owner: string;
     repo: string;
   },
-  date?: string
+  date?: string,
+  controller?: AbortController
 ) => {
   const cacheKey = `${params.owner}-${params.repo}-${date || "no-date"}`;
 
@@ -120,6 +127,7 @@ export const getCommitList = async (
     Endpoints["GET /repos/{owner}/{repo}/commits"]["response"]["data"]
   >(`${DATA_DRIFT_API_URL}/gh/${params.owner}/${params.repo}/commits`, {
     params: { date },
+    signal: controller?.signal,
   });
 
   githubCommitListCache.set(cacheKey, result);
