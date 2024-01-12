@@ -4,8 +4,11 @@ import {
   configQuery,
   getCommitList,
   getCommitListLocalStrategy,
+  getMeasurement,
+  getPatchAndHeader,
 } from "../../services/data-drift";
 import { QueryClient } from "@tanstack/react-query";
+import { parsePatch } from "../../services/patch.mapper";
 
 enum Strategy {
   Github = "github",
@@ -155,4 +158,74 @@ export const fetchCommitsQuery = (
 ) => ({
   queryKey: ["commit", strategy, currentDate],
   queryFn: () => fetchCommits(strategy, currentDate),
+});
+
+const fetchCommitPatch = async (
+  strategy:
+    | {
+        strategy: Strategy.Local;
+        params: { tableName: string };
+      }
+    | {
+        strategy: Strategy.Github;
+        params: { owner: string; repo: string };
+      },
+  selectedCommit: string
+) => {
+  switch (strategy.strategy) {
+    case Strategy.Local: {
+      const measurementResults = await getMeasurement(
+        "default",
+        strategy.params.tableName,
+        selectedCommit
+      );
+      const { oldData, newData } = parsePatch(
+        measurementResults.data.Patch,
+        measurementResults.data.Headers
+      );
+      const dualTableProps = {
+        tableProps1: oldData,
+        tableProps2: newData,
+      };
+      return dualTableProps;
+    }
+    case Strategy.Github: {
+      const patchAndHeader = await getPatchAndHeader({
+        owner: strategy.params.owner,
+        repo: strategy.params.repo,
+        commitSHA: selectedCommit,
+      });
+      const { oldData, newData } = parsePatch(
+        patchAndHeader.patch,
+        patchAndHeader.headers
+      );
+      const dualTableProps = {
+        tableProps1: oldData,
+        tableProps2: newData,
+      };
+      return dualTableProps;
+    }
+    default: {
+      const unhandeldStrategy: never = strategy;
+      console.error("Strategy not supported", unhandeldStrategy);
+      throw new Error("Strategy not supported");
+    }
+  }
+};
+
+export const fetchCommitPatchQuery = (
+  strategy:
+    | {
+        strategy: Strategy.Local;
+        params: { tableName: string };
+      }
+    | {
+        strategy: Strategy.Github;
+        params: { owner: string; repo: string };
+      },
+  selectedCommit?: string | null
+) => ({
+  queryKey: ["commit", "patch", strategy, selectedCommit],
+  queryFn: () => fetchCommitPatch(strategy, selectedCommit as string),
+  enabled: !!selectedCommit,
 });

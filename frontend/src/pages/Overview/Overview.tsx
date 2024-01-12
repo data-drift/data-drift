@@ -1,6 +1,5 @@
 import Lineage from "../../components/Lineage/Lineage";
-import { DualTableProps } from "../../components/Table/DualTable";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import {
   Container,
@@ -14,15 +13,14 @@ import {
   StyledSelect,
 } from "./components";
 import {
+  fetchCommitPatchQuery,
   fetchCommitsQuery,
   loader,
   localStrategyLoader,
   useOverviewLoaderData,
 } from "./loader";
 import { getNodesFromConfig } from "./flow-nodes";
-import { getMeasurement, getPatchAndHeader } from "../../services/data-drift";
 import { DiffTable } from "../DisplayCommit/DiffTable";
-import { parsePatch } from "../../services/patch.mapper";
 import Loader from "../../components/Common/Loader";
 import StarUs from "../../components/Common/StarUs";
 import { useQuery } from "@tanstack/react-query";
@@ -81,56 +79,12 @@ const Overview = () => {
     setSelectedCommit(newCommitSha);
   }, []);
 
-  const [dualTableData, setDualTableData] = useState({
-    dualTableProps: undefined as undefined | DualTableProps,
-    loading: false,
-  });
-  useEffect(() => {
-    const fetchPatchData = async () => {
-      if (!selectedCommit) return;
-      switch (loaderData.strategy) {
-        case "local": {
-          setDualTableData({ dualTableProps: undefined, loading: true });
-          const measurementResults = await getMeasurement(
-            "default",
-            loaderData.params.tableName,
-            selectedCommit
-          );
-          const { oldData, newData } = parsePatch(
-            measurementResults.data.Patch,
-            measurementResults.data.Headers
-          );
-          const dualTableProps = {
-            tableProps1: oldData,
-            tableProps2: newData,
-          };
-          setDualTableData({ dualTableProps, loading: false });
-          break;
-        }
-        case "github": {
-          setDualTableData({ dualTableProps: undefined, loading: true });
-          const patchAndHeader = await getPatchAndHeader({
-            owner: loaderData.params.owner,
-            repo: loaderData.params.repo,
-            commitSHA: selectedCommit,
-          });
-          const { oldData, newData } = parsePatch(
-            patchAndHeader.patch,
-            patchAndHeader.headers
-          );
-          const dualTableProps = {
-            tableProps1: oldData,
-            tableProps2: newData,
-          };
-          setDualTableData({ dualTableProps, loading: false });
-        }
-      }
-    };
-    void fetchPatchData();
-  }, [selectedCommit, loaderData.params, loaderData.strategy]);
+  const dualTableData = useQuery(
+    fetchCommitPatchQuery(loaderData, selectedCommit)
+  );
 
   const commitListData = useQuery(fetchCommitsQuery(loaderData, currentDate));
-  console.log("commitListData.isLoading", commitListData.isLoading);
+
   const { nodes, edges } = getNodesFromConfig(
     selectedMetric,
     commitListData.data || [],
@@ -152,7 +106,6 @@ const Overview = () => {
 
       setCurrentDate(newDate);
       handleSetSelectedCommit("");
-      setDualTableData({ dualTableProps: undefined, loading: false });
     },
     [currentDate, handleSetSelectedCommit]
   );
@@ -220,11 +173,11 @@ const Overview = () => {
 
       {selectedCommit ? (
         <DiffTableContainer>
-          {dualTableData.loading ? (
+          {dualTableData.isLoading ? (
             <Loader />
           ) : (
-            dualTableData.dualTableProps && (
-              <DiffTable dualTableProps={dualTableData.dualTableProps} />
+            dualTableData.data && (
+              <DiffTable dualTableProps={dualTableData.data} />
             )
           )}
         </DiffTableContainer>
