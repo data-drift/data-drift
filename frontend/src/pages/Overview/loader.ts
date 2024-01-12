@@ -1,5 +1,6 @@
 import { Params, useLoaderData } from "react-router-dom";
 import { DDConfig, getConfig } from "../../services/data-drift";
+import { QueryClient } from "@tanstack/react-query";
 
 enum Strategy {
   Github = "github",
@@ -19,26 +20,25 @@ function assertParamsIsDefined(
   throw new Error("Params is not defined");
 }
 
-export const loader = async ({
-  params,
-}: {
-  params: Params<"owner" | "repo">;
-}) => {
-  assertParamsIsDefined(params);
+export const loader =
+  (queryClient: QueryClient) =>
+  async ({ params }: { params: Params<"owner" | "repo"> }) => {
+    console.log(queryClient);
+    assertParamsIsDefined(params);
 
-  const config = await getConfig(params).catch((err) => {
-    console.error(err);
+    const config = await getConfig(params).catch((err) => {
+      console.error(err);
+      return {
+        metrics: [],
+      };
+    });
+
     return {
-      metrics: [],
-    };
-  });
-
-  return {
-    params,
-    config,
-    strategy: Strategy.Github,
-  } as const;
-};
+      params,
+      config,
+      strategy: Strategy.Github,
+    } as const;
+  };
 
 export const localStrategyLoader = ({
   params,
@@ -69,7 +69,7 @@ export const localStrategyLoader = ({
 };
 
 type LoaderData = Awaited<
-  ReturnType<typeof loader | typeof localStrategyLoader>
+  ReturnType<ReturnType<typeof loader> | typeof localStrategyLoader>
 >;
 
 function assertLoaderDataIsDefined(
