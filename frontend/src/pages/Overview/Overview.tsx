@@ -1,7 +1,6 @@
 import Lineage from "../../components/Lineage/Lineage";
 import { DualTableProps } from "../../components/Table/DualTable";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Edge, Node } from "reactflow";
 
 import {
   Container,
@@ -14,21 +13,22 @@ import {
   StyledHeader,
   StyledSelect,
 } from "./components";
-import { loader, localStrategyLoader, useOverviewLoaderData } from "./loader";
-import { getNodesFromConfig } from "./flow-nodes";
 import {
-  getCommitList,
-  getCommitListLocalStrategy,
-  getMeasurement,
-  getPatchAndHeader,
-} from "../../services/data-drift";
+  fetchCommitQuery,
+  loader,
+  localStrategyLoader,
+  useOverviewLoaderData,
+} from "./loader";
+import { getNodesFromConfig } from "./flow-nodes";
+import { getMeasurement, getPatchAndHeader } from "../../services/data-drift";
 import { DiffTable } from "../DisplayCommit/DiffTable";
 import { parsePatch } from "../../services/patch.mapper";
 import Loader from "../../components/Common/Loader";
 import StarUs from "../../components/Common/StarUs";
+import { useQuery } from "@tanstack/react-query";
 
 const Overview = () => {
-  const config = useOverviewLoaderData();
+  const loaderData = useOverviewLoaderData();
   const searchParams = new URLSearchParams(window.location.search);
 
   const tableName = searchParams.get("tableName") || "";
@@ -36,7 +36,7 @@ const Overview = () => {
 
   const initialSelectedMetric = useMemo(() => {
     if (tableName.length > 0) {
-      const metric = config.config.metrics.find((metric) =>
+      const metric = loaderData.config.metrics.find((metric) =>
         tableName.includes(metric.filepath.replace(".csv", ""))
       );
       return (
@@ -50,9 +50,9 @@ const Overview = () => {
         }
       );
     } else {
-      return config.config.metrics[initialSelectedMetricNumber];
+      return loaderData.config.metrics[initialSelectedMetricNumber];
     }
-  }, [tableName, config.config.metrics, initialSelectedMetricNumber]);
+  }, [tableName, loaderData.config.metrics, initialSelectedMetricNumber]);
 
   const [selectedMetric, setSelectedMetric] = useState(initialSelectedMetric);
   const handleSetSelectedMetric = useCallback(
@@ -61,25 +61,15 @@ const Overview = () => {
       searchParams.set("metric", newMetricIndex.toString());
       const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
       window.history.pushState({ path: newUrl }, "", newUrl);
-      setSelectedMetric(config.config.metrics[newMetricIndex]);
+      setSelectedMetric(loaderData.config.metrics[newMetricIndex]);
     },
-    [config.config.metrics]
+    [loaderData.config.metrics]
   );
 
   const initialSnapshotDate = searchParams.get("snapshotDate")
     ? new Date(searchParams.get("snapshotDate") as string)
     : new Date();
   const [currentDate, setCurrentDate] = useState(initialSnapshotDate);
-
-  const [commitListData, setCommitListData] = useState({
-    data: [] as {
-      commit: { message: string; author: { date?: string } | null };
-      sha: string;
-    }[],
-    loading: true,
-    nodes: [] as Node[],
-    edges: [] as Edge[],
-  });
 
   const initialCommitSha = searchParams.get("commitSha");
   const [selectedCommit, setSelectedCommit] = useState(initialCommitSha);
@@ -99,12 +89,12 @@ const Overview = () => {
     const controller = new AbortController();
     const fetchPatchData = async () => {
       if (!selectedCommit) return;
-      switch (config.strategy) {
+      switch (loaderData.strategy) {
         case "local": {
           setDualTableData({ dualTableProps: undefined, loading: true });
           const measurementResults = await getMeasurement(
             "default",
-            config.params.tableName,
+            loaderData.params.tableName,
             selectedCommit
           );
           const { oldData, newData } = parsePatch(
@@ -122,8 +112,8 @@ const Overview = () => {
           setDualTableData({ dualTableProps: undefined, loading: true });
           const patchAndHeader = await getPatchAndHeader(
             {
-              owner: config.params.owner,
-              repo: config.params.repo,
+              owner: loaderData.params.owner,
+              repo: loaderData.params.repo,
               commitSHA: selectedCommit,
             },
             controller
@@ -144,75 +134,16 @@ const Overview = () => {
     return () => {
       controller.abort();
     };
-  }, [selectedCommit, config.params, config.strategy]);
+  }, [selectedCommit, loaderData.params, loaderData.strategy]);
 
-  useEffect(() => {
-    const controller = new AbortController();
-    const fetchCommit = async () => {
-      switch (config.strategy) {
-        case "local": {
-          const result = await getCommitListLocalStrategy(
-            config.params.tableName,
-            currentDate.toISOString().substring(0, 10)
-          );
-
-          const mappedCommits = result.data.Measurements.map((commit) => ({
-            commit: {
-              message: commit.Message,
-              author: {
-                date: commit.Date,
-              },
-            },
-            sha: commit.Sha,
-          })) satisfies {
-            commit: { message: string; author: { date?: string } | null };
-            sha: string;
-          }[];
-
-          const { nodes, edges } = getNodesFromConfig(
-            selectedMetric,
-            mappedCommits,
-            handleSetSelectedCommit
-          );
-          setCommitListData({
-            data: mappedCommits,
-            loading: false,
-            nodes,
-            edges,
-          });
-          break;
-        }
-        case "github": {
-          const result = await getCommitList(
-            config.params,
-            currentDate.toISOString().substring(0, 10),
-            controller
-          );
-          const { nodes, edges } = getNodesFromConfig(
-            selectedMetric,
-            result.data,
-            handleSetSelectedCommit
-          );
-          setCommitListData({
-            data: result.data,
-            loading: false,
-            nodes,
-            edges,
-          });
-        }
-      }
-    };
-    void fetchCommit();
-    return () => {
-      controller.abort();
-    };
-  }, [
-    currentDate,
-    config.params,
-    config.strategy,
+  const commitListData = useQuery(fetchCommitQuery(loaderData, currentDate));
+  console.log("commitListData.isLoading", commitListData.isLoading);
+  const { nodes, edges } = getNodesFromConfig(
     selectedMetric,
+    commitListData.data || [],
     handleSetSelectedCommit,
-  ]);
+    commitListData.isLoading
+  );
 
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -228,7 +159,6 @@ const Overview = () => {
 
       setCurrentDate(newDate);
       handleSetSelectedCommit("");
-      setCommitListData((prev) => ({ ...prev, loading: true }));
       setDualTableData({ dualTableProps: undefined, loading: false });
     },
     [currentDate, handleSetSelectedCommit]
@@ -256,11 +186,11 @@ const Overview = () => {
           <StyledDateButton onClick={incrementDate}>{">"}</StyledDateButton>
         </StyledDate>
 
-        {config.config.metrics.length > 0 && (
+        {loaderData.config.metrics.length > 0 && (
           <StyledSelect
             value={selectedMetric.filepath}
             onChange={(e) => {
-              const selectedMetric = config.config.metrics.findIndex(
+              const selectedMetric = loaderData.config.metrics.findIndex(
                 (metric) => metric.filepath === e.target.value
               );
               if (
@@ -271,12 +201,12 @@ const Overview = () => {
               }
             }}
           >
-            {config.config.metrics
+            {loaderData.config.metrics
               .reduce((unique, metric) => {
                 return unique.some((item) => item.filepath === metric.filepath)
                   ? unique
                   : [...unique, metric];
-              }, [] as typeof config.config.metrics)
+              }, [] as typeof loaderData.config.metrics)
               .map((metric) => (
                 <option key={metric.filepath} value={metric.filepath}>
                   {metric.filepath}
@@ -290,10 +220,7 @@ const Overview = () => {
       <LineageContainer>
         {!isCollapsed && (
           <StyledCollapsibleContent isCollapsed={isCollapsed}>
-            <Lineage
-              nodes={commitListData.nodes}
-              edges={commitListData.edges}
-            />
+            <Lineage nodes={nodes} edges={edges} />
           </StyledCollapsibleContent>
         )}
       </LineageContainer>

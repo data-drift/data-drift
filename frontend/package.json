@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@emotion/styled": "^11.11.0",
+    "@tanstack/react-query": "^5.17.9",
     "axios": "^1.4.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -39,6 +40,7 @@
     "@storybook/react": "^7.4.6",
     "@storybook/react-vite": "^7.4.6",
     "@storybook/testing-library": "^0.2.2",
+    "@tanstack/eslint-plugin-query": "^5.17.7",
     "@types/jest": "^29.5.3",
     "@types/react": "^18.2.14",
     "@types/react-dom": "^18.2.6",

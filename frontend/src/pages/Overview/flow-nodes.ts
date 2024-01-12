@@ -66,7 +66,8 @@ export const getNodesFromConfig = (
     commit: { message: string; author: { date?: string } | null };
     sha: string;
   }[],
-  selectCommit: (commit: string) => void
+  selectCommit: (commit: string) => void,
+  commitListLoading: boolean
 ): { nodes: Node[]; edges: Edge[] } => {
   const metricEvents = getFileCommits(
     commitList,
@@ -80,6 +81,7 @@ export const getNodesFromConfig = (
     data: {
       label: extractFileNameAndPath(metric.filepath).fileName,
       events: metricEvents,
+      eventsLoading: commitListLoading,
     },
   } satisfies Node;
   let upstreamNodesOffset = 0;
@@ -97,6 +99,7 @@ export const getNodesFromConfig = (
           data: {
             label: extractFileNameAndPath(upstreamMetric).fileName,
             events: upstreamEvents,
+            eventsLoading: commitListLoading,
           },
         } satisfies Node;
         upstreamNodesOffset += 30 * upstreamEvents.length;

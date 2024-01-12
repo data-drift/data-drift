@@ -78,11 +78,13 @@ export type LineageEvent = {
 type MetricNodeProps = {
   metricName: string;
   events?: LineageEvent[];
+  eventsLoading?: boolean;
 };
 
 export const MetricNode = ({
   metricName = "",
   events = [],
+  eventsLoading,
 }: MetricNodeProps) => {
   const [expandedEvent, setExpandedEvent] = useState<
     LineageEvent["type"] | null
@@ -104,7 +106,9 @@ export const MetricNode = ({
   return (
     <StyledMetricNode>
       <strong>{metricName}</strong>
-      {events.length > 0 ? (
+      {eventsLoading ? (
+        <small>Loading</small>
+      ) : events.length > 0 ? (
         <ul>
           {events.map((event, index) => (
             <li key={index}>

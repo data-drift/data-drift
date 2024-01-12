@@ -11,6 +11,9 @@ import TablePage from "./pages/TablePage";
 import MetricPage from "./pages/MetricPage";
 import DriftOverviewPage from "./pages/DriftOverviewPage";
 import CompareCommits from "./pages/CompareCommits";
+import { QueryClient } from "@tanstack/react-query";
+
+export const queryClient = new QueryClient();
 
 export const router = createBrowserRouter([
   {
@@ -20,12 +23,12 @@ export const router = createBrowserRouter([
   {
     path: "/:installationId/:owner/:repo/overview", // legacy route
     element: <Overview />,
-    loader: Overview.loader,
+    loader: Overview.loader(queryClient),
   },
   {
     path: "/:owner/:repo/overview",
     element: <Overview />,
-    loader: Overview.loader,
+    loader: Overview.loader(queryClient),
   },
   {
     path: "/:installationId/:owner/:repo/compare", // legacy route
@@ -74,12 +77,12 @@ export const router = createBrowserRouter([
   {
     path: "report/:installationId/:owner/:repo/commits", // legacy route
     element: <DriftListPage />,
-    loader: DriftListPage.loader,
+    loader: DriftListPage.loader(queryClient),
   },
   {
     path: "report/:owner/:repo/commits",
     element: <DriftListPage />,
-    loader: DriftListPage.loader,
+    loader: DriftListPage.loader(queryClient),
   },
   {
     path: "tables",

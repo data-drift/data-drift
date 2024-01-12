@@ -1,8 +1,9 @@
 import { Params, useLoaderData } from "react-router";
-import { DDConfig, getCommitList, getConfig } from "../services/data-drift";
+import { DDConfig, configQuery, getCommitList } from "../services/data-drift";
 import { CommitList } from "../components/Commits/CommitList";
 import DriftCard from "../components/Commits/DriftCard";
 import styled from "@emotion/styled";
+import { QueryClient } from "@tanstack/react-query";
 
 function assertParamsIsDefined(
   params: Params<"owner" | "repo">
@@ -34,41 +35,44 @@ function queryParamsAreDefined(params: Record<string, string>): params is {
   return "periodKey" in params && "filepath" in params && "driftDate" in params;
 }
 
-const loader = async ({ params }: { params: Params<"owner" | "repo"> }) => {
-  assertParamsIsDefined(params);
-  const [result, config] = await Promise.all([
-    getCommitList(params),
-    getConfig(params),
-  ]);
-  const urlParams = Object.fromEntries(
-    new URLSearchParams(window.location.search)
-  );
-  if (queryParamsAreDefined(urlParams)) {
-    const urlParamsWithParent = {
-      ...urlParams,
-      parentData: extractParentsFromConfig(config, urlParams.filepath),
-    };
+const loader =
+  (queryClient: QueryClient) =>
+  async ({ params }: { params: Params<"owner" | "repo"> }) => {
+    assertParamsIsDefined(params);
+    const [result] = await Promise.all([getCommitList(params)]);
+    const query = configQuery(params);
+    const maybeConfig = queryClient.getQueryData<DDConfig>(query.queryKey);
+    const config =
+      maybeConfig !== undefined
+        ? maybeConfig
+        : await queryClient.fetchQuery(query);
+    const urlParams = Object.fromEntries(
+      new URLSearchParams(window.location.search)
+    );
+    if (queryParamsAreDefined(urlParams)) {
+      const urlParamsWithParent = {
+        ...urlParams,
+        parentData: extractParentsFromConfig(config, urlParams.filepath),
+      };
+      return {
+        data: result.data,
+        params,
+        urlParams: urlParamsWithParent,
+      };
+    }
     return {
       data: result.data,
       params,
-      config,
-      urlParams: urlParamsWithParent,
+      urlParams: {
+        periodKey: "",
+        filepath: "",
+        driftDate: "",
+        parentData: [],
+      },
     };
-  }
-  return {
-    data: result.data,
-    params,
-    config,
-    urlParams: {
-      periodKey: "",
-      filepath: "",
-      driftDate: "",
-      parentData: [],
-    },
   };
-};
 
-type LoaderData = Awaited<ReturnType<typeof loader>>;
+type LoaderData = Awaited<ReturnType<ReturnType<typeof loader>>>;
 
 const DriftListContainer = styled.div`
   display: flex;

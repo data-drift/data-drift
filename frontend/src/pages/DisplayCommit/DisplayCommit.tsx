@@ -1,6 +1,6 @@
 import { parsePatch } from "../../services/patch.mapper";
 import { Params, useLoaderData, defer } from "react-router";
-import { getConfig, getPatchAndHeader } from "../../services/data-drift";
+import { getPatchAndHeader } from "../../services/data-drift";
 import styled from "@emotion/styled";
 import { DiffTable } from "./DiffTable";
 import { toast } from "react-toastify";
@@ -37,7 +37,6 @@ const getPatchFromApi = async ({ owner, repo, commitSHA }: CommitParam) => {
       repo,
       commitSHA,
     }),
-    getConfig({ owner, repo }),
   ]);
 
   if (patchToLarge) {
