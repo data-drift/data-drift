@@ -39,7 +39,7 @@ const loader =
   (queryClient: QueryClient) =>
   async ({ params }: { params: Params<"owner" | "repo"> }) => {
     assertParamsIsDefined(params);
-    const [result] = await Promise.all([getCommitList(params)]);
+    const result = await getCommitList(params);
     const query = configQuery(params);
     const maybeConfig = queryClient.getQueryData<DDConfig>(query.queryKey);
     const config =
