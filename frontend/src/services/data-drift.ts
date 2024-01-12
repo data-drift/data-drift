@@ -1,4 +1,4 @@
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
 import { CommitParam } from "../pages/DisplayCommit/DisplayCommit";
 import { MetricCohortsResults } from "./data-drift.types";
 import { Endpoints } from "@octokit/types";
@@ -33,10 +33,7 @@ axios.interceptors.response.use(
 const DATA_DRIFT_API_URL =
   String(import.meta.env.VITE_DATADRIFT_SERVER_URL) || "";
 
-export const getPatchAndHeader = async (
-  params: CommitParam,
-  controller?: AbortController
-) => {
+export const getPatchAndHeader = async (params: CommitParam) => {
   const result = await axios.get<{
     patch: string;
     headers: string[];
@@ -45,10 +42,7 @@ export const getPatchAndHeader = async (
     filename: string;
     patchToLarge: boolean;
   }>(
-    `${DATA_DRIFT_API_URL}/gh/${params.owner}/${params.repo}/commit/${params.commitSHA}`,
-    {
-      signal: controller?.signal,
-    }
+    `${DATA_DRIFT_API_URL}/gh/${params.owner}/${params.repo}/commit/${params.commitSHA}`
   );
   return {
     patch: result.data.patch,
@@ -110,37 +104,19 @@ export const getMetricCohorts = async ({
   return result;
 };
 
-const githubCommitListCache = new Map<
-  string,
-  AxiosResponse<
-    Endpoints["GET /repos/{owner}/{repo}/commits"]["response"]["data"]
-  >
->();
-
 export const getCommitList = async (
   params: {
     owner: string;
     repo: string;
   },
-  date?: string,
-  controller?: AbortController
+  date?: string
 ) => {
-  const cacheKey = `${params.owner}-${params.repo}-${date || "no-date"}`;
-
-  if (githubCommitListCache.has(cacheKey)) {
-    const cachedResult = githubCommitListCache.get(cacheKey);
-    if (cachedResult) {
-      return cachedResult;
-    }
-  }
   const result = await axios.get<
     Endpoints["GET /repos/{owner}/{repo}/commits"]["response"]["data"]
   >(`${DATA_DRIFT_API_URL}/gh/${params.owner}/${params.repo}/commits`, {
     params: { date },
-    signal: controller?.signal,
   });
 
-  githubCommitListCache.set(cacheKey, result);
   return result;
 };
 

@@ -86,7 +86,6 @@ const Overview = () => {
     loading: false,
   });
   useEffect(() => {
-    const controller = new AbortController();
     const fetchPatchData = async () => {
       if (!selectedCommit) return;
       switch (loaderData.strategy) {
@@ -110,14 +109,11 @@ const Overview = () => {
         }
         case "github": {
           setDualTableData({ dualTableProps: undefined, loading: true });
-          const patchAndHeader = await getPatchAndHeader(
-            {
-              owner: loaderData.params.owner,
-              repo: loaderData.params.repo,
-              commitSHA: selectedCommit,
-            },
-            controller
-          );
+          const patchAndHeader = await getPatchAndHeader({
+            owner: loaderData.params.owner,
+            repo: loaderData.params.repo,
+            commitSHA: selectedCommit,
+          });
           const { oldData, newData } = parsePatch(
             patchAndHeader.patch,
             patchAndHeader.headers
@@ -131,9 +127,6 @@ const Overview = () => {
       }
     };
     void fetchPatchData();
-    return () => {
-      controller.abort();
-    };
   }, [selectedCommit, loaderData.params, loaderData.strategy]);
 
   const commitListData = useQuery(fetchCommitQuery(loaderData, currentDate));
