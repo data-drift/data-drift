@@ -1,5 +1,5 @@
 import { Params, useLoaderData } from "react-router-dom";
-import { DDConfig, getConfig } from "../../services/data-drift";
+import { DDConfig, configQuery, getConfig } from "../../services/data-drift";
 import { QueryClient } from "@tanstack/react-query";
 
 enum Strategy {
@@ -25,13 +25,12 @@ export const loader =
   async ({ params }: { params: Params<"owner" | "repo"> }) => {
     console.log(queryClient);
     assertParamsIsDefined(params);
-
-    const config = await getConfig(params).catch((err) => {
-      console.error(err);
-      return {
-        metrics: [],
-      };
-    });
+    const query = configQuery(params);
+    const maybeConfig = queryClient.getQueryData<DDConfig>(query.queryKey);
+    const config =
+      maybeConfig !== undefined
+        ? maybeConfig
+        : await queryClient.fetchQuery(query);
 
     return {
       params,

@@ -312,45 +312,15 @@ const getConfigFromApi = async (params: { owner: string; repo: string }) => {
   return result.data.config;
 };
 
-const configNameBuilder = (owner: string, repo: string) => {
-  return `config-${owner}/${repo}`;
-};
-
-const getConfigFromSessionStorage = (
-  owner: string,
-  repo: string
-): DDConfig | null => {
-  const config = sessionStorage.getItem(configNameBuilder(owner, repo));
-  if (config) {
-    return JSON.parse(config) as DDConfig;
-  } else {
-    return null;
-  }
-};
-
-const storeConfigInSessionStorage = (
-  owner: string,
-  repo: string,
-  config: DDConfig
-) => {
-  sessionStorage.setItem(
-    configNameBuilder(owner, repo),
-    JSON.stringify(config)
-  );
-};
-
 export const getConfig = async (params: { owner: string; repo: string }) => {
-  const configFromStorage = getConfigFromSessionStorage(
-    params.owner,
-    params.repo
-  );
-  if (configFromStorage) {
-    return configFromStorage;
-  }
   const configFromApi = await getConfigFromApi(params);
-  storeConfigInSessionStorage(params.owner, params.repo, configFromApi);
   return configFromApi;
 };
+
+export const configQuery = (params: { owner: string; repo: string }) => ({
+  queryKey: ["config", params.owner, params.repo],
+  queryFn: () => getConfig(params),
+});
 
 export const getTableList = async () => {
   const result = await axios.get<{
