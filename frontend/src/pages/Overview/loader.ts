@@ -28,7 +28,6 @@ function assertParamsIsDefined(
 export const loader =
   (queryClient: QueryClient) =>
   async ({ params }: { params: Params<"owner" | "repo"> }) => {
-    console.log(queryClient);
     assertParamsIsDefined(params);
     const query = configQuery(params);
     const maybeConfig = queryClient.getQueryData<DDConfig>(query.queryKey);
@@ -91,7 +90,7 @@ export const useOverviewLoaderData = () => {
   return loaderData;
 };
 
-const fetchCommit = async (
+const fetchCommits = async (
   strategy:
     | {
         strategy: Strategy.Local;
@@ -142,7 +141,7 @@ const fetchCommit = async (
   }
 };
 
-export const fetchCommitQuery = (
+export const fetchCommitsQuery = (
   strategy:
     | {
         strategy: Strategy.Local;
@@ -155,5 +154,5 @@ export const fetchCommitQuery = (
   currentDate: Date
 ) => ({
   queryKey: ["commit", strategy, currentDate],
-  queryFn: () => fetchCommit(strategy, currentDate),
+  queryFn: () => fetchCommits(strategy, currentDate),
 });

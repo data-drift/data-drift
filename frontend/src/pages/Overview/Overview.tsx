@@ -14,7 +14,7 @@ import {
   StyledSelect,
 } from "./components";
 import {
-  fetchCommitQuery,
+  fetchCommitsQuery,
   loader,
   localStrategyLoader,
   useOverviewLoaderData,
@@ -129,7 +129,7 @@ const Overview = () => {
     void fetchPatchData();
   }, [selectedCommit, loaderData.params, loaderData.strategy]);
 
-  const commitListData = useQuery(fetchCommitQuery(loaderData, currentDate));
+  const commitListData = useQuery(fetchCommitsQuery(loaderData, currentDate));
   console.log("commitListData.isLoading", commitListData.isLoading);
   const { nodes, edges } = getNodesFromConfig(
     selectedMetric,
