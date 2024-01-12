@@ -28,7 +28,7 @@ import Loader from "../../components/Common/Loader";
 import StarUs from "../../components/Common/StarUs";
 
 const Overview = () => {
-  const config = useOverviewLoaderData();
+  const loaderData = useOverviewLoaderData();
   const searchParams = new URLSearchParams(window.location.search);
 
   const tableName = searchParams.get("tableName") || "";
@@ -36,7 +36,7 @@ const Overview = () => {
 
   const initialSelectedMetric = useMemo(() => {
     if (tableName.length > 0) {
-      const metric = config.config.metrics.find((metric) =>
+      const metric = loaderData.config.metrics.find((metric) =>
         tableName.includes(metric.filepath.replace(".csv", ""))
       );
       return (
@@ -50,9 +50,9 @@ const Overview = () => {
         }
       );
     } else {
-      return config.config.metrics[initialSelectedMetricNumber];
+      return loaderData.config.metrics[initialSelectedMetricNumber];
     }
-  }, [tableName, config.config.metrics, initialSelectedMetricNumber]);
+  }, [tableName, loaderData.config.metrics, initialSelectedMetricNumber]);
 
   const [selectedMetric, setSelectedMetric] = useState(initialSelectedMetric);
   const handleSetSelectedMetric = useCallback(
@@ -61,9 +61,9 @@ const Overview = () => {
       searchParams.set("metric", newMetricIndex.toString());
       const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
       window.history.pushState({ path: newUrl }, "", newUrl);
-      setSelectedMetric(config.config.metrics[newMetricIndex]);
+      setSelectedMetric(loaderData.config.metrics[newMetricIndex]);
     },
-    [config.config.metrics]
+    [loaderData.config.metrics]
   );
 
   const initialSnapshotDate = searchParams.get("snapshotDate")
@@ -99,12 +99,12 @@ const Overview = () => {
     const controller = new AbortController();
     const fetchPatchData = async () => {
       if (!selectedCommit) return;
-      switch (config.strategy) {
+      switch (loaderData.strategy) {
         case "local": {
           setDualTableData({ dualTableProps: undefined, loading: true });
           const measurementResults = await getMeasurement(
             "default",
-            config.params.tableName,
+            loaderData.params.tableName,
             selectedCommit
           );
           const { oldData, newData } = parsePatch(
@@ -122,8 +122,8 @@ const Overview = () => {
           setDualTableData({ dualTableProps: undefined, loading: true });
           const patchAndHeader = await getPatchAndHeader(
             {
-              owner: config.params.owner,
-              repo: config.params.repo,
+              owner: loaderData.params.owner,
+              repo: loaderData.params.repo,
               commitSHA: selectedCommit,
             },
             controller
@@ -144,15 +144,15 @@ const Overview = () => {
     return () => {
       controller.abort();
     };
-  }, [selectedCommit, config.params, config.strategy]);
+  }, [selectedCommit, loaderData.params, loaderData.strategy]);
 
   useEffect(() => {
     const controller = new AbortController();
     const fetchCommit = async () => {
-      switch (config.strategy) {
+      switch (loaderData.strategy) {
         case "local": {
           const result = await getCommitListLocalStrategy(
-            config.params.tableName,
+            loaderData.params.tableName,
             currentDate.toISOString().substring(0, 10)
           );
 
@@ -184,7 +184,7 @@ const Overview = () => {
         }
         case "github": {
           const result = await getCommitList(
-            config.params,
+            loaderData.params,
             currentDate.toISOString().substring(0, 10),
             controller
           );
@@ -208,8 +208,8 @@ const Overview = () => {
     };
   }, [
     currentDate,
-    config.params,
-    config.strategy,
+    loaderData.params,
+    loaderData.strategy,
     selectedMetric,
     handleSetSelectedCommit,
   ]);
@@ -256,11 +256,11 @@ const Overview = () => {
           <StyledDateButton onClick={incrementDate}>{">"}</StyledDateButton>
         </StyledDate>
 
-        {config.config.metrics.length > 0 && (
+        {loaderData.config.metrics.length > 0 && (
           <StyledSelect
             value={selectedMetric.filepath}
             onChange={(e) => {
-              const selectedMetric = config.config.metrics.findIndex(
+              const selectedMetric = loaderData.config.metrics.findIndex(
                 (metric) => metric.filepath === e.target.value
               );
               if (
@@ -271,12 +271,12 @@ const Overview = () => {
               }
             }}
           >
-            {config.config.metrics
+            {loaderData.config.metrics
               .reduce((unique, metric) => {
                 return unique.some((item) => item.filepath === metric.filepath)
                   ? unique
                   : [...unique, metric];
-              }, [] as typeof config.config.metrics)
+              }, [] as typeof loaderData.config.metrics)
               .map((metric) => (
                 <option key={metric.filepath} value={metric.filepath}>
                   {metric.filepath}
