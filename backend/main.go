@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/data-drift/data-drift/common"
 	"github.com/data-drift/data-drift/debug"
 	"github.com/data-drift/data-drift/github"
 	"github.com/data-drift/data-drift/local_store"
@@ -48,9 +49,18 @@ func main() {
 
 	GithubService := github.NewGithubService(db)
 
+	redisClient, err := common.GetRedisClient()
+	if err != nil {
+		panic("failed to connect redis")
+	}
+
+	KpiRepository := common.NewKpiRepository(redisClient)
+
+	metricsService := metrics.NewMetricService(KpiRepository)
+
 	port := defaultIfEmpty(os.Getenv("PORT"), "8080")
 
-	go github.ProcessWebhooks()
+	go github.ProcessWebhooks(redisClient)
 
 	router := gin.New()
 
@@ -72,12 +82,12 @@ func main() {
 	router.GET("gh/:owner/:repo/compare/:base-commit-sha/:head-commit-sha", GithubService.GithubClientGuard, github.CompareCommit)
 	router.GET("gh/:owner/:repo/compare-between-date", GithubService.GithubClientGuard, github.CompareCommitBetweenDates)
 	router.GET("gh/:owner/:repo/commits", GithubService.GithubClientGuard, github.GetCommitList)
-	router.GET("gh/:owner/:repo/metrics/:metric-name/cohorts/:timegrain", GithubService.GithubClientGuard, metrics.GetMetricCohort)
-	router.GET("gh/:owner/:repo/metrics/:metric-name/reports", GithubService.GithubClientGuard, metrics.GetMetricReport)
+	router.GET("gh/:owner/:repo/metrics/:metric-name/cohorts/:timegrain", GithubService.GithubClientGuard, metricsService.GetMetricCohort)
+	router.GET("gh/:owner/:repo/metrics/:metric-name/reports", GithubService.GithubClientGuard, metricsService.GetMetricReport)
 	router.GET("config/:owner/:repo", GithubService.GithubClientGuard, github.GetConfigHandler)
 
-	router.GET("metrics/:metric-name/cohorts/:timegrain", metrics.GetMetricCohort)
-	router.GET("metrics/:metric-name/reports", metrics.GetMetricReport)
+	router.GET("metrics/:metric-name/cohorts/:timegrain", metricsService.GetMetricCohort)
+	router.GET("metrics/:metric-name/reports", metricsService.GetMetricReport)
 	router.GET("stores/:store/tables", local_store.TablesHandler)
 	router.GET("stores/:store/tables/:table", local_store.TableHandler)
 	router.POST("stores/:store/tables/:table", local_store.StoreTableHandler)

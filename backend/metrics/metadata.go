@@ -10,7 +10,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetMetricCohort(c *gin.Context) {
+type MetricService struct {
+	KpiRepository *common.KpiRepository
+}
+
+func NewMetricService(kpiRepository *common.KpiRepository) *MetricService {
+	return &MetricService{KpiRepository: kpiRepository}
+}
+
+func (h *MetricService) GetMetricCohort(c *gin.Context) {
 
 	InstallationId := c.Request.Header.Get("Installation-Id")
 	metricName := c.Param("metric-name")
@@ -32,7 +40,7 @@ func GetMetricCohort(c *gin.Context) {
 		filepath = common.LegacyGetMetricStorageKey(InstallationId, metricName)
 	}
 
-	metricHistory, err := common.ReadMetricKPI(filepath)
+	metricHistory, err := h.KpiRepository.ReadMetricKPI(filepath)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -43,7 +51,7 @@ func GetMetricCohort(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-func GetMetricReport(c *gin.Context) {
+func (h *MetricService) GetMetricReport(c *gin.Context) {
 
 	InstallationId := c.Request.Header.Get("Installation-Id")
 	metricName := c.Param("metric-name")
@@ -65,7 +73,7 @@ func GetMetricReport(c *gin.Context) {
 		filepath = common.LegacyGetMetricStorageKey(InstallationId, metricName)
 	}
 
-	metricHistory, err := common.ReadMetricKPI(filepath)
+	metricHistory, err := h.KpiRepository.ReadMetricKPI(filepath)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
