@@ -1,10 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
-import GithubForm from "./pages/GithubForm";
-import DisplayCommit from "./pages/DisplayCommit/DisplayCommit";
 import MetricCohort from "./pages/MetricCohorts";
 import MetricReportWaterfall from "./pages/MetricReportWaterfall";
 import { HomePage } from "./pages/HomePage";
-import DriftListPage from "./pages/DriftList";
 import Overview from "./pages/Overview/Overview";
 import TableList from "./pages/TableList";
 import TablePage from "./pages/TablePage";
@@ -41,20 +38,6 @@ export const router = createBrowserRouter([
     loader: CompareCommits.loader,
   },
   {
-    path: "/ghform",
-    element: <GithubForm />,
-  },
-  {
-    path: "report/:installationId/:owner/:repo/commit/:commitSHA", // legacy route
-    element: <DisplayCommit />,
-    loader: DisplayCommit.dataDriftLoader,
-  },
-  {
-    path: "report/:owner/:repo/commit/:commitSHA",
-    element: <DisplayCommit />,
-    loader: DisplayCommit.dataDriftLoader,
-  },
-  {
     path: "report/:installationId/metrics/:metricName/cohorts/:timegrain", // legacy route
     element: <MetricCohort />,
     loader: MetricCohort.loader,
@@ -73,16 +56,6 @@ export const router = createBrowserRouter([
     path: "report/:owner/:repo/metrics/:metricName/report/:timegrainValue",
     element: <MetricReportWaterfall />,
     loader: MetricReportWaterfall.loader,
-  },
-  {
-    path: "report/:installationId/:owner/:repo/commits", // legacy route
-    element: <DriftListPage />,
-    loader: DriftListPage.loader(queryClient),
-  },
-  {
-    path: "report/:owner/:repo/commits",
-    element: <DriftListPage />,
-    loader: DriftListPage.loader(queryClient),
   },
   {
     path: "tables",
