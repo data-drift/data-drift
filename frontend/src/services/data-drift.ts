@@ -1,7 +1,12 @@
 import axios from "axios";
-import { CommitParam } from "../pages/DisplayCommit/DisplayCommit";
 import { MetricCohortsResults } from "./data-drift.types";
 import { Endpoints } from "@octokit/types";
+
+export interface CommitParam {
+  owner: string;
+  repo: string;
+  commitSHA: string;
+}
 
 const encodedPassword = localStorage.getItem("basic_auth");
 
