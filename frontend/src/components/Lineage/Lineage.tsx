@@ -7,12 +7,16 @@ import type { LineageEvent } from "./MetricNode";
 import styled from "@emotion/styled";
 
 const CustomMetricNode: ComponentType<
-  NodeProps<{ label: string; events: LineageEvent[] }>
+  NodeProps<{ label: string; events: LineageEvent[]; eventsLoading: boolean }>
 > = ({ data, sourcePosition, targetPosition }) => {
   return (
     <div>
       {targetPosition && <Handle type="target" position={targetPosition} />}
-      <MetricNode metricName={data.label} events={data.events} />
+      <MetricNode
+        metricName={data.label}
+        events={data.events}
+        eventsLoading={data.eventsLoading}
+      />
 
       {sourcePosition && <Handle type="source" position={sourcePosition} />}
     </div>
@@ -33,7 +37,7 @@ const StyledContainer = styled.div`
   }
 `;
 
-function Lineage({ nodes: nodes, edges }: LineageProps) {
+function Lineage({ nodes, edges }: LineageProps) {
   const nodeTypes = useMemo(() => ({ metricNode: CustomMetricNode }), []);
 
   return (

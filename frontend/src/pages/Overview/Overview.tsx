@@ -1,7 +1,6 @@
 import Lineage from "../../components/Lineage/Lineage";
 import { DualTableProps } from "../../components/Table/DualTable";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Edge, Node } from "reactflow";
 
 import {
   Container,
@@ -14,18 +13,19 @@ import {
   StyledHeader,
   StyledSelect,
 } from "./components";
-import { loader, localStrategyLoader, useOverviewLoaderData } from "./loader";
-import { getNodesFromConfig } from "./flow-nodes";
 import {
-  getCommitList,
-  getCommitListLocalStrategy,
-  getMeasurement,
-  getPatchAndHeader,
-} from "../../services/data-drift";
+  fetchCommitQuery,
+  loader,
+  localStrategyLoader,
+  useOverviewLoaderData,
+} from "./loader";
+import { getNodesFromConfig } from "./flow-nodes";
+import { getMeasurement, getPatchAndHeader } from "../../services/data-drift";
 import { DiffTable } from "../DisplayCommit/DiffTable";
 import { parsePatch } from "../../services/patch.mapper";
 import Loader from "../../components/Common/Loader";
 import StarUs from "../../components/Common/StarUs";
+import { useQuery } from "@tanstack/react-query";
 
 const Overview = () => {
   const loaderData = useOverviewLoaderData();
@@ -70,16 +70,6 @@ const Overview = () => {
     ? new Date(searchParams.get("snapshotDate") as string)
     : new Date();
   const [currentDate, setCurrentDate] = useState(initialSnapshotDate);
-
-  const [commitListData, setCommitListData] = useState({
-    data: [] as {
-      commit: { message: string; author: { date?: string } | null };
-      sha: string;
-    }[],
-    loading: true,
-    nodes: [] as Node[],
-    edges: [] as Edge[],
-  });
 
   const initialCommitSha = searchParams.get("commitSha");
   const [selectedCommit, setSelectedCommit] = useState(initialCommitSha);
@@ -146,73 +136,14 @@ const Overview = () => {
     };
   }, [selectedCommit, loaderData.params, loaderData.strategy]);
 
-  useEffect(() => {
-    const controller = new AbortController();
-    const fetchCommit = async () => {
-      switch (loaderData.strategy) {
-        case "local": {
-          const result = await getCommitListLocalStrategy(
-            loaderData.params.tableName,
-            currentDate.toISOString().substring(0, 10)
-          );
-
-          const mappedCommits = result.data.Measurements.map((commit) => ({
-            commit: {
-              message: commit.Message,
-              author: {
-                date: commit.Date,
-              },
-            },
-            sha: commit.Sha,
-          })) satisfies {
-            commit: { message: string; author: { date?: string } | null };
-            sha: string;
-          }[];
-
-          const { nodes, edges } = getNodesFromConfig(
-            selectedMetric,
-            mappedCommits,
-            handleSetSelectedCommit
-          );
-          setCommitListData({
-            data: mappedCommits,
-            loading: false,
-            nodes,
-            edges,
-          });
-          break;
-        }
-        case "github": {
-          const result = await getCommitList(
-            loaderData.params,
-            currentDate.toISOString().substring(0, 10),
-            controller
-          );
-          const { nodes, edges } = getNodesFromConfig(
-            selectedMetric,
-            result.data,
-            handleSetSelectedCommit
-          );
-          setCommitListData({
-            data: result.data,
-            loading: false,
-            nodes,
-            edges,
-          });
-        }
-      }
-    };
-    void fetchCommit();
-    return () => {
-      controller.abort();
-    };
-  }, [
-    currentDate,
-    loaderData.params,
-    loaderData.strategy,
+  const commitListData = useQuery(fetchCommitQuery(loaderData, currentDate));
+  console.log("commitListData.isLoading", commitListData.isLoading);
+  const { nodes, edges } = getNodesFromConfig(
     selectedMetric,
+    commitListData.data || [],
     handleSetSelectedCommit,
-  ]);
+    commitListData.isLoading
+  );
 
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -228,7 +159,6 @@ const Overview = () => {
 
       setCurrentDate(newDate);
       handleSetSelectedCommit("");
-      setCommitListData((prev) => ({ ...prev, loading: true }));
       setDualTableData({ dualTableProps: undefined, loading: false });
     },
     [currentDate, handleSetSelectedCommit]
@@ -290,10 +220,7 @@ const Overview = () => {
       <LineageContainer>
         {!isCollapsed && (
           <StyledCollapsibleContent isCollapsed={isCollapsed}>
-            <Lineage
-              nodes={commitListData.nodes}
-              edges={commitListData.edges}
-            />
+            <Lineage nodes={nodes} edges={edges} />
           </StyledCollapsibleContent>
         )}
       </LineageContainer>

@@ -1,5 +1,10 @@
 import { Params, useLoaderData } from "react-router-dom";
-import { DDConfig, configQuery } from "../../services/data-drift";
+import {
+  DDConfig,
+  configQuery,
+  getCommitList,
+  getCommitListLocalStrategy,
+} from "../../services/data-drift";
 import { QueryClient } from "@tanstack/react-query";
 
 enum Strategy {
@@ -85,3 +90,70 @@ export const useOverviewLoaderData = () => {
   assertLoaderDataIsDefined(loaderData);
   return loaderData;
 };
+
+const fetchCommit = async (
+  strategy:
+    | {
+        strategy: Strategy.Local;
+        params: { tableName: string };
+      }
+    | {
+        strategy: Strategy.Github;
+        params: { owner: string; repo: string };
+      },
+  currentDate: Date
+): Promise<
+  {
+    commit: { message: string; author: { date?: string } | null };
+    sha: string;
+  }[]
+> => {
+  switch (strategy.strategy) {
+    case "local": {
+      const result = await getCommitListLocalStrategy(
+        strategy.params.tableName,
+        currentDate.toISOString().substring(0, 10)
+      );
+
+      const mappedCommits = result.data.Measurements.map((commit) => ({
+        commit: {
+          message: commit.Message,
+          author: {
+            date: commit.Date,
+          },
+        },
+        sha: commit.Sha,
+      })) satisfies {
+        commit: { message: string; author: { date?: string } | null };
+        sha: string;
+      }[];
+
+      return mappedCommits;
+    }
+    case "github": {
+      const result = await getCommitList(
+        strategy.params,
+        currentDate.toISOString().substring(0, 10)
+      );
+      return result.data;
+    }
+    default:
+      throw new Error("Strategy not supported");
+  }
+};
+
+export const fetchCommitQuery = (
+  strategy:
+    | {
+        strategy: Strategy.Local;
+        params: { tableName: string };
+      }
+    | {
+        strategy: Strategy.Github;
+        params: { owner: string; repo: string };
+      },
+  currentDate: Date
+) => ({
+  queryKey: ["commit", strategy, currentDate],
+  queryFn: () => fetchCommit(strategy, currentDate),
+});

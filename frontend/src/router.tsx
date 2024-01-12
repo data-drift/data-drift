@@ -13,7 +13,7 @@ import DriftOverviewPage from "./pages/DriftOverviewPage";
 import CompareCommits from "./pages/CompareCommits";
 import { QueryClient } from "@tanstack/react-query";
 
-const queryClient = new QueryClient();
+export const queryClient = new QueryClient();
 
 export const router = createBrowserRouter([
   {
