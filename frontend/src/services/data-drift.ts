@@ -312,14 +312,9 @@ const getConfigFromApi = async (params: { owner: string; repo: string }) => {
   return result.data.config;
 };
 
-export const getConfig = async (params: { owner: string; repo: string }) => {
-  const configFromApi = await getConfigFromApi(params);
-  return configFromApi;
-};
-
 export const configQuery = (params: { owner: string; repo: string }) => ({
   queryKey: ["config", params.owner, params.repo],
-  queryFn: () => getConfig(params),
+  queryFn: () => getConfigFromApi(params),
 });
 
 export const getTableList = async () => {

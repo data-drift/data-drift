@@ -1,5 +1,5 @@
 import { Params, useLoaderData } from "react-router-dom";
-import { DDConfig, configQuery, getConfig } from "../../services/data-drift";
+import { DDConfig, configQuery } from "../../services/data-drift";
 import { QueryClient } from "@tanstack/react-query";
 
 enum Strategy {

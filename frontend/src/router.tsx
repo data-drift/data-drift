@@ -77,12 +77,12 @@ export const router = createBrowserRouter([
   {
     path: "report/:installationId/:owner/:repo/commits", // legacy route
     element: <DriftListPage />,
-    loader: DriftListPage.loader,
+    loader: DriftListPage.loader(queryClient),
   },
   {
     path: "report/:owner/:repo/commits",
     element: <DriftListPage />,
-    loader: DriftListPage.loader,
+    loader: DriftListPage.loader(queryClient),
   },
   {
     path: "tables",
