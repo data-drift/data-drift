@@ -28,7 +28,7 @@
   <a href="https://www.data-drift.io/blog">Blog</a> |
   <a href="https://pypi.org/project/driftdb/">Doc</a> |
   <a href="https://github.com/orgs/data-drift/projects/3">Roadmap</a> |
-  <a href="">Discord</a>
+  <a href="https://discord.gg/GNEyCsrEve">Discord</a>
 </h3>
 
 <p align="center">
