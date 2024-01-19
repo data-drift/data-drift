@@ -19,7 +19,7 @@
 
 <h1 align="center" >Metrics Observability & Troubleshooting</h1>
 
-<p align="center">Datadrift is an open-source monitoring and incident management platform to help data teams deliver trusted and reliable metrics.
+<p align="center">Datadrift is an open-source metric observability framework that helps data teams deliver trusted and reliable metrics.
 </p>
 
 <h3 align="center">
@@ -38,6 +38,9 @@
 </p>
 
 Data monitoring tools fail by focusing on static tests (eg. null, unique, expected values) and metadata monitoring (eg. column-level).
+</br>
+
+Datadrift monitors your metrics, sends alerts when anomalies are detected and automates root cause analysis. 
 </br>
 **Data teams detect and solve data issues faster with Datadrift's row-level monitoring & troubleshooting.**
 
@@ -67,7 +70,7 @@ For a step-by-step guide on the python installation, see the [docs](https://pypi
 
 ## Datadrift cloud
 
-We are in development and we would love to do the installation with you. [Fill the form on our website](https://www.data-drift.io/) so we can do a 15min demo. If the tool solves your problem then the installation require 2\*30 min meeting.
+We are in development and we would love to do the installation with you. [Fill the form on our website](https://www.data-drift.io/) so we can do a 15min demo. If the tool solves your problem then the installation requires 30min.
 
 </br>
 
@@ -83,7 +86,7 @@ Get full visibility into metrics variation and pro-actively detect data quality 
 
 </br>
 
-## 🧑‍🎤 Automated troubleshooting & reconciliation
+## 🧑‍🎤 Automated root cause analysis & troubleshooting
 
 Operationalize your monitoring and solve your underlying data quality issue with lineage drill-down to understand the root cause of the problem.
 
@@ -93,9 +96,9 @@ Operationalize your monitoring and solve your underlying data quality issue with
 
 </br>
 
-## 💎 Metric issues management & changelog
+## 💎 Shared understanding of metric variation
 
-Give visibility to data consumers with metric changelog and in-context explanations.
+Give visibility to data analysts and data consumers with shared explanation of metric variation.
 
   <a href="https://www.data-drift.io">
     <img src="./datadrift-changelog-dark.png" alt="DataDrift metric drift changelog" width="800px"/>
