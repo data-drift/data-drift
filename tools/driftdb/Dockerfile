@@ -41,6 +41,10 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     --mount=type=bind,source=requirements.txt,target=requirements.txt \
     python -m pip install -r requirements.txt
 
+RUN --mount=type=cache,target=/root/.cache/pip \
+    --mount=type=bind,source=requirements-dev.txt,target=requirements-dev.txt \
+    python -m pip install -r requirements-dev.txt
+
 # Switch to the non-privileged user to run the application.
 USER appuser
 
@@ -48,7 +52,7 @@ COPY --chown=appuser:appuser . /app
 
 
 # Copy the source code into the container.
-COPY ./driftdb ./driftdb
+COPY . .
 
 # Run the application.
 CMD bash -c "python -m driftdb.entrypoint --version && tail -f /dev/null"
