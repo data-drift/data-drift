@@ -8,5 +8,5 @@ isort
 pandas
 pandas-stubs
 PyGithub
-typing_extensions
+typing_extensions==4.9.0
 typer[all]
