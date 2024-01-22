@@ -1,0 +1,13 @@
+black
+click
+dbt-core
+Faker
+GitPython
+inquirer
+isort
+mypy
+pandas
+pandas-stubs
+PyGithub
+typing_extensions
+typer[all]
