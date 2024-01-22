@@ -46,7 +46,15 @@ def show(snapshot_id: str = typer.Option(None, help="id of your snapshot")):
 @app.command()
 def check(snapshot_id: str = typer.Option(None, help="id of your snapshot")):
     snapshot_node = get_or_prompt_snapshot_node(snapshot_id, get_snapshot_nodes())
-    print(f"Snapshot {snapshot_node['unique_id']} is valid.")
+    snapshot_dates = get_snapshot_dates(snapshot_node)
+
+    snapshot_date = get_user_date_selection(snapshot_dates)
+    print(f"Getting {snapshot_node['unique_id']} for {snapshot_date}.")
+    diff = get_snapshot_diff(snapshot_node, snapshot_date)
+
+    print("Check drift for snapshot: " + snapshot_node["unique_id"])
+
+    print(diff.to_markdown())
 
 
 def get_or_prompt_snapshot_node(snapshot_id, snapshot_nodes):
