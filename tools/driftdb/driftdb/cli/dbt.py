@@ -21,7 +21,7 @@ logger = get_logger(__name__)
 
 
 @app.command()
-def run(
+def sync(
     token: str = typer.Option(
         os.environ.get("DATADRIFT_GITHUB_TOKEN", ""),
         help="Token to access your repo. With PR and Content read and write rights",
