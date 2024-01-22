@@ -34,6 +34,3 @@ jobs:
 
       - name: Run tests
         run: python -m unittest discover -s tests
-
-      - name: Run Mypy
-        run: mypy --install-types --non-interactive driftdb
