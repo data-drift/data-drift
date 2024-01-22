@@ -1,10 +1,10 @@
 import time
 from datetime import datetime
-from typing import Dict, List, Optional
 
 import pandas as pd
 from github import ContentFile, GithubException, Repository
 from github.MainClass import Github
+from typing_extensions import Dict, List, Optional
 
 from ..alerting import DriftEvaluatorContext, drift_summary_to_string
 from ..dataframe.dataframe_update_breakdown import DataFrameUpdate

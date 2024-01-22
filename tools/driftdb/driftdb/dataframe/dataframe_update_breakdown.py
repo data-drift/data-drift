@@ -1,7 +1,7 @@
 from enum import Enum
-from typing import Dict, Optional, Union
 
 import pandas as pd
+from typing_extensions import Dict, Optional, Union
 
 from ..alerting import (
     DriftEvaluation,

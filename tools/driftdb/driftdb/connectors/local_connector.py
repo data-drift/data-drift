@@ -1,14 +1,14 @@
 import os
 from datetime import datetime
-from typing import Dict, Iterator, Optional, Tuple
 
 import pandas as pd
 from git import Repo
 from git.objects.commit import Commit
+from typing_extensions import Dict, Iterator, Optional, Tuple
 
-from ..dataframe.dataframe_update_breakdown import DataFrameUpdate
 from ..alerting.handlers import drift_summary_to_string
 from ..alerting.interface import DriftEvaluation, DriftEvaluatorContext
+from ..dataframe.dataframe_update_breakdown import DataFrameUpdate
 from ..logger import get_logger
 from .abstract_connector import AbstractConnector
 
@@ -18,9 +18,9 @@ logger = get_logger(__name__)
 class LocalConnector(AbstractConnector):
     home_dir = os.path.expanduser("~")
     datadrift_dir = os.path.join(home_dir, ".datadrift")
-    os.makedirs(datadrift_dir, exist_ok=True)
 
     def __init__(self, store_name="default"):
+        os.makedirs(self.datadrift_dir, exist_ok=True)
         self.store_name = store_name
         self.repo = self.get_or_init_repo(store_name=self.store_name)
         self.store_dir = self.repo.working_dir

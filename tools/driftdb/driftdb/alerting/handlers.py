@@ -1,7 +1,7 @@
 import traceback
-from typing import Callable, List
 
 import pandas as pd
+from typing_extensions import Callable, List
 
 from ..dataframe.detect_outliers import detect_outliers
 from ..logger import get_logger

@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
-from typing import Dict, Optional
 
 import pandas as pd
+from typing_extensions import Dict, Optional
 
 from ..alerting import DriftHandler, NewDataHandler, auto_merge_drift, null_new_data_handler
 from ..dataframe.dataframe_update_breakdown import DataFrameUpdate, dataframe_update_breakdown

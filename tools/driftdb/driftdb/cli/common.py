@@ -1,9 +1,7 @@
-from datetime import datetime
-from typing import List
-
 import inquirer
 import pandas as pd
 import typer
+from typing_extensions import List
 
 
 def prompt_from_list(prompt: str, choices: list):

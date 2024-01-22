@@ -1,6 +1,5 @@
-from typing import List, Optional
-
 import pandas as pd
+from typing_extensions import List, Optional
 
 
 def detect_outliers(
