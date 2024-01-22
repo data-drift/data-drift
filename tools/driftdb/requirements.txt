@@ -5,7 +5,6 @@ Faker
 GitPython
 inquirer
 isort
-mypy
 pandas
 pandas-stubs
 PyGithub
