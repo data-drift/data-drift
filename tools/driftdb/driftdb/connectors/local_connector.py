@@ -1,10 +1,10 @@
 import os
 from datetime import datetime
-from typing import Dict, Iterator, Optional, Tuple
 
 import pandas as pd
 from git import Repo
 from git.objects.commit import Commit
+from typing_extensions import Dict, Iterator, Optional, Tuple
 
 from ..alerting.handlers import drift_summary_to_string
 from ..alerting.interface import DriftEvaluation, DriftEvaluatorContext

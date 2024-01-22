@@ -1,4 +1,4 @@
-from typing import List, Optional, Sequence
+from typing_extensions import List, Optional, Sequence
 
 
 def build_query(
