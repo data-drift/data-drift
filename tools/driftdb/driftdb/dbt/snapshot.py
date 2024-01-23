@@ -1,5 +1,6 @@
 import json
 
+from pandas import DataFrame
 from typing_extensions import List, TypedDict
 
 from ..cli.common import dbt_adapter_query
@@ -49,7 +50,7 @@ def get_snapshot_dates(snapshot_node: SnapshotNode) -> List[str]:
         return date_strings
 
 
-def get_snapshot_diff(snapshot_node: SnapshotNode, snapshot_date: str):
+def get_snapshot_diff(snapshot_node: SnapshotNode, snapshot_date: str) -> DataFrame:
     from dbt.adapters.factory import get_adapter
     from dbt.cli.main import dbtRunner
     from dbt.config.runtime import RuntimeConfig, load_profile, load_project

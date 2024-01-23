@@ -8,5 +8,6 @@ isort
 pandas
 pandas-stubs
 PyGithub
+tabulate
 typing_extensions==4.7.1
 typer[all]
