@@ -22,10 +22,10 @@ class TestConvertSnapshotDiffToDriftSummary(unittest.TestCase):
         }
 
         df = pd.DataFrame(data)
-        drift_summary = convert_snapshot_to_drift_summary(snapshot_diff=df, id_column="month", date_column="month")
-        assert drift_summary["added_rows"].empty
-        assert drift_summary["deleted_rows"].empty
-        assert drift_summary["modified_rows_unique_keys"].equals(pd.Index([pd.Timestamp("2023-02-01")]))
+        context = convert_snapshot_to_drift_summary(snapshot_diff=df, id_column="month", date_column="month")
+        assert context.summary["added_rows"].empty
+        assert context.summary["deleted_rows"].empty
+        assert context.summary["modified_rows_unique_keys"].equals(pd.Index([pd.Timestamp("2023-02-01")]))
 
     def test_convert_snapshot_with_1_addition(self):
         data = {
@@ -40,9 +40,9 @@ class TestConvertSnapshotDiffToDriftSummary(unittest.TestCase):
 
         df = pd.DataFrame(data)
 
-        drift_summary = convert_snapshot_to_drift_summary(snapshot_diff=df, id_column="month", date_column="month")
+        context = convert_snapshot_to_drift_summary(snapshot_diff=df, id_column="month", date_column="month")
 
-        assert drift_summary["added_rows"].equals(
+        assert context.summary["added_rows"].equals(
             pd.DataFrame(
                 {
                     "month": [pd.Timestamp("2022-11-01")],
@@ -64,9 +64,9 @@ class TestConvertSnapshotDiffToDriftSummary(unittest.TestCase):
 
         df = pd.DataFrame(data)
 
-        drift_summary = convert_snapshot_to_drift_summary(snapshot_diff=df, id_column="month", date_column="month")
+        context = convert_snapshot_to_drift_summary(snapshot_diff=df, id_column="month", date_column="month")
 
-        assert drift_summary["deleted_rows"].equals(
+        assert context.summary["deleted_rows"].equals(
             pd.DataFrame(
                 {
                     "month": [pd.Timestamp("2022-11-01")],

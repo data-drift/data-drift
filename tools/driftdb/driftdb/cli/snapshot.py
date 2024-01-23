@@ -47,16 +47,12 @@ def show(snapshot_id: str = typer.Option(None, help="id of your snapshot")):
 @app.command()
 def check(snapshot_id: str = typer.Option(None, help="id of your snapshot")):
     snapshot_node = get_or_prompt_snapshot_node(snapshot_id, get_snapshot_nodes())
-    snapshot_dates = get_snapshot_dates(snapshot_node)
+    snapshot_date = get_user_date_selection(get_snapshot_dates(snapshot_node))
 
-    snapshot_date = get_user_date_selection(snapshot_dates)
     print(f"Getting {snapshot_node['unique_id']} for {snapshot_date}.")
     diff = get_snapshot_diff(snapshot_node, snapshot_date)
-
-    print("Check drift for snapshot: " + snapshot_node["unique_id"])
-
-    drift_summary = convert_snapshot_to_drift_summary(snapshot_diff=diff, id_column="month", date_column="month")
-
+    context = convert_snapshot_to_drift_summary(snapshot_diff=diff, id_column="month", date_column="month")
+    drift_summary = context.summary
     print("added_rows \n", drift_summary["added_rows"].to_markdown())
     print("deleted_rows \n", drift_summary["deleted_rows"].to_markdown())
     print("modified_patterns \n", drift_summary["modified_patterns"].to_markdown())
