@@ -57,10 +57,10 @@ def check(snapshot_id: str = typer.Option(None, help="id of your snapshot")):
 
     drift_summary = convert_snapshot_to_drift_summary(snapshot_diff=diff, id_column="month", date_column="month")
 
-    print("added_rows", drift_summary["added_rows"].to_markdown())
-    print("deleted_rows", drift_summary["deleted_rows"].to_markdown())
-    print("modified_patterns", drift_summary["modified_patterns"].to_markdown())
-    print("modified_rows_unique_keys", drift_summary["modified_rows_unique_keys"])
+    print("added_rows \n", drift_summary["added_rows"].to_markdown())
+    print("deleted_rows \n", drift_summary["deleted_rows"].to_markdown())
+    print("modified_patterns \n", drift_summary["modified_patterns"].to_markdown())
+    print("modified_rows_unique_keys \n", drift_summary["modified_rows_unique_keys"])
 
 
 def get_or_prompt_snapshot_node(snapshot_id, snapshot_nodes):

@@ -24,6 +24,9 @@ def convert_snapshot_to_drift_summary(snapshot_diff: DataFrame, id_column="id", 
     )
 
     common_ids = initial_data[id_column][initial_data[id_column].isin(final_data[id_column])]
+    added_rows = final_data[~final_data[id_column].isin(common_ids)]
+    deleted_rows = initial_data[~initial_data[id_column].isin(common_ids)]
+
     initial_data.set_index(id_column, inplace=True)
     final_data.set_index(id_column, inplace=True)
 
@@ -61,8 +64,8 @@ def convert_snapshot_to_drift_summary(snapshot_diff: DataFrame, id_column="id", 
     patterns_df = DataFrame(patterns_list)
 
     driftSummary = DriftSummary(
-        added_rows=DataFrame(initial_data),
-        deleted_rows=DataFrame(final_data),
+        added_rows=added_rows,
+        deleted_rows=deleted_rows,
         modified_rows_unique_keys=Index(common_ids),
         modified_patterns=DataFrame(patterns_df),
     )
