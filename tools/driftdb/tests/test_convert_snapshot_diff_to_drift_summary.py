@@ -35,7 +35,7 @@ class TestConvertSnapshotDiffToDriftSummary(unittest.TestCase):
             "dbt_updated_at": [pd.Timestamp("2023-12-26 09:23:18.569704")],
             "dbt_valid_from": [pd.Timestamp("2023-12-26 09:23:18.569704")],
             "dbt_valid_to": [pd.NaT],
-            "record_status": ["before"],
+            "record_status": ["after"],
         }
 
         df = pd.DataFrame(data)
@@ -59,7 +59,7 @@ class TestConvertSnapshotDiffToDriftSummary(unittest.TestCase):
             "dbt_updated_at": [pd.Timestamp("2023-12-26 09:23:18.569704")],
             "dbt_valid_from": [pd.Timestamp("2023-12-26 09:23:18.569704")],
             "dbt_valid_to": [pd.NaT],
-            "record_status": ["after"],
+            "record_status": ["before"],
         }
 
         df = pd.DataFrame(data)
