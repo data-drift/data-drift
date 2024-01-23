@@ -7,6 +7,7 @@ import pkg_resources
 import typer
 from driftdb.dbt.snapshot import get_snapshot_dates, get_snapshot_diff, get_snapshot_nodes
 
+from ..dbt.snapshot_to_drift import convert_snapshot_to_drift_summary
 from .common import get_user_date_selection
 
 app = typer.Typer()
@@ -54,7 +55,12 @@ def check(snapshot_id: str = typer.Option(None, help="id of your snapshot")):
 
     print("Check drift for snapshot: " + snapshot_node["unique_id"])
 
-    print(diff.to_markdown())
+    drift_summary = convert_snapshot_to_drift_summary(snapshot_diff=diff, id_column="month", date_column="month")
+
+    print("added_rows", drift_summary["added_rows"].to_markdown())
+    print("deleted_rows", drift_summary["deleted_rows"].to_markdown())
+    print("modified_patterns", drift_summary["modified_patterns"].to_markdown())
+    print("modified_rows_unique_keys", drift_summary["modified_rows_unique_keys"])
 
 
 def get_or_prompt_snapshot_node(snapshot_id, snapshot_nodes):

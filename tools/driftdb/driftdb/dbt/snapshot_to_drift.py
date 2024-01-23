@@ -11,6 +11,9 @@ def convert_snapshot_to_drift_summary(snapshot_diff: DataFrame, id_column="id", 
     required_columns = [id_column, date_column, "record_status"]
     for column in required_columns:
         if column not in snapshot_diff.columns:
+            logger.warn(
+                f"The snapshot_diff DataFrame does not have the required column: {column}. Select a different id_column or date_column from {snapshot_diff.columns}"
+            )
             raise ValueError(f"The snapshot_diff DataFrame does not have the required column: {column}")
 
     initial_data = snapshot_diff[snapshot_diff["record_status"] == "before"].drop(
@@ -21,13 +24,15 @@ def convert_snapshot_to_drift_summary(snapshot_diff: DataFrame, id_column="id", 
     )
 
     common_ids = initial_data[id_column][initial_data[id_column].isin(final_data[id_column])]
+    initial_data.set_index(id_column, inplace=True)
+    final_data.set_index(id_column, inplace=True)
 
     # There may be rows that have not changed but pandas will consider them as changed
     pattern_changes = {}
     for key in common_ids:
         for col in initial_data.columns:
             try:
-                if initial_data.at[key, col] != initial_data.at[key, col]:
+                if initial_data.at[key, col] != final_data.at[key, col]:
                     old_value = initial_data.at[key, col]
                     new_value = final_data.at[key, col]
                     change_pattern = (col, old_value, new_value)
@@ -59,6 +64,6 @@ def convert_snapshot_to_drift_summary(snapshot_diff: DataFrame, id_column="id", 
         added_rows=DataFrame(initial_data),
         deleted_rows=DataFrame(final_data),
         modified_rows_unique_keys=Index(common_ids),
-        modified_patterns=DataFrame(),
+        modified_patterns=DataFrame(patterns_df),
     )
     return driftSummary
