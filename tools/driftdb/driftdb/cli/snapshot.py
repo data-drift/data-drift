@@ -7,6 +7,7 @@ import pkg_resources
 import typer
 from driftdb.dbt.snapshot import get_snapshot_dates, get_snapshot_diff, get_snapshot_nodes
 
+from ..alerting.handlers import alert_drift_handler
 from ..dbt.snapshot_to_drift import convert_snapshot_to_drift_summary
 from .common import get_user_date_selection
 
@@ -52,11 +53,16 @@ def check(snapshot_id: str = typer.Option(None, help="id of your snapshot")):
     print(f"Getting {snapshot_node['unique_id']} for {snapshot_date}.")
     diff = get_snapshot_diff(snapshot_node, snapshot_date)
     context = convert_snapshot_to_drift_summary(snapshot_diff=diff, id_column="month", date_column="month")
+
     drift_summary = context.summary
     print("added_rows \n", drift_summary["added_rows"].to_markdown())
     print("deleted_rows \n", drift_summary["deleted_rows"].to_markdown())
     print("modified_patterns \n", drift_summary["modified_patterns"].to_markdown())
     print("modified_rows_unique_keys \n", drift_summary["modified_rows_unique_keys"])
+
+    alerts = alert_drift_handler(context)
+    print("alerts \n", alerts.should_alert)
+    print("alerts \n", alerts.message)
 
 
 def get_or_prompt_snapshot_node(snapshot_id, snapshot_nodes):
