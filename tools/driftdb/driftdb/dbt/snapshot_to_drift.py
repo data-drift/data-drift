@@ -1,8 +1,9 @@
 import traceback
 
-from driftdb.alerting.interface import DriftEvaluatorContext, DriftSummary
-from driftdb.logger import get_logger
 from pandas import DataFrame, Index
+
+from ..alerting.interface import DriftEvaluatorContext, DriftSummary
+from ..logger import get_logger
 
 logger = get_logger("summarize_dataframe_updates")
 

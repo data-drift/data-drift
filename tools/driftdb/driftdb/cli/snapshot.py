@@ -1,13 +1,14 @@
 import base64
+import json
 import os
 import webbrowser
 
 import inquirer
 import pkg_resources
 import typer
-from driftdb.dbt.snapshot import get_snapshot_dates, get_snapshot_diff, get_snapshot_nodes
 
 from ..alerting.handlers import alert_drift_handler
+from ..dbt.snapshot import get_snapshot_dates, get_snapshot_diff, get_snapshot_nodes
 from ..dbt.snapshot_to_drift import convert_snapshot_to_drift_summary
 from ..logger import get_logger
 from ..user_defined_function import import_user_defined_function
@@ -66,7 +67,8 @@ def check(snapshot_id: str = typer.Option(None, help="id of your snapshot")):
     print("modified_patterns \n", drift_summary["modified_patterns"].to_markdown())
     print("modified_rows_unique_keys \n", drift_summary["modified_rows_unique_keys"])
 
-    print("user defined handler is called \n", alert)
+    print("should alert \n", alert.should_alert)
+    print("alert message \n", alert.message)
 
 
 def get_snapshot_handler(snapshot_node):

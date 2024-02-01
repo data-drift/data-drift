@@ -2,7 +2,7 @@ import os
 
 import pandas as pd
 import typer
-from driftdb.connectors.local_connector import LocalConnector
+from ..connectors.local_connector import LocalConnector
 
 from .common import prompt_from_list
 
