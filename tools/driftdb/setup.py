@@ -1,6 +1,10 @@
 from driftdb.version import version
 from setuptools import find_packages, setup
 
+with open("requirements.txt") as f:
+    requirements = f.read().splitlines()
+
+
 setup(
     name="driftdb",
     version=version,
@@ -26,5 +30,5 @@ setup(
         ],
     },
     python_requires=">=3.6",
-    install_requires=["pandas", "PyGithub", "click", "GitPython", "Faker", "typer"],
+    install_requires=requirements,
 )

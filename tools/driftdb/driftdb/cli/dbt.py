@@ -7,11 +7,11 @@ import numpy as np
 import pandas as pd
 import pytz
 import typer
-from driftdb.cli.server import start_server
-from driftdb.connectors.github_connector import GithubConnector
-from driftdb.connectors.local_connector import LocalConnector
 from github.MainClass import Github
 
+from ..cli.server import start_server
+from ..connectors.github_connector import GithubConnector
+from ..connectors.local_connector import LocalConnector
 from ..logger import get_logger
 from .common import dbt_adapter_query, prompt_from_list
 

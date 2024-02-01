@@ -1,13 +1,16 @@
 import traceback
 
-from driftdb.alerting.interface import DriftSummary
-from driftdb.logger import get_logger
 from pandas import DataFrame, Index
+
+from ..alerting.interface import DriftEvaluatorContext, DriftSummary
+from ..logger import get_logger
 
 logger = get_logger("summarize_dataframe_updates")
 
 
-def convert_snapshot_to_drift_summary(snapshot_diff: DataFrame, id_column="id", date_column="date") -> DriftSummary:
+def convert_snapshot_to_drift_summary(
+    snapshot_diff: DataFrame, id_column="id", date_column="date"
+) -> DriftEvaluatorContext:
     required_columns = [id_column, date_column, "record_status"]
     for column in required_columns:
         if column not in snapshot_diff.columns:
@@ -69,4 +72,4 @@ def convert_snapshot_to_drift_summary(snapshot_diff: DataFrame, id_column="id", 
         modified_rows_unique_keys=Index(common_ids),
         modified_patterns=DataFrame(patterns_df),
     )
-    return driftSummary
+    return DriftEvaluatorContext(initial_data, final_data, driftSummary)

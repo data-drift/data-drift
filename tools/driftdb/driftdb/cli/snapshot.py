@@ -1,16 +1,22 @@
 import base64
+import json
 import os
 import webbrowser
 
 import inquirer
 import pkg_resources
 import typer
-from driftdb.dbt.snapshot import get_snapshot_dates, get_snapshot_diff, get_snapshot_nodes
 
+from ..alerting.handlers import alert_drift_handler
+from ..dbt.snapshot import get_snapshot_dates, get_snapshot_diff, get_snapshot_nodes
 from ..dbt.snapshot_to_drift import convert_snapshot_to_drift_summary
+from ..logger import get_logger
+from ..user_defined_function import import_user_defined_function
 from .common import get_user_date_selection
 
 app = typer.Typer()
+
+logger = get_logger(__name__)
 
 
 @app.command()
@@ -47,20 +53,35 @@ def show(snapshot_id: str = typer.Option(None, help="id of your snapshot")):
 @app.command()
 def check(snapshot_id: str = typer.Option(None, help="id of your snapshot")):
     snapshot_node = get_or_prompt_snapshot_node(snapshot_id, get_snapshot_nodes())
-    snapshot_dates = get_snapshot_dates(snapshot_node)
+    handler = get_snapshot_handler(snapshot_node)
+    snapshot_date = get_user_date_selection(get_snapshot_dates(snapshot_node))
 
-    snapshot_date = get_user_date_selection(snapshot_dates)
     print(f"Getting {snapshot_node['unique_id']} for {snapshot_date}.")
+
     diff = get_snapshot_diff(snapshot_node, snapshot_date)
-
-    print("Check drift for snapshot: " + snapshot_node["unique_id"])
-
-    drift_summary = convert_snapshot_to_drift_summary(snapshot_diff=diff, id_column="month", date_column="month")
-
+    context = convert_snapshot_to_drift_summary(snapshot_diff=diff, id_column="month", date_column="month")
+    alert = handler(context)
+    drift_summary = context.summary
     print("added_rows \n", drift_summary["added_rows"].to_markdown())
     print("deleted_rows \n", drift_summary["deleted_rows"].to_markdown())
     print("modified_patterns \n", drift_summary["modified_patterns"].to_markdown())
     print("modified_rows_unique_keys \n", drift_summary["modified_rows_unique_keys"])
+
+    print("should alert \n", alert.should_alert)
+    print("alert message \n", alert.message)
+
+
+def get_snapshot_handler(snapshot_node):
+    snapshot_file_path = snapshot_node["original_file_path"]
+    directory_path = os.path.dirname(snapshot_file_path)
+    user_defined_file_path = os.path.join(directory_path, "datadrift.py")
+
+    try:
+        handler = import_user_defined_function(user_defined_file_path, "my_handler")
+        return handler
+    except:
+        logger.warn("No user defined handler found. Using default handler.")
+        return alert_drift_handler
 
 
 def get_or_prompt_snapshot_node(snapshot_id, snapshot_nodes):

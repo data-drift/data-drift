@@ -1,9 +1,9 @@
 import typer
-from driftdb.cli.server import start_server
 
 from . import version
 from .cli.dbt import app as dbt
 from .cli.seed import app as seed
+from .cli.server import start_server
 from .cli.snapshot import app as snapshot
 from .cli.store import app as store
 
