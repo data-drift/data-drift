@@ -8,7 +8,8 @@ import pkg_resources
 import typer
 
 from ..alerting.handlers import alert_drift_handler
-from ..dbt.snapshot import get_snapshot_dates, get_snapshot_diff, get_snapshot_nodes
+from ..dbt.snapshot import (get_snapshot_dates, get_snapshot_diff,
+                            get_snapshot_nodes)
 from ..dbt.snapshot_to_drift import convert_snapshot_to_drift_summary
 from ..logger import get_logger
 from ..user_defined_function import import_user_defined_function
