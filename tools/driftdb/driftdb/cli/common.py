@@ -6,7 +6,7 @@ import typer
 from typing_extensions import List, Optional
 
 
-def prompt_from_list(prompt: str, choices: list):
+def prompt_from_list(prompt: str, choices: List):
     for idx, choice in enumerate(choices, start=1):
         typer.echo(f"{idx}: {choice}")
 
@@ -32,13 +32,11 @@ def find_date_starting_with(dates, input_date):
             return date
     return None
 
-def get_user_date_selection(dates: List[str], input_date: str) -> Optional[str]:
+def get_user_date_selection(dates: List[str], input_date: Optional[str] = None) -> Optional[str]:
     if input_date is not None:
         if input_date == "today":
             input_date = datetime.today().date().strftime("%Y-%m-%d")
             
-        
-        print("dates",input_date)
         matching_date = find_date_starting_with(dates, input_date)
         return matching_date
 

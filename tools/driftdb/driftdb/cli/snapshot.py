@@ -7,6 +7,7 @@ import pkg_resources
 import typer
 
 from ..alerting.handlers import alert_drift_handler
+from ..alerting.transport import AbstractAlertTransport, ConsoleAlertTransport
 from ..dbt.snapshot import (get_snapshot_dates, get_snapshot_diff,
                             get_snapshot_nodes)
 from ..dbt.snapshot_to_drift import convert_snapshot_to_drift_summary
@@ -26,6 +27,9 @@ def show(snapshot_id: str = typer.Option(None, help="id of your snapshot")):
     snapshot_dates = get_snapshot_dates(snapshot_node)
 
     snapshot_date = get_user_date_selection(snapshot_dates)
+    if snapshot_date is None:
+        typer.echo("No snapshot data for selected date. Exiting.")
+        raise typer.Exit(code=1)
 
     diff = get_snapshot_diff(snapshot_node, snapshot_date)
 
@@ -53,7 +57,6 @@ def show(snapshot_id: str = typer.Option(None, help="id of your snapshot")):
 @app.command()
 def check(snapshot_id: str = typer.Option(None, help="id of your snapshot"), date: str = typer.Option(None, help="date of your snapshot")):
     snapshot_node = get_or_prompt_snapshot_node(snapshot_id, get_snapshot_nodes())
-    handler = get_snapshot_handler(snapshot_node)
     snapshot_date = get_user_date_selection(get_snapshot_dates(snapshot_node), date)
 
     if snapshot_date is None:
@@ -62,30 +65,44 @@ def check(snapshot_id: str = typer.Option(None, help="id of your snapshot"), dat
 
     print(f"Getting {snapshot_node['unique_id']} for {snapshot_date}.")
 
+    [drift_handler, alert_transport] = get_user_defined_handlers(snapshot_node)
+
+    if not isinstance(alert_transport, AbstractAlertTransport):
+        print("Alert transport is not an instance of AbstractAlertTransport, defaulting to ConsoleAlertTransport.")
+        alert_transport = ConsoleAlertTransport()
+
+
     diff = get_snapshot_diff(snapshot_node, snapshot_date)
     context = convert_snapshot_to_drift_summary(snapshot_diff=diff, id_column="month", date_column="month")
-    alert = handler(context)
-    drift_summary = context.summary
-    print("added_rows \n", drift_summary["added_rows"].to_markdown())
-    print("deleted_rows \n", drift_summary["deleted_rows"].to_markdown())
-    print("modified_patterns \n", drift_summary["modified_patterns"].to_markdown())
-    print("modified_rows_unique_keys \n", drift_summary["modified_rows_unique_keys"])
+    alert = drift_handler(context)
+    alert_title = f"Drift alert for {snapshot_node['unique_id']} on {snapshot_date}"
+    print("alert_title", alert_title)
+    try: 
+        alert_transport.send(alert_title, alert, context)
+    except Exception as e:
+        logger.error(f"Error sending alert: {e}")
+        logger.error("Alert not sent.")
+        raise typer.Exit(code=1)
 
-    print("should alert \n", alert.should_alert)
-    print("alert message \n", alert.message)
+    logger.info("Done.")
 
 
-def get_snapshot_handler(snapshot_node):
+def get_user_defined_handlers(snapshot_node):
     snapshot_file_path = snapshot_node["original_file_path"]
     directory_path = os.path.dirname(snapshot_file_path)
-    user_defined_file_path = os.path.join(directory_path, "datadrift.py")
+    snapshot_file_name = os.path.basename(snapshot_file_path)
+    snapshot_file_name_without_extension, _ = os.path.splitext(snapshot_file_name)
+    user_defined_file_path = os.path.join(directory_path, f"{snapshot_file_name_without_extension}.datadrift.py")
+    
+    print(f"Looking for user defined handlers in {user_defined_file_path}")
 
     try:
-        handler = import_user_defined_function(user_defined_file_path, "my_handler")
-        return handler
-    except:
+        [drift_handler, alert_transport] = import_user_defined_function(user_defined_file_path,[ "drift_handler", "alert_transport"])
+        return [drift_handler, alert_transport]
+    except Exception as e:
+        logger.error(f"Error importing user defined handler: {e}")
         logger.warn("No user defined handler found. Using default handler.")
-        return alert_drift_handler
+        return [alert_drift_handler, None]
 
 
 def get_or_prompt_snapshot_node(snapshot_id, snapshot_nodes):
