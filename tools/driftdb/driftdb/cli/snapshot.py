@@ -84,9 +84,7 @@ def get_user_defined_handlers(snapshot_node):
     user_defined_file_path = os.path.join(directory_path, "datadrift.py")
 
     try:
-        drift_handler = import_user_defined_function(user_defined_file_path, "drift_handler")
-        alert_transport = import_user_defined_function(user_defined_file_path, "alert_transport")
-        print("User defined transport.", alert_transport)
+        [drift_handler, alert_transport] = import_user_defined_function(user_defined_file_path,[ "drift_handler", "alert_transport"])
         return [drift_handler, alert_transport]
     except Exception as e:
         logger.error(f"Error importing user defined handler: {e}")
