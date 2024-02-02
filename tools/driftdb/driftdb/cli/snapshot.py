@@ -21,7 +21,7 @@ logger = get_logger(__name__)
 
 
 @app.command()
-def show(snapshot_id: str = typer.Option(None, help="id of your snapshot"), date: str = typer.Option(None, help="date of your snapshot")):
+def show(snapshot_id: str = typer.Option(None, help="id of your snapshot"), date: str = typer.Option(None, help="date of your snapshot"), unique_key_column: str = typer.Option(None, help="unique key column of your snapshot")):
     snapshot_nodes = get_snapshot_nodes()
     snapshot_node = get_or_prompt_snapshot_node(snapshot_id, snapshot_nodes)
     snapshot_dates = get_snapshot_dates(snapshot_node)
@@ -32,6 +32,12 @@ def show(snapshot_id: str = typer.Option(None, help="id of your snapshot"), date
         raise typer.Exit(code=1)
 
     diff = get_snapshot_diff(snapshot_node, snapshot_date)
+    if unique_key_column:
+        diff['unique_key'] = diff[unique_key_column]
+
+    if not 'unique_key' in diff.columns:
+        typer.echo("Did not find unique key column. rerun with a --unique-key-column=\"unique_key\".")
+        raise typer.Exit(code=1)
 
     spa_html_path = pkg_resources.resource_filename(__name__, "../spa/snapshot/index.html")
 
