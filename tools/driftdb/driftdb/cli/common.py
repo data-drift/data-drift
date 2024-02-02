@@ -1,7 +1,9 @@
+from datetime import datetime
+
 import inquirer
 import pandas as pd
 import typer
-from typing_extensions import List
+from typing_extensions import List, Optional
 
 
 def prompt_from_list(prompt: str, choices: list):
@@ -24,8 +26,22 @@ def dbt_adapter_query(
     data = {column_name: table.columns[column_name].values() for column_name in table.column_names}
     return pd.DataFrame(data)
 
+def find_date_starting_with(dates, input_date):
+    for date in dates:
+        if date.startswith(input_date):
+            return date
+    return None
 
-def get_user_date_selection(dates: List[str]) -> str:
+def get_user_date_selection(dates: List[str], input_date: str) -> Optional[str]:
+    if input_date is not None:
+        if input_date == "today":
+            input_date = datetime.today().date().strftime("%Y-%m-%d")
+            
+        
+        print("dates",input_date)
+        matching_date = find_date_starting_with(dates, input_date)
+        return matching_date
+
     page_size = 10
     page = 0
 

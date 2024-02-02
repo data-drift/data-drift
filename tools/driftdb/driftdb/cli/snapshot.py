@@ -1,5 +1,4 @@
 import base64
-import json
 import os
 import webbrowser
 
@@ -8,7 +7,8 @@ import pkg_resources
 import typer
 
 from ..alerting.handlers import alert_drift_handler
-from ..dbt.snapshot import get_snapshot_dates, get_snapshot_diff, get_snapshot_nodes
+from ..dbt.snapshot import (get_snapshot_dates, get_snapshot_diff,
+                            get_snapshot_nodes)
 from ..dbt.snapshot_to_drift import convert_snapshot_to_drift_summary
 from ..logger import get_logger
 from ..user_defined_function import import_user_defined_function
@@ -51,10 +51,14 @@ def show(snapshot_id: str = typer.Option(None, help="id of your snapshot")):
 
 
 @app.command()
-def check(snapshot_id: str = typer.Option(None, help="id of your snapshot")):
+def check(snapshot_id: str = typer.Option(None, help="id of your snapshot"), date: str = typer.Option(None, help="date of your snapshot")):
     snapshot_node = get_or_prompt_snapshot_node(snapshot_id, get_snapshot_nodes())
     handler = get_snapshot_handler(snapshot_node)
-    snapshot_date = get_user_date_selection(get_snapshot_dates(snapshot_node))
+    snapshot_date = get_user_date_selection(get_snapshot_dates(snapshot_node), date)
+
+    if snapshot_date is None:
+        typer.echo("No snapshot data for selected date. Exiting.")
+        raise typer.Exit(code=1)
 
     print(f"Getting {snapshot_node['unique_id']} for {snapshot_date}.")
 
