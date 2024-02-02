@@ -33,19 +33,14 @@ def find_date_starting_with(dates, input_date):
     return None
 
 def get_user_date_selection(dates: List[str], input_date: str) -> Optional[str]:
-    print("dates", dates[0])
     if input_date is not None:
         if input_date == "today":
-            most_recent_date_string = dates[0]
-            most_recent_date = datetime.strptime(most_recent_date_string, "%Y-%m-%d %H:%M:%S.%f")
-            if most_recent_date.date() == datetime.today().date():
-                return most_recent_date_string
-            else:
-                return None
+            input_date = datetime.today().date().strftime("%Y-%m-%d")
             
-        else:
-            matching_date = find_date_starting_with(dates, input_date)
-            return matching_date
+        
+        print("dates",input_date)
+        matching_date = find_date_starting_with(dates, input_date)
+        return matching_date
 
     page_size = 10
     page = 0
