@@ -6,7 +6,7 @@ import typer
 from typing_extensions import List, Optional
 
 
-def prompt_from_list(prompt: str, choices: list):
+def prompt_from_list(prompt: str, choices: List):
     for idx, choice in enumerate(choices, start=1):
         typer.echo(f"{idx}: {choice}")
 

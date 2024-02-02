@@ -1,9 +1,10 @@
 import importlib.util
 import os
 import sys
+from typing import List
 
 
-def import_user_defined_function(file_path: str, function_names: list[str]):
+def import_user_defined_function(file_path: str, function_names: List[str]):
     file_path = os.path.abspath(file_path)
 
     module_name = os.path.splitext(os.path.basename(file_path))[0]

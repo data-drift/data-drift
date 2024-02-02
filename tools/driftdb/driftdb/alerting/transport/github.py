@@ -1,12 +1,13 @@
 from github import GithubException, Repository
 from github.MainClass import Github
 
+
 from ..interface import DriftEvaluation, DriftEvaluatorContext
 from .interface import AbstractAlertTransport
 
 
 class GithubAlertTransport(AbstractAlertTransport):
-    def __init__(self, github_client: Github, repository_name: str, assignees: list[str] = []) -> None:
+    def __init__(self, github_client: Github, repository_name: str, assignees = []) -> None:
         self.github_client = github_client
         self.repo = github_client.get_repo(repository_name)
         self.assignees = assignees
