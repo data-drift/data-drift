@@ -26,6 +26,9 @@ def show(snapshot_id: str = typer.Option(None, help="id of your snapshot")):
     snapshot_dates = get_snapshot_dates(snapshot_node)
 
     snapshot_date = get_user_date_selection(snapshot_dates)
+    if snapshot_date is None:
+        typer.echo("No snapshot data for selected date. Exiting.")
+        raise typer.Exit(code=1)
 
     diff = get_snapshot_diff(snapshot_node, snapshot_date)
 
