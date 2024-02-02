@@ -1,7 +1,6 @@
 from github import GithubException, Repository
 from github.MainClass import Github
 
-
 from ..interface import DriftEvaluation, DriftEvaluatorContext
 from .interface import AbstractAlertTransport
 
@@ -14,6 +13,7 @@ class GithubAlertTransport(AbstractAlertTransport):
 
     def send(self, title: str, drift_evalutation: DriftEvaluation, drift_context: DriftEvaluatorContext) -> None:
         if not drift_evalutation.should_alert:
+            print("No alert needed")
             return
         try:
             issue = self.repo.create_issue(

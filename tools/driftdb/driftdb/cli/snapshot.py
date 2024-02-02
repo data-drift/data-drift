@@ -76,8 +76,15 @@ def check(snapshot_id: str = typer.Option(None, help="id of your snapshot"), dat
     context = convert_snapshot_to_drift_summary(snapshot_diff=diff, id_column="month", date_column="month")
     alert = drift_handler(context)
     alert_title = f"Drift alert for {snapshot_node['unique_id']} on {snapshot_date}"
-    alert_transport.send(alert_title, alert, context)
+    print("alert_title", alert_title)
+    try: 
+        alert_transport.send(alert_title, alert, context)
+    except Exception as e:
+        logger.error(f"Error sending alert: {e}")
+        logger.error("Alert not sent.")
+        raise typer.Exit(code=1)
 
+    logger.info("Done.")
 
 
 def get_user_defined_handlers(snapshot_node):
