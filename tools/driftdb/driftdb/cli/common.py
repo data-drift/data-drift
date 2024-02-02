@@ -37,8 +37,6 @@ def get_user_date_selection(dates: List[str], input_date: Optional[str] = None) 
         if input_date == "today":
             input_date = datetime.today().date().strftime("%Y-%m-%d")
             
-        
-        print("dates",input_date)
         matching_date = find_date_starting_with(dates, input_date)
         return matching_date
 

@@ -7,6 +7,8 @@ import pkg_resources
 import typer
 
 from ..alerting.handlers import alert_drift_handler
+from ..alerting.transport.console import ConsoleAlertTransport
+from ..alerting.transport.interface import AbstractAlertTransport
 from ..dbt.snapshot import (get_snapshot_dates, get_snapshot_diff,
                             get_snapshot_nodes)
 from ..dbt.snapshot_to_drift import convert_snapshot_to_drift_summary
@@ -65,17 +67,17 @@ def check(snapshot_id: str = typer.Option(None, help="id of your snapshot"), dat
 
     print(f"Getting {snapshot_node['unique_id']} for {snapshot_date}.")
 
+    if not isinstance(transport, AbstractAlertTransport):
+        print("transport is not an instance of AbstractAlertTransport, defaulting to ConsoleAlertTransport.")
+        transport = ConsoleAlertTransport()
+
+
     diff = get_snapshot_diff(snapshot_node, snapshot_date)
     context = convert_snapshot_to_drift_summary(snapshot_diff=diff, id_column="month", date_column="month")
     alert = handler(context)
-    drift_summary = context.summary
-    print("added_rows \n", drift_summary["added_rows"].to_markdown())
-    print("deleted_rows \n", drift_summary["deleted_rows"].to_markdown())
-    print("modified_patterns \n", drift_summary["modified_patterns"].to_markdown())
-    print("modified_rows_unique_keys \n", drift_summary["modified_rows_unique_keys"])
+    alert_title = f"Drift alert for {snapshot_node['unique_id']} on {snapshot_date}"
+    transport.send(alert_title, alert, context)
 
-    print("should alert \n", alert.should_alert)
-    print("alert message \n", alert.message)
 
 
 def get_user_defined_handlers(snapshot_node):
