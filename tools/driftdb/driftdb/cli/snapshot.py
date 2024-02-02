@@ -56,7 +56,7 @@ def show(snapshot_id: str = typer.Option(None, help="id of your snapshot")):
 @app.command()
 def check(snapshot_id: str = typer.Option(None, help="id of your snapshot"), date: str = typer.Option(None, help="date of your snapshot")):
     snapshot_node = get_or_prompt_snapshot_node(snapshot_id, get_snapshot_nodes())
-    handler = get_user_defined_handlers(snapshot_node)
+    [handler, transport] = get_user_defined_handlers(snapshot_node)
     snapshot_date = get_user_date_selection(get_snapshot_dates(snapshot_node), date)
 
     if snapshot_date is None:
@@ -85,10 +85,13 @@ def get_user_defined_handlers(snapshot_node):
 
     try:
         drift_handler = import_user_defined_function(user_defined_file_path, "drift_handler")
-        return drift_handler
-    except:
+        alert_transport = import_user_defined_function(user_defined_file_path, "alert_transport")
+        print("User defined transport.", alert_transport)
+        return [drift_handler, alert_transport]
+    except Exception as e:
+        logger.error(f"Error importing user defined handler: {e}")
         logger.warn("No user defined handler found. Using default handler.")
-        return alert_drift_handler
+        return [alert_drift_handler, None]
 
 
 def get_or_prompt_snapshot_node(snapshot_id, snapshot_nodes):

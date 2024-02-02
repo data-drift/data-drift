@@ -3,7 +3,7 @@ import os
 import sys
 
 
-def import_user_defined_function(file_path, function_name):
+def import_user_defined_function(file_path: str, function_name: str):
     file_path = os.path.abspath(file_path)
 
     module_name = os.path.splitext(os.path.basename(file_path))[0]
