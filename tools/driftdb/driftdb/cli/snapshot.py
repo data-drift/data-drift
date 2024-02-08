@@ -21,17 +21,23 @@ logger = get_logger(__name__)
 
 
 @app.command()
-def show(snapshot_id: str = typer.Option(None, help="id of your snapshot")):
+def show(snapshot_id: str = typer.Option(None, help="id of your snapshot"), date: str = typer.Option(None, help="date of your snapshot"), unique_key_column: str = typer.Option(None, help="unique key column of your snapshot")):
     snapshot_nodes = get_snapshot_nodes()
     snapshot_node = get_or_prompt_snapshot_node(snapshot_id, snapshot_nodes)
     snapshot_dates = get_snapshot_dates(snapshot_node)
 
-    snapshot_date = get_user_date_selection(snapshot_dates)
+    snapshot_date = get_user_date_selection(snapshot_dates, date)
     if snapshot_date is None:
         typer.echo("No snapshot data for selected date. Exiting.")
         raise typer.Exit(code=1)
 
     diff = get_snapshot_diff(snapshot_node, snapshot_date)
+    if unique_key_column:
+        diff['unique_key'] = diff[unique_key_column]
+
+    if not 'unique_key' in diff.columns:
+        typer.echo("Did not find unique key column. rerun with a --unique-key-column=\"unique_key\".")
+        raise typer.Exit(code=1)
 
     spa_html_path = pkg_resources.resource_filename(__name__, "../spa/snapshot/index.html")
 
@@ -78,6 +84,8 @@ def check(snapshot_id: str = typer.Option(None, help="id of your snapshot"), dat
     alert_title = f"Drift alert for {snapshot_node['unique_id']} on {snapshot_date}"
     print("alert_title", alert_title)
     try: 
+        command_show_snapshot = f"`driftdb snapshot show  --snapshot-id {snapshot_node['unique_id']} --date \"{snapshot_date}\"`"
+        alert.message = f"To see the snapshot, run the following command:\n\n{command_show_snapshot}\n\n{alert.message}\n\n"
         alert_transport.send(alert_title, alert, context)
     except Exception as e:
         logger.error(f"Error sending alert: {e}")

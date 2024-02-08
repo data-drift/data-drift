@@ -40,7 +40,7 @@
 Data monitoring tools fail by focusing on static tests (eg. null, unique, expected values) and metadata monitoring (eg. column-level).
 </br>
 
-Datadrift monitors your metrics, sends alerts when anomalies are detected and automates root cause analysis. 
+Datadrift monitors your metrics, sends alerts when anomalies are detected and automates root cause analysis.
 </br>
 **Data teams detect and solve data issues faster with Datadrift's row-level monitoring & troubleshooting.**
 
@@ -48,7 +48,7 @@ Datadrift monitors your metrics, sends alerts when anomalies are detected and au
 
 # 🚀 Quickstart
 
-## dbt installation
+## dbt integration
 
 ```
 pip install driftdb
@@ -57,7 +57,7 @@ pip install driftdb
 [Here is a quick demo](https://app.claap.io/sammyt/drift-db-demo-a18-c-ApwBh9kt4p-07oQMdsIzt_e).
 For a step-by-step guide on the dbt installation, see the [docs](https://pypi.org/project/driftdb/).
 
-## Python installation
+## Python integration
 
 Install the monitor in your pipeline.
 
