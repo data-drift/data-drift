@@ -107,6 +107,15 @@ def list_dates(snapshot_id: str = typer.Option(None, help="id of your snapshot")
     for date in snapshot_dates:
         typer.echo(date)
 
+@app.command()
+def squash(snapshot_id: str = typer.Option(None, help="id of your snapshot"), date_from: str = typer.Option(None, help="date of your snapshot to squash from"), date_to: str = typer.Option(None, help="date of your snapshot to squash from")):
+    snapshot_node = get_or_prompt_snapshot_node(snapshot_id, get_snapshot_nodes())
+    typer.echo(f"Date of your snapshot to squash from ?")
+    snapshot_from_date = get_user_date_selection(get_snapshot_dates(snapshot_node), date_from)
+    typer.echo(f"Date of your snapshot to squash to ?")
+    snapshot_to_date = get_user_date_selection(get_snapshot_dates(snapshot_node), date_to)
+    typer.echo(f"Squashing {snapshot_node['unique_id']} from {snapshot_from_date} to {snapshot_to_date}.")
+
 def get_user_defined_handlers(snapshot_node):
     snapshot_file_path = snapshot_node["original_file_path"]
     directory_path = os.path.dirname(snapshot_file_path)
