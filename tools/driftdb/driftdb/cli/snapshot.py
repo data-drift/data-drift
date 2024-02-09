@@ -108,11 +108,11 @@ def list_dates(snapshot_id: str = typer.Option(None, help="id of your snapshot")
         typer.echo(date)
 
 @app.command()
-def squash(snapshot_id: str = typer.Option(None, help="id of your snapshot"), date_from: str = typer.Option(None, help="date of your snapshot to squash from"), date_to: str = typer.Option(None, help="date of your snapshot to squash from")):
+def purge_intermediate(snapshot_id: str = typer.Option(None, help="id of your snapshot"), date_from: str = typer.Option(None, help="date of your snapshot to squash from"), date_to: str = typer.Option(None, help="date of your snapshot to squash from")):
     snapshot_node = get_or_prompt_snapshot_node(snapshot_id, get_snapshot_nodes())
-    typer.echo(f"Date of your snapshot to squash from ?")
+    typer.echo(f"First snapshot date to purge ?")
     snapshot_from_date = get_user_date_selection(get_snapshot_dates(snapshot_node), date_from)
-    typer.echo(f"Date of your snapshot to squash to ?")
+    typer.echo(f"Last snapshot date to purge ? (can be the same as the first one, only this snapshot will be purged)")
     snapshot_to_date = get_user_date_selection(get_snapshot_dates(snapshot_node), date_to)
     typer.echo(f"Squashing {snapshot_node['unique_id']} from {snapshot_from_date} to {snapshot_to_date}.")
 
