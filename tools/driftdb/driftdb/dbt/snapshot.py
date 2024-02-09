@@ -87,3 +87,44 @@ def get_snapshot_diff(snapshot_node: SnapshotNode, snapshot_date: str) -> DataFr
 
         df = dbt_adapter_query(adapter, text_query)
         return df
+
+def purge_intermediates_snapshot(snapshot_node: SnapshotNode, date_from: str, date_to: str):
+    from dbt.adapters.factory import get_adapter
+    from dbt.cli.main import dbtRunner
+    from dbt.config.runtime import RuntimeConfig, load_profile, load_project
+
+    project_dir = "."
+    dbtRunner().invoke(["-q", "debug"], project_dir=str(project_dir))
+    profile = load_profile(str(project_dir), {})
+    project = load_project(str(project_dir), version_check=False, profile=profile)
+
+    runtime_config = RuntimeConfig.from_parts(project, profile, {})
+
+    adapter = get_adapter(runtime_config)
+
+    date_to_purge = "2024-02-09 16:55:54.690463"
+    next_date = "2024-02-09 16:58:04.328611"
+    purge_dates = [{"date_to_purge": date_to_purge, "next_date": next_date}]
+
+    with adapter.connection_named("default"):  # type: ignore
+        clone_table_query = f"""
+        DROP TABLE IF EXISTS bookings_snapshot_purged;
+        CREATE TABLE bookings_snapshot_purged AS SELECT * FROM {snapshot_node["relation_name"]};
+        """
+        print(clone_table_query)
+        res, table = adapter.execute(clone_table_query, fetch=True)
+        print("Table cloned", res, table )
+
+        # for purge_date in purge_dates:
+        #     date_to_purge = purge_date["date_to_purge"]
+        #     next_date = purge_date["next_date"]
+        #     text_query = f"""
+        #     UPDATE bookings_snapshot_purged SET dbt_valid_to = '{next_date}'     WHERE dbt_valid_to = '{date_to_purge}';
+        #     DELETE FROM bookings_snapshot_purged                           WHERE dbt_valid_from = '{date_to_purge}' AND dbt_valid_to = '{next_date}';
+        #     UPDATE bookings_snapshot_purged SET dbt_valid_from = '{next_date}'   WHERE dbt_valid_from = '{date_to_purge}' AND dbt_valid_to = NULL;
+        #     """
+
+        #     result, table = adapter.execute(text_query)
+        #     print(result)
+        #     print(table)
+        
