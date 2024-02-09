@@ -56,10 +56,9 @@ def get_snapshot_diff(snapshot_node: SnapshotNode, snapshot_date: str) -> DataFr
     from dbt.config.runtime import RuntimeConfig, load_profile, load_project
 
     project_dir = "."
-    project_path = project_dir
-    dbtRunner().invoke(["-q", "debug"], project_dir=str(project_path))
-    profile = load_profile(str(project_path), {})
-    project = load_project(str(project_path), version_check=False, profile=profile)
+    dbtRunner().invoke(["-q", "debug"], project_dir=str(project_dir))
+    profile = load_profile(str(project_dir), {})
+    project = load_project(str(project_dir), version_check=False, profile=profile)
 
     runtime_config = RuntimeConfig.from_parts(project, profile, {})
 
