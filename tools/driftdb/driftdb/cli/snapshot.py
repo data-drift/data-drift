@@ -94,6 +94,18 @@ def check(snapshot_id: str = typer.Option(None, help="id of your snapshot"), dat
 
     logger.info("Done.")
 
+@app.command()
+def list():
+    snapshot_nodes = get_snapshot_nodes()
+    for node in snapshot_nodes:
+        typer.echo(node["unique_id"])
+
+@app.command()
+def list_dates(snapshot_id: str = typer.Option(None, help="id of your snapshot")):
+    snapshot_node = get_or_prompt_snapshot_node(snapshot_id, get_snapshot_nodes())
+    snapshot_dates = get_snapshot_dates(snapshot_node)
+    for date in snapshot_dates:
+        typer.echo(date)
 
 def get_user_defined_handlers(snapshot_node):
     snapshot_file_path = snapshot_node["original_file_path"]
@@ -102,7 +114,7 @@ def get_user_defined_handlers(snapshot_node):
     snapshot_file_name_without_extension, _ = os.path.splitext(snapshot_file_name)
     user_defined_file_path = os.path.join(directory_path, f"{snapshot_file_name_without_extension}.datadrift.py")
     
-    print(f"Looking for user defined handlers in {user_defined_file_path}")
+    typer.echo(f"Looking for user defined handlers in {user_defined_file_path}")
 
     try:
         [drift_handler, alert_transport] = import_user_defined_function(user_defined_file_path,[ "drift_handler", "alert_transport"])
