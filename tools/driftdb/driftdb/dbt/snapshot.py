@@ -88,7 +88,7 @@ def get_snapshot_diff(snapshot_node: SnapshotNode, snapshot_date: str) -> DataFr
         df = dbt_adapter_query(adapter, text_query)
         return df
 
-def purge_intermediates_snapshot(snapshot_node: SnapshotNode, date_from: str, date_to: str):
+def purge_intermediates_snapshot(snapshot_node: SnapshotNode, first_snapshot_date: str, last_snapshot_date: str):
     from dbt.adapters.factory import get_adapter
     from dbt.cli.main import dbtRunner
     from dbt.config.runtime import RuntimeConfig, load_profile, load_project
@@ -102,29 +102,39 @@ def purge_intermediates_snapshot(snapshot_node: SnapshotNode, date_from: str, da
 
     adapter = get_adapter(runtime_config)
 
-    date_to_purge = "2024-02-09 16:55:54.690463"
-    next_date = "2024-02-09 16:58:04.328611"
-    purge_dates = [{"date_to_purge": date_to_purge, "next_date": next_date}]
+    purge_dates = []
+    snapshot_dates = get_snapshot_dates(snapshot_node)
+    for date in snapshot_dates[:-1]:
+        if first_snapshot_date <= date <= last_snapshot_date:
+            date_to_purge = date
+            next_date = snapshot_dates[snapshot_dates.index(date) + 1]
+            purge_dates.append({"date_to_purge": date_to_purge, "next_date": next_date})
+
+    print("date purge", purge_dates)
 
     with adapter.connection_named("default"):  # type: ignore
+        bookings_snapshot_purged_name = 'bookings_snapshot_purged_2'
+        adapter.execute("BEGIN;")
+        print("Begin transaction")
         clone_table_query = f"""
-        DROP TABLE IF EXISTS bookings_snapshot_purged;
-        CREATE TABLE bookings_snapshot_purged AS SELECT * FROM {snapshot_node["relation_name"]};
+        DROP TABLE IF EXISTS {bookings_snapshot_purged_name};
+        CREATE TABLE {bookings_snapshot_purged_name} AS SELECT * FROM {snapshot_node["relation_name"]};
         """
-        print(clone_table_query)
-        res, table = adapter.execute(clone_table_query, fetch=True)
-        print("Table cloned", res, table )
-
-        # for purge_date in purge_dates:
-        #     date_to_purge = purge_date["date_to_purge"]
-        #     next_date = purge_date["next_date"]
-        #     text_query = f"""
-        #     UPDATE bookings_snapshot_purged SET dbt_valid_to = '{next_date}'     WHERE dbt_valid_to = '{date_to_purge}';
-        #     DELETE FROM bookings_snapshot_purged                           WHERE dbt_valid_from = '{date_to_purge}' AND dbt_valid_to = '{next_date}';
-        #     UPDATE bookings_snapshot_purged SET dbt_valid_from = '{next_date}'   WHERE dbt_valid_from = '{date_to_purge}' AND dbt_valid_to = NULL;
-        #     """
-
-        #     result, table = adapter.execute(text_query)
-        #     print(result)
-        #     print(table)
+        print("Cloning table", clone_table_query)
+        res = dbt_adapter_query(adapter,clone_table_query)
         
+        print("Table cloned", res)
+
+        for purge_date in purge_dates:
+            date_to_purge = purge_date["date_to_purge"]
+            next_date = purge_date["next_date"]
+            print(f"Purging {date_to_purge} with {next_date}")
+            text_query = f"""
+            UPDATE      {bookings_snapshot_purged_name} SET dbt_valid_to = '{next_date}'   WHERE dbt_valid_to   = '{date_to_purge}';
+            DELETE FROM {bookings_snapshot_purged_name}                                    WHERE dbt_valid_from = '{date_to_purge}' AND dbt_valid_to = '{next_date}';
+            UPDATE      {bookings_snapshot_purged_name} SET dbt_valid_from = '{next_date}' WHERE dbt_valid_from = '{date_to_purge}' AND dbt_valid_to = NULL;
+            """
+
+            adapter.execute(text_query , auto_begin=True, fetch=True)
+    
+        adapter.execute("COMMIT;")

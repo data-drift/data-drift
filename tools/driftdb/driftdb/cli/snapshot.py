@@ -120,7 +120,7 @@ def purge_intermediate(snapshot_id: str = typer.Option(None, help="id of your sn
     if snapshot_to_date is None:
         typer.echo("No snapshot_to_date selected. Exiting.")
         raise typer.Exit(code=1)
-    typer.echo(f"Squashing {snapshot_node['unique_id']} from {snapshot_from_date} to {snapshot_to_date}.")
+    typer.echo(f"Purging {snapshot_node['unique_id']} from {snapshot_from_date} to {snapshot_to_date}.")
     purge_intermediates_snapshot(snapshot_node, snapshot_from_date, snapshot_to_date)
     typer.echo(f"Done. Table bookings_snapshot_purged created, if everything looks right you can drop the original table by running:     DROP TABLE {snapshot_node['relation_name']};   ALTER TABLE bookings_snapshot_purged RENAME TO {snapshot_node['relation_name']};")
 
