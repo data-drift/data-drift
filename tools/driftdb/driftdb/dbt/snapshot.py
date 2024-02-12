@@ -131,8 +131,8 @@ def purge_intermediates_snapshot(snapshot_node: SnapshotNode, first_snapshot_dat
             print(f"Purging {date_to_purge} with {next_date}")
             text_query = f"""
             UPDATE      {bookings_snapshot_purged_name} SET dbt_valid_to = '{next_date}'   WHERE dbt_valid_to   = '{date_to_purge}';
-            UPDATE      {bookings_snapshot_purged_name} SET dbt_valid_from = '{next_date}' WHERE dbt_valid_from = '{date_to_purge}' AND dbt_valid_to = NULL;
-            DELETE FROM {bookings_snapshot_purged_name}                                    WHERE dbt_valid_from = '{date_to_purge}';
+            UPDATE      {bookings_snapshot_purged_name} SET dbt_valid_from = '{next_date}' WHERE dbt_valid_from = '{date_to_purge}';
+            DELETE FROM {bookings_snapshot_purged_name}                                    WHERE dbt_valid_from = dbt_valid_to;
             """
             print("Purging", text_query)
             res, table = adapter.execute(text_query, fetch=True)
