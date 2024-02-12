@@ -107,13 +107,13 @@ def purge_intermediates_snapshot(snapshot_node: SnapshotNode, first_snapshot_dat
     for date in snapshot_dates[:-1]:
         if first_snapshot_date <= date <= last_snapshot_date:
             date_to_purge = date
-            next_date = snapshot_dates[snapshot_dates.index(date) + 1]
+            next_date = snapshot_dates[snapshot_dates.index(date) - 1]
             purge_dates.append({"date_to_purge": date_to_purge, "next_date": next_date})
 
     print("date purge", purge_dates)
 
     with adapter.connection_named("default"):  # type: ignore
-        bookings_snapshot_purged_name = 'bookings_snapshot_purged_2'
+        bookings_snapshot_purged_name = 'bookings_snapshot_purged'
         adapter.execute("BEGIN;")
         print("Begin transaction")
         clone_table_query = f"""
@@ -131,10 +131,11 @@ def purge_intermediates_snapshot(snapshot_node: SnapshotNode, first_snapshot_dat
             print(f"Purging {date_to_purge} with {next_date}")
             text_query = f"""
             UPDATE      {bookings_snapshot_purged_name} SET dbt_valid_to = '{next_date}'   WHERE dbt_valid_to   = '{date_to_purge}';
-            DELETE FROM {bookings_snapshot_purged_name}                                    WHERE dbt_valid_from = '{date_to_purge}' AND dbt_valid_to = '{next_date}';
             UPDATE      {bookings_snapshot_purged_name} SET dbt_valid_from = '{next_date}' WHERE dbt_valid_from = '{date_to_purge}' AND dbt_valid_to = NULL;
+            DELETE FROM {bookings_snapshot_purged_name}                                    WHERE dbt_valid_from = '{date_to_purge}';
             """
-
-            adapter.execute(text_query , auto_begin=True, fetch=True)
+            print("Purging", text_query)
+            res, table = adapter.execute(text_query, fetch=True)
+            print("Purged", res, table)
     
         adapter.execute("COMMIT;")
