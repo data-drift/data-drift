@@ -23,9 +23,13 @@ import { getNodesFromConfig } from "./flow-nodes";
 import { DiffTable } from "../DisplayCommit/DiffTable";
 import Loader from "../../components/Common/Loader";
 import StarUs from "../../components/Common/StarUs";
+import useDuckDB from "./duck-db.hook";
 import { useQuery } from "@tanstack/react-query";
 
 const Overview = () => {
+  const { useDbQuery, db } = useDuckDB();
+  const { result, loading } = useDbQuery("SELECT * from people;", db);
+  console.log("loading - result", loading, result);
   const loaderData = useOverviewLoaderData();
   const searchParams = new URLSearchParams(window.location.search);
 

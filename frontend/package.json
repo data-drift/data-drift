@@ -18,8 +18,12 @@
     "build-spa-snapshot": "vite build src/spas/snapshot --outDir ../../../../tools/driftdb/driftdb/spa/snapshot"
   },
   "dependencies": {
+    "@duckdb/duckdb-wasm": "^1.28.1-dev106.0",
+    "@duckdb/react-duckdb": "^1.28.1-dev106.0",
+    "@emotion/react": "11.11.3",
     "@emotion/styled": "^11.11.0",
     "@tanstack/react-query": "^5.17.9",
+    "apache-arrow": "^15.0.0",
     "axios": "^1.4.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
