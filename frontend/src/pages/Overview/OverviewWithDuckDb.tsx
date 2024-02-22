@@ -23,15 +23,12 @@ import { getNodesFromConfig } from "./flow-nodes";
 import { DiffTable } from "../DisplayCommit/DiffTable";
 import Loader from "../../components/Common/Loader";
 import StarUs from "../../components/Common/StarUs";
-import useDuckDB, {
-  mapQueryResultToPeople,
-  useLoadSnapshotData,
-} from "./duck-db.hook";
 import { useQuery } from "@tanstack/react-query";
 import SqlEditor from "./SqlEditor";
+import DuckDbProvider from "../../components/DuckDb/DuckDbProvider";
 
 const OverviewWithDb = () => {
-  const { db, hasTableBeenLoaded } = useDuckDB();
+  const db = DuckDbProvider.useDuckDb();
 
   const loaderData = useOverviewLoaderData();
   const searchParams = new URLSearchParams(window.location.search);
@@ -196,16 +193,15 @@ const OverviewWithDb = () => {
           {topContainer == "lineage" ? (
             <Lineage nodes={nodes} edges={edges} />
           ) : topContainer == "query" ? (
-            <SqlEditor
-              db={db!}
-              dualTable={dualTableData.data!}
-              hasTableBeenLoaded={hasTableBeenLoaded}
-            />
+            db &&
+            dualTableData.data && (
+              <SqlEditor db={db} dualTable={dualTableData.data} />
+            )
           ) : null}
         </StyledCollapsibleContent>
       </LineageContainer>
 
-      {dualTableData.isLoading || dualTableData.data ? (
+      {selectedCommit ? (
         <DiffTableContainer>
           {dualTableData.isLoading ? (
             <Loader />

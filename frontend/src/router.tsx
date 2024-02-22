@@ -10,6 +10,7 @@ import DriftOverviewPage from "./pages/DriftOverviewPage";
 import CompareCommits from "./pages/CompareCommits";
 import { QueryClient } from "@tanstack/react-query";
 import OverviewWithDb from "./pages/Overview/OverviewWithDuckDb";
+import DuckDbProvider from "./components/DuckDb/DuckDbProvider";
 
 export const queryClient = new QueryClient();
 
@@ -30,7 +31,11 @@ export const router = createBrowserRouter([
   },
   {
     path: "/:owner/:repo/overview-db",
-    element: <OverviewWithDb />,
+    element: (
+      <DuckDbProvider>
+        <OverviewWithDb />
+      </DuckDbProvider>
+    ),
     loader: OverviewWithDb.loader(queryClient),
   },
   {
