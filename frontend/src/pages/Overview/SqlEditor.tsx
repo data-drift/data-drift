@@ -24,8 +24,17 @@ const SqlEditor = ({ dualTable }: SqlEditorProps) => {
     }
     try {
       setIsRunning(true);
-      const results = await db.query(sql);
-      console.log(results);
+      const oldSql = sql.replace("snapshot", "old_snapshot");
+      const newSql = sql.replace("snapshot", "new_snapshot");
+      const oldResults = await db.query(oldSql);
+      const rows = {
+        values: oldResults.toArray().map(Object.fromEntries),
+        columns: oldResults.schema.fields.map((d) => d.name),
+      };
+      console.log("oldResults", rows);
+      console.log("oldResults0", rows.values[0]);
+      const newResults = await db.query(newSql);
+      console.log("newResults", newResults);
       setIsRunning(false);
     } catch (error) {
       console.error(error);
