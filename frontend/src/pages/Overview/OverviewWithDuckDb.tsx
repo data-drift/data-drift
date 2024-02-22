@@ -96,7 +96,7 @@ const OverviewWithDb = () => {
     commitListData.isLoading
   );
 
-  const topContainerValues = ["lineage", "query", null] as const;
+  const topContainerValues = ["query", "lineage", null] as const;
 
   const [topContainer, setTopContainer] = useState<
     (typeof topContainerValues)[number]

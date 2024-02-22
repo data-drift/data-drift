@@ -15,7 +15,23 @@ const SqlEditor = ({ dualTable }: SqlEditorProps) => {
   useLoadSnapshotData(dualTable, db);
 
   const [sql, setSQL] = useState("");
+  const [isRunning, setIsRunning] = useState(false);
 
+  const onValidation = async () => {
+    if (!db) {
+      console.error("DuckDB is not initialized.");
+      return;
+    }
+    try {
+      setIsRunning(true);
+      const results = await db.query(sql);
+      console.log(results);
+      setIsRunning(false);
+    } catch (error) {
+      console.error(error);
+      setIsRunning(false);
+    }
+  };
   return (
     <div>
       <CodeEditor
@@ -34,11 +50,11 @@ const SqlEditor = ({ dualTable }: SqlEditorProps) => {
           color: "black",
         }}
       />
+      <button onClick={onValidation} disabled={isRunning}>
+        {isRunning ? "Running..." : "Run"}
+      </button>
     </div>
   );
 };
 
 export default SqlEditor;
-function useDbQuery(arg0: string, db: any): { result: any; loading: any } {
-  throw new Error("Function not implemented.");
-}
