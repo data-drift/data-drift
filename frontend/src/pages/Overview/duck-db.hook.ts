@@ -17,11 +17,6 @@ const MANUAL_BUNDLES = {
   },
 } as const;
 
-type People = {
-  id: arrow.Int32;
-  name: arrow.Utf8;
-};
-
 const useDuckDB = () => {
   const [db, setDb] = useState<duckdb.AsyncDuckDBConnection | null>(null);
 
@@ -54,8 +49,7 @@ const useDuckDB = () => {
     void initDuckDB();
 
     return () => {
-      // Clean up
-      //   db?.terminate(); // Assuming terminate() is the correct method to clean up. Adjust as necessary.
+      // TODO implement Clean up. Close db ?
     };
   }, []);
 
