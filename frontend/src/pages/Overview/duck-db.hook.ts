@@ -26,8 +26,8 @@ export const useLoadSnapshotData = (
     const handleDualTableLoaded = async () => {
       if (dualTableData && db && !hasEffectRun.current) {
         console.log("dualTableData", dualTableData);
-        await loadSnapshotData(dualTableData, db);
         hasEffectRun.current = true;
+        await loadSnapshotData(dualTableData, db);
       }
     };
 
@@ -64,7 +64,7 @@ export const loadSnapshotData = async (
     if (row.isEmpty || row.isEllipsis) {
       continue;
     }
-    const insertSql = `INSERT INTO old_snapshot VALUES ('${row.data.join(
+    const insertSql = `INSERT INTO new_snapshot VALUES ('${row.data.join(
       "', '"
     )}')`;
     await db.query(insertSql);

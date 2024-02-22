@@ -1,6 +1,6 @@
 import CodeEditor from "@uiw/react-textarea-code-editor";
-import { Ref, useState } from "react";
-import useDuckDB, { useLoadSnapshotData } from "./duck-db.hook";
+import { useState } from "react";
+import { useLoadSnapshotData } from "./duck-db.hook";
 import { DualTableProps } from "../../components/Table/DualTable";
 import * as duckdb from "@duckdb/duckdb-wasm";
 import DuckDbProvider from "../../components/DuckDb/DuckDbProvider";
