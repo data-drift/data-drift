@@ -1,5 +1,5 @@
 import Lineage from "../../components/Lineage/Lineage";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import {
   Container,
@@ -24,17 +24,15 @@ import { DiffTable } from "../DisplayCommit/DiffTable";
 import Loader from "../../components/Common/Loader";
 import StarUs from "../../components/Common/StarUs";
 import useDuckDB, {
-  loadSnapshotData,
   mapQueryResultToPeople,
   useLoadSnapshotData,
 } from "./duck-db.hook";
 import { useQuery } from "@tanstack/react-query";
+import SqlEditor from "./SqlEditor";
 
 const OverviewWithDb = () => {
-  const { useDbQuery, db } = useDuckDB();
-  const { result, loading } = useDbQuery("SELECT * from people;", db);
-  console.log("result", result && mapQueryResultToPeople(result));
-  console.log("loading - result", loading, result);
+  const { db, hasTableBeenLoaded } = useDuckDB();
+
   const loaderData = useOverviewLoaderData();
   const searchParams = new URLSearchParams(window.location.search);
 
@@ -91,8 +89,6 @@ const OverviewWithDb = () => {
   const dualTableData = useQuery(
     fetchCommitPatchQuery(loaderData, selectedCommit)
   );
-
-  useLoadSnapshotData(dualTableData.data, db);
 
   const commitListData = useQuery(fetchCommitsQuery(loaderData, currentDate));
 
@@ -200,12 +196,16 @@ const OverviewWithDb = () => {
           {topContainer == "lineage" ? (
             <Lineage nodes={nodes} edges={edges} />
           ) : topContainer == "query" ? (
-            "the console"
+            <SqlEditor
+              db={db!}
+              dualTable={dualTableData.data!}
+              hasTableBeenLoaded={hasTableBeenLoaded}
+            />
           ) : null}
         </StyledCollapsibleContent>
       </LineageContainer>
 
-      {selectedCommit ? (
+      {dualTableData.isLoading || dualTableData.data ? (
         <DiffTableContainer>
           {dualTableData.isLoading ? (
             <Loader />

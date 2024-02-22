@@ -3,7 +3,7 @@ import duckdb_wasm from "@duckdb/duckdb-wasm/dist/duckdb-mvp.wasm?url";
 import mvp_worker from "@duckdb/duckdb-wasm/dist/duckdb-browser-mvp.worker.js?url";
 import duckdb_wasm_eh from "@duckdb/duckdb-wasm/dist/duckdb-eh.wasm?url";
 import eh_worker from "@duckdb/duckdb-wasm/dist/duckdb-browser-eh.worker.js?url";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import * as arrow from "apache-arrow";
 import { DualTableProps } from "../../components/Table/DualTable";
 
@@ -18,11 +18,17 @@ const MANUAL_BUNDLES = {
   },
 } as const;
 
+let singletonDb: duckdb.AsyncDuckDBConnection | null = null;
+
 const useDuckDB = () => {
   const [db, setDb] = useState<duckdb.AsyncDuckDBConnection | null>(null);
 
   useEffect(() => {
     const initDuckDB = async () => {
+      if (singletonDb) {
+        setDb(singletonDb);
+        return;
+      }
       try {
         const bundle = await duckdb.selectBundle(MANUAL_BUNDLES);
         if (!bundle.mainWorker) {
@@ -33,6 +39,7 @@ const useDuckDB = () => {
         const dbInstance = new duckdb.AsyncDuckDB(logger, worker);
         await dbInstance.instantiate(bundle.mainModule, bundle.pthreadWorker);
         const connection = await dbInstance.connect();
+        singletonDb = connection;
 
         await connection.query(
           `CREATE TABLE people(id INTEGER, name VARCHAR);`
@@ -66,6 +73,7 @@ const useDbQuery = <
   const [result, setResult] = useState<arrow.Table<T> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const hasTableBeenLoaded = useRef<boolean>(false);
 
   useEffect(() => {
     const queryAndSetResult = async () => {
@@ -86,7 +94,7 @@ const useDbQuery = <
     void queryAndSetResult();
   }, [sql, db]);
 
-  return { result, loading, error };
+  return { result, loading, error, hasTableBeenLoaded };
 };
 
 export const mapQueryResultToPeople = (queryResult: arrow.Table) => {
@@ -104,9 +112,10 @@ export const mapQueryResultToPeople = (queryResult: arrow.Table) => {
 
 export const useLoadSnapshotData = (
   dualTableData: DualTableProps | undefined,
-  db: duckdb.AsyncDuckDBConnection | null
+  db: duckdb.AsyncDuckDBConnection | null,
+  hasTableBeenLoaded: React.MutableRefObject<boolean>
 ) => {
-  const hasEffectRun = useRef<boolean>(false);
+  const hasEffectRun = hasTableBeenLoaded;
 
   useEffect(() => {
     const handleDualTableLoaded = async () => {
@@ -118,7 +127,7 @@ export const useLoadSnapshotData = (
     };
 
     void handleDualTableLoaded();
-  }, [dualTableData, db]);
+  }, [dualTableData, db, hasEffectRun]);
 };
 
 export const loadSnapshotData = async (

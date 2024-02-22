@@ -23,6 +23,7 @@
     "@emotion/react": "11.11.3",
     "@emotion/styled": "^11.11.0",
     "@tanstack/react-query": "^5.17.9",
+    "@uiw/react-textarea-code-editor": "^3.0.2",
     "apache-arrow": "^15.0.0",
     "axios": "^1.4.0",
     "react": "^18.2.0",
