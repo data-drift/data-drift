@@ -23,9 +23,14 @@ import { getNodesFromConfig } from "./flow-nodes";
 import { DiffTable } from "../DisplayCommit/DiffTable";
 import Loader from "../../components/Common/Loader";
 import StarUs from "../../components/Common/StarUs";
+import useDuckDB, { mapQueryResultToPeople } from "./duck-db.hook";
 import { useQuery } from "@tanstack/react-query";
 
 const Overview = () => {
+  const { useDbQuery, db } = useDuckDB();
+  const { result, loading } = useDbQuery("SELECT * from people;", db);
+  console.log("result", result && mapQueryResultToPeople(result));
+  console.log("loading - result", loading, result);
   const loaderData = useOverviewLoaderData();
   const searchParams = new URLSearchParams(window.location.search);
 
@@ -126,6 +131,11 @@ const Overview = () => {
         <StyledCollapsibleTitle onClick={() => setIsCollapsed(!isCollapsed)}>
           {isCollapsed ? "▶" : "▼"} Lineage
         </StyledCollapsibleTitle>
+        {db ? (
+          <div>Connected to DuckDB ✅</div>
+        ) : (
+          <div>Connecting to DuckDB</div>
+        )}
         <StyledDate>
           <StyledDateButton onClick={decrementDate}>{"<"}</StyledDateButton>
           {currentDate.toLocaleDateString()}
