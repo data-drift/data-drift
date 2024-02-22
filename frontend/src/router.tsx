@@ -9,6 +9,7 @@ import MetricPage from "./pages/MetricPage";
 import DriftOverviewPage from "./pages/DriftOverviewPage";
 import CompareCommits from "./pages/CompareCommits";
 import { QueryClient } from "@tanstack/react-query";
+import OverviewWithDb from "./pages/Overview/OverviewWithDuckDb";
 
 export const queryClient = new QueryClient();
 
@@ -26,6 +27,11 @@ export const router = createBrowserRouter([
     path: "/:owner/:repo/overview",
     element: <Overview />,
     loader: Overview.loader(queryClient),
+  },
+  {
+    path: "/:owner/:repo/overview-db",
+    element: <OverviewWithDb />,
+    loader: OverviewWithDb.loader(queryClient),
   },
   {
     path: "/:installationId/:owner/:repo/compare", // legacy route

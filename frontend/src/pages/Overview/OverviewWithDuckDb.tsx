@@ -26,7 +26,7 @@ import StarUs from "../../components/Common/StarUs";
 import useDuckDB, { mapQueryResultToPeople } from "./duck-db.hook";
 import { useQuery } from "@tanstack/react-query";
 
-const Overview = () => {
+const OverviewWithDb = () => {
   const { useDbQuery, db } = useDuckDB();
   const { result, loading } = useDbQuery("SELECT * from people;", db);
   console.log("result", result && mapQueryResultToPeople(result));
@@ -198,7 +198,7 @@ const Overview = () => {
   );
 };
 
-Overview.loader = loader;
-Overview.localStrategyLoader = localStrategyLoader;
+OverviewWithDb.loader = loader;
+OverviewWithDb.localStrategyLoader = localStrategyLoader;
 
-export default Overview;
+export default OverviewWithDb;
