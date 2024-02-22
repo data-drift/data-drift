@@ -97,7 +97,19 @@ const OverviewWithDb = () => {
     commitListData.isLoading
   );
 
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const topContainerValues = ["lineage", "query", null] as const;
+
+  const [topContainer, setTopContainer] = useState<
+    (typeof topContainerValues)[number]
+  >(topContainerValues[0]);
+
+  const handleTopContainerClick = () => {
+    const currentIndex = topContainerValues.findIndex(
+      (value) => value === topContainer
+    );
+    const nextIndex = (currentIndex + 1) % topContainerValues.length;
+    setTopContainer(topContainerValues[nextIndex]);
+  };
 
   const handleSetCurrentDate = useCallback(
     (newDate: Date) => {
@@ -128,8 +140,12 @@ const OverviewWithDb = () => {
   return (
     <Container>
       <StyledHeader>
-        <StyledCollapsibleTitle onClick={() => setIsCollapsed(!isCollapsed)}>
-          {isCollapsed ? "▶" : "▼"} Lineage
+        <StyledCollapsibleTitle onClick={() => handleTopContainerClick()}>
+          {topContainer == "lineage"
+            ? "Show DuckDb Console"
+            : topContainer == "query"
+            ? "Hide DuckDb Console"
+            : "Show Lineage"}
         </StyledCollapsibleTitle>
         {db ? (
           <div>Connected to DuckDB ✅</div>
@@ -174,11 +190,13 @@ const OverviewWithDb = () => {
       </StyledHeader>
 
       <LineageContainer>
-        {!isCollapsed && (
-          <StyledCollapsibleContent isCollapsed={isCollapsed}>
+        <StyledCollapsibleContent isCollapsed={!topContainer}>
+          {topContainer == "lineage" ? (
             <Lineage nodes={nodes} edges={edges} />
-          </StyledCollapsibleContent>
-        )}
+          ) : topContainer == "query" ? (
+            "the console"
+          ) : null}
+        </StyledCollapsibleContent>
       </LineageContainer>
 
       {selectedCommit ? (
