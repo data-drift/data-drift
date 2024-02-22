@@ -1,5 +1,5 @@
 import Lineage from "../../components/Lineage/Lineage";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   Container,
@@ -23,7 +23,11 @@ import { getNodesFromConfig } from "./flow-nodes";
 import { DiffTable } from "../DisplayCommit/DiffTable";
 import Loader from "../../components/Common/Loader";
 import StarUs from "../../components/Common/StarUs";
-import useDuckDB, { mapQueryResultToPeople } from "./duck-db.hook";
+import useDuckDB, {
+  loadSnapshotData,
+  mapQueryResultToPeople,
+  useLoadSnapshotData,
+} from "./duck-db.hook";
 import { useQuery } from "@tanstack/react-query";
 
 const OverviewWithDb = () => {
@@ -87,6 +91,8 @@ const OverviewWithDb = () => {
   const dualTableData = useQuery(
     fetchCommitPatchQuery(loaderData, selectedCommit)
   );
+
+  useLoadSnapshotData(dualTableData.data, db);
 
   const commitListData = useQuery(fetchCommitsQuery(loaderData, currentDate));
 
