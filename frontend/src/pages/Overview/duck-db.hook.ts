@@ -62,8 +62,13 @@ const useDuckDB = () => {
   return { db, useDbQuery };
 };
 
-const useDbQuery = (sql: string, db: duckdb.AsyncDuckDBConnection | null) => {
-  const [result, setResult] = useState<People[] | null>(null);
+const useDbQuery = <
+  T extends { [key: string]: arrow.DataType<arrow.Type, any> }
+>(
+  sql: string,
+  db: duckdb.AsyncDuckDBConnection | null
+) => {
+  const [result, setResult] = useState<arrow.Table<T> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -71,18 +76,8 @@ const useDbQuery = (sql: string, db: duckdb.AsyncDuckDBConnection | null) => {
     const queryAndSetResult = async () => {
       if (db) {
         try {
-          const queryResult = await db.query<People>(sql);
-          const queryResultToArray = queryResult.toArray();
-
-          const result = queryResultToArray.map((arrow) => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-            const row = arrow.toArray() as [arrow.Int32, arrow.Utf8];
-            return {
-              id: row[0],
-              name: row[1],
-            };
-          });
-          setResult(result);
+          const queryResult = await db.query<T>(sql);
+          setResult(queryResult);
           setLoading(false);
         } catch (error) {
           setLoading(false);
@@ -97,6 +92,19 @@ const useDbQuery = (sql: string, db: duckdb.AsyncDuckDBConnection | null) => {
   }, [sql, db]);
 
   return { result, loading, error };
+};
+
+export const mapQueryResultToPeople = (queryResult: arrow.Table) => {
+  const queryResultToArray = queryResult.toArray();
+  const result = queryResultToArray.map((arrow) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+    const row = arrow.toArray() as [arrow.Int32, arrow.Utf8];
+    return {
+      id: row[0],
+      name: row[1],
+    };
+  });
+  return result;
 };
 
 export default useDuckDB;
