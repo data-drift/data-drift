@@ -130,6 +130,11 @@ const Overview = () => {
         <StyledCollapsibleTitle onClick={() => setIsCollapsed(!isCollapsed)}>
           {isCollapsed ? "▶" : "▼"} Lineage
         </StyledCollapsibleTitle>
+        {db ? (
+          <div>Connected to DuckDB ✅</div>
+        ) : (
+          <div>Connecting to DuckDB</div>
+        )}
         <StyledDate>
           <StyledDateButton onClick={decrementDate}>{"<"}</StyledDateButton>
           {currentDate.toLocaleDateString()}
