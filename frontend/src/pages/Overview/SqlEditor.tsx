@@ -16,8 +16,9 @@ const SqlEditor = ({ dualTable, setQueryResult }: SqlEditorProps) => {
   const db = DuckDbProvider.useDuckDb();
   useLoadSnapshotData(dualTable, db);
 
-  const [sql, setSQL] = useState("");
+  const [sql, setSQL] = useState("SELECT * FROM snapshot;");
   const [isRunning, setIsRunning] = useState(false);
+  const [queryError, setQueryError] = useState<string | null>(null);
 
   const onValidation = () => {
     void handleValidation();
@@ -46,13 +47,15 @@ const SqlEditor = ({ dualTable, setQueryResult }: SqlEditorProps) => {
       console.log("dualTable", dualTable);
       setQueryResult(dualTable);
       setIsRunning(false);
-    } catch (error) {
+      setQueryError(null);
+    } catch (error: any) {
       console.error(error);
+      setQueryError((error as { message: string }).message);
       setIsRunning(false);
     }
   };
   return (
-    <div>
+    <div style={{ height: "100%", display: "flex" }}>
       <CodeEditor
         value={sql}
         language="sql"
@@ -67,11 +70,15 @@ const SqlEditor = ({ dualTable, setQueryResult }: SqlEditorProps) => {
           fontFamily:
             "ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace",
           color: "black",
+          flex: 2,
         }}
       />
-      <button onClick={onValidation} disabled={isRunning}>
-        {isRunning ? "Running..." : "Run"}
-      </button>
+      <div style={{ flex: 1, paddingLeft: "4px" }}>
+        <button onClick={onValidation} disabled={isRunning}>
+          {isRunning ? "Running..." : "Run"}
+        </button>
+        {queryError && <div style={{ color: "red" }}>{queryError}</div>}
+      </div>
     </div>
   );
 };
