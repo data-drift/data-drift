@@ -25,7 +25,6 @@ export const useLoadSnapshotData = (
   useEffect(() => {
     const handleDualTableLoaded = async () => {
       if (dualTableData && db && !hasEffectRun.current) {
-        console.log("dualTableData", dualTableData);
         hasEffectRun.current = true;
         await loadSnapshotData(dualTableData, db);
       }
@@ -44,6 +43,7 @@ export const loadSnapshotData = async (
     " VARCHAR, "
   )} VARCHAR)`;
   await db.query(createOldTableSql);
+  console.log("old_snapshot table created");
   for (const row of oldData.data) {
     if (row.isEmpty || row.isEllipsis) {
       continue;
@@ -53,13 +53,14 @@ export const loadSnapshotData = async (
       .join("', '")}')`;
     await db.query(insertSql);
   }
+  console.log("old_snapshot data inserted created");
 
   const newData = dualTableProps.tableProps1;
-
   const createNewTableSql = `CREATE TABLE new_snapshot (${newData.headers.join(
     " VARCHAR, "
   )} VARCHAR)`;
   await db.query(createNewTableSql);
+  console.log("new_snapshot table created");
   for (const row of newData.data) {
     if (row.isEmpty || row.isEllipsis) {
       continue;
@@ -69,5 +70,6 @@ export const loadSnapshotData = async (
       .join("', '")}')`;
     await db.query(insertSql);
   }
+  console.log("new_snapshot data inserted created");
   return;
 };

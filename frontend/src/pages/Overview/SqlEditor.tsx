@@ -12,14 +12,18 @@ type SqlEditorProps = {
   setQueryResult: (result: DualTableProps) => void;
 };
 
-const SqlEditor = ({ dualTable }: SqlEditorProps) => {
+const SqlEditor = ({ dualTable, setQueryResult }: SqlEditorProps) => {
   const db = DuckDbProvider.useDuckDb();
   useLoadSnapshotData(dualTable, db);
 
   const [sql, setSQL] = useState("");
   const [isRunning, setIsRunning] = useState(false);
 
-  const onValidation = async () => {
+  const onValidation = () => {
+    void handleValidation();
+  };
+
+  const handleValidation = async () => {
     if (!db) {
       console.error("DuckDB is not initialized.");
       return;
@@ -40,6 +44,7 @@ const SqlEditor = ({ dualTable }: SqlEditorProps) => {
       };
       const dualTable = sqlToDualTableMapper(oldRows, newRows);
       console.log("dualTable", dualTable);
+      setQueryResult(dualTable);
       setIsRunning(false);
     } catch (error) {
       console.error(error);

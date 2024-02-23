@@ -34,8 +34,6 @@ const OverviewWithDb = () => {
   const [dualTableFromSqlQuery, setdualTableFromSqlQuery] =
     useState<DualTableProps | null>(null);
 
-  console.log("dualTableFromSqlQuery", dualTableFromSqlQuery);
-
   const loaderData = useOverviewLoaderData();
   const searchParams = new URLSearchParams(window.location.search);
 
@@ -102,7 +100,7 @@ const OverviewWithDb = () => {
     commitListData.isLoading
   );
 
-  const topContainerValues = ["query", "lineage", null] as const;
+  const topContainerValues = ["lineage", "query", null] as const;
 
   const [topContainer, setTopContainer] = useState<
     (typeof topContainerValues)[number]
@@ -213,7 +211,9 @@ const OverviewWithDb = () => {
 
       {selectedCommit ? (
         <DiffTableContainer>
-          {dualTableData.isLoading ? (
+          {dualTableFromSqlQuery ? (
+            <DiffTable dualTableProps={dualTableFromSqlQuery} />
+          ) : dualTableData.isLoading ? (
             <Loader />
           ) : (
             dualTableData.data && (
