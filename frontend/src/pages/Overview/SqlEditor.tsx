@@ -4,6 +4,7 @@ import { useLoadSnapshotData } from "./duck-db.hook";
 import { DualTableProps } from "../../components/Table/DualTable";
 import * as duckdb from "@duckdb/duckdb-wasm";
 import DuckDbProvider from "../../components/DuckDb/DuckDbProvider";
+import { sqlToDualTableMapper } from "./sql-to-dual-table.mapper";
 
 type SqlEditorProps = {
   dualTable: DualTableProps;
@@ -27,14 +28,17 @@ const SqlEditor = ({ dualTable }: SqlEditorProps) => {
       const oldSql = sql.replace("snapshot", "old_snapshot");
       const newSql = sql.replace("snapshot", "new_snapshot");
       const oldResults = await db.query(oldSql);
-      const rows = {
+      const oldRows = {
         values: oldResults.toArray().map(Object.fromEntries),
         columns: oldResults.schema.fields.map((d) => d.name),
       };
-      console.log("oldResults", rows);
-      console.log("oldResults0", rows.values[0]);
       const newResults = await db.query(newSql);
-      console.log("newResults", newResults);
+      const newRows = {
+        values: newResults.toArray().map(Object.fromEntries),
+        columns: newResults.schema.fields.map((d) => d.name),
+      };
+      const dualTable = sqlToDualTableMapper(oldRows, newRows);
+      console.log("dualTable", dualTable);
       setIsRunning(false);
     } catch (error) {
       console.error(error);
