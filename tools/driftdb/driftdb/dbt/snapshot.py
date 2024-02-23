@@ -56,10 +56,9 @@ def get_snapshot_diff(snapshot_node: SnapshotNode, snapshot_date: str) -> DataFr
     from dbt.config.runtime import RuntimeConfig, load_profile, load_project
 
     project_dir = "."
-    project_path = project_dir
-    dbtRunner().invoke(["-q", "debug"], project_dir=str(project_path))
-    profile = load_profile(str(project_path), {})
-    project = load_project(str(project_path), version_check=False, profile=profile)
+    dbtRunner().invoke(["-q", "debug"], project_dir=str(project_dir))
+    profile = load_profile(str(project_dir), {})
+    project = load_project(str(project_dir), version_check=False, profile=profile)
 
     runtime_config = RuntimeConfig.from_parts(project, profile, {})
 
@@ -88,3 +87,55 @@ def get_snapshot_diff(snapshot_node: SnapshotNode, snapshot_date: str) -> DataFr
 
         df = dbt_adapter_query(adapter, text_query)
         return df
+
+def purge_intermediates_snapshot(snapshot_node: SnapshotNode, first_snapshot_date: str, last_snapshot_date: str):
+    from dbt.adapters.factory import get_adapter
+    from dbt.cli.main import dbtRunner
+    from dbt.config.runtime import RuntimeConfig, load_profile, load_project
+
+    project_dir = "."
+    dbtRunner().invoke(["-q", "debug"], project_dir=str(project_dir))
+    profile = load_profile(str(project_dir), {})
+    project = load_project(str(project_dir), version_check=False, profile=profile)
+
+    runtime_config = RuntimeConfig.from_parts(project, profile, {})
+
+    adapter = get_adapter(runtime_config)
+
+    purge_dates = []
+    snapshot_dates = get_snapshot_dates(snapshot_node)
+    for date in snapshot_dates[:-1]:
+        if first_snapshot_date <= date <= last_snapshot_date:
+            date_to_purge = date
+            next_date = snapshot_dates[snapshot_dates.index(date) - 1]
+            purge_dates.append({"date_to_purge": date_to_purge, "next_date": next_date})
+
+    print("date purge", purge_dates)
+
+    with adapter.connection_named("default"):  # type: ignore
+        bookings_snapshot_purged_name = 'bookings_snapshot_purged'
+        adapter.execute("BEGIN;")
+        print("Begin transaction")
+        clone_table_query = f"""
+        DROP TABLE IF EXISTS {bookings_snapshot_purged_name};
+        CREATE TABLE {bookings_snapshot_purged_name} AS SELECT * FROM {snapshot_node["relation_name"]};
+        """
+        print("Cloning table", clone_table_query)
+        res = dbt_adapter_query(adapter,clone_table_query)
+        
+        print("Table cloned", res)
+
+        for purge_date in purge_dates:
+            date_to_purge = purge_date["date_to_purge"]
+            next_date = purge_date["next_date"]
+            print(f"Purging {date_to_purge} with {next_date}")
+            text_query = f"""
+            UPDATE      {bookings_snapshot_purged_name} SET dbt_valid_to = '{next_date}'   WHERE dbt_valid_to   = '{date_to_purge}';
+            UPDATE      {bookings_snapshot_purged_name} SET dbt_valid_from = '{next_date}' WHERE dbt_valid_from = '{date_to_purge}';
+            DELETE FROM {bookings_snapshot_purged_name}                                    WHERE dbt_valid_from = dbt_valid_to;
+            """
+            print("Purging", text_query)
+            res, table = adapter.execute(text_query, fetch=True)
+            print("Purged", res, table)
+    
+        adapter.execute("COMMIT;")

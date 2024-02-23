@@ -7,11 +7,8 @@ import numpy as np
 import pandas as pd
 import pytz
 import typer
-from github.MainClass import Github
 
 from ..cli.server import start_server
-from ..connectors.github_connector import GithubConnector
-from ..connectors.local_connector import LocalConnector
 from ..logger import get_logger
 from .common import dbt_adapter_query, prompt_from_list
 
@@ -67,6 +64,10 @@ def sync(
             dataframe = dbt_adapter_query(adapter, query)
 
             if storage == "github":
+                from github.MainClass import Github
+
+                from ..connectors.github_connector import GithubConnector
+
                 github_connector = GithubConnector(
                     github_client=Github(token),
                     github_repository_name=repo,
@@ -76,6 +77,8 @@ def sync(
                     table_name="/dbt-drift/metrics/" + node["name"] + ".csv",
                 )
             else:
+                from ..connectors.local_connector import LocalConnector
+
                 local_connector = LocalConnector()
                 local_connector.snapshot_table(
                     table_name=node["name"],
@@ -129,6 +132,8 @@ def snapshot():
 
         df = dbt_adapter_query(adapter, text_query)
         df["dbt_valid_from"] = pd.to_datetime(df["dbt_valid_from"])
+
+        from ..connectors.local_connector import LocalConnector
 
         local_connector = LocalConnector()
         metric_history = local_connector.get_table_history(table_name=metric_name)

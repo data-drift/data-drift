@@ -1,4 +1,4 @@
-from github import GithubException, Repository
+from github import GithubException
 from github.MainClass import Github
 
 from ..interface import DriftEvaluation, DriftEvaluatorContext

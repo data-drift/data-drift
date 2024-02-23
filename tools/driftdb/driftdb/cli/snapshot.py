@@ -9,7 +9,7 @@ import typer
 from ..alerting.handlers import alert_drift_handler
 from ..alerting.transport import AbstractAlertTransport, ConsoleAlertTransport
 from ..dbt.snapshot import (get_snapshot_dates, get_snapshot_diff,
-                            get_snapshot_nodes)
+                            get_snapshot_nodes, purge_intermediates_snapshot)
 from ..dbt.snapshot_to_drift import convert_snapshot_to_drift_summary
 from ..logger import get_logger
 from ..user_defined_function import import_user_defined_function
@@ -94,6 +94,36 @@ def check(snapshot_id: str = typer.Option(None, help="id of your snapshot"), dat
 
     logger.info("Done.")
 
+@app.command()
+def list():
+    snapshot_nodes = get_snapshot_nodes()
+    for node in snapshot_nodes:
+        typer.echo(node["unique_id"])
+
+@app.command()
+def list_dates(snapshot_id: str = typer.Option(None, help="id of your snapshot")):
+    snapshot_node = get_or_prompt_snapshot_node(snapshot_id, get_snapshot_nodes())
+    snapshot_dates = get_snapshot_dates(snapshot_node)
+    for date in snapshot_dates:
+        typer.echo(date)
+
+@app.command()
+def purge_intermediate(snapshot_id: str = typer.Option(None, help="id of your snapshot"), date_from: str = typer.Option(None, help="date of your snapshot to squash from"), date_to: str = typer.Option(None, help="date of your snapshot to squash from")):
+    snapshot_node = get_or_prompt_snapshot_node(snapshot_id, get_snapshot_nodes())
+    typer.echo(f"First snapshot date to purge")
+    snapshot_from_date = get_user_date_selection(get_snapshot_dates(snapshot_node), date_from)
+    if snapshot_from_date is None:
+        typer.echo("No snapshot_from_date selected. Exiting.")
+        raise typer.Exit(code=1)
+    typer.echo(f"Last snapshot date to purge (can be the same as the first one, only this snapshot will be purged)")
+    snapshot_to_date = get_user_date_selection(get_snapshot_dates(snapshot_node), date_to)
+    if snapshot_to_date is None:
+        typer.echo("No snapshot_to_date selected. Exiting.")
+        raise typer.Exit(code=1)
+    typer.echo(f"Purging {snapshot_node['unique_id']} from {snapshot_from_date} to {snapshot_to_date}.")
+    purge_intermediates_snapshot(snapshot_node, snapshot_from_date, snapshot_to_date)
+    typer.echo(f"Done. Table bookings_snapshot_purged created, if everything looks right you can drop the original table by running:     DROP TABLE {snapshot_node['relation_name']};   ALTER TABLE bookings_snapshot_purged RENAME TO {snapshot_node['relation_name']};")
+
 
 def get_user_defined_handlers(snapshot_node):
     snapshot_file_path = snapshot_node["original_file_path"]
@@ -102,7 +132,7 @@ def get_user_defined_handlers(snapshot_node):
     snapshot_file_name_without_extension, _ = os.path.splitext(snapshot_file_name)
     user_defined_file_path = os.path.join(directory_path, f"{snapshot_file_name_without_extension}.datadrift.py")
     
-    print(f"Looking for user defined handlers in {user_defined_file_path}")
+    typer.echo(f"Looking for user defined handlers in {user_defined_file_path}")
 
     try:
         [drift_handler, alert_transport] = import_user_defined_function(user_defined_file_path,[ "drift_handler", "alert_transport"])

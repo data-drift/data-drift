@@ -3,7 +3,7 @@ import unittest
 from datetime import datetime, timedelta, timezone
 
 import pandas as pd
-from driftdb.connectors import LocalConnector
+from driftdb.connectors.local_connector import LocalConnector
 
 
 class TestLocalConnector(unittest.TestCase):
