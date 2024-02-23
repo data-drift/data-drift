@@ -26,9 +26,15 @@ import StarUs from "../../components/Common/StarUs";
 import { useQuery } from "@tanstack/react-query";
 import SqlEditor from "./SqlEditor";
 import DuckDbProvider from "../../components/DuckDb/DuckDbProvider";
+import { DualTableProps } from "../../components/Table/DualTable";
 
 const OverviewWithDb = () => {
   const db = DuckDbProvider.useDuckDb();
+
+  const [dualTableFromSqlQuery, setdualTableFromSqlQuery] =
+    useState<DualTableProps | null>(null);
+
+  console.log("dualTableFromSqlQuery", dualTableFromSqlQuery);
 
   const loaderData = useOverviewLoaderData();
   const searchParams = new URLSearchParams(window.location.search);
@@ -195,7 +201,11 @@ const OverviewWithDb = () => {
           ) : topContainer == "query" ? (
             db &&
             dualTableData.data && (
-              <SqlEditor db={db} dualTable={dualTableData.data} />
+              <SqlEditor
+                db={db}
+                dualTable={dualTableData.data}
+                setQueryResult={setdualTableFromSqlQuery}
+              />
             )
           ) : null}
         </StyledCollapsibleContent>

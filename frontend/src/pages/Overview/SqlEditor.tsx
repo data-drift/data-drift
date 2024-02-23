@@ -9,6 +9,7 @@ import { sqlToDualTableMapper } from "./sql-to-dual-table.mapper";
 type SqlEditorProps = {
   dualTable: DualTableProps;
   db: duckdb.AsyncDuckDBConnection;
+  setQueryResult: (result: DualTableProps) => void;
 };
 
 const SqlEditor = ({ dualTable }: SqlEditorProps) => {
