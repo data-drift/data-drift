@@ -35,17 +35,33 @@ const SqlEditor = ({ dualTable, setQueryResult }: SqlEditorProps) => {
       const newSql = sql.replace("snapshot", "new_snapshot");
       const oldResults = await db.query(oldSql);
       const oldRows = {
-        values: oldResults.toArray().map(Object.fromEntries),
+        values: oldResults.toArray().map(Object.fromEntries) as (Record<
+          string,
+          string
+        > & { unique_key: string })[],
         columns: oldResults.schema.fields.map((d) => d.name),
       };
       const newResults = await db.query(newSql);
       const newRows = {
-        values: newResults.toArray().map(Object.fromEntries),
+        values: newResults.toArray().map(Object.fromEntries) as (Record<
+          string,
+          string
+        > & { unique_key: string })[],
         columns: newResults.schema.fields.map((d) => d.name),
       };
-      const dualTable = sqlToDualTableMapper(oldRows, newRows);
-      console.log("dualTable", dualTable);
-      setQueryResult(dualTable);
+      const uniqueKeysSet = new Set([
+        ...oldRows.values.map((row) => row["unique_key"]),
+        ...newRows.values.map((row) => row["unique_key"]),
+      ]);
+      const uniqueKeys = Array.from(uniqueKeysSet);
+      const queryResultDualTable = sqlToDualTableMapper(
+        uniqueKeys,
+        oldRows,
+        newRows,
+        dualTable
+      );
+      console.log("dualTable", queryResultDualTable);
+      setQueryResult(queryResultDualTable);
       setIsRunning(false);
       setQueryError(null);
     } catch (error: any) {

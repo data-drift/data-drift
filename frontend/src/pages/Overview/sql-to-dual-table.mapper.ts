@@ -1,41 +1,46 @@
 import { DualTableProps } from "../../components/Table/DualTable";
+import { TableProps } from "../../components/Table/Table";
+import { emptyRow } from "../../services/patch.mapper";
 
 export const sqlToDualTableMapper = <T extends string, V extends string>(
-  oldRows: {
-    values: Record<T, string>[];
+  uniqueKeys: string[],
+  _oldRows: {
+    values: (Record<T, string> & { unique_key: string })[];
     columns: T[];
   },
-  newRows: {
-    values: Record<V, string>[];
+  _newRows: {
+    values: (Record<V, string> & { unique_key: string })[];
     columns: V[];
-  }
+  },
+  initialDualTable: DualTableProps
 ): DualTableProps => {
+  const oldData: TableProps["data"] = [];
+  const newData: TableProps["data"] = [];
+  uniqueKeys.forEach((uniqueKey: string) => {
+    const tablePropsOldRow: TableProps["data"][0] =
+      initialDualTable.tableProps1.data.find(
+        (row) => row.data[0]?.value === uniqueKey
+      ) || emptyRow(initialDualTable.tableProps1.headers.length);
+
+    const tablePropsNewRow: TableProps["data"][0] =
+      initialDualTable.tableProps2.data.find(
+        (row) => row.data[0]?.value === uniqueKey
+      ) || emptyRow(initialDualTable.tableProps2.headers.length);
+
+    oldData.push(tablePropsOldRow);
+    newData.push(tablePropsNewRow);
+  });
+
   return {
     tableProps1: {
-      headers: oldRows.columns,
+      headers: initialDualTable.tableProps1.headers,
       diffType: "removed",
-      data: oldRows.values.map((row) => {
-        return {
-          data: oldRows.columns.map((column) => {
-            return {
-              value: row[column],
-            };
-          }),
-        };
-      }),
+      data: oldData,
     },
     tableProps2: {
-      headers: newRows.columns,
+      headers: initialDualTable.tableProps2.headers,
       diffType: "added",
-      data: newRows.values.map((row) => {
-        return {
-          data: newRows.columns.map((column) => {
-            return {
-              value: row[column],
-            };
-          }),
-        };
-      }),
+      data: newData,
     },
   };
 };
