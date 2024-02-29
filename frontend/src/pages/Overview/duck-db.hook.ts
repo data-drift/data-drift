@@ -55,7 +55,7 @@ export const loadSnapshotData = async (
   }
   console.log("old_snapshot data inserted created");
 
-  const newData = dualTableProps.tableProps1;
+  const newData = dualTableProps.tableProps2;
   const createNewTableSql = `CREATE TABLE new_snapshot (${newData.headers.join(
     " VARCHAR, "
   )} VARCHAR)`;
